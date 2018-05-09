@@ -1,0 +1,62 @@
+{
+    "name": "amiga-assembly",
+    "displayName": "Amiga Assembly",
+    "description": "Amiga Assembly Support for Visual Studio Code",
+    "version": "0.0.1",
+    "publisher": "praingeard",
+    "engines": {
+        "vscode": "^1.23.0"
+    },
+    "categories": [
+        "Formatters",
+        "Programming Languages"
+    ],
+    "icon": "images/icon.png",
+    "galleryBanner": {
+        "color": "#C80000",
+        "theme": "dark"
+    },
+    "activationEvents": [
+        "onLanguage:m68k"
+    ],
+    "main": "./out/extension",
+    "contributes": {
+        "languages": [
+            {
+                "id": "m68k",
+                "aliases": [
+                    "Amiga-Assembly",
+                    "M68k-Assembly",
+                    "m68k"
+                ],
+                "extensions": [
+                    ".s",
+                    ".i",
+                    ".asm"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "m68k",
+                "scopeName": "source.asm.m68k",
+                "path": "./syntaxes/m68k.tmLanguage"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.6",
+        "tslint": "^5.8.0",
+        "@types/node": "^7.0.43",
+        "@types/mocha": "^2.2.42"
+    }
+}
