@@ -2,8 +2,18 @@
     "name": "amiga-assembly",
     "displayName": "Amiga Assembly",
     "description": "Amiga Assembly Support for Visual Studio Code",
+    "license": "SEE LICENSE IN FILE LICENSE",
+    "homepage": "https://github.com/prb28/vscode-amiga-assembly",
+    "bugs": {
+        "url": "https://github.com/prb28/vscode-amiga-assembly/issues",
+        "email": "smcbreen@microsoft.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/prb28/vscode-amiga-assembly"
+    },
     "version": "0.1.0",
-    "publisher": "praingeard",
+    "publisher": "prb28",
     "engines": {
         "vscode": "^1.23.0"
     },
@@ -13,7 +23,7 @@
     ],
     "icon": "images/icon.png",
     "galleryBanner": {
-        "color": "#C80000",
+        "color": "#000000",
         "theme": "dark"
     },
     "activationEvents": [
