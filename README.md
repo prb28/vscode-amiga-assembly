@@ -10,7 +10,7 @@ This feature is based on the work of Steve Saunders for Sublime Text m68k extens
 
 ### Document Formatting
 The assembly language will be formatted with the standard shortcut ⇧⌥F.
-![Formatting screenshot][images/formatting.gif]
+![Formatting screenshot](images/formatting.gif)
 
 ## Release Notes
 
