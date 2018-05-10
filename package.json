@@ -41,7 +41,7 @@
             {
                 "language": "m68k",
                 "scopeName": "source.asm.m68k",
-                "path": "./syntaxes/m68k.tmLanguage"
+                "path": "./syntaxes/M68k-Assembly.tmLanguage.json"
             }
         ]
     },
@@ -57,6 +57,10 @@
         "vscode": "^1.1.6",
         "tslint": "^5.8.0",
         "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
+        "@types/mocha": "^2.2.42",
+        "@types/chai": "^4.1.2"
+    },
+    "dependencies": {
+        "chai": "^4.1.2"
     }
 }
