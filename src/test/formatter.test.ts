@@ -12,11 +12,12 @@ var expect = chai.expect;
 // tslint:disable:no-unused-expression
 describe("Formatter Tests", function () {
     context("Global processing", function () {
-        it("Should find if it is a comment line", function () {
+        /*it("Should aling the elements", function () {
             let f = new formatter.M68kFormatter();
-            expect(f.isCommentLine(";My comment")).to.be.true;
-            expect(f.isCommentLine("MyLabel")).to.be.false;
-        });
+            let text = ".lnspr		swap	d1\n			move.w	d1,2(a0)\nswap	d1";
+            let expected = ".lnspr  swap    d1\n        move.w    d1,2(a0)\n        swap    d1";
+            expect(f.format(text)).to.be.equal(expected);
+        });*/
     });
     context("Line parsing", function () {
         it("Should split a comment line", function () {

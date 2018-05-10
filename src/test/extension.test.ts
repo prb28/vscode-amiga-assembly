@@ -7,6 +7,7 @@
 import * as chai from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 
 var expect = chai.expect;
 
@@ -17,7 +18,9 @@ describe("Global Extension Tests", function () {
             // Creating the relative path to find the test file
             const testFilesPath = path.join(__dirname, "..", "..", "test_files");
             // Simple test file
-            const uri = vscode.Uri.file(path.join(testFilesPath, "p.s"));
+            const uri = vscode.Uri.file(path.join(testFilesPath, "hw-toform.s"));
+            // Read the expected file
+            let expectedFileContents = fs.readFileSync(path.join(testFilesPath, "hw-exp.s"), 'utf8');
             // Opens the file in the editor
             await vscode.window.showTextDocument(uri);
             let editor = vscode.window.activeTextEditor;
@@ -27,7 +30,7 @@ describe("Global Extension Tests", function () {
                 // Editor openned
                 // Call the formatting command
                 await vscode.commands.executeCommand("editor.action.formatDocument");
-                expect(editor.document.lineAt(0).text).to.be.equal("42");
+                expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
         });
     });

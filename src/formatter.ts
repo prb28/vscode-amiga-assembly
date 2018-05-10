@@ -13,18 +13,62 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider {
         //options: vscode.FormattingOptions
         let edits: Array<vscode.TextEdit>;
         edits = [];
+        let asmLinesArray = new Array<ASMLine>();
+        let maxLabelSize = 0;
+        let maxInstructionSize = 0;
+        let maxDataSize = 0;
+        let labelToInstructionDistance = 2;
+        let instructionToDataDistance = 4;
+        let dataToCommentsDistance = 4;
+        // Parse all the lines
         for (var i = 0; i < document.lineCount; i++) {
             const line = document.lineAt(i);
-            let idx = line.firstNonWhitespaceCharacterIndex;
-            if (line.text.charAt(idx) === ';') {
-                // Test if it is a full comment line
-                edits.push(vscode.TextEdit.insert(line.range.start, '42\n'));
+            let asmLine = new ASMLine(line.text);
+            asmLine.vscodeTextLine = line;
+            asmLinesArray.push(asmLine);
+            if (asmLine.instruction.length > 0) {
+                if (maxLabelSize < asmLine.label.length) {
+                    maxLabelSize = asmLine.label.length;
+                }
+                if (maxInstructionSize < asmLine.instruction.length) {
+                    maxInstructionSize = asmLine.instruction.length;
+                }
+                if (maxDataSize < asmLine.data.length) {
+                    maxDataSize = asmLine.data.length;
+                }
+            }
+        }
+        // Make the edits
+        for (let asmLine of asmLinesArray) {
+            if (asmLine.instruction.length > 0) {
+                // Remove all the line
+                edits.push(vscode.TextEdit.delete(asmLine.vscodeTextLine.range));
+
+                let s = this.padEnd(asmLine.label, maxLabelSize + labelToInstructionDistance) + this.padEnd(asmLine.instruction, maxInstructionSize + instructionToDataDistance) + this.padEnd(asmLine.data, maxDataSize + dataToCommentsDistance) + asmLine.comment;
+                edits.push(vscode.TextEdit.insert(asmLine.vscodeTextLine.range.start, s));
             }
         }
         return edits;
     }
-    isCommentLine(line: string): boolean {
-        return (line.trim().charAt(0) === ';');
+    /**
+     * Addind pad at end of string
+     * @param stringToPad String to pad
+     * @param targetLength Length targetted
+     * @return Padded string
+     */
+    padEnd(stringToPad: string, targetLength: number): string {
+        targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
+        let padString = ' ';
+        if (stringToPad.length > targetLength) {
+            return String(stringToPad);
+        }
+        else {
+            targetLength = targetLength - stringToPad.length;
+            if (targetLength > padString.length) {
+                padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+            }
+            return stringToPad + padString.slice(0, targetLength);
+        }
     }
 }
 
@@ -40,6 +84,7 @@ export class ASMLine {
     data: string = "";
     comment: string = "";
     raw: string = "";
+    vscodeTextLine: any;
     parseRegexp: RegExp = /([\.]?[a-zA-Z0-9]+[:]?)?\s+([a-zA-Z0-9]*[\.]?[a-zA-Z]?)\s+([a-zA-Z0-9\.,/>()*+\-#$\s]*)/g;
 
     constructor(line: string) {

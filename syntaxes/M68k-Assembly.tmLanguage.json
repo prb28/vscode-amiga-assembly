@@ -47,10 +47,22 @@
     },
     {
       "name": "meta.section.m68k",
-      "match": "(?i)\\bsection[ \t]+(\"[^\"]+\"|'[^']+'|[^,]+)",
+      "match": "(?i)\bsection\\s+(.[^,]*)\\s*,\\s*(.[^;]+)",
       "captures": {
         "1": {
           "name": "meta.section.name.m68k"
+        },
+        "2": {
+          "name": "meta.section.type.m68k"
+        }
+      }
+    },
+    {
+      "name": "meta.include.m68k",
+      "match": "(?i)\binclude[ \t]+(\"[^\"]+\"|'[^']+'|[^,]+)",
+      "captures": {
+        "1": {
+          "name": "meta.include.name.m68k"
         }
       }
     },
@@ -137,6 +149,14 @@
     {
       "name": "keyword.other.opcode.fpu.bwlsdxp.m68k",
       "match": "(?i)\\b(fabs|fsabs|fdabs|facos|fadd|fsadd|fdadd|fasin|fatan|fatanh|fcmp|fcos|fcosh|fdiv|fsdiv|fddiv|fetox|fetoxm1|fgetexp|fgetman|fint|fintrz|flog10|flog2|flogn|flognp1|fmod|fmove|fsmove|fdmove|fmul|fsmul|fdmul|fneg|fsneg|fdneg|frem|fscale|fsgldiv|fsglmul|fsin|fsinh|fsqrt|fssqrt|fdsqrt|fsub|fssub|fdsub|ftan|ftanh|ftentox|ftwotox)(\\.[bwlsdxp])?\\b"
+    },
+    {
+      "name": "keyword.other.opcode.mem.m68k",
+      "match": "(?i)\\b(dc|dcb|ds)(\\.[bwl])?\\b"
+    },
+    {
+      "name": "keyword.other.asm",
+      "match": "(?i)\\b(include|incdir|section|incbin|org|load|even|section|jumpptr)\\b"
     },
     {
       "name": "invalid.illegal.opcode.m68k",
