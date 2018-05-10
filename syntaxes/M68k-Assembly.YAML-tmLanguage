@@ -14,13 +14,16 @@ patterns:
 - name: comment.line.semicolon
   match: ";[^\n]*\n"
 
-- name: comment.line.asterisk
+- name: comment.block.asterisk
   match: "(^|[ \t])\\*(?![+-])[^\n]*\n"
+
+- name: comment.block.documentation
+  match: ";\*[^\n]*\n"
 
 - name: meta.equate.m68k
   match: "(?i)^([a-zA-Z0-9_][a-zA-Z0-9_\\.]*)(?=([ \t]*=|[ \t]+equ[ \t]+))"
   captures:
-    '1': {name: variable.other.symbol.m68k}
+    '1': {name: variable.other.constant.m68k}
 
 - name: meta.macro.m68k
   match: "(?i)(^([a-zA-Z0-9_\\.]+)(:[ \t]*|[ \t]+)macro|^[ \t]+macro[ \t]+([a-zA-Z0-9_\\.]+))[ \t]*$"
@@ -56,7 +59,7 @@ patterns:
 - name: constant.numeric.decimal.m68k
   match: (?<![a-zA-Z])[+-]?[0-9]+\b
 
-- name: variable.language.register.m68k
+- name: variable.language.m68k
   match: (?i)\b([ad][0-7]|SP|PC|vbr|fp[0-7])\b
 
 - name: keyword.other.opcode.cpu.bl.m68k
@@ -107,8 +110,14 @@ patterns:
 - name: keyword.other.opcode.mem.m68k
   match: (?i)\b(dc|dcb|ds)(\.[bwl])?\b
 
-- name: keyword.other.asm
-  match: (?i)\b(include|incdir|section|incbin|org|load|even|section|jumpptr)\b
+- name: keyword.control.import.m68k
+  match: (?i)\b(include|incdir|incbin)\b
+
+- name: keyword.control.other.m68k
+  match: (?i)\b(section|org|load|even|jumpptr)\b
+
+- name: keyword.operator.assignment.m68k
+  match: (?i)\bequ\b
 
 - name: invalid.illegal.opcode.m68k
   match: (?i)\billegal\b
