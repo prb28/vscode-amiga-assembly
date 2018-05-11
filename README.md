@@ -22,3 +22,17 @@ The assembly language will be formatted with the standard shortcuts :
 - Initial release of Amiga Assembly
 - Editor Highlights
 - Document Formatting
+
+## Misc credits
+### Extensions used for development
+- TextMate Languages from Ben Hockley : https://marketplace.visualstudio.com/items?itemName=Togusa09.tmlanguage
+- Spell Right from Bartosz Antosik : https://marketplace.visualstudio.com/items?itemName=ban.spellright
+- TSLint from egamma : https://marketplace.visualstudio.com/items?itemName=eg2.tslint
+### Dependencies for tests
+- TypeScript : https://www.typescriptlang.org/
+- node : https://nodejs.org/en/
+- tslint : https://palantir.github.io/tslint/
+- chai : http://www.chaijs.com/
+- mocha : https://mochajs.org/
+### Screen capture
+- licecap : https://www.cockos.com/licecap/

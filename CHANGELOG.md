@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 - Documentation hover keywords
+- Format range of document
+- Configurable default spacings
 
 ## [0.2.0] - 2018-05-11
 ### Added
