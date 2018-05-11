@@ -1,15 +1,19 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as formatter from './formatter';
+import { M68kFormatter } from './formatter';
+import { M68kHoverProvider } from './hover';
+
+const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    // Declaring the formatter
+    let disposable = vscode.languages.registerDocumentFormattingEditProvider(AMIGA_ASM_MODE, new M68kFormatter());
+    context.subscriptions.push(disposable);
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    let disposable = vscode.languages.registerDocumentFormattingEditProvider({ scheme: 'file', language: 'm68k' }, new formatter.M68kFormatter());
+    // Declaring the Hover
+    disposable = vscode.languages.registerHoverProvider(AMIGA_ASM_MODE, new M68kHoverProvider());
     context.subscriptions.push(disposable);
 }

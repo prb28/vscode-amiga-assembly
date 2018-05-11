@@ -4,12 +4,11 @@
 //
 
 // The module 'chai' provides assertion methods from node
-import * as chai from 'chai';
+import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
-var expect = chai.expect;
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
