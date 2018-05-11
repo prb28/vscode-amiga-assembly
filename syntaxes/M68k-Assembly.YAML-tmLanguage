@@ -114,7 +114,7 @@ patterns:
   match: (?i)\b(include|incdir|incbin)\b
 
 - name: keyword.control.other.m68k
-  match: (?i)\b(section|org|load|even|jumpptr)\b
+  match: (?i)\b(align|section|org|load|even|jumpptr|end[FPR]?|endfunc|endmain|endproc|endrec|fpu|func|machine|main|mmu|opword|proc|record|set)\b
 
 - name: keyword.operator.assignment.m68k
   match: (?i)\bequ\b
