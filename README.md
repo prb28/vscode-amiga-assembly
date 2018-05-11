@@ -18,7 +18,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 ## Release Notes
 
-### 0.1.0
+### 0.2.0
 - Initial release of Amiga Assembly
 - Editor Highlights
 - Document Formatting
