@@ -8,10 +8,10 @@ import { M68kHoverProvider } from '../hover';
 import { HoverInstruction } from '../parser';
 
 // tslint:disable:no-unused-expression
-describe("Parser Tests", function () {
+describe("Hover Tests", function () {
     it("Should render a command", function () {
         let hp = new M68kHoverProvider();
-        let hoverInstruction = new HoverInstruction("");
+        let hoverInstruction = new HoverInstruction();
         hoverInstruction.instruction = "ADD";
         hoverInstruction.decription = "ADD binary";
         hoverInstruction.syntax = ["Dx,Dy", "Dn,<ea>"];
@@ -21,6 +21,6 @@ describe("Parser Tests", function () {
         hoverInstruction.z = "3";
         hoverInstruction.v = "4";
         hoverInstruction.c = "5";
-        expect(hp.renderHover(hoverInstruction).value).to.be.equal("`ADD[.BW-]` `Dx,Dy` | `Dn,<ea>` _(x:1,n:2,z:3,v:4,c:5)_: ADD binary");
+        expect(hp.renderHover(hoverInstruction).value).to.be.equal("`ADD[.BW-]` `Dx,Dy` | `Dn,<ea>`: **ADD binary**     _(x:1,n:2,z:3,v:4,c:5)_");
     });
 });

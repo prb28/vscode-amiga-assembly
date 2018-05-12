@@ -1,27 +1,11 @@
 import * as vscode from 'vscode';
-import { ASMLine, HoverInstruction } from './parser';
+import { ASMLine, HoverInstruction, HoverInstructionsManager } from './parser';
 
 /**
  * Hover provider class for le assembly language
  */
 export class M68kHoverProvider implements vscode.HoverProvider {
-    static intructionsHoverMap: Map<string, HoverInstruction>;
-    /**
-     * Prepare maps for hover
-     */
-    static prepareMaps() {
-        if (!M68kHoverProvider.intructionsHoverMap) {
-            M68kHoverProvider.intructionsHoverMap = new Map<string, HoverInstruction>();
-            let hoverInstruction = new HoverInstruction("");
-            M68kHoverProvider.intructionsHoverMap.set(hoverInstruction.instruction, hoverInstruction);
-        }
-    }
-    /**
-     * Constructor
-     */
-    constructor() {
-        M68kHoverProvider.prepareMaps();
-    }
+    static hoverInstructionsManager = new HoverInstructionsManager();
     /**
      * Main hover function
      * @param document Document to be formatted
@@ -35,9 +19,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         if (idx > 0) {
             keyInstruction = keyInstruction.substr(0, idx);
         }
-        let hoverInstruction = M68kHoverProvider.intructionsHoverMap.get(keyInstruction.toUpperCase());
-        if (hoverInstruction) {
-            let hoverString = this.renderHover(hoverInstruction);
+        let hoverInstructionList = M68kHoverProvider.hoverInstructionsManager.instructions.get(keyInstruction.toUpperCase());
+        if (hoverInstructionList) {
+            let hoverString = this.renderHover(hoverInstructionList[0]);
             return new vscode.Hover(hoverString);
         }
         return null;
@@ -53,13 +37,15 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         if (hoverInstruction.size.length > 0) {
             s += "[." + hoverInstruction.size + "]";
         }
-        s += "` `" + hoverInstruction.syntax.join("` | `") + "` _(" +
+        s += "` `" + hoverInstruction.syntax.join("` | `") + "`: **" +
+            this.escapeText(hoverInstruction.decription) +
+            "**     _(" +
             "x:" + this.escapeText(hoverInstruction.x) + "," +
             "n:" + this.escapeText(hoverInstruction.n) + "," +
             "z:" + this.escapeText(hoverInstruction.z) + "," +
             "v:" + this.escapeText(hoverInstruction.v) + "," +
             "c:" + this.escapeText(hoverInstruction.c) +
-            ")_: " + this.escapeText(hoverInstruction.decription);
+            ")_";
         return rendered.appendMarkdown(s);
     }
     /**

@@ -1,0 +1,75 @@
+ADD;ADD binary;Dx,Dy|Dn,<ea>|<ea>,Dn;BWL;*;*;*;*;*
+ADDA;ADD binary to An;Rn,An|<ea>,An;-WL;*;*;*;*;*
+ADDI;ADD Immediate;#x,Dn|#x,<ea>;BWL;*;*;*;*;*
+ADDI;ADD Immediate;#x,An;-W;;*;*;*;*;*
+ADDQ;ADD 3-bit immediate;#<1-8>,Dn|<1-8>,<ea>;BWL;*;*;*;*;*	
+ADDQ;ADD 3-bit immediate;#<1-8>,An;-WL;*;*;*;*;*
+ADDX;ADD eXtended;Dy,Dx|-(Ay),-(Ax);BWL;*;*;*;*;*
+AND;Bit-wise AND;Dx,Dy|<ea>,Dn|Dn,<ea>;BWL;-;*;*;0;0
+ANDI;Bit-wise AND with Immediate;#<data>,Dn|#<data>,<ea>;BWL;-;*;*;0;0
+ASL;Arithmetic Shift Left;#<1-8>,Dy|Dx,Dy|<ea>;BWL;*;*;*;*;*
+ASR;Arithmetic Shift Right;...;BWL;*;*;*;*;*
+Bcc;Conditional Branch;Bcc.B <label>|Bcc.W <label>;BW-;*;*;*;*;*
+BCHG;Test a Bit and CHanGe;Dn,<ea>|#<data>,<ea>;B-L;-;-;*;-;-
+BCLR;Test a Bit and CLeaR;...;B-L;-;-;*;-;-
+BSET;Test a Bit and SET;...;B-L;-;-;*;-;-
+BSR;Branch to SubRoutine;BSR.S <label>|BSR.W <label>;BW-;*;*;*;*;*
+BTST;Bit TeST;Dn,<ea>|#<data>,<ea>;B-L;-;-;*;-;-
+CHK;CHecK Dn Against Bounds;<ea>,Dn;-W-;-;*;U;U;U
+CLR;CLeaR;<ea>|Dn;BWL;-;0;1;0;0
+CMP;CoMPare;Dx,Dy|<ea>,Dn;BWL;-;*;*;*;*
+CMPA;CoMPare Address;Rn,An|<ea>,An|#<data>,An;-WL;-;*;*;*;*
+CMPI;CoMPare Immediate;#<data>,Dn|<data>,<ea>;BWL;-;*;*;*;*
+CMPM;CoMPare Memory;(Ay)+,(Ax)+; BWL;-;*;*;*;*
+DBcc;Looping Instruction;DBcc Dn,<label>;-W-;*;*;*;*;*
+DIVS;DIVide Signed;Dx,Dy|<ea>,Dn|#<data>,Dn;-W-;-;*;*;*;0
+DIVU;DIVide Unsigned;Dx,Dy|<ea>,Dn|#<data>,Dn;-W-;-;*;*;*;0
+EOR;Exclusive OR;Dx,Dy|Dn,<ea>;BWL;-;*;*;0;0
+EORI;Exclusive OR Immediate;#<data>,Dn|<data>,<ea>;BWL;-;*;*;0;0
+EXG;Exchange any two registers;Rx,Ry;--L;*;*;*;*;*
+EXT;Sign EXTend;Dn;-WL;-;*;*;0;0
+JMP;JuMP to Affective Address;<ea>;;*;*;*;*;*
+JSR;Jump to SubRoutine;<ea>;;*;*;*;*;*
+LEA;Load Effective Address;<ea>,An;--L;*;*;*;*;*
+LSL;Logical Shift Left;Dx,Dy|#<1-8>,Dy|<ea>;BWL;*;*;*;0;*
+LSR;Logical Shift Right;...;BWL;*;*;*;0;*
+MOVE;Copy value;Dx,Dy;BWL;-;*;*;0;0
+MOVE;Copy value;Rn,Dy;-WL;-;*;*;0;0
+MOVE;Copy value;Dn,<ea>;BWL;-;*;*;0;0
+MOVE;Copy value;<ea>,Dn;BWL;-;*;*;0;0
+MOVE;Copy value;<ea>,<ea>;BWL;-;*;*;0;0
+MOVE;Copy value;#<data>,Dn;BWL;-;*;*;0;0
+MOVE;Copy value;#<data>,<ea>;BWL;-;*;*;0;0
+MOVEA;MOVE Address;Dn,An|<ea>,An|An,<ea>|#<data>,An;-WL;*;*;*;*;*
+MOVE;To CCR;<ea>,CCR;-W-;I;I;I;I;I
+MOVE;To SR;<ea>,SR;-W-;I;I;I;I;I
+MOVE;From SR;SR,<ea>;-W-;*;*;*;*;*
+MOVE;USP to/from Address Register;USP,An|An,USP;--L;*;*;*;*;*
+MOVEM;MOVE Multiple;<register list>,<ea>|<ea>,<register list>;-WL;*;*;*;*;*
+MOVEQ;MOVE 8-bit immediate;#<-128.+127>,Dn;--L;-;*;*;0;0
+MULS;MULtiply Signed;Dx,Dy|<ea>,Dn|#<data>,Dn;-W-;-;*;*;0;0
+MULU;MULtiply Unsigned;Dx,Dy|<ea>,Dn|#<data>,Dn;-W-;-;*;*;0;0
+NEG;NEGate;Dn|<ea>;BWL;*;*;*;*;*
+NEGX;NEGate with eXtend;Dn|<ea>;BWL;*;*;*;*;*
+NOP;No OPeration;NOP;;*;*;*;*;*
+NOT;Form one's complement;Dn|<ea>;BWL;-;*;*;0;0
+OR;Bit-wise OR;<ea>,Dn|Dn,<ea>|Dx,Dy;BWL;-;*;*;0;0
+ORI;Bit-wise OR with Immediate;#<data>,<ea>|#<data>,Dn;BWL;-;*;*;0;0
+ROL;ROtate Left;#<1-8>,Dy|Dx,Dy|<ea>;BWL;-;*;*;0;*
+ROR;ROtate Right;...;BWL;-;*;*;0;*
+ROXL;ROtate Left with eXtend;...;BWL;*;*;*;0;*
+ROXR;ROtate Right with eXtend;...;BWL;*;*;*;0;*
+RTE;ReTurn from Exception;RTE;;I;I;I;I;I
+RTR;ReTurn and Restore;RTR;;I;I;I;I;I
+RTS;ReTurn from Subroutine;RTS;;*;*;*;*;*
+SUB;SUB binary;Dx,Dy|Dn,<ea>|<ea>,Dn;BWL;*;*;*;*;*
+SUBA;SUB binary to An;Rn,An|<ea>,An;-WL;*;*;*;*;*
+SUBI;SUB Immediate;#x,Dn|#x,<ea>;BWL;*;*;*;*;*
+SUBI;SUB Immediate;#x,An;-W;;*;*;*;*;*
+SUBQ;SUB 3-bit immediate;#<1-8>,Dn|<1-8>,<ea>;BWL;*;*;*;*;*	
+SUBQ;SUB 3-bit immediate;#<1-8>,An;-WL;*;*;*;*;*
+SUBX;SUB eXtended;Dy,Dx|-(Ay),-(Ax);BWL;*;*;*;*;*
+SWAP;SWAP words of Dn;Dn;-W-;-;*;*;0;0
+TRAP;Execute TRAP Exception;#<vector>;;*;*;*;*;*
+TRAPV;TRAPV Exception if V-bit Set;TRAPV;;*;*;*;*;*
+TST;TeST for negative or zero;<ea>|Dn;BWL;-;*;*;0;0

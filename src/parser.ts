@@ -1,10 +1,12 @@
-import * as language from './language';
+import { M68kLanguage } from './language';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * Formatter class for le assemble language
  */
 export class ASMLine {
-    static m68kLang = new language.M68kLanguage();
+    static m68kLang = new M68kLanguage();
     static commentLineRegExps = ASMLine.m68kLang.getAllRegExps(/.*comment\.line.*/g);
     static keywordsRegExps = ASMLine.m68kLang.getAllRegExps(/keyword.*/g);
     label: string = "";
@@ -87,21 +89,67 @@ export class ASMLine {
     }
 }
 
-export class HoverInstruction {
-    instruction: string = "MOVE";
-    decription: string = "ADD binary";
-    syntax: string[] = ["Dx,Dy", "Dn,<ea>"];
-    size: string = "BW";
-    x: string = "*";
-    n: string = "*";
-    z: string = "*";
-    v: string = "*";
-    c: string = "*";
-    constructor(csvLine: string) {
-        //this.parse(csvLine);
+/**
+ * Class to manage the instructions
+ */
+export class HoverInstructionsManager {
+    instructions = new Map<String, Array<HoverInstruction>>();
+    constructor() {
+        // Read the instructions file
+        // Creating the relative path to find the test file
+        const syntaxeFilePath = path.join(__dirname, "..", "docs", "intructionsset.csv");
+        var lines = fs.readFileSync(syntaxeFilePath, 'utf8').split('\n');
+        for (let line of lines) {
+            let hi = HoverInstruction.parse(line);
+            if (hi) {
+                let list = this.instructions.get(hi.instruction);
+                if (!list) {
+                    list = new Array<HoverInstruction>();
+                }
+                list.push(hi);
+                this.instructions.set(hi.instruction, list);
+            } else {
+                console.error("Error parsing file 'intructionsset.csv' on line : " + line);
+            }
+        }
     }
-    /*    parse(csvLine: string) {
-            let elements = csvLine.split(";");
-    
-        }*/
+}
+
+/**
+ * Class reprensenting an instruction
+ */
+export class HoverInstruction {
+    instruction: string = "";
+    decription: string = "";
+    syntax: string[] = [];
+    size: string = "";
+    x: string = "";
+    n: string = "";
+    z: string = "";
+    v: string = "";
+    c: string = "";
+    /**
+     * Function to parse a line and create a HoverInstruction
+     * 
+     * @param cvsLine The line to parse
+     * @return HoverInstruction if the parse succeded or null
+     */
+    static parse(csvLine: string): any {
+        let hi = new HoverInstruction();
+        let elements = csvLine.split(";");
+        if (elements.length < 9) {
+            return null;
+        } else {
+            hi.instruction = elements[0];
+            hi.decription = elements[1];
+            hi.syntax = elements[2].split("|");
+            hi.size = elements[3];
+            hi.x = elements[4];
+            hi.n = elements[5];
+            hi.z = elements[6];
+            hi.v = elements[7];
+            hi.c = elements[8];
+            return hi;
+        }
+    }
 }
