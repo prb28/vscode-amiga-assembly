@@ -1,4 +1,5 @@
 import { M68kLanguage } from './language';
+import { Position, Range, TextLine } from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -14,29 +15,48 @@ export class ASMLine {
     data: string = "";
     comment: string = "";
     raw: string = "";
-    vscodeTextLine: any;
-    parseRegexp: RegExp = /([\.]?[a-zA-Z0-9]+[:]?)?\s+([a-zA-Z0-9]*[\.]?[a-zA-Z]?)\s+([a-zA-Z0-9\.,/>()*+\-#$\s]*)/g;
-
-    constructor(line: string) {
+    labelRange: Range = new Range(new Position(0, 0), new Position(0, 0));
+    instructionRange: Range = new Range(new Position(0, 0), new Position(0, 0));
+    dataRange: Range = new Range(new Position(0, 0), new Position(0, 0));
+    commentRange: Range = new Range(new Position(0, 0), new Position(0, 0));
+    vscodeTextLine?: TextLine;
+    /**
+     * Constructor
+     * @param line Text of the line
+     * @param vscodeTextLine Line for vscode
+     */
+    constructor(line: string, vscodeTextLine?: TextLine) {
         this.raw = line;
-        this.parse(line);
+        this.vscodeTextLine = vscodeTextLine;
+        let lineNumber = 0;
+        if (vscodeTextLine) {
+            lineNumber = vscodeTextLine.lineNumber;
+        }
+        this.parse(line, lineNumber);
     }
 
     /**
      * Parse a line
      * @param line Line to parse
+     * @param lineNumber index of the line in document
      */
-    parse(line: string) {
+    parse(line: string, lineNumber: number) {
         let l = line.trim();
+        let leadingSpacesCount = line.search(/\S/);
+        if (leadingSpacesCount < 0) {
+            leadingSpacesCount = 0;
+        }
         // To test the comment line the regexp needs an eol
         if ((l.charAt(0) === ';') || (l.charAt(0) === '*')) {
             this.comment = l;
+            this.commentRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + l.length));
         } else {
             // Extract comments
-            let commentsPos = l.indexOf(';');
-            if (commentsPos >= 0) {
-                this.comment = l.substr(commentsPos);
-                l = l.substr(0, commentsPos).trim();
+            let commentPosInInputLine = line.indexOf(";");
+            if (commentPosInInputLine >= 0) {
+                this.comment = line.substring(commentPosInInputLine).trim();
+                l = line.substring(0, commentPosInInputLine).trim();
+                this.commentRange = new Range(new Position(lineNumber, commentPosInInputLine), new Position(lineNumber, commentPosInInputLine + this.comment.length));
             }
             // find a keywork
             let keyword = this.search(ASMLine.keywordsRegExps, l);
@@ -44,15 +64,24 @@ export class ASMLine {
                 // A keyword has been found
                 // set the keyword
                 this.instruction = keyword[0];
+                let startInInputLine = leadingSpacesCount + keyword.index;
+                let endInInputLine = startInInputLine + this.instruction.length;
+                this.instructionRange = new Range(new Position(lineNumber, startInInputLine), new Position(lineNumber, endInInputLine));
                 if (keyword.index > 0) {
-                    this.label = l.substr(0, keyword.index).trim();
+                    this.label = l.substring(0, keyword.index).trim();
+                    this.labelRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + this.label.length));
                 }
-                let endPos = keyword.index + keyword[0].length;
-                this.data = l.substr(endPos).trim();
+                let endInTrimLine = keyword.index + keyword[0].length;
+                this.data = l.substring(endInTrimLine).trim();
+                if (this.data.length > 0) {
+                    startInInputLine = line.indexOf(this.data);
+                    this.dataRange = new Range(new Position(lineNumber, startInInputLine), new Position(lineNumber, startInInputLine + this.data.length));
+                }
             } else {
                 // no keyword
                 // Consider it is a label
                 this.label = l;
+                this.labelRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + this.label.length));
             }
         }
     }
@@ -121,7 +150,7 @@ export class HoverInstructionsManager {
 export class HoverInstruction {
     instruction: string = "";
     decription: string = "";
-    syntax: string[] = [];
+    syntax: string = "";
     size: string = "";
     x: string = "";
     n: string = "";
@@ -142,8 +171,8 @@ export class HoverInstruction {
         } else {
             hi.instruction = elements[0];
             hi.decription = elements[1];
-            hi.syntax = elements[2].split("|");
-            hi.size = elements[3];
+            hi.syntax = elements[2];
+            hi.size = elements[3].replace("-", "");
             hi.x = elements[4];
             hi.n = elements[5];
             hi.z = elements[6];

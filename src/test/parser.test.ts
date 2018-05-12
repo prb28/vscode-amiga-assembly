@@ -5,7 +5,7 @@
 
 import { expect } from 'chai';
 import { ASMLine, HoverInstruction, HoverInstructionsManager } from '../parser';
-
+import { Position, Range } from 'vscode';
 
 // tslint:disable:no-unused-expression
 describe("Parser Tests", function () {
@@ -48,6 +48,19 @@ describe("Parser Tests", function () {
             expect(asmLine.data).to.be.equal("#mempos,d1");
             expect(asmLine.comment).to.be.equal(";mycomment");
         });
+        it("Should retrieve the positions of the elements in the line", function () {
+            let asmLine = new ASMLine("   \t  ; mycomment   ");
+            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 6), new Position(0, 17)));
+            asmLine = new ASMLine("   \t  * mycomment   ");
+            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 6), new Position(0, 17)));
+            asmLine = new ASMLine("\t.mylabel\t   move.l #mempos,d1     ; mycomment   ");
+            expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 1), new Position(0, 9)));
+            expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 13), new Position(0, 19)));
+            expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 20), new Position(0, 30)));
+            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 35), new Position(0, 46)));
+            asmLine = new ASMLine("mylabel");
+            expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
+        });
         it("Should parse a line without label", function () {
             let asmLine = new ASMLine("\t\tmove.l #mempos,d1     ; mycomment");
             expect(asmLine.label).to.be.empty;
@@ -73,7 +86,7 @@ describe("Parser Tests", function () {
                 let hi = list[0];
                 expect(hi.instruction).to.be.equal("ADD");
                 expect(hi.decription).to.be.equal("ADD binary");
-                expect(hi.syntax).to.have.members(["Dx,Dy", "Dn,<ea>", "<ea>,Dn"]);
+                expect(hi.syntax).to.be.equal("Dx,Dy");
                 expect(hi.size).to.be.equal("BWL");
                 expect(hi.x).to.be.equal("*");
                 expect(hi.n).to.be.equal("*");
@@ -87,8 +100,8 @@ describe("Parser Tests", function () {
                 let hi = list[1];
                 expect(hi.instruction).to.be.equal("MOVE");
                 expect(hi.decription).to.be.equal("Copy value");
-                expect(hi.syntax).to.have.members(["Rn,Dy"]);
-                expect(hi.size).to.be.equal("-WL");
+                expect(hi.syntax).to.be.equal("Rn,Dy");
+                expect(hi.size).to.be.equal("WL");
                 expect(hi.x).to.be.equal("-");
                 expect(hi.n).to.be.equal("*");
                 expect(hi.z).to.be.equal("*");
@@ -97,10 +110,10 @@ describe("Parser Tests", function () {
             }
         });
         it("Should parse a correct line", function () {
-            let hi = HoverInstruction.parse("ADD;ADD binary;Dx,Dy|Dn,<ea>|<ea>,Dn;BWL;1;2;3;4;5");
+            let hi = HoverInstruction.parse("ADD;ADD binary;Dx,Dy;BWL;1;2;3;4;5");
             expect(hi.instruction).to.be.equal("ADD");
             expect(hi.decription).to.be.equal("ADD binary");
-            expect(hi.syntax).to.have.members(["Dx,Dy", "Dn,<ea>", "<ea>,Dn"]);
+            expect(hi.syntax).to.be.equal("Dx,Dy");
             expect(hi.size).to.be.equal("BWL");
             expect(hi.x).to.be.equal("1");
             expect(hi.n).to.be.equal("2");

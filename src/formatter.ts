@@ -24,8 +24,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider {
         // Parse all the lines
         for (var i = 0; i < document.lineCount; i++) {
             const line = document.lineAt(i);
-            let asmLine = new ASMLine(line.text);
-            asmLine.vscodeTextLine = line;
+            let asmLine = new ASMLine(line.text, line);
             asmLinesArray.push(asmLine);
             if (asmLine.instruction.length > 0) {
                 if (maxLabelSize < asmLine.label.length) {
@@ -43,10 +42,11 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider {
         for (let asmLine of asmLinesArray) {
             if (asmLine.instruction.length > 0) {
                 // Remove all the line
-                edits.push(vscode.TextEdit.delete(asmLine.vscodeTextLine.range));
-
-                let s = this.padEnd(asmLine.label, maxLabelSize + labelToInstructionDistance) + this.padEnd(asmLine.instruction, maxInstructionSize + instructionToDataDistance) + this.padEnd(asmLine.data, maxDataSize + dataToCommentsDistance) + asmLine.comment;
-                edits.push(vscode.TextEdit.insert(asmLine.vscodeTextLine.range.start, s));
+                if (asmLine.vscodeTextLine) {
+                    edits.push(vscode.TextEdit.delete(asmLine.vscodeTextLine.range));
+                    let s = this.padEnd(asmLine.label, maxLabelSize + labelToInstructionDistance) + this.padEnd(asmLine.instruction, maxInstructionSize + instructionToDataDistance) + this.padEnd(asmLine.data, maxDataSize + dataToCommentsDistance) + asmLine.comment;
+                    edits.push(vscode.TextEdit.insert(asmLine.vscodeTextLine.range.start, s));
+                }
             }
         }
         return edits;
