@@ -5,9 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- Documentation hover keywords
 - Format range of document
 - Configurable default spacings
+
+## [0.3.0] - 2018-05-14
+### Added
+- Documentation hover keywords (instructions and register)
 
 ## [0.2.0] - 2018-05-11
 ### Added
