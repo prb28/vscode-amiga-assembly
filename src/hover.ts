@@ -1,11 +1,14 @@
 import * as vscode from 'vscode';
-import { ASMLine, HoverInstruction, HoverInstructionsManager } from './parser';
+import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager } from './parser';
 
 /**
  * Hover provider class for le assembly language
  */
 export class M68kHoverProvider implements vscode.HoverProvider {
     static hoverInstructionsManager = new HoverInstructionsManager();
+    static hoverRegistersManager = new HoverRegistersManager();
+    registerAddressRegExp = /\$(DFF[\dA-Z]{3})/;
+    registerNameRegExp = /([A-Z]{6,})/g;
     /**
      * Main hover function
      * @param document Document to be formatted
@@ -15,15 +18,42 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         // Parse the line
         let line = document.lineAt(position.line);
         let asmLine = new ASMLine(line.text, line);
-        let keyInstruction = asmLine.instruction;
-        let idx = keyInstruction.indexOf('.');
-        if (idx > 0) {
-            keyInstruction = keyInstruction.substr(0, idx);
-        }
-        let hoverInstructionList = M68kHoverProvider.hoverInstructionsManager.instructions.get(keyInstruction.toUpperCase());
-        if (hoverInstructionList) {
-            let hoverRendered = this.renderHoverList(hoverInstructionList);
-            return new vscode.Hover(hoverRendered, asmLine.instructionRange);
+        // Detect where is the cursor
+        if (asmLine.instructionRange && asmLine.instructionRange.contains(position) && (asmLine.instruction.length > 0)) {
+            let keyInstruction = asmLine.instruction;
+            let idx = keyInstruction.indexOf('.');
+            if (idx > 0) {
+                keyInstruction = keyInstruction.substr(0, idx);
+            }
+            let hoverInstructionList = M68kHoverProvider.hoverInstructionsManager.instructions.get(keyInstruction.toUpperCase());
+            if (hoverInstructionList) {
+                let hoverRendered = this.renderHoverList(hoverInstructionList);
+                return new vscode.Hover(hoverRendered, asmLine.instructionRange);
+            }
+        } else if (asmLine.dataRange && asmLine.dataRange.contains(position) && (asmLine.data.length > 0)) {
+            // check if it has a register address
+            let data = asmLine.data.toUpperCase();
+            let match = this.registerAddressRegExp.exec(data);
+            if (match) {
+                let hr = M68kHoverProvider.hoverRegistersManager.registersByAddress.get(match[1]);
+                if (hr) {
+                    let range = asmLine.dataRange;
+                    let newStart = range.start.with(undefined, range.start.character + match.index);
+                    let newEnd = range.end.with(undefined, range.start.character + match.index + match[1].length + 1);
+                    return new vscode.Hover(hr.description, asmLine.dataRange.with(newStart, newEnd));
+                }
+            } else {
+                let match = this.registerNameRegExp.exec(data);
+                if (match) {
+                    let hr = M68kHoverProvider.hoverRegistersManager.registersByName.get(match[1]);
+                    if (hr) {
+                        let range = asmLine.dataRange;
+                        let newStart = range.start.with(undefined, range.start.character + match.index);
+                        let newEnd = range.end.with(undefined, range.start.character + match.index + match[1].length);
+                        return new vscode.Hover(hr.description, asmLine.dataRange.with(newStart, newEnd));
+                    }
+                }
+            }
         }
         return null;
     }

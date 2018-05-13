@@ -126,8 +126,8 @@ export class HoverInstructionsManager {
     constructor() {
         // Read the instructions file
         // Creating the relative path to find the test file
-        const syntaxeFilePath = path.join(__dirname, "..", "docs", "intructionsset.csv");
-        var lines = fs.readFileSync(syntaxeFilePath, 'utf8').split('\n');
+        const filePath = path.join(__dirname, "..", "docs", "intructionsset.csv");
+        var lines = fs.readFileSync(filePath, 'utf8').split('\n');
         for (let line of lines) {
             let hi = HoverInstruction.parse(line);
             if (hi) {
@@ -180,5 +180,52 @@ export class HoverInstruction {
             hi.c = elements[8];
             return hi;
         }
+    }
+}
+
+/**
+ * Class to manage the registers
+ */
+export class HoverRegistersManager {
+    registersByName = new Map<String, HoverRegister>();
+    registersByAddress = new Map<String, HoverRegister>();
+    constructor() {
+        // Read the registers file
+        // Creating the relative path to find the test file
+        const dirPath = path.join(__dirname, "..", "docs", "hardware");
+        fs.readdirSync(dirPath).forEach(filename => {
+            if (filename.endsWith(".md")) {
+                let filePath = path.join(dirPath, filename);
+                let description = fs.readFileSync(filePath, 'utf8');
+                let elms = filename.replace(".md", "").split("_");
+                if (elms.length === 2) {
+                    let name = elms[1].toUpperCase();
+                    let address = elms[0].toUpperCase();
+                    let hr = new HoverRegister(address, name, description);
+                    this.registersByAddress.set(address, hr);
+                    this.registersByName.set(name, hr);
+                }
+            }
+        });
+    }
+}
+
+/**
+ * Class reprensenting a register
+ */
+export class HoverRegister {
+    address: string;
+    name: string;
+    description: string;
+    /**
+     * Contructor
+     * @param address address of the register 
+     * @param name Name
+     * @param description description in markdown
+     */
+    constructor(address: string, name: string, description: string) {
+        this.address = address;
+        this.name = name;
+        this.description = description;
     }
 }

@@ -4,7 +4,7 @@
 //
 
 import { expect } from 'chai';
-import { ASMLine, HoverInstruction, HoverInstructionsManager } from '../parser';
+import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager } from '../parser';
 import { Position, Range } from 'vscode';
 
 // tslint:disable:no-unused-expression
@@ -76,7 +76,7 @@ describe("Parser Tests", function () {
             expect(asmLine.comment).to.be.empty;
         });
     });
-    context("Hover file parsing", function () {
+    context("Hover instruction file parsing", function () {
         it("Should read the file correctly", function () {
             let manager = new HoverInstructionsManager();
             expect(manager.instructions.size).to.be.equal(61);
@@ -125,6 +125,22 @@ describe("Parser Tests", function () {
             let hi = HoverInstruction.parse("ADD;ADD binary");
             expect(hi).to.be.null;
         });
-
+    });
+    context.only("Hover register file parsing", function () {
+        it("Should read the files correctly", function () {
+            let manager = new HoverRegistersManager();
+            expect(manager.registersByName.size).to.be.equal(79);
+            expect(manager.registersByAddress.size).to.be.equal(79);
+            let registerByName = manager.registersByName.get("ADKCONR");
+            let registerByAddress = manager.registersByAddress.get("DFF010");
+            expect(registerByName).to.not.be.undefined;
+            expect(registerByAddress).to.not.be.undefined;
+            if (registerByName) {
+                expect(registerByName.name).to.be.equals("ADKCONR");
+                expect(registerByName.address).to.be.equals("DFF010");
+                expect(registerByName.description).to.contains("control bit.determines");
+            }
+            expect(registerByName).to.be.eql(registerByAddress);
+        });
     });
 });
