@@ -16,7 +16,16 @@ The assembly language will be formatted with the standard shortcuts :
 - or Ctrl + Shift + P (or Command + Shift + P on Mac), and then search for "Format Document".
 ![Formatting screenshot](images/formatting.gif)
 
+### Contextual documentation 
+- On passing over an assembly command a short documentation will apear.
+- On passing over a register address or name a short documentation will apear.
+![Tooltip for instruction screenshot](images/hover.gif)
+
+
 ## Release Notes
+
+### 0.3.0
+- Short documentation as hover over the commands and registers
 
 ### 0.2.0
 - Initial release of Amiga Assembly
@@ -24,15 +33,18 @@ The assembly language will be formatted with the standard shortcuts :
 - Document Formatting
 
 ## Misc credits
+### Documentation sources
+- Amiga development: http://amiga-dev.wikidot.com/information:hardware
+- M68k instruction set: http://users.encs.concordia.ca/~aagarwal/coen311/motorola68000.txt
 ### Extensions used for development
-- TextMate Languages from Ben Hockley : https://marketplace.visualstudio.com/items?itemName=Togusa09.tmlanguage
-- Spell Right from Bartosz Antosik : https://marketplace.visualstudio.com/items?itemName=ban.spellright
-- TSLint from egamma : https://marketplace.visualstudio.com/items?itemName=eg2.tslint
+- TextMate Languages from Ben Hockley: https://marketplace.visualstudio.com/items?itemName=Togusa09.tmlanguage
+- Spell Right from Bartosz Antosik: https://marketplace.visualstudio.com/items?itemName=ban.spellright
+- TSLint from egamma: https://marketplace.visualstudio.com/items?itemName=eg2.tslint
 ### Dependencies for tests
-- TypeScript : https://www.typescriptlang.org/
-- node : https://nodejs.org/en/
-- tslint : https://palantir.github.io/tslint/
-- chai : http://www.chaijs.com/
-- mocha : https://mochajs.org/
+- TypeScript: https://www.typescriptlang.org/
+- node: https://nodejs.org/en/
+- tslint: https://palantir.github.io/tslint/
+- chai: http://www.chaijs.com/
+- mocha: https://mochajs.org/
 ### Screen capture
-- licecap : https://www.cockos.com/licecap/
+- licecap: https://www.cockos.com/licecap/
