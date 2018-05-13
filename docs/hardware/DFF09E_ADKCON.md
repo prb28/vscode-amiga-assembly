@@ -1,4 +1,4 @@
-**Audio, Disk, UART Control Read**
+**Audio, Disk, UART Control Write**
 
 |Bit| Function| Description  |
 |---|---|---  |
