@@ -13,6 +13,10 @@ export function activate(context: vscode.ExtensionContext) {
     let disposable = vscode.languages.registerDocumentFormattingEditProvider(AMIGA_ASM_MODE, new M68kFormatter());
     context.subscriptions.push(disposable);
 
+    // Formatter for a range in document
+    disposable = vscode.languages.registerDocumentRangeFormattingEditProvider(AMIGA_ASM_MODE, new M68kFormatter());
+    context.subscriptions.push(disposable);
+
     // Declaring the Hover
     disposable = vscode.languages.registerHoverProvider(AMIGA_ASM_MODE, new M68kHoverProvider());
     context.subscriptions.push(disposable);

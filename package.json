@@ -53,7 +53,28 @@
                 "scopeName": "source.asm.m68k",
                 "path": "./syntaxes/M68k-Assembly.tmLanguage.json"
             }
-        ]
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Amiga Assembly",
+            "properties": {
+                "amiga-assembly.format.labelToInstructionDistance": {
+                    "type": "integer",
+                    "default": 2,
+                    "description": "Specifies the distance between a label and an instruction."
+                },
+                "amiga-assembly.format.instructionToDataDistance": {
+                    "type": "integer",
+                    "default": 4,
+                    "description": "Specifies the distance between an instruction and the data."
+                },
+                "amiga-assembly.format.dataToCommentsDistance": {
+                    "type": "integer",
+                    "default": 4,
+                    "description": "Specifies the distance between the data and the comment."
+                }
+            }
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

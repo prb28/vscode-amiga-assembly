@@ -9,12 +9,20 @@ Amiga Assembly for Visual Studio Code is a extension to support assembly languag
 This feature is based on the work of Steve Saunders for Sublime Text m68k extension, it's available at https://github.com/stevenjs/M68k-Assembly. Some keywords have been added to be more accurate with the Amiga assembly.
 
 ### Document Formatting
+#### Format a document
 The assembly language will be formatted with the standard shortcuts :
 - On Windows Shift + Alt + F
 - On Mac Shift + Option + F
 - On Ubuntu Ctrl + Shift + I
 - or Ctrl + Shift + P (or Command + Shift + P on Mac), and then search for "Format Document".
 ![Formatting screenshot](images/formatting.gif)
+#### Format a selection
+![Formatting screenshot](images/formattingrange.gif)
+#### Configure spacing between elements
+
+|label|spacing|instruction|spacing|data|spacing|comment|
+|-----|-----|-----|-----|-----|-----|-----|
+|`mylabel`|**amiga-assembly.format.labelToInstructionDistance**|`move.l`|**amiga-assembly.format.instructionToDataDistance**|`d0,a0`|**amiga-assembly.format.dataToCommentsDistance**|`; mycomment`|
 
 ### Contextual documentation 
 - On passing over an assembly command a short documentation will apear.
@@ -23,6 +31,9 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+### 0.4.0
+- Format selection of document
+- Configurable default spacings
 
 ### 0.3.0
 - Short documentation as hover over the commands and registers

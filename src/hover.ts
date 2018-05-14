@@ -25,6 +25,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             if (idx > 0) {
                 keyInstruction = keyInstruction.substr(0, idx);
             }
+            if (token.isCancellationRequested) {
+                return null;
+            }
             let hoverInstructionList = M68kHoverProvider.hoverInstructionsManager.instructions.get(keyInstruction.toUpperCase());
             if (hoverInstructionList) {
                 let hoverRendered = this.renderHoverList(hoverInstructionList);
@@ -33,6 +36,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         } else if (asmLine.dataRange && asmLine.dataRange.contains(position) && (asmLine.data.length > 0)) {
             // check if it has a register address
             let data = asmLine.data.toUpperCase();
+            if (token.isCancellationRequested) {
+                return null;
+            }
             let match = this.registerAddressRegExp.exec(data);
             if (match) {
                 let hr = M68kHoverProvider.hoverRegistersManager.registersByAddress.get(match[1]);
@@ -43,6 +49,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     return new vscode.Hover(hr.description, asmLine.dataRange.with(newStart, newEnd));
                 }
             } else {
+                if (token.isCancellationRequested) {
+                    return null;
+                }
                 let match = this.registerNameRegExp.exec(data);
                 if (match) {
                     let hr = M68kHoverProvider.hoverRegistersManager.registersByName.get(match[1]);
@@ -57,6 +66,11 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         }
         return null;
     }
+
+    /**
+     * Rendering a list of instructions
+     * @param hoverInstructionList Instructions list
+     */
     renderHoverList(hoverInstructionList: Array<HoverInstruction>): Array<vscode.MarkdownString> {
         let rendered = new Array<vscode.MarkdownString>();
         let firstInst = hoverInstructionList[0];
@@ -67,6 +81,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         }
         return rendered;
     }
+
     /**
      * Renders an intruction
      * @param intruction Intruction hover rendered
@@ -87,6 +102,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             ")_";
         return rendered.appendMarkdown(s);
     }
+
     /**
      * Escapes the text to enter in markdown
      * @param text Text to escape
