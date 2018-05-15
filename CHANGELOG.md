@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.4.0] - 2018-05-14
 ### Added
 - Format selection of document
+- Format on typing
 - Configurable default spacings
 
 ## [0.3.0] - 2018-05-14

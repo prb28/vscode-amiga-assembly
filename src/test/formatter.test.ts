@@ -10,7 +10,7 @@ import { TextEdit, Range, Position } from 'vscode';
 
 // tslint:disable:no-unused-expression
 describe("Formatter Tests", function () {
-    it("Should format full line", function () {
+    it("Should format a full line", function () {
         let f = new M68kFormatter();
         let asmLine = new ASMLine("\t.mylabel\t   move.l #mempos,d1        ; mycomment   ");
         let edits: TextEdit[] = f.computeEditsForLine(asmLine, 9, 2, 7, 4, 11, 4);
@@ -38,5 +38,26 @@ describe("Formatter Tests", function () {
         i = 0;
         expect(edits.length).to.be.equal(1);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 4)), " ".repeat(11)));
+    });
+    it("Should format a line on typing", function () {
+        let f = new M68kFormatter();
+        let asmLine = new ASMLine(".mylabel ");
+        let edits: TextEdit[] = f.computeEditsForLineOnType(asmLine, 9, 2, 7, 4, 11, 4, asmLine.end);
+        let i = 0;
+        expect(edits.length).to.be.equal(0);
+
+        asmLine = new ASMLine("\t   move.l ");
+        edits = f.computeEditsForLineOnType(asmLine, 9, 2, 7, 4, 11, 4, asmLine.end);
+        i = 0;
+        expect(edits[i++]).to.be.eql(TextEdit.insert(new Position(0, 10), " ".repeat(4)));
+
+        asmLine = new ASMLine("\t.mylabel\t   move.l #mempos,d1        ;");
+        edits = f.computeEditsForLineOnType(asmLine, 9, 2, 7, 4, 11, 4, asmLine.end);
+        i = 0;
+        expect(edits.length).to.be.equal(4);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 30), new Position(0, 38)), " ".repeat(5)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 19), new Position(0, 20)), " ".repeat(5)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 9), new Position(0, 13)), " ".repeat(3)));
+        expect(edits[i++]).to.be.eql(TextEdit.delete(new Range(new Position(0, 0), new Position(0, 1))));
     });
 });

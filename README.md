@@ -18,6 +18,16 @@ The assembly language will be formatted with the standard shortcuts :
 ![Formatting screenshot](images/formatting.gif)
 #### Format a selection
 ![Formatting screenshot](images/formattingrange.gif)
+#### Format on typing
+- Activate option formatOnType in the settings
+```
+{
+    ...
+    "editor.formatOnType": true,
+    ...
+}
+```
+![Formatting screenshot](images/formattingontype.gif)
 #### Configure spacing between elements
 
 |label|spacing|instruction|spacing|data|spacing|comment|
@@ -33,6 +43,7 @@ The assembly language will be formatted with the standard shortcuts :
 ## Release Notes
 ### 0.4.0
 - Format selection of document
+- Format on typing
 - Configurable default spacings
 
 ### 0.3.0

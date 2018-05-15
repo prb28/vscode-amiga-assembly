@@ -15,6 +15,8 @@ export class ASMLine {
     data: string = "";
     comment: string = "";
     raw: string = "";
+    start: Position;
+    end: Position;
     spacesBeforeLabelRange: Range;
     labelRange: Range;
     spacesLabelToInstructionRange: Range;
@@ -36,6 +38,8 @@ export class ASMLine {
         if (vscodeTextLine) {
             lineNumber = vscodeTextLine.lineNumber;
         }
+        this.start = new Position(lineNumber, 0);
+        this.end = new Position(lineNumber, line.length);
         this.spacesBeforeLabelRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
         this.labelRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
         this.spacesLabelToInstructionRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));

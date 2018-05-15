@@ -66,6 +66,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
         if (!localRange) {
             localRange = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(document.lineCount - 1, 0));
         }
+        let onTypeAsmLine: any;
         // Parse all the lines
         for (var i = localRange.start.line; i <= localRange.end.line; i++) {
             if (token.isCancellationRequested) {
@@ -73,7 +74,9 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
             }
             const line = document.lineAt(i);
             let asmLine = new ASMLine(line.text, line);
-            if ((!position) || (i == position.line)) {
+            if (position && (i === position.line)) {
+                onTypeAsmLine = asmLine;
+            } else {
                 asmLinesArray.push(asmLine);
             }
             if (asmLine.instruction.length > 0) {
@@ -88,8 +91,12 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                 }
             }
         }
-        // Make the edits
-        return this.computeEdits(asmLinesArray, maxLabelSize, labelToInstructionDistance, maxInstructionSize, instructionToDataDistance, maxDataSize, dataToCommentsDistance, token);
+        // Compute the edits
+        if (onTypeAsmLine && position) {
+            return this.computeEditsForLineOnType(onTypeAsmLine, maxLabelSize, labelToInstructionDistance, maxInstructionSize, instructionToDataDistance, maxDataSize, dataToCommentsDistance, position);
+        } else {
+            return this.computeEdits(asmLinesArray, maxLabelSize, labelToInstructionDistance, maxInstructionSize, instructionToDataDistance, maxDataSize, dataToCommentsDistance, token);
+        }
     }
 
     /**
@@ -121,6 +128,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @param instructionToDataDistance Distance between an instruction and the data
      * @param maxDataSize Max data size
      * @param dataToCommentsDistance Distance between the data a comment
+     * @param token Cacellation tocken
      * @return List of edits
      */
     public computeEdits(asmLinesArray: Array<ASMLine>, maxLabelSize: number, labelToInstructionDistance: number, maxInstructionSize: number, instructionToDataDistance: number, maxDataSize: number, dataToCommentsDistance: number, token: vscode.CancellationToken): vscode.TextEdit[] {
@@ -173,7 +181,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                 edits.push(vscode.TextEdit.delete(asmLine.spacesBeforeLabelRange));
             } else {
                 s = this.getEndPad("", maxLabelSize + labelToInstructionDistance);
-                range = new vscode.Range(asmLine.labelRange.start, asmLine.instructionRange.start);
+                range = new vscode.Range(asmLine.start, asmLine.instructionRange.start);
                 edits.push(vscode.TextEdit.replace(range, s));
             }
         }
@@ -186,7 +194,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @param targetLength Length targetted
      * @return Padding string
      */
-    getEndPad(stringToPad: string, targetLength: number): string {
+    private getEndPad(stringToPad: string, targetLength: number): string {
         targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
         let padString = ' ';
         if (stringToPad.length > targetLength) {
@@ -199,5 +207,35 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
             }
             return padString.slice(0, targetLength);
         }
+    }
+
+    /**
+     * Compute the edits to format the document
+     * @param asmLinesArray Array of lines
+     * @param token Cancellation tocken
+     * @param maxLabelSize Max label size
+     * @param labelToInstructionDistance Distance between a label and an instruction
+     * @param maxInstructionSize Max instruction size
+     * @param instructionToDataDistance Distance between an instruction and the data
+     * @param maxDataSize Max data size
+     * @param dataToCommentsDistance Distance between the data a comment
+     * @param position Editing position
+     * @return List of edits
+     */
+    public computeEditsForLineOnType(asmLine: ASMLine, maxLabelSize: number, labelToInstructionDistance: number, maxInstructionSize: number, instructionToDataDistance: number, maxDataSize: number, dataToCommentsDistance: number, position: vscode.Position): vscode.TextEdit[] {
+        let edits = new Array<vscode.TextEdit>();
+        if (asmLine.instruction.length > 0) {
+            let s: string;
+            if (position.isAfter(asmLine.instructionRange.end)) {
+                if (asmLine.data.length <= 0) {
+                    s = this.getEndPad(asmLine.instruction, maxInstructionSize + instructionToDataDistance - 1);
+                    edits.push(vscode.TextEdit.insert(asmLine.instructionRange.end, s));
+                    return edits;
+                }
+            }
+            // Call standard format
+            edits = this.computeEditsForLine(asmLine, maxLabelSize, labelToInstructionDistance, maxInstructionSize, instructionToDataDistance, maxDataSize, dataToCommentsDistance);
+        }
+        return edits;
     }
 }
