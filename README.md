@@ -70,3 +70,5 @@ The assembly language will be formatted with the standard shortcuts :
 - mocha: https://mochajs.org/
 ### Screen capture
 - licecap: https://www.cockos.com/licecap/
+### Alternatives
+- m68k vscode plugin from Steven Tattersall: https://marketplace.visualstudio.com/items?itemName=steventattersall.m68k
