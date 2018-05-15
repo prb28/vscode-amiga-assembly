@@ -1,6 +1,7 @@
 **/tsconfig.json
 .git
 .gitignore
+.travis*
 *.vsix
 .vscode/**
 typings/**
