@@ -1,5 +1,6 @@
-# Amiga Assembly for Visual Studio Code
+[![Build Status](https://travis-ci.org/prb28/vscode-amiga-assembly.svg?branch=master)](https://travis-ci.org/prb28/vscode-amiga-assembly)
 
+# Amiga Assembly for Visual Studio Code
 Amiga Assembly for Visual Studio Code is a extension to support assembly language for the Amiga Motorolla 68000 machines and emulators.
 
 
