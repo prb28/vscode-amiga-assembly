@@ -5,7 +5,7 @@
 
 import { expect } from 'chai';
 import { M68kHoverProvider } from '../hover';
-import { HoverInstruction } from '../parser';
+import { HoverInstruction, ASMLine } from '../parser';
 
 // tslint:disable:no-unused-expression
 describe("Hover Tests", function () {
@@ -22,5 +22,20 @@ describe("Hover Tests", function () {
         hoverInstruction.v = "4";
         hoverInstruction.c = "5";
         expect(hp.renderHover(hoverInstruction).value).to.be.equal("`ADD[.BW]` `Dx,Dy` _(x:1,n:2,z:3,v:4,c:5)_");
+    });
+    it("Should render a register hover", function () {
+        let asmLine = new ASMLine("\t.mylabel\t   move.l $dff180,d1        ; mycomment   ");
+        let hp = new M68kHoverProvider();
+        let hover = hp.renderRegisterHover(asmLine);
+        expect(hover).to.not.be.null;
+        if (hover) {
+            expect(hover.contents[0]).to.contain("Color");
+        }
+        asmLine = new ASMLine("\t.mylabel\t   move.l COlor00,d1        ; mycomment   ");
+        hover = hp.renderRegisterHover(asmLine);
+        expect(hover).to.not.be.null;
+        if (hover) {
+            expect(hover.contents[0]).to.contain("Color");
+        }
     });
 });

@@ -33,12 +33,21 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 let hoverRendered = this.renderHoverList(hoverInstructionList);
                 return new vscode.Hover(hoverRendered, asmLine.instructionRange);
             }
-        } else if (asmLine.dataRange && asmLine.dataRange.contains(position) && (asmLine.data.length > 0)) {
+        } else if (asmLine.dataRange && asmLine.dataRange.contains(position)) {
+            return this.renderRegisterHover(asmLine);
+        }
+        return null;
+    }
+
+    /**
+     * Renders a Hover for a register
+     * @param asmLine Line containing the register
+     * @return Hover
+     */
+    public renderRegisterHover(asmLine: ASMLine): vscode.Hover | null {
+        if (asmLine.data.length > 0) {
             // check if it has a register address
             let data = asmLine.data.toUpperCase();
-            if (token.isCancellationRequested) {
-                return null;
-            }
             let match = this.registerAddressRegExp.exec(data);
             if (match) {
                 let hr = M68kHoverProvider.hoverRegistersManager.registersByAddress.get(match[1]);
@@ -49,9 +58,6 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     return new vscode.Hover(hr.description, asmLine.dataRange.with(newStart, newEnd));
                 }
             } else {
-                if (token.isCancellationRequested) {
-                    return null;
-                }
                 let match = this.registerNameRegExp.exec(data);
                 if (match) {
                     let hr = M68kHoverProvider.hoverRegistersManager.registersByName.get(match[1]);
