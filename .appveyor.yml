@@ -1,0 +1,14 @@
+environment:
+  ELECTRON_RUN_AS_NODE: 1
+  VSCODE_BUILD_VERBOSE: true
+
+install:
+  - ps: Install-Product node 10.0.0 x64
+  - npm install -g npm@4 --silent
+
+build_script:
+  - npm install
+  - npm run vscode:prepublish
+
+test_script:
+- npm test
