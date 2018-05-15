@@ -14,7 +14,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @param token token to cancel
      * @return edits
      */
-    provideDocumentFormattingEdits(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken): vscode.TextEdit[] {
+    provideDocumentFormattingEdits(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TextEdit[]> {
         return this.format(document, options, token);
     }
 
@@ -26,7 +26,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @param token token to cancel
      * @return edits
      */
-    public provideDocumentRangeFormattingEdits(document: vscode.TextDocument, range: vscode.Range, options: vscode.FormattingOptions, token: vscode.CancellationToken): vscode.TextEdit[] {
+    public provideDocumentRangeFormattingEdits(document: vscode.TextDocument, range: vscode.Range, options: vscode.FormattingOptions, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TextEdit[]> {
         return this.format(document, options, token, range);
     }
 
@@ -40,7 +40,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @return edits
      */
     public provideOnTypeFormattingEdits(document: vscode.TextDocument, position: vscode.Position,
-        ch: string, options: vscode.FormattingOptions, token: vscode.CancellationToken): vscode.TextEdit[] {
+        ch: string, options: vscode.FormattingOptions, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TextEdit[]> {
         return this.format(document, options, token, undefined, position);
     }
 
@@ -53,7 +53,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @param position in case of on type format
      * @return edits
      */
-    format(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken, range?: vscode.Range, position?: vscode.Position): vscode.TextEdit[] {
+    format(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken, range?: vscode.Range, position?: vscode.Position): vscode.ProviderResult<vscode.TextEdit[]> {
         let asmLinesArray = new Array<ASMLine>();
         let maxLabelSize = 0;
         let maxInstructionSize = 0;
