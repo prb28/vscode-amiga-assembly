@@ -9,12 +9,17 @@ const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file'
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    let formatter = new M68kFormatter();
     // Declaring the formatter
-    let disposable = vscode.languages.registerDocumentFormattingEditProvider(AMIGA_ASM_MODE, new M68kFormatter());
+    let disposable = vscode.languages.registerDocumentFormattingEditProvider(AMIGA_ASM_MODE, formatter);
     context.subscriptions.push(disposable);
 
     // Formatter for a range in document
-    disposable = vscode.languages.registerDocumentRangeFormattingEditProvider(AMIGA_ASM_MODE, new M68kFormatter());
+    disposable = vscode.languages.registerDocumentRangeFormattingEditProvider(AMIGA_ASM_MODE, formatter);
+    context.subscriptions.push(disposable);
+
+    // Format on type
+    disposable = vscode.languages.registerOnTypeFormattingEditProvider(AMIGA_ASM_MODE, formatter, " ", "\t", ";");
     context.subscriptions.push(disposable);
 
     // Declaring the Hover

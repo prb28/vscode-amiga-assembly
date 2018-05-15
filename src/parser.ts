@@ -15,10 +15,14 @@ export class ASMLine {
     data: string = "";
     comment: string = "";
     raw: string = "";
-    labelRange: Range = new Range(new Position(0, 0), new Position(0, 0));
-    instructionRange: Range = new Range(new Position(0, 0), new Position(0, 0));
-    dataRange: Range = new Range(new Position(0, 0), new Position(0, 0));
-    commentRange: Range = new Range(new Position(0, 0), new Position(0, 0));
+    spacesBeforeLabelRange: Range;
+    labelRange: Range;
+    spacesLabelToInstructionRange: Range;
+    instructionRange: Range;
+    spacesInstructionToDataRange: Range;
+    dataRange: Range;
+    spacesDataToCommentRange: Range;
+    commentRange: Range;
     vscodeTextLine?: TextLine;
     /**
      * Constructor
@@ -32,6 +36,14 @@ export class ASMLine {
         if (vscodeTextLine) {
             lineNumber = vscodeTextLine.lineNumber;
         }
+        this.spacesBeforeLabelRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
+        this.labelRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
+        this.spacesLabelToInstructionRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
+        this.instructionRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
+        this.spacesInstructionToDataRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
+        this.dataRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
+        this.spacesDataToCommentRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
+        this.commentRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
         this.parse(line, lineNumber);
     }
 
@@ -43,8 +55,14 @@ export class ASMLine {
     parse(line: string, lineNumber: number) {
         let l = line.trim();
         let leadingSpacesCount = line.search(/\S/);
+        let current = new Position(lineNumber, 0);
+        let next: Position;
         if (leadingSpacesCount < 0) {
             leadingSpacesCount = 0;
+        } else {
+            next = new Position(lineNumber, leadingSpacesCount);
+            this.spacesBeforeLabelRange = new Range(current, next);
+            current = next;
         }
         // To test the comment line the regexp needs an eol
         if ((l.charAt(0) === ';') || (l.charAt(0) === '*')) {
@@ -69,13 +87,27 @@ export class ASMLine {
                 this.instructionRange = new Range(new Position(lineNumber, startInInputLine), new Position(lineNumber, endInInputLine));
                 if (keyword.index > 0) {
                     this.label = l.substring(0, keyword.index).trim();
-                    this.labelRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + this.label.length));
+                    next = new Position(lineNumber, leadingSpacesCount + this.label.length);
+                    this.labelRange = new Range(current, next);
+                    current = next;
+                    next = this.instructionRange.start;
+                    this.spacesLabelToInstructionRange = new Range(current, next);
+                    current = next;
                 }
+                current = this.instructionRange.end;
                 let endInTrimLine = keyword.index + keyword[0].length;
                 this.data = l.substring(endInTrimLine).trim();
                 if (this.data.length > 0) {
                     startInInputLine = line.indexOf(this.data);
-                    this.dataRange = new Range(new Position(lineNumber, startInInputLine), new Position(lineNumber, startInInputLine + this.data.length));
+                    next = new Position(lineNumber, startInInputLine);
+                    this.spacesInstructionToDataRange = new Range(current, next);
+                    current = next;
+                    next = new Position(lineNumber, startInInputLine + this.data.length);
+                    this.dataRange = new Range(current, next);
+                    current = next;
+                }
+                if (this.comment.length > 0) {
+                    this.spacesDataToCommentRange = new Range(current, this.commentRange.start);
                 }
             } else {
                 // no keyword
