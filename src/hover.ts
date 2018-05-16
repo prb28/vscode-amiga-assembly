@@ -7,8 +7,8 @@ import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersMana
 export class M68kHoverProvider implements vscode.HoverProvider {
     static hoverInstructionsManager = new HoverInstructionsManager();
     static hoverRegistersManager = new HoverRegistersManager();
-    registerAddressRegExp = /\$(DFF[\dA-Z]{3})/;
-    registerNameRegExp = /([A-Z0-9]{6,})/g;
+    registerAddressRegExp = /\$((DFF|BFE|BFD)[\dA-Z]{3})/;
+    registerNameRegExp = /([A-Z0-9]{3,9})/g;
     /**
      * Main hover function
      * @param document Document to be formatted

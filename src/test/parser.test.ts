@@ -142,8 +142,8 @@ describe("Parser Tests", function () {
     context("Hover register file parsing", function () {
         it("Should read the files correctly", function () {
             let manager = new HoverRegistersManager();
-            expect(manager.registersByName.size).to.be.equal(265);
-            expect(manager.registersByAddress.size).to.be.equal(236);
+            expect(manager.registersByName.size).to.be.equal(280);
+            expect(manager.registersByAddress.size).to.be.equal(266);
             let registerByName = manager.registersByName.get("ADKCONR");
             let registerByAddress = manager.registersByAddress.get("DFF010");
             expect(registerByName).to.not.be.undefined;
