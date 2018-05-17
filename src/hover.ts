@@ -9,6 +9,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
     static hoverRegistersManager = new HoverRegistersManager();
     registerAddressRegExp = /\$((DFF|BFE|BFD)[\dA-Z]{3})/;
     registerNameRegExp = /([A-Z0-9]{3,9})/g;
+    hexValueRegExp = /\$([\da-z]+)/gi;
+    decValueRegExp = /#([\d]+)/g;
+    binValueRegExp = /%([01]*)/g;
     /**
      * Main hover function
      * @param document Document to be formatted
@@ -34,43 +37,127 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 return new vscode.Hover(hoverRendered, asmLine.instructionRange);
             }
         } else if (asmLine.dataRange && asmLine.dataRange.contains(position)) {
-            return this.renderRegisterHover(asmLine);
+            // get the word
+            let word = document.getWordRangeAtPosition(position);
+            if (word) {
+                // Text to search in
+                let text = document.getText(word);
+                let rendered = this.renderRegisterHover(text.toUpperCase());
+                let renderedLine2 = null;
+                if (!rendered) {
+                    // Translate to get the control character
+                    text = document.getText(word.with(word.start.translate(undefined, -1)));
+                    rendered = this.renderNumberForWord(text);
+                } else {
+                    // Is there a value next to the register ?
+                    let elms = asmLine.data.split(",");
+                    for (let elm of elms) {
+                        if (!elm.match(this.registerAddressRegExp)) {
+                            renderedLine2 = this.renderRegisterValue(elm);
+                            if (renderedLine2) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (rendered) {
+                    if (renderedLine2) {
+                        return new vscode.Hover([renderedLine2, rendered], word);
+                    } else {
+                        return new vscode.Hover(rendered, word);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Renders a value of a register
+     * @param text Text of the register
+     */
+    public renderRegisterValue(text: string): vscode.MarkdownString | null {
+        let value = this.parseNumber(text);
+        if (value) {
+            // Transform to bin
+            let bin = value.toString(2);
+            let head = "|Bits";
+            let sep = "|----";
+            let row = "| ";
+            let strBit = bin.toString();
+            for (let i = 0; i < strBit.length; i++) {
+                head += " | ";
+                sep += " | ";
+                row += " | ";
+                head += strBit.length - i - 1;
+                sep += "----";
+                row += strBit.charAt(i);
+            }
+            head += "|\n";
+            sep += "|\n";
+            row += "|\n\n";
+            return new vscode.MarkdownString(head + sep + row);
+        }
+        return null;
+    }
+    /**
+     * Render a number if it is present
+     * @param text Text to be examined
+     * @return Rendered string
+     */
+    public renderNumberForWord(text: string): vscode.MarkdownString | null {
+        let value = this.parseNumber(text);
+        if (value) {
+            // Transform to hex
+            let dec = value.toString(10);
+            // Transform to hex
+            let hex = value.toString(16);
+            // Transform to bin
+            let bin = value.toString(2);
+            return new vscode.MarkdownString("#`" + dec + "` - $`" + hex + "` - %`" + bin + "`");
+        }
+        return null;
+    }
+
+    /**
+     * Parses a number in a word
+     * @param word Word to parse
+     */
+    public parseNumber(word: string): number | null {
+        // look for an hex value
+        let match = this.hexValueRegExp.exec(word);
+        if (match) {
+            return parseInt(match[1], 16);
+        }
+        match = this.decValueRegExp.exec(word);
+        if (match) {
+            return parseInt(match[1], 10);
+        }
+        match = this.binValueRegExp.exec(word);
+        if (match) {
+            return parseInt(match[1], 2);
         }
         return null;
     }
 
     /**
      * Renders a Hover for a register
-     * @param asmLine Line containing the register
-     * @return Hover
+     * @param register Register to search
+     * @return Markdown string
      */
-    public renderRegisterHover(asmLine: ASMLine): vscode.Hover | null {
-        if (asmLine.data.length > 0) {
-            // check if it has a register address
-            let data = asmLine.data.toUpperCase();
-            let match = this.registerAddressRegExp.exec(data);
-            if (match) {
-                let hr = M68kHoverProvider.hoverRegistersManager.registersByAddress.get(match[1]);
-                if (hr) {
-                    let range = asmLine.dataRange;
-                    let newStart = range.start.with(undefined, range.start.character + match.index);
-                    let newEnd = range.end.with(undefined, range.start.character + match.index + match[1].length + 1);
-                    return new vscode.Hover(hr.description, asmLine.dataRange.with(newStart, newEnd));
-                }
-            } else {
-                let match = this.registerNameRegExp.exec(data);
-                if (match) {
-                    let hr = M68kHoverProvider.hoverRegistersManager.registersByName.get(match[1]);
-                    if (hr) {
-                        let range = asmLine.dataRange;
-                        let newStart = range.start.with(undefined, range.start.character + match.index);
-                        let newEnd = range.end.with(undefined, range.start.character + match.index + match[1].length);
-                        return new vscode.Hover(hr.description, asmLine.dataRange.with(newStart, newEnd));
-                    }
-                }
+    public renderRegisterHover(register: string): vscode.MarkdownString | null {
+        let hr;
+        if (register.length > 0) {
+            hr = M68kHoverProvider.hoverRegistersManager.registersByAddress.get(register);
+            if (!hr) {
+                hr = M68kHoverProvider.hoverRegistersManager.registersByName.get(register);
             }
         }
-        return null;
+        if (hr) {
+            return new vscode.MarkdownString(hr.description);
+        } else {
+            return null;
+        }
     }
 
     /**
