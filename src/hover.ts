@@ -8,8 +8,6 @@ export class M68kHoverProvider implements vscode.HoverProvider {
     static hoverInstructionsManager = new HoverInstructionsManager();
     static hoverRegistersManager = new HoverRegistersManager();
     numberParser = new NumberParser();
-    registerAddressRegExp = /\$((DFF|BFE|BFD)[\dA-Z]{3})/;
-    registerNameRegExp = /([A-Z0-9]{3,9})/g;
     /**
      * Main hover function
      * @param document Document to be formatted
@@ -50,7 +48,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     // Is there a value next to the register ?
                     let elms = asmLine.data.split(",");
                     for (let elm of elms) {
-                        if (!elm.match(this.registerAddressRegExp)) {
+                        if (elm.match(/[$#%]([\dA-F]+)/i)) {
                             renderedLine2 = this.renderRegisterValue(elm);
                             if (renderedLine2) {
                                 break;
