@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 - Color provider
+- Integration of VASM
+- Debugging with FS-UAE
 
 ### [0.5.0]
 ### Added
