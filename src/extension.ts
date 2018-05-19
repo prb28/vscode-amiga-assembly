@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { M68kFormatter } from './formatter';
 import { M68kHoverProvider } from './hover';
+import { M86kColorProvider } from './color';
 import { Calc, CalcController } from './calc';
 
 const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -47,4 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
         calc.replaceSelections();
     });
     context.subscriptions.push(disposable);
+
+    // Color provider
+    context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_ASM_MODE, new M86kColorProvider()));
 }

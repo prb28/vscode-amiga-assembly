@@ -56,9 +56,14 @@ The assembly language will be formatted with the standard shortcuts :
 
 ![Evaluation in realtime](images/evaluatert.gif)
 
+### Color editor
+- Visualisation of the color set to a register and visual edition
+![Evaluation in realtime](images/coloredit.gif)
+
 
 ## Release Notes
 ### 0.5.0
+- Color provider
 - Added documentation for CIAA and CIAB
 - Shows the values set to the registers
 - Show values in decimal / hexadecimal and binary
