@@ -6,7 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 - Color provider
-- Labels references
+
+### [0.5.0]
+### Added
+- Added documentation for CIAA and CIAB
+- Shows the values set to the registers
+- Show values in decimal / hexadecimal and binary
+- Calculator
 
 ## [0.4.0] - 2018-05-15
 ### Added

@@ -18,6 +18,7 @@ The assembly language will be formatted with the standard shortcuts :
 - or Ctrl + Shift + P (or Command + Shift + P on Mac), and then search for "Format Document".
 ![Formatting screenshot](images/formatting.gif)
 #### Format a selection
+- The format sizes are calculated only for the selection 
 ![Formatting screenshot](images/formattingrange.gif)
 #### Format on typing
 - Activate option formatOnType in the settings
@@ -39,9 +40,30 @@ The assembly language will be formatted with the standard shortcuts :
 - On passing over an assembly command a short documentation will apear.
 - On passing over a register address or name a short documentation will apear.
 ![Tooltip for instruction screenshot](images/hover.gif)
+### Presentation of the value set to a register
+![Presentation of a register value](images/hoverregisterv.gif)
+### Shows a number in decimal / hexadecimal and binary
+![Presentation of a value](images/hovervalue.gif)
+
+### Calculator
+- Simple calculator command
+![Simple calculator command](images/calculator.gif)
+- Selection text to calculate
+![Selection text to calculate](images/evaluatesel.gif)
+- Replacing the text by the result
+![Replacing the text by the result](images/evaluateselrepl.gif)
+- Evaluation in realtime in the status bar
+
+![Evaluation in realtime](images/evaluatert.gif)
 
 
 ## Release Notes
+### 0.5.0
+- Added documentation for CIAA and CIAB
+- Shows the values set to the registers
+- Show values in decimal / hexadecimal and binary
+- Calculator
+
 ### 0.4.0
 - Format selection of document
 - Format on typing
@@ -56,6 +78,8 @@ The assembly language will be formatted with the standard shortcuts :
 - Document Formatting
 
 ## Misc credits
+### Open source projects
+- MathCalc from Pavel Ivashkov, github.com/paiv: a parser for basic mathematical expressions From here: https://paiv.github.io/blog/2016/03/23/js-calc.html
 ### Documentation sources
 - Amiga development: http://amiga-dev.wikidot.com/information:hardware
 - M68k instruction set: http://users.encs.concordia.ca/~aagarwal/coen311/motorola68000.txt
@@ -73,3 +97,4 @@ The assembly language will be formatted with the standard shortcuts :
 - licecap: https://www.cockos.com/licecap/
 ### Alternatives
 - m68k vscode plugin from Steven Tattersall: https://marketplace.visualstudio.com/items?itemName=steventattersall.m68k
+- Calculator plugin from Lixquid: https://marketplace.visualstudio.com/items?itemName=lixquid.calculator

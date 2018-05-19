@@ -4,7 +4,7 @@
 //
 
 import { expect } from 'chai';
-import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager } from '../parser';
+import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager, NumberParser } from '../parser';
 import { Position, Range } from 'vscode';
 
 // tslint:disable:no-unused-expression
@@ -154,6 +154,31 @@ describe("Parser Tests", function () {
                 expect(registerByName.description).to.contains("control bit.determines");
             }
             expect(registerByName).to.be.eql(registerByAddress);
+        });
+    });
+    context.only("Number parsing", function () {
+        it("Should parse a number", function () {
+            let np = new NumberParser();
+            expect(np.parse("#10")).to.be.equal(10);
+            expect(np.parse("$10")).to.be.equal(16);
+            expect(np.parse("%10")).to.be.equal(2);
+            expect(np.parse(" #10 ")).to.be.equal(10);
+            expect(np.parse("#-10")).to.be.equal(-10);
+            expect(np.parse("#-10")).to.be.equal(-10);
+            expect(np.parse(" 10 ")).to.be.equal(10);
+            expect(np.parse(" -10 ")).to.be.equal(-10);
+        });
+        it("Should tranform a text to decimals", function () {
+            let np = new NumberParser();
+            expect(np.tranformToDecimal("#10 + $a + %1010")).to.be.equal("10 + 10 + 10");
+        });
+        it("Should display a binarry correctly", function () {
+            let np = new NumberParser();
+            expect(np.binaryToString(3840)).to.be.equal("1111.00000000");
+        });
+        it("Should display an hex correctly", function () {
+            let np = new NumberParser();
+            expect(np.hexToString(703710)).to.be.equal("a.bcde");
         });
     });
 });

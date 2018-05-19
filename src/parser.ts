@@ -265,3 +265,99 @@ export class HoverRegister {
         this.description = description;
     }
 }
+
+export class NumberParser {
+    /**
+     * Parses a number in a word
+     * @param word Word to parse
+     */
+    public parse(word: string): number | null {
+        let hexValueRegExp = /\$([\da-z]+)/i;
+        let decValueRegExp = /[#]?([-]?[\d]+)/;
+        let binValueRegExp = /%([01]*)/;
+        // look for an hex value
+        let match = hexValueRegExp.exec(word);
+        if (match) {
+            return parseInt(match[1], 16);
+        }
+        // look for a binary value
+        match = binValueRegExp.exec(word);
+        if (match) {
+            return parseInt(match[1], 2);
+        }
+        // look for a decimal value
+        match = decValueRegExp.exec(word);
+        if (match) {
+            return parseInt(match[1], 10);
+        }
+        return null;
+    }
+
+    public tranformToDecimal(text: string): string {
+        let hexValueRegExp = /\$([\da-z]+)/gi;
+        let binValueRegExp = /%([01]*)/g;
+        let transformed = text;
+        // look for an hex value
+        let match = hexValueRegExp.exec(transformed);
+        if (match) {
+            for (let i = 1; i < match.length; i++) {
+                let s = match[i];
+                let v = parseInt(s, 16);
+                transformed = transformed.replace("$" + s, v.toString());
+            }
+        }
+        // look for a binary value
+        match = binValueRegExp.exec(transformed);
+        if (match) {
+            for (let i = 1; i < match.length; i++) {
+                let s = match[i];
+                let v = parseInt(s, 2);
+                transformed = transformed.replace("%" + s, v.toString());
+            }
+        }
+        // replace all decimal marks
+        transformed = transformed.replace("#", "");
+        return transformed;
+    }
+
+    chunk(str: string, len: number) {
+        let size = Math.ceil(str.length / len);
+        let ret = new Array(size);
+        let i;
+        let pos = size - 1;
+        let startPos = str.length - len;
+        let lastStartPos = str.length;
+        for (i = 0; i < size - 1; i++) {
+            ret[pos] = str.substring(startPos, lastStartPos);
+            lastStartPos = startPos;
+            startPos -= len;
+            pos--;
+        }
+        let end = startPos + len;
+        if (end >= len) {
+            ret[0] = str;
+        } else {
+            ret[0] = str.substring(0, end);
+        }
+        return ret;
+    }
+
+    public binaryToString(num: number): string {
+        let bin;
+        if (num < 0) {
+            bin = (num >>> 0).toString(2);
+        } else {
+            bin = num.toString(2);
+        }
+        return this.chunk(bin, 8).join('.');
+    }
+    public hexToString(num: number): string {
+        let hex;
+        if (num < 0) {
+            hex = (num >>> 0).toString(16);
+        } else {
+            hex = num.toString(16);
+        }
+        return this.chunk(hex, 4).join('.');
+    }
+}

@@ -74,7 +74,24 @@
                     "description": "Specifies the distance between the data and the comment."
                 }
             }
-        }
+        },
+        "commands": [
+            {
+                "command": "amiga-assembly.calculator",
+                "title": "Amiga Assembly: Calculator",
+                "description": "Simple calculator in decimal, hexadecimal and binary"
+            },
+            {
+                "command": "amiga-assembly.evaluate-selection",
+                "title": "Amiga Assembly: Evaluate selection",
+                "description": "Evaluates the selection and shows the result"
+            },
+            {
+                "command": "amiga-assembly.evaluate-selection-replace",
+                "title": "Amiga Assembly: Evaluate selection and replace",
+                "description": "Evaluates the selection and replaces it by the result"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager } from './parser';
+import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager, NumberParser } from './parser';
 
 /**
  * Hover provider class for le assembly language
@@ -7,11 +7,9 @@ import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersMana
 export class M68kHoverProvider implements vscode.HoverProvider {
     static hoverInstructionsManager = new HoverInstructionsManager();
     static hoverRegistersManager = new HoverRegistersManager();
+    numberParser = new NumberParser();
     registerAddressRegExp = /\$((DFF|BFE|BFD)[\dA-Z]{3})/;
     registerNameRegExp = /([A-Z0-9]{3,9})/g;
-    hexValueRegExp = /\$([\da-z]+)/gi;
-    decValueRegExp = /#([\d]+)/g;
-    binValueRegExp = /%([01]*)/g;
     /**
      * Main hover function
      * @param document Document to be formatted
@@ -77,10 +75,15 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @param text Text of the register
      */
     public renderRegisterValue(text: string): vscode.MarkdownString | null {
-        let value = this.parseNumber(text);
+        let value = this.numberParser.parse(text);
         if (value) {
             // Transform to bin
-            let bin = value.toString(2);
+            let bin;
+            if (value > 0) {
+                bin = value.toString(2);
+            } else {
+                bin = (value >>> 0).toString(2);
+            }
             let head = "|Bits";
             let sep = "|----";
             let row = "| ";
@@ -106,36 +109,15 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @return Rendered string
      */
     public renderNumberForWord(text: string): vscode.MarkdownString | null {
-        let value = this.parseNumber(text);
+        let value = this.numberParser.parse(text);
         if (value) {
             // Transform to hex
             let dec = value.toString(10);
             // Transform to hex
-            let hex = value.toString(16);
+            let hex = this.numberParser.hexToString(value);
             // Transform to bin
-            let bin = value.toString(2);
+            let bin = this.numberParser.binaryToString(value);
             return new vscode.MarkdownString("#`" + dec + "` - $`" + hex + "` - %`" + bin + "`");
-        }
-        return null;
-    }
-
-    /**
-     * Parses a number in a word
-     * @param word Word to parse
-     */
-    public parseNumber(word: string): number | null {
-        // look for an hex value
-        let match = this.hexValueRegExp.exec(word);
-        if (match) {
-            return parseInt(match[1], 16);
-        }
-        match = this.decValueRegExp.exec(word);
-        if (match) {
-            return parseInt(match[1], 10);
-        }
-        match = this.binValueRegExp.exec(word);
-        if (match) {
-            return parseInt(match[1], 2);
         }
         return null;
     }
