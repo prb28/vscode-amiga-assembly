@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Integration of VASM
 - Debugging with FS-UAE
 
-### [0.5.0]
+### [0.5.0] - 2018-05-20
 ### Added
 - Color provider
 - Added documentation for CIAA and CIAB
