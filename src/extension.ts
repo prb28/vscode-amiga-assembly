@@ -36,6 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(controller);
     context.subscriptions.push(calc);
 
+    // Commands for the calculator
     disposable = vscode.commands.registerCommand('amiga-assembly.calculator', () => {
         calc.showInputPanel();
     });
