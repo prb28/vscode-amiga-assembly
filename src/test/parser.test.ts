@@ -156,7 +156,7 @@ describe("Parser Tests", function () {
             expect(registerByName).to.be.eql(registerByAddress);
         });
     });
-    context.only("Number parsing", function () {
+    context("Number parsing", function () {
         it("Should parse a number", function () {
             let np = new NumberParser();
             expect(np.parse("#10")).to.be.equal(10);
