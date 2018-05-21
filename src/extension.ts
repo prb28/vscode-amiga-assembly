@@ -5,12 +5,19 @@ import { M68kFormatter } from './formatter';
 import { M68kHoverProvider } from './hover';
 import { M86kColorProvider } from './color';
 import { Calc, CalcController } from './calc';
+import { VASMCompiler, VASMController } from './vasm';
+import { StatusManager } from "./status";
 
-const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
+// Setting all the globals values
+export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
+export let errorDiagnosticCollection: vscode.DiagnosticCollection;
+export let warningDiagnosticCollection: vscode.DiagnosticCollection;
+export let statusManager: StatusManager;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    statusManager = new StatusManager();
     let formatter = new M68kFormatter();
     // Declaring the formatter
     let disposable = vscode.languages.registerDocumentFormattingEditProvider(AMIGA_ASM_MODE, formatter);
@@ -52,4 +59,26 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Color provider
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_ASM_MODE, new M86kColorProvider()));
+
+    // Diagnostics 
+    errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');
+    context.subscriptions.push(errorDiagnosticCollection);
+    warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-warning');
+    context.subscriptions.push(warningDiagnosticCollection);
+
+    // VASM Command
+    let configuration = vscode.workspace.getConfiguration('amiga-assembly');
+    let conf: any = configuration.get('vasm');
+    if (conf.enabled) {
+        let compiler = new VASMCompiler();
+        disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', () => {
+            compiler.buildCurrentEditorFile();
+        });
+        context.subscriptions.push(disposable);
+        // Build on save
+        let vController = new VASMController(compiler);
+        context.subscriptions.push(vController);
+    }
+
+
 }

@@ -19,7 +19,8 @@
     },
     "categories": [
         "Formatters",
-        "Programming Languages"
+        "Programming Languages",
+        "Language Packs"
     ],
     "icon": "images/icon.png",
     "galleryBanner": {
@@ -72,6 +73,69 @@
                     "type": "integer",
                     "default": 4,
                     "description": "Specifies the distance between the data and the comment."
+                },
+                "amiga-assembly.vasm": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "If true the VASM compiler is enabled"
+                        },
+                        "file": {
+                            "type": "string",
+                            "description": "File with absolute path to the VASM copiler"
+                        },
+                        "options": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "title": "compiler option"
+                            },
+                            "default": [],
+                            "description": "Compiler options"
+                        }
+                    },
+                    "default": {
+                        "enabled": true,
+                        "file": "vasmm68k_mot",
+                        "options": [
+                            "-kick1hunks",
+                            "-devpac",
+                            "-Fhunk"
+                        ]
+                    },
+                    "description": "VASM copiler configuration"
+                },
+                "amiga-assembly.vlink": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "If true the VLINK linker is enabled"
+                        },
+                        "file": {
+                            "type": "string",
+                            "description": "File with absolute path to the VLINK linker"
+                        },
+                        "options": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "title": "linker option"
+                            },
+                            "default": [],
+                            "description": "linker options"
+                        }
+                    },
+                    "default": {
+                        "enabled": true,
+                        "file": "vlink",
+                        "options": [
+                            "-bamigahunk",
+                            "-Bstatic"
+                        ]
+                    },
+                    "description": "VLINK linker configuration"
                 }
             }
         },
@@ -90,6 +154,11 @@
                 "command": "amiga-assembly.evaluate-selection-replace",
                 "title": "Amiga Assembly: Evaluate selection and replace",
                 "description": "Evaluates the selection and replaces it by the result"
+            },
+            {
+                "command": "amiga-assembly.build-vasm",
+                "title": "Amiga Assembly: Build with VASM",
+                "description": "Build all the files with VASM"
             }
         ]
     },
