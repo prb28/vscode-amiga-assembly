@@ -1,7 +1,7 @@
 import { window, workspace, Disposable, DiagnosticSeverity, TextDocument } from "vscode";
-//import { spawn } from "child_process";
 import { ExecutorParser, ICheckResult, Executor } from "./executor";
 import { statusManager, errorDiagnosticCollection, warningDiagnosticCollection } from './extension';
+import { VLINKLinker } from './vlink';
 import * as fs from "fs";
 import * as path from "path";
 
@@ -11,28 +11,35 @@ import * as path from "path";
 export class VASMCompiler {
     executor: Executor;
     parser: VASMParser;
+    linker: VLINKLinker;
 
     constructor() {
         this.executor = new Executor();
         this.parser = new VASMParser();
+        this.linker = new VLINKLinker();
     }
 
     /**
      * Builds the file in the current editor
      */
     public buildCurrentEditorFile() {
-        const editor = window.activeTextEditor;
-        if (editor) {
-            this.buildDocument(editor.document);
+        let configuration = workspace.getConfiguration('amiga-assembly');
+        let conf: any = configuration.get('vasm');
+        if (conf && conf.enabled) {
+            const editor = window.activeTextEditor;
+            if (editor) {
+                this.buildDocument(editor.document);
+            }
         }
     }
+
     /**
      * Build the selected document
      * @param document The document to build
      */
-    public buildDocument(document: TextDocument) {
+    public buildDocument(document: TextDocument): Promise<void> {
         let filename = document.fileName;
-        this.buildFile(filename, false).then(errors => {
+        return this.buildFile(filename, false).then(errors => {
             this.processGlobalErrors(document, errors);
             this.executor.handleDiagnosticErrors(document, errors, DiagnosticSeverity.Error);
             statusManager.diagnosticsStatusBarItem.hide();
@@ -68,6 +75,44 @@ export class VASMCompiler {
                 error.file = document.fileName;
             }
         }
+    }
+
+    public buildWorkspace() {
+        let configuration = workspace.getConfiguration('amiga-assembly');
+        let confVLINK: any = configuration.get('vlink');
+        if (confVLINK && confVLINK.enabled) {
+            let includes = confVLINK.includes;
+            let excludes = confVLINK.excludes;
+            let exefilename = confVLINK.exefilename;
+            this.buildWorkspaceInner(includes, excludes, exefilename);
+        }
+    }
+
+    private buildWorkspaceInner(includes: string, excludes: string, exefilename: string): Thenable<void> {
+        return workspace.findFiles(includes, excludes, undefined).then(filesURI => {
+            let promises: Promise<void>[] = [];
+            for (let i = 0; i < filesURI.length; i++) {
+                workspace.openTextDocument(filesURI[i]).then(document => {
+                    promises.push(this.buildDocument(document));
+                });
+            }
+            return new Promise((resolve, reject) => {
+                Promise.all(promises).then((errosArray) => {
+                    for (let i = 0; i < errosArray.length; i += 1) {
+                        let errors: void = errosArray[i];
+                        if (errors) {
+                            reject("Build aborted: there are compile errors");
+                        }
+                    }
+                    // Call the linker
+                    return this.linker.linkFiles(filesURI, exefilename).then(errors => {
+                        this.executor.handleDiagnosticErrors(undefined, errors, DiagnosticSeverity.Error);
+                        statusManager.diagnosticsStatusBarItem.hide();
+                    });
+
+                });
+            });
+        });
     }
 
     /**

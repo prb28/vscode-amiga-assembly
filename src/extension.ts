@@ -67,18 +67,18 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(warningDiagnosticCollection);
 
     // VASM Command
-    let configuration = vscode.workspace.getConfiguration('amiga-assembly');
-    let conf: any = configuration.get('vasm');
-    if (conf.enabled) {
-        let compiler = new VASMCompiler();
-        disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', () => {
-            compiler.buildCurrentEditorFile();
-        });
-        context.subscriptions.push(disposable);
-        // Build on save
-        let vController = new VASMController(compiler);
-        context.subscriptions.push(vController);
-    }
-
-
+    let compiler = new VASMCompiler();
+    // Build a file
+    disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', () => {
+        compiler.buildCurrentEditorFile();
+    });
+    context.subscriptions.push(disposable);
+    // Build on save
+    let vController = new VASMController(compiler);
+    context.subscriptions.push(vController);
+    // Build the workspace
+    disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', () => {
+        compiler.buildWorkspace();
+    });
+    context.subscriptions.push(disposable);
 }

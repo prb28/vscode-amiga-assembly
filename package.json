@@ -117,6 +117,18 @@
                             "type": "string",
                             "description": "File with absolute path to the VLINK linker"
                         },
+                        "includes": {
+                            "type": "string",
+                            "description": "GlobPattern to select the source files to link"
+                        },
+                        "excludes": {
+                            "type": "string",
+                            "description": "GlobPattern to select the source files to exclude from the link"
+                        },
+                        "exefilename": {
+                            "type": "string",
+                            "description": "Name of the executable file"
+                        },
                         "options": {
                             "type": "array",
                             "items": {
@@ -130,6 +142,9 @@
                     "default": {
                         "enabled": true,
                         "file": "vlink",
+                        "includes": "**/*.s",
+                        "excludes": "",
+                        "exefilename": "a.out",
                         "options": [
                             "-bamigahunk",
                             "-Bstatic"
@@ -157,8 +172,13 @@
             },
             {
                 "command": "amiga-assembly.build-vasm",
-                "title": "Amiga Assembly: Build with VASM",
+                "title": "Amiga Assembly: Build current document",
                 "description": "Build all the files with VASM"
+            },
+            {
+                "command": "amiga-assembly.build-vasm-workspace",
+                "title": "Amiga Assembly: Build workspace",
+                "description": "Build all the files with VASM ans VLINK"
             }
         ]
     },
