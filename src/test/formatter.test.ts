@@ -4,11 +4,11 @@
 //
 
 import { expect } from 'chai';
-import { mock } from 'ts-mockito';
+import { mock, spy, when, anyString } from 'ts-mockito';
 import { M68kFormatter } from '../formatter';
 import { ASMLine } from '../parser';
-import { TextEdit, Range, Position, TextDocument, CancellationTokenSource } from 'vscode';
-import { DummyFormattingOptions, DummyTextDocument } from './dummy';
+import { TextEdit, Range, Position, TextDocument, CancellationTokenSource, workspace } from 'vscode';
+import { DummyFormattingOptions, DummyTextDocument, DummyWorkspaceConfiguration } from './dummy';
 
 // tslint:disable:no-unused-expression
 describe("Formatter Tests", function () {
@@ -103,6 +103,16 @@ describe("Formatter Tests", function () {
         let f = new M68kFormatter();
         expect(f.getEndPad("aa", 10)).to.be.equal("        ");
         expect(f.getEndPad("aaaa", 3)).to.be.equal("");
+    });
+    it("Should retrieve 1 for a negative property", function () {
+        let f = new M68kFormatter();
+        let conf = new DummyWorkspaceConfiguration();
+        expect(f.retrieveProperty(conf, 'testconf', 12)).to.be.equal(12);
+        conf.update('testconf', -1);
+        expect(conf.has('testconf')).to.be.true;
+        expect(f.retrieveProperty(conf, 'testconf', 12)).to.be.equal(1);
+        conf.update('testconf', 5);
+        expect(f.retrieveProperty(conf, 'testconf', 12)).to.be.equal(5);
     });
     describe("OnTypeFormattingEditProvider", function () {
         it("Should return no editing command on a empty document", function () {

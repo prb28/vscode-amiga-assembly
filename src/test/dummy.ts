@@ -1,5 +1,5 @@
 
-import { Range, Position, TextDocument, TextLine, Uri, EndOfLine, FormattingOptions } from 'vscode';
+import { Range, Position, TextDocument, TextLine, Uri, EndOfLine, FormattingOptions, WorkspaceConfiguration } from 'vscode';
 
 /**
  * Represents a fake text document for tests
@@ -79,4 +79,26 @@ export class DummyFormattingOptions implements FormattingOptions {
     tabSize: number = 4;
     insertSpaces: boolean = true;
     [key: string]: boolean | number | string;
+}
+
+/**
+ * Dummy configuration for tests
+ */
+export class DummyWorkspaceConfiguration implements WorkspaceConfiguration {
+    map = new Map<any, any>();
+    public get<T>(section: string): T | undefined {
+        return this.map.get(section);
+    }
+    has(section: string): boolean {
+        return this.map.has(section);
+    }
+    inspect<T>(section: string): { key: string; defaultValue?: T; globalValue?: T; workspaceValue?: T, workspaceFolderValue?: T } | undefined {
+        return undefined;
+    }
+    update(section: string, value: any): Thenable<void> {
+        this.map.set(section, value);
+        return new Promise((resolve, reject) => { });
+    }
+
+    readonly [key: string]: any;
 }
