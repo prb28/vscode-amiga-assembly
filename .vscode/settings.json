@@ -9,5 +9,10 @@
     "spellright.language": "en",
     "spellright.documentTypes": [
         "latex"
-    ]
+    ],
+    "typescript.tsdk": "./node_modules/typescript/lib", // we want to use the TS server from our node_modules folder to control its version
+  // name of your lcov file
+  "coverage-gutters.lcovname": "coverage/lcov.info",
+  
+
 }
