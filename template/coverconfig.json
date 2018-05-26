@@ -6,7 +6,7 @@
         "**/node_modules/**",
         "**/out/**",
         "**/coverage/**",
-        "**/test/dummy.ts",
+        "**/test/dummy*",
         "**/mathcalc.js"
     ],
     "includePid": false,
