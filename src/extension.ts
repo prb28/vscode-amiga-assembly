@@ -13,6 +13,7 @@ export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme:
 export let errorDiagnosticCollection: vscode.DiagnosticCollection;
 export let warningDiagnosticCollection: vscode.DiagnosticCollection;
 export let statusManager: StatusManager;
+export let calc: Calc;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -36,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     // create a new calculator
-    let calc = new Calc();
+    calc = new Calc();
     let controller = new CalcController(calc);
 
     // Add to a list of disposables which are disposed when this extension is deactivated.
@@ -45,15 +46,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Commands for the calculator
     disposable = vscode.commands.registerCommand('amiga-assembly.calculator', () => {
-        calc.showInputPanel();
+        return calc.showInputPanel();
     });
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('amiga-assembly.evaluate-selection', () => {
-        calc.evaluateSelections();
+        return calc.evaluateSelections();
     });
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('amiga-assembly.evaluate-selection-replace', () => {
-        calc.replaceSelections();
+        return calc.replaceSelections();
     });
     context.subscriptions.push(disposable);
 
@@ -70,7 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
     let compiler = new VASMCompiler();
     // Build a file
     disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', () => {
-        compiler.buildCurrentEditorFile();
+        return compiler.buildCurrentEditorFile();
     });
     context.subscriptions.push(disposable);
     // Build on save
@@ -78,7 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vController);
     // Build the workspace
     disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', () => {
-        compiler.buildWorkspace();
+        return compiler.buildWorkspace();
     });
     context.subscriptions.push(disposable);
 }

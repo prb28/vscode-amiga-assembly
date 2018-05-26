@@ -5,7 +5,9 @@
     "ignorePatterns": [
         "**/node_modules/**",
         "**/out/**",
-        "**/coverage/**"
+        "**/coverage/**",
+        "**/test/dummy.ts",
+        "**/mathcalc.js"
     ],
     "includePid": false,
     "reports": [

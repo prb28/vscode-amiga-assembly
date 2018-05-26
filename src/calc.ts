@@ -3,7 +3,7 @@ import { MathCalc } from './mathcalc.js';
 import { NumberParser } from './parser';
 
 export class Calc {
-    private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
+    public statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
     private numberParser = new NumberParser();
     public updateCalc() {
         if (window) {
@@ -33,7 +33,7 @@ export class Calc {
      * @param expression expression evalated
      * @param result Result of the calculation
      */
-    private formatResult(expression: string | null, result: number): string {
+    public formatResult(expression: string | null, result: number): string {
         let s = "No result";
         if (result) {
             // Transform to hex
@@ -65,24 +65,29 @@ export class Calc {
      * Iterates over the selections
      * @param all view all elections
      * @param replace Replaces the selection
-     * @param callback Returns the value
+     * @return Thenable object
      */
-    private iterateSelections(all: boolean, replace: boolean, callback: (input: string) => string): void {
+    private iterateSelections(all: boolean, replace: boolean): Thenable<boolean> {
         // Get the current text editor
         let editor = window.activeTextEditor;
         if (!editor) {
-            return;
+            return Promise.reject("Cannot access to editor");
         }
         const document = editor.document;
         const selections = editor.selections;
-        editor.edit((edit) => {
+        return editor.edit((edit) => {
             for (const selection of selections) {
                 if (selection.isEmpty && !all) {
                     continue;
                 }
                 const text = document.getText(selection);
                 try {
-                    const result = callback(text);
+                    let result: string;
+                    if (replace) {
+                        result = this.formatResult(null, this.calculate(text));
+                    } else {
+                        result = this.formatResult(text, this.calculate(text));
+                    }
                     if (result) {
                         if (replace) {
                             edit.replace(selection, result);
@@ -94,34 +99,28 @@ export class Calc {
                     console.error(ex);
                 }
             }
-
         });
-
     }
 
     /**
      * Evaluates the selection
      */
-    public evaluateSelections(): void {
-        this.iterateSelections(true, false, (input) => {
-            return (this.formatResult(input, this.calculate(input)));
-        });
+    public evaluateSelections(): Thenable<boolean> {
+        return this.iterateSelections(true, false);
     }
 
     /**
      * Replaces the selection
      */
-    public replaceSelections(): void {
-        this.iterateSelections(true, true, (input) => {
-            return this.formatResult(null, this.calculate(input));
-        });
+    public replaceSelections(): Thenable<boolean> {
+        return this.iterateSelections(true, true);
     }
 
     /**
      * Shows an input panel to calculate
      */
-    public showInputPanel(): void {
-        window.showInputBox({
+    public showInputPanel() {
+        return window.showInputBox({
             prompt: "Enter a Math Expression to evaluate.",
             placeHolder: "Expression"
         }).then((value) => {
