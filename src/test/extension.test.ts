@@ -8,7 +8,7 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { spy, verify, anyString, capture, when, mock, anything } from 'ts-mockito';
+import { spy, verify, anyString, capture, when, anything } from 'ts-mockito';
 import * as extension from '../extension';
 
 // Defines a Mocha test suite to group tests of similar kind together
@@ -128,7 +128,7 @@ describe("Global Extension Tests", function () {
         it("Should open an inputbox as calc", async () => {
             const spiedWindow = spy(vscode.window);
             let promise = new Promise<string>((resolve, reject) => { resolve("3 + 2"); });
-            when(spiedWindow.showInputBox(anything())).thenResolve(promise);
+            when(spiedWindow.showInputBox(anything())).thenReturn(promise);
             await vscode.commands.executeCommand("amiga-assembly.calculator").then(() => { verify(spiedWindow.showInputBox(anything())).once(); });
         });
 
