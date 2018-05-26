@@ -116,7 +116,7 @@ describe("Formatter Tests", function () {
             expect(results).to.not.be.undefined;
             expect(results).to.be.empty;
         });
-        it.only("Should return an insert spaces command after an instruction", function () {
+        it("Should return an insert spaces command after an instruction", function () {
             let f = new M68kFormatter();
             const document = new DummyTextDocument();
             let ch = "";
