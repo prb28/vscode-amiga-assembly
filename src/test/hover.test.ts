@@ -6,8 +6,8 @@
 import { expect } from 'chai';
 import { M68kHoverProvider } from '../hover';
 import { HoverInstruction } from '../parser';
-import { TextEdit, Range, Position, CancellationTokenSource, Hover, MarkdownString } from 'vscode';
-import { DummyFormattingOptions, DummyTextDocument } from './dummy';
+import { Position, CancellationTokenSource, Hover, MarkdownString } from 'vscode';
+import { DummyTextDocument } from './dummy';
 
 // tslint:disable:no-unused-expression
 describe("Hover Tests", function () {
