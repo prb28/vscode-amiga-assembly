@@ -3,7 +3,7 @@
 .gitignore
 .travis*
 *.vsix
-.vscode/**
+.vscode*/**
 typings/**
 out/test/**
 test*/**
@@ -12,3 +12,9 @@ test*/**
 .gitignore
 tsconfig.json
 vsc-extension-quickstart.md
+coverage
+template
+gulp*
+.appveyor.xml
+tslint.json
+.cover*

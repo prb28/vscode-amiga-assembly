@@ -21,6 +21,7 @@
         "node_modules",
         ".vscode-test",
         "out",
-        "coverage"
+        "coverage",
+        "gulpfile.js"
     ]
 }

@@ -16,4 +16,5 @@ install:
   - npm run vscode:prepublish
 
 script:
-  - npm test --silent
+  - npm run test:coverage --silent
+  - node_modules/.bin/coveralls < coverage/lcov.info;
