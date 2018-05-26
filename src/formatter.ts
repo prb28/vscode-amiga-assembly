@@ -63,6 +63,9 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
         let instructionToDataDistance = this.retrieveProperty(configuration, 'format.instructionToDataDistance', 4);
         let dataToCommentsDistance = this.retrieveProperty(configuration, 'format.dataToCommentsDistance', 4);
         let localRange = range;
+        if (document.lineCount <= 0) {
+            return null;
+        }
         if (!localRange) {
             localRange = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(document.lineCount - 1, 0));
         }

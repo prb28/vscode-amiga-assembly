@@ -4,10 +4,9 @@
 //
 
 import { expect } from 'chai';
-import { mock, spy, when, anyString } from 'ts-mockito';
 import { M68kFormatter } from '../formatter';
 import { ASMLine } from '../parser';
-import { TextEdit, Range, Position, TextDocument, CancellationTokenSource, workspace } from 'vscode';
+import { TextEdit, Range, Position, CancellationTokenSource } from 'vscode';
 import { DummyFormattingOptions, DummyTextDocument, DummyWorkspaceConfiguration } from './dummy';
 
 // tslint:disable:no-unused-expression
@@ -117,14 +116,13 @@ describe("Formatter Tests", function () {
     describe("OnTypeFormattingEditProvider", function () {
         it("Should return no editing command on a empty document", function () {
             let f = new M68kFormatter();
-            const document: TextDocument = mock(DummyTextDocument);
+            const document = new DummyTextDocument();
             let position: Position = new Position(0, 1);
             let ch = "";
             let options = new DummyFormattingOptions();
             let tockenEmitter = new CancellationTokenSource();
             let results = f.provideOnTypeFormattingEdits(document, position, ch, options, tockenEmitter.token);
-            expect(results).to.not.be.undefined;
-            expect(results).to.be.empty;
+            expect(results).to.be.null;
         });
         it("Should return an insert spaces command after an instruction", function () {
             let f = new M68kFormatter();
@@ -139,7 +137,7 @@ describe("Formatter Tests", function () {
             expect(edits).to.not.be.undefined;
             if (edits instanceof Array) {
                 expect(edits.length).to.be.equal(1);
-                expect(edits[0]).to.be.eql(TextEdit.insert(new Position(0, 6), " ".repeat(3)));
+                expect(edits[0]).to.be.eql(TextEdit.insert(new Position(0, 6), " ".repeat(6)));
             }
         });
     });
