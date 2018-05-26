@@ -9,8 +9,6 @@
     ],
     "includePid": false,
     "reports": [
-        "json",
-        "html",
         "lcov"
     ],
     "verbose": false
