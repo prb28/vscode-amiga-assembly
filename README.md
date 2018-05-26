@@ -1,4 +1,5 @@
 [![Build Status Travis](https://travis-ci.org/prb28/vscode-amiga-assembly.svg?branch=master)](https://travis-ci.org/prb28/vscode-amiga-assembly) [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/github/prb28/vscode-amiga-assembly?branch=master)](https://ci.appveyor.com/project/prb28/vscode-amiga-assembly)
+[![Coverage Status](https://coveralls.io/repos/github/prb28/vscode-amiga-assembly/badge.svg?branch=)](https://coveralls.io/github/prb28/vscode-amiga-assembly?branch=)
 
 # Amiga Assembly for Visual Studio Code
 Amiga Assembly for Visual Studio Code is a extension to support assembly language for the Amiga Motorolla 68000 machines and emulators.
@@ -16,10 +17,14 @@ The assembly language will be formatted with the standard shortcuts :
 - On Mac Shift + Option + F
 - On Ubuntu Ctrl + Shift + I
 - or Ctrl + Shift + P (or Command + Shift + P on Mac), and then search for "Format Document".
+
 ![Formatting screenshot](images/formatting.gif)
+
 #### Format a selection
 - The format sizes are calculated only for the selection 
+
 ![Formatting screenshot](images/formattingrange.gif)
+
 #### Format on typing
 - Activate option formatOnType in the settings
 ```
@@ -29,7 +34,9 @@ The assembly language will be formatted with the standard shortcuts :
     ...
 }
 ```
+
 ![Formatting screenshot](images/formattingontype.gif)
+
 #### Configure spacing between elements
 
 |label|spacing|instruction|spacing|data|spacing|comment|
@@ -39,25 +46,37 @@ The assembly language will be formatted with the standard shortcuts :
 ### Contextual documentation 
 - On passing over an assembly command a short documentation will apear.
 - On passing over a register address or name a short documentation will apear.
+
 ![Tooltip for instruction screenshot](images/hover.gif)
+
 ### Presentation of the value set to a register
+
 ![Presentation of a register value](images/hoverregisterv.gif)
+
 ### Shows a number in decimal / hexadecimal and binary
+
 ![Presentation of a value](images/hovervalue.gif)
 
 ### Calculator
 - Simple calculator command
+
 ![Simple calculator command](images/calculator.gif)
+
 - Selection text to calculate
+
 ![Selection text to calculate](images/evaluatesel.gif)
+
 - Replacing the text by the result
+
 ![Replacing the text by the result](images/evaluateselrepl.gif)
+
 - Evaluation in realtime in the status bar
 
 ![Evaluation in realtime](images/evaluatert.gif)
 
 ### Color editor
 - Visualisation of the color set to a register and visual edition
+
 ![Evaluation in realtime](images/coloredit.gif)
 
 
