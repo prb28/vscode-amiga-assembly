@@ -194,11 +194,11 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @param targetLength Length targetted
      * @return Padding string
      */
-    private getEndPad(stringToPad: string, targetLength: number): string {
+    public getEndPad(stringToPad: string, targetLength: number): string {
         targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
         let padString = ' ';
         if (stringToPad.length > targetLength) {
-            return String(stringToPad);
+            return '';
         }
         else {
             targetLength = targetLength - stringToPad.length;
