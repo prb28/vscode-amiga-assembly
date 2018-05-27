@@ -19,7 +19,7 @@ if (!tty.getWindowSize) {
 
 let mocha = new Mocha({
     ui: "bdd",
-    useColors: true,
+    useColors: true
 });
 
 function configure(mochaOpts: any): void {

@@ -15,6 +15,7 @@ import * as extension from '../extension';
 describe("Global Extension Tests", function () {
     context("Formatting comand", function () {
         it("Should format a simple file", async () => {
+            this.timeout(2000);
             // Creating the relative path to find the test file
             const testFilesPath = path.join(__dirname, "..", "..", "test_files");
             // Simple test file
@@ -34,6 +35,7 @@ describe("Global Extension Tests", function () {
             }
         });
         it("Should format another simple file with sprite", async () => {
+            this.timeout(2000);
             // Creating the relative path to find the test file
             const testFilesPath = path.join(__dirname, "..", "..", "test_files");
             // Simple test file
