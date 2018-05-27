@@ -18,7 +18,14 @@ export let calc: Calc;
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    // Preparing the status manager
     statusManager = new StatusManager();
+    statusManager.diagnosticsStatusBarItem.text = "Starting Amiga Assembly";
+    statusManager.diagnosticsStatusBarItem.show();
+    vscode.window.onDidChangeActiveTextEditor(statusManager.showHideStatus, null, context.subscriptions);
+    context.subscriptions.push(statusManager);
+
+    statusManager.outputChannel.appendLine("Starting Amiga Assembly");
     let formatter = new M68kFormatter();
     // Declaring the formatter
     let disposable = vscode.languages.registerDocumentFormattingEditProvider(AMIGA_ASM_MODE, formatter);
@@ -82,4 +89,5 @@ export function activate(context: vscode.ExtensionContext) {
         return compiler.buildWorkspace();
     });
     context.subscriptions.push(disposable);
+    statusManager.diagnosticsStatusBarItem.hide();
 }

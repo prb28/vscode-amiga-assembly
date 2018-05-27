@@ -24,10 +24,13 @@ export class StatusManager {
         }
         this.statusBarEntry.hide();
     }
-    hideStatus() {
+    dispose() {
         if (this.statusBarEntry) {
             this.statusBarEntry.dispose();
+            this.statusBarEntry = null;
         }
+        this.diagnosticsStatusBarItem.dispose();
+        this.outputChannel.dispose();
     }
     showStatus(message: string, command: string, tooltip?: string) {
         this.statusBarEntry = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, Number.MIN_VALUE);
