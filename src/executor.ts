@@ -22,18 +22,12 @@ export class Executor {
      * @param cwd cwd that will passed in the env object while running given tool
      * @param severity error or warning
      * @param useStdErr If true, the stderr of the output of the given tool will be used, else stdout will be used
-     * @param toolfilepathname The path and name of the tool to run
+     * @param cmd The path and name of the tool to run
      * @param printUnexpectedOutput If true, then output that doesnt match expected format is printed to the output channel
      * @param parser Parser for the output
      */
-    runTool(args: string[], cwd: string, severity: string, useStdErr: boolean, toolfilepathname: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser, token?: vscode.CancellationToken): Promise<ICheckResult[]> {
+    runTool(args: string[], cwd: string, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser, token?: vscode.CancellationToken): Promise<ICheckResult[]> {
         let outputChannel = statusManager.outputChannel;
-        let cmd: string;
-        if (toolfilepathname) {
-            cmd = toolfilepathname;
-        } else {
-            return Promise.reject(new Error('The tool must be set'));
-        }
         let p: cp.ChildProcess;
         if (token) {
             token.onCancellationRequested(() => {
@@ -48,7 +42,7 @@ export class Executor {
                     if (err && (<any>err).code === 'ENOENT') {
                         // Since the tool is run on save which can be frequent
                         // we avoid sending explicit notification if tool is missing
-                        console.log(`Cannot find ${toolfilepathname}`);
+                        console.log(`Cannot find ${cmd}`);
                         return resolve([]);
                     }
                     if (err && stderr && !useStdErr) {

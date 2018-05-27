@@ -5,7 +5,7 @@ import { Range, Position, TextDocument, TextLine, Uri, EndOfLine, FormattingOpti
  * Represents a fake text document for tests
  */
 export class DummyTextDocument implements TextDocument {
-    readonly uri: Uri = Uri.parse('file://file.s');
+    readonly uri: Uri = Uri.parse('file:///file.s');
     readonly fileName: string = "myfile";
     readonly isUntitled: boolean = true;
     readonly languageId: string = "m68k";
