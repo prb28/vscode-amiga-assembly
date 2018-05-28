@@ -24,28 +24,17 @@ describe("VLINK Tests", function () {
             let spiedfs = spy(fs);
             when(spiedfs.existsSync(anyString())).thenReturn(true);
             let filesUri = [vscode.Uri.parse("file:///file1.s"), vscode.Uri.parse("file:///file2")];
-            await linker.linkFiles(filesUri, "myprog", "workdir");
+            await linker.linkFiles(filesUri, "myprog", vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build"));
             verify(executor.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
             let args = capture(executor.runTool).last();
-            expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", "workdir/build/myprog", "workdir/build/file1.o", "workdir/build/file2.o"]);
+            expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", "/workdir/build/myprog", "/workdir/build/file1.o", "/workdir/build/file2.o"]);
             reset(spiedfs);
-        });
-        it("Should return an error if the build dir does not exists", function () {
-            let spiedfs = spy(fs);
-            when(spiedfs.existsSync(anyString())).thenReturn(false);
-            let filesUri = [vscode.Uri.parse("file:///file1.s")];
-            return linker.linkFiles(filesUri, "myprog", "workdir").then(() => {
-                expect.fail("Should reject");
-            }).catch(error => {
-                reset(spiedfs);
-                expect(error).to.be.equal("Build dir does not exists");
-            });
         });
     });
     context("VLINKParser", function () {
         let parser: VLINKParser;
         before(function () { parser = new VLINKParser(); });
-        it("Should parse an empty string to no erros", async function () {
+        it("Should parse an empty string to no errors", async function () {
             let errors = parser.parse("");
             expect(errors.length).to.be.equal(0);
         });

@@ -18,52 +18,41 @@ export class VLINKLinker {
     /**
      * Build the selected file
      * @param filepathname Path of the file to build
-     * @param debug If true debug symbols are added
+     * @param exeFilepathname Name of the executabl generated
+     * @param workspaceRootDir Path to the root of the workspace
+     * @param buildDir Build directory
      */
-    public linkFiles(filesURI: Uri[], exeFilepathname: string, workspacePath?: string): Promise<ICheckResult[]> {
-        if (!workspacePath) {
-            if (workspace.workspaceFolders && (workspace.workspaceFolders.length > 0)) {
-                workspacePath = workspace.workspaceFolders[0].uri.fsPath;
-            } else {
-                return new Promise((resolve, reject) => {
-                    reject("Root workspace path not found");
-                });
-            }
-        }
-        let buildDir = path.join(workspacePath, "build");
+    public linkFiles(filesURI: Uri[], exeFilepathname: string, workspaceRootDir: Uri, buildDir: Uri): Promise<ICheckResult[]> {
         let configuration = workspace.getConfiguration('amiga-assembly');
         let conf: any = configuration.get('vlink');
         if (conf) {
-            if (fs.existsSync(buildDir)) {
-                let vlinkExecutableName: string = conf.file;
-                let confArgs = conf.options;
-                let objectPathnames: string[] = [];
-                for (let i = 0; i < filesURI.length; i += 1) {
-                    let filename = path.basename(filesURI[i].fsPath);
-                    let objFilename;
-                    let extSep = filename.indexOf(".");
-                    if (extSep > 0) {
-                        objFilename = path.join(buildDir, filename.substr(0, filename.lastIndexOf(".")) + ".o");
-                    } else {
-                        objFilename = path.join(buildDir, filename + ".o");
-                    }
-                    objectPathnames.push(objFilename);
+            let vlinkExecutableName: string = conf.file;
+            let confArgs = conf.options;
+            let objectPathnames: string[] = [];
+            for (let i = 0; i < filesURI.length; i += 1) {
+                let filename = path.basename(filesURI[i].fsPath);
+                let objFilename;
+                let extSep = filename.indexOf(".");
+                if (extSep > 0) {
+                    objFilename = path.join(buildDir.fsPath, filename.substr(0, filename.lastIndexOf(".")) + ".o");
+                } else {
+                    objFilename = path.join(buildDir.fsPath, filename + ".o");
                 }
-                let args: Array<string> = confArgs.concat(['-o', path.join(buildDir, exeFilepathname)]).concat(objectPathnames);
-                return this.executor.runTool(args, workspacePath, "warning", true, vlinkExecutableName, null, true, this.parser);
-            } else {
-                return new Promise((resolve, reject) => {
-                    reject("Build dir does not exists");
-                });
+                objectPathnames.push(objFilename);
             }
+            let args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathnames);
+            return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, null, true, this.parser);
         } else {
             return new Promise((resolve, reject) => {
-                reject("Please configure VASM compiler");
+                reject("Please configure VLIN linker");
             });
         }
     }
 }
 
+/**
+ * Class dedicated to parse the output of the linker
+ */
 export class VLINKParser implements ExecutorParser {
     parse(text: string): ICheckResult[] {
         let errors: ICheckResult[] = [];
