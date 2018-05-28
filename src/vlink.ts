@@ -1,6 +1,5 @@
 import { workspace, Uri } from "vscode";
 import { ExecutorParser, ICheckResult, Executor } from "./executor";
-import * as fs from "fs";
 import * as path from "path";
 
 /**
