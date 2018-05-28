@@ -42,9 +42,7 @@ export class VLINKLinker {
             let args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathnames);
             return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, null, true, this.parser);
         } else {
-            return new Promise((resolve, reject) => {
-                reject("Please configure VLIN linker");
-            });
+            return Promise.reject("Please configure VLIN linker");
         }
     }
 }

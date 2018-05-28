@@ -28,16 +28,12 @@ export class VASMCompiler {
         if (conf && conf.enabled) {
             const editor = window.activeTextEditor;
             if (editor) {
-                return this.buildDocument(editor.document);
+                return this.buildDocument(editor.document).then(() => { return; });
             } else {
-                return new Promise((resolve, reject) => {
-                    reject("Current editor not selected");
-                });
+                return Promise.reject("Current editor not selected");
             }
         } else {
-            return new Promise((resolve, reject) => {
-                reject("VASM compilation is disabled in the configuration");
-            });
+            return Promise.reject("VASM compilation is disabled in the configuration");
         }
     }
 
@@ -45,15 +41,23 @@ export class VASMCompiler {
      * Build the selected document
      * @param document The document to build
      */
-    public buildDocument(document: TextDocument): Promise<void> {
-        let filename = document.fileName;
-        return this.buildFile(filename, false).then(errors => {
-            this.processGlobalErrors(document, errors);
-            this.executor.handleDiagnosticErrors(document, errors, DiagnosticSeverity.Error);
-            statusManager.diagnosticsStatusBarItem.hide();
-        }).catch(err => {
-            window.showInformationMessage('Error: ' + err);
-            statusManager.diagnosticsStatusBarItem.text = 'Build Failed';
+    public buildDocument(document: TextDocument): Promise<ICheckResult[]> {
+        let filename = document.uri.fsPath;
+        return new Promise((resolve, reject) => {
+            this.buildFile(filename, false).then(errors => {
+                this.processGlobalErrors(document, errors);
+                this.executor.handleDiagnosticErrors(document, errors, DiagnosticSeverity.Error);
+                statusManager.diagnosticsStatusBarItem.hide();
+                if (errors) {
+                    resolve(errors);
+                } else {
+                    resolve([]);
+                }
+            }).catch(err => {
+                window.showInformationMessage('Error: ' + err);
+                statusManager.diagnosticsStatusBarItem.text = 'Build Failed';
+                reject(err);
+            });
         });
     }
 
@@ -85,37 +89,38 @@ export class VASMCompiler {
         }
     }
 
-    public buildWorkspace(): Promise<any> {
-        let configuration = workspace.getConfiguration('amiga-assembly');
-        let confVLINK: any = configuration.get('vlink');
-        if (confVLINK && confVLINK.enabled) {
-            let includes = confVLINK.includes;
-            let excludes = confVLINK.excludes;
-            let exefilename = confVLINK.exefilename;
-            return this.buildWorkspaceInner(includes, excludes, exefilename);
-        } else {
-            return new Promise((resolve, reject) => {
+    public buildWorkspace(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            let configuration = workspace.getConfiguration('amiga-assembly');
+            let confVLINK: any = configuration.get('vlink');
+            if (confVLINK && confVLINK.enabled) {
+                let includes = confVLINK.includes;
+                let excludes = confVLINK.excludes;
+                let exefilename = confVLINK.exefilename;
+                resolve(this.buildWorkspaceInner(includes, excludes, exefilename));
+            } else {
                 reject("Please configure VASM compiler");
-            });
-        }
+            }
+        });
     }
 
     private buildWorkspaceInner(includes: string, excludes: string, exefilename: string): Promise<void> {
-        const workspaceRootDir = this.getWorkspaceRootDir();
-        const buildDir = this.getBuildDir();
-        if (workspaceRootDir && buildDir) {
-            return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
+            const workspaceRootDir = this.getWorkspaceRootDir();
+            const buildDir = this.getBuildDir();
+            if (workspaceRootDir && buildDir) {
                 workspace.findFiles(includes, excludes, undefined).then(filesURI => {
-                    let promises: Promise<void>[] = [];
+                    let promises: Thenable<ICheckResult[]>[] = [];
                     for (let i = 0; i < filesURI.length; i++) {
-                        workspace.openTextDocument(filesURI[i]).then(document => {
-                            promises.push(this.buildDocument(document));
-                        });
+                        const fileUri = filesURI[i];
+                        promises.push(workspace.openTextDocument(fileUri).then(document => {
+                            return this.buildDocument(document);
+                        }));
                     }
-                    Promise.all(promises).then((errosArray) => {
+                    return Promise.all(promises).then((errosArray) => {
                         for (let i = 0; i < errosArray.length; i += 1) {
-                            let errors: void = errosArray[i];
-                            if (errors) {
+                            let errors: ICheckResult[] = errosArray[i];
+                            if (errors && (errors.length > 0)) {
                                 reject("Build aborted: there are compile errors");
                             }
                         }
@@ -123,15 +128,14 @@ export class VASMCompiler {
                         return this.linker.linkFiles(filesURI, exefilename, workspaceRootDir, buildDir).then(errors => {
                             this.executor.handleDiagnosticErrors(undefined, errors, DiagnosticSeverity.Error);
                             statusManager.diagnosticsStatusBarItem.hide();
+                            resolve();
                         });
                     });
                 });
-            });
-        } else {
-            return new Promise((resolve, reject) => {
+            } else {
                 reject("Root workspace path not found");
-            });
-        }
+            }
+        });
     }
 
     /**
@@ -166,14 +170,10 @@ export class VASMCompiler {
                     return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vasmExecutableName, null, true, this.parser);
                 });
             } else {
-                return new Promise((resolve, reject) => {
-                    reject("Please configure VASM compiler");
-                });
+                return Promise.reject("Please configure VASM compiler");
             }
         } else {
-            return new Promise((resolve, reject) => {
-                reject("Root workspace path not found");
-            });
+            return Promise.reject("Root workspace path not found");
         }
     }
 
@@ -202,7 +202,7 @@ export class VASMCompiler {
      * Creates a directory
      * @param dirPath path to create
      */
-    mkdirSync(dirPath: string): Promise<any> {
+    mkdirSync(dirPath: string): Promise<void> {
         return new Promise((resolve, reject) => {
             try {
                 if (!fs.exists(dirPath)) {
