@@ -42,12 +42,10 @@ export class VASMCompiler {
      * @param document The document to build
      */
     public buildDocument(document: TextDocument): Promise<ICheckResult[]> {
-        let filename = document.uri.fsPath;
         return new Promise((resolve, reject) => {
-            this.buildFile(filename, false).then(errors => {
+            this.buildFile(document.uri, false).then(errors => {
                 this.processGlobalErrors(document, errors);
                 this.executor.handleDiagnosticErrors(document, errors, DiagnosticSeverity.Error);
-                statusManager.diagnosticsStatusBarItem.hide();
                 if (errors) {
                     resolve(errors);
                 } else {
@@ -91,6 +89,8 @@ export class VASMCompiler {
 
     public buildWorkspace(): Promise<void> {
         return new Promise((resolve, reject) => {
+            errorDiagnosticCollection.clear();
+            warningDiagnosticCollection.clear();
             let configuration = workspace.getConfiguration('amiga-assembly');
             let confVLINK: any = configuration.get('vlink');
             if (confVLINK && confVLINK.enabled) {
@@ -121,19 +121,21 @@ export class VASMCompiler {
                         for (let i = 0; i < errosArray.length; i += 1) {
                             let errors: ICheckResult[] = errosArray[i];
                             if (errors && (errors.length > 0)) {
-                                reject("Build aborted: there are compile errors");
+                                return reject("Build aborted: there are compile errors");
                             }
                         }
                         // Call the linker
                         return this.linker.linkFiles(filesURI, exefilename, workspaceRootDir, buildDir).then(errors => {
-                            this.executor.handleDiagnosticErrors(undefined, errors, DiagnosticSeverity.Error);
-                            statusManager.diagnosticsStatusBarItem.hide();
-                            resolve();
+                            if (errors && errors.length > 0) {
+                                return reject('Linker errors : ' + errors[0]);
+                            } else {
+                                return resolve();
+                            }
                         });
                     });
                 });
             } else {
-                reject("Root workspace path not found");
+                return reject("Root workspace path not found");
             }
         });
     }
@@ -143,16 +145,14 @@ export class VASMCompiler {
      * @param filepathname Path of the file to build
      * @param debug If true debug symbols are added
      */
-    public buildFile(filepathname: string, debug: boolean): Promise<ICheckResult[]> {
+    public buildFile(fileUri: Uri, debug: boolean): Promise<ICheckResult[]> {
         const workspaceRootDir = this.getWorkspaceRootDir();
         const buildDir = this.getBuildDir();
         if (workspaceRootDir && buildDir) {
-            let filename = path.basename(filepathname);
+            let filename = path.basename(fileUri.fsPath);
             let configuration = workspace.getConfiguration('amiga-assembly');
             let conf: any = configuration.get('vasm');
             if (conf) {
-                errorDiagnosticCollection.clear();
-                warningDiagnosticCollection.clear();
                 return this.mkdirSync(buildDir.fsPath).then(() => {
                     let vasmExecutableName: string = conf.file;
                     let extSep = filename.indexOf(".");
@@ -166,7 +166,9 @@ export class VASMCompiler {
                     if (debug) {
                         confArgs.push("-linedebug");
                     }
-                    let args: Array<string> = confArgs.concat(['-o', objFilename, filepathname]);
+                    let args: Array<string> = confArgs.concat(['-o', objFilename, fileUri.fsPath]);
+                    errorDiagnosticCollection.delete(fileUri);
+                    warningDiagnosticCollection.delete(fileUri);
                     return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vasmExecutableName, null, true, this.parser);
                 });
             } else {
@@ -229,7 +231,10 @@ export class VASMController {
             if (document.languageId !== 'm68k') {
                 return;
             }
-            compiler.buildDocument(document);
+            statusManager.onDefault();
+            compiler.buildDocument(document).catch(error => {
+                statusManager.onError(error);
+            });
         }, null, subscriptions);
 
         // create a combined disposable from both event subscriptions

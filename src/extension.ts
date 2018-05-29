@@ -20,8 +20,7 @@ export let calc: Calc;
 export function activate(context: vscode.ExtensionContext) {
     // Preparing the status manager
     statusManager = new StatusManager();
-    statusManager.diagnosticsStatusBarItem.text = "Starting Amiga Assembly";
-    statusManager.diagnosticsStatusBarItem.show();
+    statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', "Build Workspace");
     vscode.window.onDidChangeActiveTextEditor(statusManager.showHideStatus, null, context.subscriptions);
     context.subscriptions.push(statusManager);
 
@@ -78,7 +77,10 @@ export function activate(context: vscode.ExtensionContext) {
     let compiler = new VASMCompiler();
     // Build a file
     disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', () => {
-        return compiler.buildCurrentEditorFile();
+        statusManager.onDefault();
+        compiler.buildCurrentEditorFile().catch(error => {
+            statusManager.onError(error);
+        });
     });
     context.subscriptions.push(disposable);
     // Build on save
@@ -86,8 +88,13 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vController);
     // Build the workspace
     disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', () => {
-        return compiler.buildWorkspace();
+        statusManager.onDefault();
+        compiler.buildWorkspace().then(() => {
+            statusManager.onSuccess();
+        }).catch(error => {
+            statusManager.onError(error);
+        });
     });
     context.subscriptions.push(disposable);
-    statusManager.diagnosticsStatusBarItem.hide();
+    statusManager.outputChannel.appendLine("------> done");
 }

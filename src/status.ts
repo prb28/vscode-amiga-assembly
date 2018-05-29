@@ -33,11 +33,27 @@ export class StatusManager {
         this.outputChannel.dispose();
     }
     showStatus(message: string, command: string, tooltip?: string) {
-        this.statusBarEntry = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, Number.MIN_VALUE);
+        this.statusBarEntry = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         this.statusBarEntry.text = message;
         this.statusBarEntry.command = command;
-        this.statusBarEntry.color = 'yellow';
         this.statusBarEntry.tooltip = tooltip;
+        this.onDefault();
         this.statusBarEntry.show();
+    }
+    onDefault() {
+        if (this.statusBarEntry) {
+            this.statusBarEntry.color = 'yellow';
+        }
+    }
+    onSuccess() {
+        if (this.statusBarEntry) {
+            this.statusBarEntry.color = new vscode.ThemeColor('statusBar.foreground');
+        }
+    }
+    onError(message: string) {
+        vscode.window.showErrorMessage(message);
+        if (this.statusBarEntry) {
+            this.statusBarEntry.color = new vscode.ThemeColor('errorForeground');
+        }
     }
 }

@@ -5,6 +5,8 @@ import { capture, reset, spy, verify, anyString, when, anything, resetCalls } fr
 import { VASMCompiler, VASMParser } from '../vasm';
 import { Executor, ICheckResult } from '../executor';
 import { DummyTextDocument } from './dummy';
+import { StatusManager } from '../status';
+import { statusManager } from '../extension';
 
 describe("VASM Tests", function () {
     before(function () {
@@ -17,6 +19,7 @@ describe("VASM Tests", function () {
         let spiedCompiler: VASMCompiler;
         let executorCompiler: Executor;
         let executorLinker: Executor;
+        let spiedStatusManager: StatusManager;
         before(function () {
             compiler = new VASMCompiler();
             // installing a spy
@@ -26,20 +29,23 @@ describe("VASM Tests", function () {
             when(executorLinker.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenResolve([]);
             spiedCompiler = spy(compiler);
             when(spiedCompiler.getWorkspaceRootDir()).thenReturn(vscode.Uri.parse("file:///workdir"));
+            spiedStatusManager = spy(statusManager);
         });
         beforeEach(function () {
             resetCalls(spiedCompiler);
             resetCalls(executorCompiler);
             resetCalls(executorLinker);
+            resetCalls(spiedStatusManager);
         });
         it("Should call the compiler command", async function () {
             let spiedfs = spy(fs);
             when(spiedfs.mkdirSync(anyString())).thenCall(function () { });
             when(spiedfs.existsSync(anyString())).thenReturn(true);
-            await compiler.buildFile("file1.s", false);
+            let fileUri = vscode.Uri.file("file1.s");
+            await compiler.buildFile(fileUri, false);
             verify(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
             let args = capture(executorCompiler.runTool).last();
-            expect(args[0]).to.be.eql(["-kick1hunks", "-devpac", "-Fhunk", "-o", "/workdir/build/file1.o", "file1.s"]);
+            expect(args[0]).to.be.eql(["-kick1hunks", "-devpac", "-Fhunk", "-o", "/workdir/build/file1.o", "/file1.s"]);
             reset(spiedfs);
         });
         it("Should build the current editor file", async function () {
@@ -63,6 +69,7 @@ describe("VASM Tests", function () {
             error.msg = "file not found <myfile.i>";
             compiler.processGlobalErrors(document, [error]);
             expect(error.line).to.be.equal(2);
+
         });
         it("Should build the all the workspace", async function () {
             this.timeout(3000);
@@ -104,7 +111,8 @@ describe("VASM Tests", function () {
             let spiedfs = spy(fs);
             when(spiedfs.mkdirSync(anyString())).thenCall(function () { throw new Error("Not possible"); });
             when(spiedfs.existsSync(anyString())).thenReturn(false);
-            return compiler.buildFile("file1.s", false).then(() => {
+            let fileUri = vscode.Uri.file("file1.s");
+            return compiler.buildFile(fileUri, false).then(() => {
                 expect.fail("Should reject");
             }).catch(error => {
                 reset(spiedfs);

@@ -97,8 +97,8 @@ describe("Executor Tests", function () {
             warning2.msg = "warn0";
             warning2.severity = "warning";
             await ex.handleDiagnosticErrors(document, [error, warning, warning2], undefined);
-            verify(spiedErrorDiagnosticCollection.clear()).once();
-            verify(spiedWarningDiagnosticCollection.clear()).once();
+            verify(spiedErrorDiagnosticCollection.clear()).never();
+            verify(spiedWarningDiagnosticCollection.clear()).never();
             let [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
             if (newErrors instanceof Array) {
                 expect(newErrors.length).to.be.equal(1);
@@ -126,7 +126,7 @@ describe("Executor Tests", function () {
         });
         it("Should handle the Diagnostics of errors only", async () => {
             await ex.handleDiagnosticErrors(document, errors, vscode.DiagnosticSeverity.Error);
-            verify(spiedErrorDiagnosticCollection.clear()).once();
+            verify(spiedErrorDiagnosticCollection.clear()).never();
             verify(spiedWarningDiagnosticCollection.clear()).never();
             let [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
             if (newErrors instanceof Array) {
@@ -145,7 +145,7 @@ describe("Executor Tests", function () {
         it("Should handle the Diagnostics of waring only", async () => {
             await ex.handleDiagnosticErrors(document, errors, vscode.DiagnosticSeverity.Warning);
             verify(spiedErrorDiagnosticCollection.clear()).never();
-            verify(spiedWarningDiagnosticCollection.clear()).once();
+            verify(spiedWarningDiagnosticCollection.clear()).never();
             let [fileUri, newErrors] = capture(spiedWarningDiagnosticCollection.set).last();
             if (newErrors instanceof Array) {
                 expect(newErrors.length).to.be.equal(1);

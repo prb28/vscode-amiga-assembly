@@ -45,10 +45,12 @@ export class Executor {
                         console.log(`Cannot find ${cmd}`);
                         return resolve([]);
                     }
+                    outputChannel.appendLine(stdout);
+                    outputChannel.appendLine(stderr);
                     if (err && stderr && !useStdErr) {
+                        let errorMessage = ['Error while running tool:', cmd, ...args].join(' ');
                         outputChannel.appendLine(['Error while running tool:', cmd, ...args].join(' '));
-                        outputChannel.appendLine(stderr);
-                        return resolve([]);
+                        return reject(errorMessage);
                     }
                     let text = (useStdErr ? stderr : stdout).toString();
                     outputChannel.appendLine([cwd + '>Finished running tool:', cmd, ...args].join(' '));
@@ -64,13 +66,6 @@ export class Executor {
     }
 
     handleDiagnosticErrors(document: vscode.TextDocument | undefined, errors: ICheckResult[], diagnosticSeverity?: vscode.DiagnosticSeverity) {
-        if (diagnosticSeverity === undefined || diagnosticSeverity === vscode.DiagnosticSeverity.Error) {
-            errorDiagnosticCollection.clear();
-        }
-        if (diagnosticSeverity === undefined || diagnosticSeverity === vscode.DiagnosticSeverity.Warning) {
-            warningDiagnosticCollection.clear();
-        }
-
         let diagnosticMap: Map<string, Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>> = new Map();
         errors.forEach(error => {
             if (error.line <= 0) {

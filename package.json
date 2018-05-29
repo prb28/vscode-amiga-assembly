@@ -142,7 +142,7 @@
                     "default": {
                         "enabled": true,
                         "file": "vlink",
-                        "includes": "**/*.s",
+                        "includes": "**/*.{s,S,asm,ASM}",
                         "excludes": "",
                         "exefilename": "a.out",
                         "options": [
