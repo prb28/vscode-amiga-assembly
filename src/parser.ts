@@ -298,8 +298,8 @@ export class NumberParser {
         let binValueRegExp = /%([01]*)/g;
         let transformed = text;
         // look for an hex value
-        let match = hexValueRegExp.exec(transformed);
-        if (match) {
+        let match;
+        while (match = hexValueRegExp.exec(transformed)) {
             for (let i = 1; i < match.length; i++) {
                 let s = match[i];
                 let v = parseInt(s, 16);
@@ -307,8 +307,7 @@ export class NumberParser {
             }
         }
         // look for a binary value
-        match = binValueRegExp.exec(transformed);
-        if (match) {
+        while (match = binValueRegExp.exec(transformed)) {
             for (let i = 1; i < match.length; i++) {
                 let s = match[i];
                 let v = parseInt(s, 2);
