@@ -5,8 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- Integration of VASM
 - Debugging with FS-UAE
+
+### 0.6.0
+### Added
+- Integration of VASM : build and diagnostics in the editor
+- Integration of VLINK : linking the executable
+### Updated
+- m68k instruction set documentation (contribution from [Stephen Moody](https://github.com/SteveMoody73))
+### Fixed
+- [Issue #1](https://github.com/prb28/vscode-amiga-assembly/issues/1) Parsing error in calculator
 
 ### [0.5.0] - 2018-05-20
 ### Added

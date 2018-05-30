@@ -81,6 +81,12 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+### 0.6.0
+- Integration of VASM : build and diagnostics in the editor
+- Integration of VLINK : linking the executable
+- Updated m68k instruction set documentation (contribution from [Stephen Moody](https://github.com/SteveMoody73))
+- Bug fixes (see changelog)
+
 ### 0.5.0
 - Color provider
 - Added documentation for CIAA and CIAB
@@ -102,8 +108,10 @@ The assembly language will be formatted with the standard shortcuts :
 - Document Formatting
 
 ## Misc credits
+### Contributors
+- [Stephen Moody](https://github.com/SteveMoody73)
 ### Open source projects
-- MathCalc from Pavel Ivashkov, github.com/paiv: a parser for basic mathematical expressions From here: https://paiv.github.io/blog/2016/03/23/js-calc.html
+- MathCalc from [Pavel Ivashkov](https://github.com/paiv): a parser for basic mathematical expressions From here: https://paiv.github.io/blog/2016/03/23/js-calc.html
 ### Documentation sources
 - Amiga development: http://amiga-dev.wikidot.com/information:hardware
 - M68k instruction set: http://users.encs.concordia.ca/~aagarwal/coen311/motorola68000.txt
