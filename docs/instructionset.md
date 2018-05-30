@@ -1,6 +1,8 @@
 #  Motorola 68000 Instruction Set
 |Instruction|Description|Assembler Syntax|Data Size|X N Z V C|
 | ----------|---------- | -------------- | ------- | ------- |
+|ABCD|Add Decimal with Extend|Dy,Dx|B--|\* U \* U \*|
+|||-(Ay,-(Ax)|||
 |ADD|ADD binary|Dx,Dy|BWL|\* \* \* \* \*|
 |||Dn,\<ea\>|||
 |||\<ea\>,Dn|||
@@ -17,22 +19,23 @@
 |AND|Bit-wise AND|Dx,Dy|BWL|- \* \* 0 0|
 |||\<ea\>,Dn|||
 |||Dn,\<ea\>|||
-|ANDI|Bit-wise AND with Immediate|#<data>,Dn|BWL|- \* \* 0 0|
-|||#<data>,\<ea\>|||
+|ANDI|Bit-wise AND with Immediate|#\<data\>,Dn|BWL|- \* \* 0 0|
+|||#\<data\>,\<ea\>|||
 |ASL|Arithmetic Shift Left|#<1-8>,Dy|BWL|\* \* \* \* \*|
 |||Dx,Dy|||
 |||\<ea\>|||
 |ASR|Arithmetic Shift Right|...|BWL|\* \* \* \* \*|
-|Bcc|Conditional Branch|Bcc.B <label>|BW-|- - - - -|
-|||Bcc.W <label>|||
+|Bcc|Conditional Branch|Bcc.b \<label\>|BW-|- - - - -|
+|||Bcc.W \<label\>|||
 |BCHG|Test a Bit and CHanGe|Dn,\<ea\>|B-L|- - \* - -|
-|||#<data>,\<ea\>|||
+|||#\<data\>,\<ea\>|||
 |BCLR|Test a Bit and CLeaR|...|B-L|- - \* - -|
 |BSET|Test a Bit and SET|...|B-L|- - \* - -|
-|BSR|Branch to SubRoutine|BSR.S <label>|BW-|- - - - -|
-|||BSR.W <label>|||
+|BRA|BRanch Always|\<label\>|BW-|- - - - -|
+|BSR|Branch to Subroutine|BSR \<label\>|BW-|- - - - -|
+|||BSR.W \<label\>|||
 |BTST|Bit TeST|Dn,\<ea\>|B-L|- - \* - -|
-|||#<data>,\<ea\>|||
+|||#\<data\>,\<ea\>|||
 |CHK|CHecK Dn Against Bounds|\<ea\>,Dn|-W-|- \* U U U|
 |CLR|CLeaR|\<ea\>|BWL|- 0 1 0 0|
 |||Dn|||
@@ -40,26 +43,28 @@
 |||\<ea\>,Dn|||
 |CMPA|CoMPare Address|Rn,An|-WL|- \* \* \* \*|
 |||\<ea\>,An|||
-|||#<data>,An|||
-|CMPI|CoMPare Immediate|#<data>,Dn|BWL|- \* \* \* \*|
-|||#<data>,\<ea\>|||
+|||#\<data\>,An|||
+|CMPI|CoMPare Immediate|#\<data\>,Dn|BWL|- \* \* \* \*|
+|||#\<data\>,\<ea\>|||
 |CMPM|CoMPare Memory|(Ay)+,(Ax)+|BWL|- \* \* \* \*|
-|DBcc|Looping Instruction|DBcc Dn,<label>|-W-|- - - - -|
+|DBcc|Looping Instruction|DBcc Dn,\<label\>|-W-|- - - - -|
 |DIVS|DIVide Signed|Dx,Dy|-W-|- \* \* \* 0|
 |||\<ea\>,Dn|||
-|||#<data>,Dn|||
+|||#\<data\>,Dn|||
 |DIVU|DIVide Unsigned|Dx,Dy|-W-|- \* \* \* 0|
 |||\<ea\>,Dn|||
-|||#<data>,Dn|||
+|||#\<data\>,Dn|||
 |EOR|Exclusive OR|Dx,Dy|BWL|- \* \* 0 0|
 |||Dn,\<ea\>|||
-|EORI|Exclusive OR Immediate|#<data>,Dn|BWL|- \* \* 0 0|
-|||#<data>,\<ea\>|||
+|EORI|Exclusive OR Immediate|#\<data\>,Dn|BWL|- \* \* 0 0|
+|||#\<data\>,\<ea\>|||
 |EXG|Exchange any two registers|Rx,Ry|--L|- - - - -|
 |EXT|Sign EXTend|Dn|-WL|- \* \* 0 0|
+|ILLEGAL|Take Illegal Instruction Trap||---|- - - - -|
 |JMP|JuMP to Affective Address|\<ea\>|- - - - -|
 |JSR|Jump to SubRoutine|\<ea\>|- - - - -|
 |LEA|Load Effective Address|\<ea\>,An|--L|- - - - -|
+|LINK|Link and Allocate|An,#\<displacement\>|-W-|- - - - -|
 |LSL|Logical Shift Left|Dx,Dy|BWL|\* \* \* 0 \*|
 |||#<1-8>,Dy|||
 |||\<ea\>|||
@@ -69,12 +74,12 @@
 |||Dn,\<ea\>|BWL|- \* \* 0 0|
 |||\<ea\>,Dn|BWL|- \* \* 0 0|
 |||\<ea\>,\<ea\>|BWL|- \* \* 0 0|
-|||#<data>,Dn|BWL|- \* \* 0 0|
-|||#<data>,\<ea\> BWL|- \* \* 0 0|
+|||#\<data\>,Dn|BWL|- \* \* 0 0|
+|||#\<data\>,\<ea\> BWL|- \* \* 0 0|
 |MOVEA|MOVE Address|Dn,An|-WL|- - - - -|
 |||\<ea\>,An|||
 |||An,\<ea\>|||
-|||#<data>,An|||
+|||#\<data\>,An|||
 |MOVE|To CCR|\<ea\>,CCR|-W-|I I I I I|
 |MOVE|To SR|\<ea\>,SR|-W-|I I I I I|
 |MOVE|From SR|SR,\<ea\>|-W-|- - - - -|
@@ -82,13 +87,16 @@
 |||An,USP|||
 |MOVEM|MOVE Multiple|<register list>,\<ea\> -WL|- - - - -|
 |||\<ea\>,<register list>|||
+|MOVEP|Move Peripheral Data|Dx,(d16,Ay)|-WL|- - - - -|
+|||(d16,Ay),Dx|||
 |MOVEQ|MOVE 8-bit immediate|#<-128.+127>,Dn|--L|- \* \* 0 0|
 |MULS|MULtiply Signed|Dx,Dy|-W-|- \* \* 0 0|
 |||\<ea\>,Dn|||
-|||#<data>,Dn|||
+|||#\<data\>,Dn|||
 |MULU|MULtiply Unsigned|Dx,Dy|-W-|- \* \* 0 0|
 |||\<ea\>,Dn|||
-|||#<data>,Dn|||
+|||#\<data\>,Dn|||
+|NBCD|Negate Decimal with Extend|\<ea\>|B--|\* U \* U \*|
 |NEG|NEGate|Dn|BWL|\* \* \* \* \*|
 |||\<ea\>|||
 |NEGX|NEGate with eXtend|Dn|BWL|\* \* \* \* \*|
@@ -99,8 +107,10 @@
 |OR|Bit-wise OR|\<ea\>,Dn|BWL|- \* \* 0 0|
 |||Dn,\<ea\>|||
 |||Dx,Dy|||
-|ORI|Bit-wise OR with Immediate|#<data>,\<ea\>|BWL|- \* \* 0 0|
-|||#<data>,Dn|||
+|ORI|Bit-wise OR with Immediate|#\<data\>,\<ea\>|BWL|- \* \* 0 0|
+|||#\<data\>,Dn|||
+|PEA|Push Effective Address|\<ea\>|--L|- - - - -|
+|RESET|Reset External Devices||---|- - - - -|
 |ROL|ROtate Left|#<1-8>,Dy|BWL|- \* \* 0 \*|
 |||Dx,Dy|||
 |||\<ea\>|||
@@ -110,12 +120,30 @@
 |RTE|ReTurn from Exception|RTE|I I I I I|
 |RTR|ReTurn and Restore|RTR|I I I I I|
 |RTS|ReTurn from Subroutine|RTS|- - - - -|
-|SUBtract SAME as ADDITION||
+|SBCD|Subtract Decimal with Extend|Dx,Dy|B--|\* U \* U \*|
+|||-(Ax),-(Ay)|||
+|Scc|Set Conditionally|\<ea\>|B--|- - - - -|
+|STOP|Load Status Register and Stop|#\<data\>|---|I I I I I|
+|SUB|SUB binary|Dx,Dy|BWL|\* \* \* \* \*|
+|||Dn,\<ea\>|||
+|||\<ea\>,Dn|||
+|SUBA|SUBtract binary to An|Rn,An|-WL|- - - - -|
+|||\<ea\>,An|||
+|SUBI|SUBtract Immediate|#x,Dn|BWL|\* \* \* \* \*|
+|||#x,\<ea\>|||
+|||#x,An|-W|- - - - -|
+|SUBQ|SUBtract 3-bit immediate|#<1-8>,Dn|BWL|\* \* \* \* \*|
+|||#<1-8>,\<ea\>|||
+|||#<1-8>,An|-WL|- - - - -|
+|SUBX|SUBtract eXtended|Dy,Dx|BWL|\* \* \* \* \*|
+|||-(Ay),-(Ax)|||
 |SWAP|SWAP words of Dn|Dn|-W-|- \* \* 0 0|
-|TRAP|Execute TRAP Exception|#<vector>|- - - - -|
-|TRAPV|TRAPV Exception if V-bit Set|TRAPV|- - - - -|
+|TAS|Test and Set and Operand|\<ea\>|B--|- 1 \* 0 0 |
+|TRAP|Execute TRAP Exception|#\<vector\>|- - - - -|
+|TRAPV|TRAPV Exception on Overflow bit Set|TRAPV|- - - - -|
 |TST|TeST for negative or zero|\<ea\>|BWL|- \* \* 0 0|
 |||Dn|||
+|UNLK|Unlink|An|---|- - - - -|
 
 move.l #228,d7	To STOP Execution
 trap   #14
