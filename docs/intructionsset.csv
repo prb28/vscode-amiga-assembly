@@ -1,3 +1,5 @@
+ABCD;ADD Decimal with Extend;Dx,Dy;B--;*;U;*;U;*
+ABCD;ADD Decimal with Extend;-(Ay),-A(Ax);B--;*;U;*;U;*
 ADD;ADD binary;Dx,Dy;BWL;*;*;*;*;*
 ADD;ADD binary;Dn,<ea>;BWL;*;*;*;*;*
 ADD;ADD binary;<ea>,Dn;BWL;*;*;*;*;*
@@ -22,12 +24,26 @@ ASL;Arithmetic Shift Left;<ea>;BWL;*;*;*;*;*
 ASR;Arithmetic Shift Right;#<1-8>,Dy;BWL;*;*;*;*;*
 ASR;Arithmetic Shift Right;Dx,Dy;BWL;*;*;*;*;*
 ASR;Arithmetic Shift Right;<ea>;BWL;*;*;*;*;*
-Bcc;Conditional Branch;Bcc.B <label>;BW-;*;*;*;*;*
-Bcc;Conditional Branch;Bcc.W <label>;BW-;*;*;*;*;*
+BCC;Branch if Carry Clear;BCC <label>;BW-;*;*;*;*;*
+BCS;Branch if Carry Set;BCS <label>;BW-;*;*;*;*;*
+BEQ;Branch if Equal;BEQ <label>;BW-;*;*;*;*;*
+BGE;Branch if Greater than or Equal;BGE <label>;BW-;*;*;*;*;*
+BGT;Branch if Greater than;BGT <label>;BW-;*;*;*;*;*
+BHI;Branch if Higher;BHI <label>;BW-;*;*;*;*;*
+BLE;Branch if Less than or Equal;BLE <label>;BW-;*;*;*;*;*
+BLS;Branch if Lower or same;BLS <label>;BW-;*;*;*;*;*
+BLT;Branch if Less than;BLT <label>;BW-;*;*;*;*;*
+BMI;Branch if Minus;BMI <label>;BW-;*;*;*;*;*
+BNE;Branch if Not Equal;BNE <label>;BW-;*;*;*;*;*
+BPL;Branch if Plus;BPL <label>;BW-;*;*;*;*;*
+BVC;Branch if Overflow Clear;BVC <label>;BW-;*;*;*;*;*
+BVS;Branch if Overflow Set;BVS <label>;BW-;*;*;*;*;*
 BCHG;Test a Bit and CHanGe;Dn,<ea>;B-L;-;-;*;-;-
 BCHG;Test a Bit and CHanGe;#<data>,<ea>;B-L;-;-;*;-;-
 BCLR;Test a Bit and CLeaR;...;B-L;-;-;*;-;-
 BSET;Test a Bit and SET;...;B-L;-;-;*;-;-
+BRA;BRanch Always;BRA.S <label>;BW-;*;*;*;*;*
+BRA;BRanch Always;BRA.W <label>;BW-;*;*;*;*;*
 BSR;Branch to SubRoutine;BSR.S <label>;BW-;*;*;*;*;*
 BSR;Branch to SubRoutine;BSR.W <label>;BW-;*;*;*;*;*
 BTST;Bit TeST;Dn,<ea>;B-L;-;-;*;-;-
@@ -43,7 +59,22 @@ CMPA;CoMPare Address;#<data>,An;-WL;-;*;*;*;*
 CMPI;CoMPare Immediate;#<data>,Dn;BWL;-;*;*;*;*
 CMPI;CoMPare Immediate;<data>,<ea>;BWL;-;*;*;*;*
 CMPM;CoMPare Memory;(Ay)+,(Ax)+; BWL;-;*;*;*;*
-DBcc;Looping Instruction;DBcc Dn,<label>;-W-;*;*;*;*;*
+DBCC;Decrement and Branch if Carry Clear;DBCC Dn,<label>;-W-;*;*;*;*;*
+DBCS;Decrement and Branch if Carry Set;DBCS Dn,<label>;-W-;*;*;*;*;*
+DBEQ;Decrement and Branch if Equal;DBEQ Dn,<label>;-W-;*;*;*;*;*
+DBF;Decrement and Branch if False;DBF Dn,<label>;-W-;*;*;*;*;*
+DBGE;Decrement and Branch if Greater than or Equal;DBGE Dn,<label>;-W-;*;*;*;*;*
+DBGT;Decrement and Branch if Greater than;DBGT Dn,<label>;-W-;*;*;*;*;*
+DBHI;Decrement and Branch if Higher;DBHI Dn,<label>;-W-;*;*;*;*;*
+DBLE;Decrement and Branch if Less than or Equal;DBLE Dn,<label>;-W-;*;*;*;*;*
+DBLS;Decrement and Branch if Lower or Same;DBLS Dn,<label>;-W-;*;*;*;*;*
+DBLT;Decrement and Branch if Less than;DBTL Dn,<label>;-W-;*;*;*;*;*
+DBMI;Decrement and Branch if Minus;DBcc MI,<label>;-W-;*;*;*;*;*
+DBNE;Decrement and Branch if Not Equal;DBNE Dn,<label>;-W-;*;*;*;*;*
+DBPL;Decrement and Branch if Plus;DBPL Dn,<label>;-W-;*;*;*;*;*
+DBT;Decrement and Branch if True;DBT Dn,<label>;-W-;*;*;*;*;*
+DBVC;Decrement and Branch if Overflow Clear;DBVC Dn,<label>;-W-;*;*;*;*;*
+DBVS;Decrement and Branch if Overflow Set;DBcc Dn,<label>;-W-;*;*;*;*;*
 DIVS;DIVide Signed;Dx,Dy;-W-;-;*;*;*;0
 DIVS;DIVide Signed;<ea>,Dn;-W-;-;*;*;*;0
 DIVS;DIVide Signed;#<data>,Dn;-W-;-;*;*;*;0
@@ -56,8 +87,10 @@ EORI;Exclusive OR Immediate;#<data>,Dn;BWL;-;*;*;0;0
 EORI;Exclusive OR Immediate;<data>,<ea>;BWL;-;*;*;0;0
 EXG;Exchange any two registers;Rx,Ry;--L;*;*;*;*;*
 EXT;Sign EXTend;Dn;-WL;-;*;*;0;0
+ILLEGAL;Take Illegal Trap Instruction;;---;-;-;-;-;-
 JMP;JuMP to Affective Address;<ea>;;*;*;*;*;*
 JSR;Jump to SubRoutine;<ea>;;*;*;*;*;*
+LINK;Link and Allocate;An,#<displacement>;-W-;-;-;-;-;-
 LEA;Load Effective Address;<ea>,An;--L;*;*;*;*;*
 LSL;Logical Shift Left;Dx,Dy;BWL;*;*;*;0;*
 LSL;Logical Shift Left;#<1-8>,Dy;BWL;*;*;*;0;*
@@ -81,6 +114,8 @@ MOVE;USP to/from Address Register;USP,An;--L;*;*;*;*;*
 MOVE;USP to/from Address Register;An,USP;--L;*;*;*;*;*
 MOVEM;MOVE Multiple;<register list>,<ea>;-WL;*;*;*;*;*
 MOVEM;MOVE Multiple;<ea>,<register list>;-WL;*;*;*;*;*
+MOVEP;MOVE Perpheral Data;<Dn>,(d16,<An>);-WL;-;-;-;-;-
+MOVEP;MOVE Perpheral Data;(d16,<An>),<Dn>;-WL;-;-;-;-;-
 MOVEQ;MOVE 8-bit immediate;#<-128.+127>,Dn;--L;-;*;*;0;0
 MULS;MULtiply Signed;Dx,Dy;-W-;-;*;*;0;0
 MULS;MULtiply Signed;<ea>,Dn;-W-;-;*;*;0;0
@@ -88,6 +123,7 @@ MULS;MULtiply Signed;#<data>,Dn;-W-;-;*;*;0;0
 MULU;MULtiply Unsigned;Dx,Dy;-W-;-;*;*;0;0
 MULU;MULtiply Unsigned;<ea>,Dn;-W-;-;*;*;0;0
 MULU;MULtiply Unsigned;#<data>,Dn;-W-;-;*;*;0;0
+NBCD;Negate Decimal with Extend;<ea>;B--;*;U;*;U;*
 NEG;NEGate;Dn;BWL;*;*;*;*;*
 NEG;NEGate;<ea>;BWL;*;*;*;*;*
 NEGX;NEGate with eXtend;Dn;BWL;*;*;*;*;*
@@ -100,6 +136,8 @@ OR;Bit-wise OR;<ea>,Dn,<ea>;BWL;-;*;*;0;0
 OR;Bit-wise OR;<ea>,Dx,Dy;BWL;-;*;*;0;0
 ORI;Bit-wise OR with Immediate;#<data>,<ea>;BWL;-;*;*;0;0
 ORI;Bit-wise OR with Immediate;#<data>,Dn;BWL;-;*;*;0;0
+PEA;Push Effective Address;<ea>;--L;-;-;-;-;-
+RESET;Reset External Devices;;---;-;-;-;-;-
 ROL;ROtate Left;#<1-8>,Dy;BWL;-;*;*;0;*
 ROL;ROtate Left;#<1-8>,Dx,Dy;BWL;-;*;*;0;*
 ROL;ROtate Left;#<1-8>,<ea>;BWL;-;*;*;0;*
@@ -109,6 +147,23 @@ ROXR;ROtate Right with eXtend;...;BWL;*;*;*;0;*
 RTE;ReTurn from Exception;RTE;;I;I;I;I;I
 RTR;ReTurn and Restore;RTR;;I;I;I;I;I
 RTS;ReTurn from Subroutine;RTS;;*;*;*;*;*
+SBCD;Subtract Decimal with Extend;<ea>;B--;*;U;*;U;*
+SCC;Set Conditionally if Carry Clear;SCC <ea>;B--;*;*;*;*;*
+SCS;Set Conditionally if Carry Set;SCS <ea>;B--;*;*;*;*;*
+SEQ;Set Conditionally if Equal;SEQ <ea>;B--;*;*;*;*;*
+SF;Set Conditionally if False;SF <ea>;B--;*;*;*;*;*
+SGE;Set Conditionally if Greater than or Equal;SGE <ea>;B--;*;*;*;*;*
+SGT;Set Conditionally if Greater than;SGT <ea>;B--;*;*;*;*;*
+SHI;Set Conditionally if High;SHI <ea>;B--;*;*;*;*;*
+SLE;Set Conditionally if Less than or Equal;SLE <ea>;B--;*;*;*;*;*
+SLS;Set Conditionally if Low or Same;SLS <ea>;B--;*;*;*;*;*
+SMI;Set Conditionally if Minus;SMI <ea>;B--;*;*;*;*;*
+SNE;Set Conditionally if Not Equal;SNE <ea>;B--;*;*;*;*;*
+SPL;Set Conditionally if Plus;SPL <ea>;B--;*;*;*;*;*
+ST;Set Conditionally if True;ST <ea>;B--;*;*;*;*;*
+SVC;Set Conditionally if Overflow Clear;SVC <ea>;B--;*;*;*;*;*
+SVS;Set Conditionally if Overflow Set;SCC <ea>;B--;*;*;*;*;*
+STOP;Load Status Register and Stop;#<data>;---;*;*;*;*;*
 SUB;SUB binary;Dx,Dy,Dn;BWL;*;*;*;*;*
 SUB;SUB binary;Dn,<ea>;BWL;*;*;*;*;*
 SUB;SUB binary;<ea>,Dn;BWL;*;*;*;*;*
@@ -123,7 +178,9 @@ SUBQ;SUB 3-bit immediate;#<1-8>,An;-WL;*;*;*;*;*
 SUBX;SUB eXtended;Dy,Dx;BWL;*;*;*;*;*
 SUBX;SUB eXtended;-(Ay),-(Ax);BWL;*;*;*;*;*
 SWAP;SWAP words of Dn;Dn;-W-;-;*;*;0;0
+TAS;Test And Set operand;<ea>;B--;-;1;*;0;0
 TRAP;Execute TRAP Exception;#<vector>;;*;*;*;*;*
 TRAPV;TRAPV Exception if V-bit Set;TRAPV;;*;*;*;*;*
 TST;TeST for negative or zero;<ea>;BWL;-;*;*;0;0
 TST;TeST for negative or zero;Dn;BWL;-;*;*;0;0
+UNLK;Unlink;An;---;-;-;-;-;-
