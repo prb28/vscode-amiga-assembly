@@ -164,18 +164,22 @@ export class HoverInstructionsManager {
         // Creating the relative path to find the test file
         const filePath = path.join(__dirname, "..", "docs", "intructionsset.csv");
         var lines = fs.readFileSync(filePath, 'utf8').split('\n');
+        var lineIndex = 0;
         for (let line of lines) {
-            let hi = HoverInstruction.parse(line);
-            if (hi) {
-                let list = this.instructions.get(hi.instruction);
-                if (!list) {
-                    list = new Array<HoverInstruction>();
+            if (line.length > 0) {
+                let hi = HoverInstruction.parse(line);
+                if (hi) {
+                    let list = this.instructions.get(hi.instruction);
+                    if (!list) {
+                        list = new Array<HoverInstruction>();
+                    }
+                    list.push(hi);
+                    this.instructions.set(hi.instruction, list);
+                } else {
+                    console.error("Error parsing file 'intructionsset.csv' on line [" + lineIndex + "]: '" + line + "'");
                 }
-                list.push(hi);
-                this.instructions.set(hi.instruction, list);
-            } else {
-                console.error("Error parsing file 'intructionsset.csv' on line : " + line);
             }
+            lineIndex += 1;
         }
     }
 }
