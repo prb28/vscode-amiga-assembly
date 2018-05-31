@@ -7,7 +7,8 @@ Amiga Assembly for Visual Studio Code is a extension to support assembly languag
 ## New in 0.6.0
 ### VASM and VLINK integration
 You can compile your program with [VASM](http://sun.hasenbraten.de/vasm/) and [VLINK](http://sun.hasenbraten.de/vlink/).
-EA:
+
+Setup:
 - Download sources and compile VASM : http://sun.hasenbraten.de/vasm/index.php?view=compile
 - Download sources and compile VLINK : http://sun.hasenbraten.de/vlink/index.php?view=compile
 - Configure Amiga Assembly (don't forget to enable VASM and VLINK):
@@ -109,9 +110,9 @@ The assembly language will be formatted with the standard shortcuts :
 
 ![Simple calculator command](images/calculator.gif)
 
-- Selection text to calculate
+- Selecting text to calculate
 
-![Selection text to calculate](images/evaluatesel.gif)
+![Selecting text to calculate](images/evaluatesel.gif)
 
 - Replacing the text by the result
 

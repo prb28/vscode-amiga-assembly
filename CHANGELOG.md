@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - Debugging with FS-UAE
 
-### 0.6.0
+### [0.6.0]
 ### Added
 - Integration of VASM : build and diagnostics in the editor
 - Integration of VLINK : linking the executable
