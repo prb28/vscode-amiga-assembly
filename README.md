@@ -4,9 +4,56 @@
 # Amiga Assembly for Visual Studio Code
 Amiga Assembly for Visual Studio Code is a extension to support assembly language for the Amiga Motorolla 68000 machines and emulators.
 
+## New in 0.6.0
+### VASM and VLINK integration
+You can compile your program with [VASM](http://sun.hasenbraten.de/vasm/) and [VLINK](http://sun.hasenbraten.de/vlink/).
+EA:
+- Download sources and compile VASM : http://sun.hasenbraten.de/vasm/index.php?view=compile
+- Download sources and compile VLINK : http://sun.hasenbraten.de/vlink/index.php?view=compile
+- Configure Amiga Assembly (don't forget to enable VASM and VLINK):
+```
+{
+    "amiga-assembly.vasm": {
+        "enabled": true,
+        "file": "my/path/to/vasmm68k_mot",
+        "options": [
+            "-kick1hunks",
+            "-devpac",
+            "-Fhunk",
+            "-w",
+            "-chklabels"
+        ]
+    },
+    "amiga-assembly.vlink": {
+        "enabled": true,
+        "file": "my/path/to/vlink",
+        "includes": "**/*.{s,S,asm,ASM}",
+        "excludes": "",
+        "exefilename": "a.out",
+        "options": [
+            "-bamigahunk",
+            "-Bstatic"
+        ]
+    }
+}
+```
+- Relaunch Visual Studio Code
+
+Now you can launch the build :
+- Saving a file will produce a file in the build directory : 'build/myfile.o'.
+- or Ctrl + Shift + P (or Command + Shift + P on Mac), and then search for Build Workspace: all the files will be built and the executable will be created.
+- or click on the "Build" button on the satus bar to build the workspace.
+
+![Output window screenshot](images/buildworkspace.gif)
+
+### Compilation diagnostics
+VASM will produce errors in the editor.
+There is a output window to see the raw output from the compiler and linker.
+
+![Diagnostics screenshot](images/diagnostics.gif)
+
 
 ## Features
-
 ### Motorola 68K Assembly Language Support
 This feature is based on the work of Steve Saunders for Sublime Text m68k extension, it's available at https://github.com/stevenjs/M68k-Assembly. Some keywords have been added to be more accurate with the Amiga assembly.
 
@@ -112,6 +159,7 @@ The assembly language will be formatted with the standard shortcuts :
 - [Stephen Moody](https://github.com/SteveMoody73)
 ### Open source projects
 - MathCalc from [Pavel Ivashkov](https://github.com/paiv): a parser for basic mathematical expressions From here: https://paiv.github.io/blog/2016/03/23/js-calc.html
+- [VASM](http://sun.hasenbraten.de/vasm/index.php?view=main) and [VLINK](http://sun.hasenbraten.de/vlink/index.php?view=main) from Volker Barthelmann and Frank Wille : compilation and linking for amiga m68k
 ### Documentation sources
 - Amiga development: http://amiga-dev.wikidot.com/information:hardware
 - M68k instruction set: http://users.encs.concordia.ca/~aagarwal/coen311/motorola68000.txt

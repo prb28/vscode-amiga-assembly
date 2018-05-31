@@ -97,7 +97,7 @@
                     },
                     "default": {
                         "enabled": false,
-                        "file": "vasmm68k_mot",
+                        "file": "my/path/to/vasmm68k_mot",
                         "options": [
                             "-kick1hunks",
                             "-devpac",
@@ -141,7 +141,7 @@
                     },
                     "default": {
                         "enabled": false,
-                        "file": "vlink",
+                        "file": "my/path/to/vlink",
                         "includes": "**/*.{s,S,asm,ASM}",
                         "excludes": "",
                         "exefilename": "a.out",
