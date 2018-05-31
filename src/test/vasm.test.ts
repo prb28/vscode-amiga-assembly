@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as fs from "fs";
 import { capture, reset, spy, verify, anyString, when, anything, resetCalls } from 'ts-mockito';
-import { VASMCompiler, VASMParser } from '../vasm';
+import { VASMCompiler, VASMParser, VASMController } from '../vasm';
 import { Executor, ICheckResult } from '../executor';
 import { DummyTextDocument } from './dummy';
 import { StatusManager } from '../status';
@@ -78,7 +78,7 @@ describe("VASM Tests", function () {
             when(spiedfs.existsSync(anyString())).thenReturn(true);
             let spiedWorkspace = spy(vscode.workspace);
             let file1 = vscode.Uri.parse("file:///file1.s");
-            let file2 = vscode.Uri.parse("file:///file2.s");
+            let file2 = vscode.Uri.parse("file:///file2");
             when(spiedWorkspace.findFiles(anything(), anything(), anything())).thenReturn(new Promise((resolve, reject) => {
                 resolve([file1, file2]);
             }));
@@ -92,20 +92,19 @@ describe("VASM Tests", function () {
                 document.uri = file2;
                 resolve(document);
             }));
-            return compiler.buildWorkspace().then(function () {
-                verify(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).twice();
-                verify(executorLinker.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
-                verify(executorLinker.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).calledAfter(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything()));
+            await compiler.buildWorkspace();
+            verify(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).twice();
+            verify(executorLinker.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
+            verify(executorLinker.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).calledAfter(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything()));
 
-                let args = capture(executorCompiler.runTool).last();
-                expect(args[0]).to.be.eql(["-kick1hunks", "-devpac", "-Fhunk", "-o", "/workdir/build/file2.o", "/file2.s"]);
-                args = capture(executorCompiler.runTool).beforeLast();
-                expect(args[0]).to.be.eql(["-kick1hunks", "-devpac", "-Fhunk", "-o", "/workdir/build/file1.o", "/file1.s"]);
+            let args = capture(executorCompiler.runTool).last();
+            expect(args[0]).to.be.eql(["-kick1hunks", "-devpac", "-Fhunk", "-o", "/workdir/build/file2.o", "/file2"]);
+            args = capture(executorCompiler.runTool).beforeLast();
+            expect(args[0]).to.be.eql(["-kick1hunks", "-devpac", "-Fhunk", "-o", "/workdir/build/file1.o", "/file1.s"]);
 
-                args = capture(executorLinker.runTool).last();
-                expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", "/workdir/build/a.out", "/workdir/build/file1.o", "/workdir/build/file2.o"]);
-                reset(spiedfs);
-            });
+            args = capture(executorLinker.runTool).last();
+            expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", "/workdir/build/a.out", "/workdir/build/file1.o", "/workdir/build/file2.o"]);
+            reset(spiedfs);
         });
         it("Should return an error if the build dir does not exists", function () {
             let spiedfs = spy(fs);
@@ -118,6 +117,83 @@ describe("VASM Tests", function () {
                 reset(spiedfs);
                 expect(error.message).to.be.equal("Not possible");
             });
+        });
+        it("Should return an error on buid document if the compiler is not enabled", function () {
+            let spiedfs = spy(fs);
+            when(spiedfs.mkdirSync(anyString())).thenCall(function () { });
+            when(spiedfs.existsSync(anyString())).thenReturn(true);
+            when(spiedCompiler.mayCompile(anything())).thenReturn(false);
+            let fileUri = vscode.Uri.file("file1.s");
+            return compiler.buildFile(fileUri, false).then(() => {
+                expect.fail("Should reject");
+                reset(spiedfs);
+            }).catch(error => {
+                reset(spiedfs);
+                expect(error).to.be.equal("Please configure VASM compiler");
+            });
+        });
+        it("Should return an error on build workspace if the compiler is not enabled", function () {
+            let spiedfs = spy(fs);
+            when(spiedfs.mkdirSync(anyString())).thenCall(function () { });
+            when(spiedfs.existsSync(anyString())).thenReturn(true);
+            when(spiedCompiler.mayCompile(anything())).thenReturn(false);
+            return compiler.buildWorkspace().then(() => {
+                expect.fail("Should reject");
+                reset(spiedfs);
+            }).catch(error => {
+                reset(spiedfs);
+                expect(error).to.be.equal("Please configure VASM compiler");
+            });
+        });
+        it.skip("Should build even if the linker is disable", async function () {
+            let spiedfs = spy(fs);
+            this.timeout(3000);
+            when(spiedfs.mkdirSync(anyString())).thenCall(function () { });
+            when(spiedfs.existsSync(anyString())).thenReturn(true);
+            let spiedWorkspace = spy(vscode.workspace);
+            let file1 = vscode.Uri.parse("file:///file1.s");
+            let file2 = vscode.Uri.parse("file:///file2");
+            when(spiedWorkspace.findFiles(anything(), anything(), anything())).thenReturn(new Promise((resolve, reject) => {
+                resolve([file1, file2]);
+            }));
+            when(spiedWorkspace.openTextDocument(file1)).thenReturn(new Promise((resolve, reject) => {
+                let document = new DummyTextDocument();
+                document.uri = file1;
+                resolve(document);
+            }));
+            when(spiedWorkspace.openTextDocument(file2)).thenReturn(new Promise((resolve, reject) => {
+                let document = new DummyTextDocument();
+                document.uri = file2;
+                resolve(document);
+            }));
+            let spiedLinker = spy(compiler.linker);
+            when(spiedCompiler.mayCompile(anything())).thenReturn(true);
+            when(spiedLinker.mayLink(anything())).thenReturn(false);
+            await compiler.buildWorkspace();
+            reset(spiedLinker);
+        });
+    });
+    context("VASMController", function () {
+        it("Should build the current document on save", async () => {
+            let compiler = new VASMCompiler();
+            const spiedCompiler = spy(compiler);
+            const spiedStatus = spy(statusManager);
+            let controller = new VASMController(compiler);
+            let document = new DummyTextDocument();
+
+            when(spiedCompiler.buildDocument(anything())).thenCall(() => { return Promise.resolve(); });
+            await controller.onSaveDocument(document);
+            verify(spiedCompiler.buildDocument(anything())).once();
+            verify(spiedStatus.onDefault()).once();
+            verify(spiedStatus.onSuccess()).never(); // On success is only for the workspace
+            // Generating a build error
+            resetCalls(spiedCompiler);
+            resetCalls(spiedStatus);
+            when(spiedCompiler.buildDocument(anything())).thenCall(() => { return Promise.reject("nope"); });
+            await controller.onSaveDocument(document);
+            verify(spiedCompiler.buildDocument(anything())).once();
+            verify(spiedStatus.onDefault()).once();
+            verify(spiedStatus.onError("nope")).once();
         });
     });
     context("VASMParser", function () {

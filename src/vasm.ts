@@ -25,7 +25,7 @@ export class VASMCompiler {
     public buildCurrentEditorFile(): Promise<void> {
         let configuration = workspace.getConfiguration('amiga-assembly');
         let conf: any = configuration.get('vasm');
-        if (conf && conf.enabled) {
+        if (this.mayCompile(conf)) {
             const editor = window.activeTextEditor;
             if (editor) {
                 return this.buildDocument(editor.document).then(() => { return; });
@@ -52,8 +52,6 @@ export class VASMCompiler {
                     resolve([]);
                 }
             }).catch(err => {
-                window.showInformationMessage('Error: ' + err);
-                statusManager.diagnosticsStatusBarItem.text = 'Build Failed';
                 reject(err);
             });
         });
@@ -92,12 +90,17 @@ export class VASMCompiler {
             errorDiagnosticCollection.clear();
             warningDiagnosticCollection.clear();
             let configuration = workspace.getConfiguration('amiga-assembly');
-            let confVLINK: any = configuration.get('vlink');
-            if (confVLINK && confVLINK.enabled) {
-                let includes = confVLINK.includes;
-                let excludes = confVLINK.excludes;
-                let exefilename = confVLINK.exefilename;
-                resolve(this.buildWorkspaceInner(includes, excludes, exefilename));
+            let conf: any = configuration.get('vasm');
+            if (this.mayCompile(conf)) {
+                let confVLINK: any = configuration.get('vlink');
+                if (confVLINK) {
+                    let includes = confVLINK.includes;
+                    let excludes = confVLINK.excludes;
+                    let exefilename = confVLINK.exefilename;
+                    resolve(this.buildWorkspaceInner(includes, excludes, exefilename));
+                } else {
+                    reject("Please configure VLINK compiler files selection");
+                }
             } else {
                 reject("Please configure VASM compiler");
             }
@@ -108,6 +111,8 @@ export class VASMCompiler {
         return new Promise((resolve, reject) => {
             const workspaceRootDir = this.getWorkspaceRootDir();
             const buildDir = this.getBuildDir();
+            const configuration = workspace.getConfiguration('amiga-assembly');
+            const confVLINK: any = configuration.get('vlink');
             if (workspaceRootDir && buildDir) {
                 workspace.findFiles(includes, excludes, undefined).then(filesURI => {
                     let promises: Thenable<ICheckResult[]>[] = [];
@@ -125,13 +130,22 @@ export class VASMCompiler {
                             }
                         }
                         // Call the linker
-                        return this.linker.linkFiles(filesURI, exefilename, workspaceRootDir, buildDir).then(errors => {
-                            if (errors && errors.length > 0) {
-                                return reject('Linker errors : ' + errors[0]);
-                            } else {
-                                return resolve();
-                            }
-                        });
+                        if (this.linker.mayLink(confVLINK)) {
+                            return this.linker.linkFiles(filesURI, exefilename, workspaceRootDir, buildDir).then(errors => {
+                                if (errors && errors.length > 0) {
+                                    return reject('Linker errors : ' + errors[0]);
+                                } else {
+                                    return resolve();
+                                }
+                            }).catch(err => {
+                                return reject(new Error(err));
+                            });
+                        } else {
+                            // The linker is not mandatory
+                            // show a warning in the output
+                            statusManager.outputChannel.append("Warning : the linker vlink is not configured");
+                            return resolve();
+                        }
                     });
                 });
             } else {
@@ -152,7 +166,7 @@ export class VASMCompiler {
             let filename = path.basename(fileUri.fsPath);
             let configuration = workspace.getConfiguration('amiga-assembly');
             let conf: any = configuration.get('vasm');
-            if (conf) {
+            if (this.mayCompile(conf)) {
                 return this.mkdirSync(buildDir.fsPath).then(() => {
                     let vasmExecutableName: string = conf.file;
                     let extSep = filename.indexOf(".");
@@ -219,26 +233,41 @@ export class VASMCompiler {
             resolve();
         });
     }
+
+    /**
+     * Function to check if it is possible to compile.
+     * Useful for mocking
+     * @param conf Configuration
+     */
+    mayCompile(conf: any) {
+        return (conf && conf.enabled);
+    }
 }
 
 export class VASMController {
     private disposable: Disposable;
+    private compiler: VASMCompiler;
 
     constructor(compiler: VASMCompiler) {
+        this.compiler = compiler;
         // subscribe to selection change and editor activation events
         let subscriptions: Disposable[] = [];
         workspace.onDidSaveTextDocument(document => {
-            if (document.languageId !== 'm68k') {
-                return;
-            }
-            statusManager.onDefault();
-            compiler.buildDocument(document).catch(error => {
-                statusManager.onError(error);
-            });
+            this.onSaveDocument(document);
         }, null, subscriptions);
 
         // create a combined disposable from both event subscriptions
         this.disposable = Disposable.from(...subscriptions);
+    }
+
+    onSaveDocument(document: TextDocument) {
+        if (document.languageId !== 'm68k') {
+            return;
+        }
+        statusManager.onDefault();
+        this.compiler.buildDocument(document).catch(error => {
+            statusManager.onError(error);
+        });
     }
 
     dispose() {

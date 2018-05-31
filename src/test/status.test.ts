@@ -15,6 +15,7 @@ describe("Status Tests", function () {
         // status is shown
         expect(statusManager.statusBarEntry).not.to.be.null;
         if (statusManager.statusBarEntry) {
+            statusManager.onDefault();
             expect(statusManager.statusBarEntry.text).to.be.equal('Build');
             expect(statusManager.statusBarEntry.command).to.be.equal('amiga-assembly.build-vasm-workspace');
             expect(statusManager.statusBarEntry.tooltip).to.be.equal('Build Workspace');

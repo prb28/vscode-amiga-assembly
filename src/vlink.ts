@@ -24,7 +24,7 @@ export class VLINKLinker {
     public linkFiles(filesURI: Uri[], exeFilepathname: string, workspaceRootDir: Uri, buildDir: Uri): Promise<ICheckResult[]> {
         let configuration = workspace.getConfiguration('amiga-assembly');
         let conf: any = configuration.get('vlink');
-        if (conf) {
+        if (this.mayLink(conf)) {
             let vlinkExecutableName: string = conf.file;
             let confArgs = conf.options;
             let objectPathnames: string[] = [];
@@ -42,9 +42,18 @@ export class VLINKLinker {
             let args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathnames);
             return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, null, true, this.parser);
         } else {
-            return Promise.reject("Please configure VLIN linker");
+            return Promise.reject("Please configure VLINK linker");
         }
     }
+
+    /**
+     * Function to check if it is possible to link
+     * @param conf Configuration
+     */
+    mayLink(conf: any) {
+        return (conf && conf.enabled);
+    }
+
 }
 
 /**

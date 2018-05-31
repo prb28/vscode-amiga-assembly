@@ -8,7 +8,7 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { spy, verify, anyString, capture, when, anything } from 'ts-mockito';
+import { spy, verify, anyString, capture, when, anything, resetCalls } from 'ts-mockito';
 import * as extension from '../extension';
 
 // Defines a Mocha test suite to group tests of similar kind together
@@ -131,8 +131,42 @@ describe("Global Extension Tests", function () {
             const spiedWindow = spy(vscode.window);
             let promise = new Promise<string>((resolve, reject) => { resolve("3 + 2"); });
             when(spiedWindow.showInputBox(anything())).thenReturn(promise);
-            await vscode.commands.executeCommand("amiga-assembly.calculator").then(() => { verify(spiedWindow.showInputBox(anything())).once(); });
+            await vscode.commands.executeCommand("amiga-assembly.calculator");
+            verify(spiedWindow.showInputBox(anything())).once();
         });
-
+        it("Should build the workspace on command", async () => {
+            const spiedCompiler = spy(extension.compiler);
+            const spiedStatus = spy(extension.statusManager);
+            when(spiedCompiler.buildWorkspace()).thenCall(() => { return Promise.resolve(); });
+            await vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace");
+            verify(spiedCompiler.buildWorkspace()).once();
+            verify(spiedStatus.onDefault()).once();
+            verify(spiedStatus.onSuccess()).once();
+            // Generating a build error
+            resetCalls(spiedCompiler);
+            resetCalls(spiedStatus);
+            when(spiedCompiler.buildWorkspace()).thenCall(() => { return Promise.reject("nope"); });
+            await vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace");
+            verify(spiedCompiler.buildWorkspace()).once();
+            verify(spiedStatus.onDefault()).once();
+            verify(spiedStatus.onError("nope")).once();
+        });
+        it("Should build the current document on command", async () => {
+            const spiedCompiler = spy(extension.compiler);
+            const spiedStatus = spy(extension.statusManager);
+            when(spiedCompiler.buildCurrentEditorFile()).thenCall(() => { return Promise.resolve(); });
+            await vscode.commands.executeCommand("amiga-assembly.build-vasm");
+            verify(spiedCompiler.buildCurrentEditorFile()).once();
+            verify(spiedStatus.onDefault()).once();
+            verify(spiedStatus.onSuccess()).never(); // On success is only for the workspace
+            // Generating a build error
+            resetCalls(spiedCompiler);
+            resetCalls(spiedStatus);
+            when(spiedCompiler.buildCurrentEditorFile()).thenCall(() => { return Promise.reject("nope"); });
+            await vscode.commands.executeCommand("amiga-assembly.build-vasm");
+            verify(spiedCompiler.buildCurrentEditorFile()).once();
+            verify(spiedStatus.onDefault()).once();
+            verify(spiedStatus.onError("nope")).once();
+        });
     });
 });

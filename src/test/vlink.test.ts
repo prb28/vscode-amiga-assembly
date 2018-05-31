@@ -30,6 +30,22 @@ describe("VLINK Tests", function () {
             expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", "/workdir/build/myprog", "/workdir/build/file1.o", "/workdir/build/file2.o"]);
             reset(spiedfs);
         });
+        it("Should reject if the linker is disable", async function () {
+            let spiedLinker = spy(linker);
+            let spiedfs = spy(fs);
+            when(spiedfs.existsSync(anyString())).thenReturn(true);
+            let filesUri = [vscode.Uri.parse("file:///file1.s")];
+            when(spiedLinker.mayLink(anything())).thenReturn(false);
+            return linker.linkFiles(filesUri, "myprog", vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build")).then(() => {
+                expect.fail("Should reject");
+                reset(spiedfs);
+                reset(spiedLinker);
+            }).catch(error => {
+                expect(error).to.be.equal("Please configure VLINK linker");
+                reset(spiedfs);
+                reset(spiedLinker);
+            });
+        });
     });
     context("VLINKParser", function () {
         let parser: VLINKParser;
