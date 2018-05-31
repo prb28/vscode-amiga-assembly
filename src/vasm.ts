@@ -124,12 +124,8 @@ export class VASMCompiler {
                         for (let i = 0; i < filesURI.length; i++) {
                             const fileUri = filesURI[i];
                             statusManager.outputChannel.appendLine('Deleting ' + fileUri.fsPath);
-                            fs.unlink(fileUri.fsPath, (err) => {
-                                if (err) {
-                                    return reject(err.message);
-                                }
-                            });
-                        } 
+                            this.unlink(fileUri);
+                        }
                         return resolve();
                     });
                 } else {
@@ -180,7 +176,7 @@ export class VASMCompiler {
                             statusManager.outputChannel.append("Warning : the linker vlink is not configured");
                             return resolve();
                         }
-                    }).catch(err=>{return reject(new Error(err));});
+                    }).catch(err => { return reject(new Error(err)); });
                 });
             } else {
                 return reject("Root workspace or build path not found");
@@ -236,6 +232,14 @@ export class VASMCompiler {
             return rootDir.with({ path: rootDir.path + '/build' });
         }
         return null;
+    }
+
+    /**
+     * Deletes a file
+     * @param fileUri Uri of the file to delete 
+     */
+    unlink(fileUri: Uri) {
+        fs.unlinkSync(fileUri.fsPath);
     }
 
     /**
