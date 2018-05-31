@@ -79,7 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Build a file
     disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', () => {
         statusManager.onDefault();
-        compiler.buildCurrentEditorFile().catch(error => {
+        return compiler.buildCurrentEditorFile().catch(error => {
             statusManager.onError(error);
         });
     });
@@ -90,7 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Build the workspace
     disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', () => {
         statusManager.onDefault();
-        compiler.buildWorkspace().then(() => {
+        return compiler.buildWorkspace().then(() => {
             statusManager.onSuccess();
         }).catch(error => {
             statusManager.onError(error);
@@ -98,7 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
     // Clean the workspace
     disposable = vscode.commands.registerCommand('amiga-assembly.clean-vasm-workspace', () => {
-        compiler.cleanWorkspace().then(() => {
+        return compiler.cleanWorkspace().then(() => {
             statusManager.onDefault();
         }).catch(error => {
             statusManager.onError(error);
