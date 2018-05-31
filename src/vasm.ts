@@ -114,7 +114,7 @@ export class VASMCompiler {
             const configuration = workspace.getConfiguration('amiga-assembly');
             const confVLINK: any = configuration.get('vlink');
             if (workspaceRootDir && buildDir) {
-                workspace.findFiles(includes, excludes, undefined).then(filesURI => {
+                return workspace.findFiles(includes, excludes, undefined).then(filesURI => {
                     let promises: Thenable<ICheckResult[]>[] = [];
                     for (let i = 0; i < filesURI.length; i++) {
                         const fileUri = filesURI[i];
@@ -122,7 +122,7 @@ export class VASMCompiler {
                             return this.buildDocument(document);
                         }));
                     }
-                    return Promise.all(promises).then((errosArray) => {
+                    Promise.all(promises).then((errosArray) => {
                         for (let i = 0; i < errosArray.length; i += 1) {
                             let errors: ICheckResult[] = errosArray[i];
                             if (errors && (errors.length > 0)) {
