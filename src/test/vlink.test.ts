@@ -21,8 +21,10 @@ describe("VLINK Tests", function () {
             when(executor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenResolve([]);
         });
         it("Should call the link command", async function () {
+            let spiedLinker = spy(linker);
             let spiedfs = spy(fs);
             when(spiedfs.existsSync(anyString())).thenReturn(true);
+            when(spiedLinker.mayLink(anything())).thenReturn(true);
             let filesUri = [vscode.Uri.parse("file:///file1.s"), vscode.Uri.parse("file:///file2")];
             await linker.linkFiles(filesUri, "myprog", vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build"));
             verify(executor.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();

@@ -96,7 +96,7 @@
                         }
                     },
                     "default": {
-                        "enabled": true,
+                        "enabled": false,
                         "file": "vasmm68k_mot",
                         "options": [
                             "-kick1hunks",
@@ -140,7 +140,7 @@
                         }
                     },
                     "default": {
-                        "enabled": true,
+                        "enabled": false,
                         "file": "vlink",
                         "includes": "**/*.{s,S,asm,ASM}",
                         "excludes": "",
@@ -179,6 +179,11 @@
                 "command": "amiga-assembly.build-vasm-workspace",
                 "title": "Amiga Assembly: Build workspace",
                 "description": "Build all the files with VASM ans VLINK"
+            },
+            {
+                "command": "amiga-assembly.clean-vasm-workspace",
+                "title": "Amiga Assembly: Clean workspace",
+                "description": "Clean all the generated compilation objects"
             }
         ]
     },

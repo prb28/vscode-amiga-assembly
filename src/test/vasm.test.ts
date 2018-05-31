@@ -7,6 +7,7 @@ import { Executor, ICheckResult } from '../executor';
 import { DummyTextDocument } from './dummy';
 import { StatusManager } from '../status';
 import { statusManager } from '../extension';
+import { VLINKLinker } from '../vlink';
 
 describe("VASM Tests", function () {
     before(function () {
@@ -20,6 +21,7 @@ describe("VASM Tests", function () {
         let executorCompiler: Executor;
         let executorLinker: Executor;
         let spiedStatusManager: StatusManager;
+        let spiedLinker: VLINKLinker;
         before(function () {
             compiler = new VASMCompiler();
             // installing a spy
@@ -30,12 +32,16 @@ describe("VASM Tests", function () {
             spiedCompiler = spy(compiler);
             when(spiedCompiler.getWorkspaceRootDir()).thenReturn(vscode.Uri.parse("file:///workdir"));
             spiedStatusManager = spy(statusManager);
+            spiedLinker = spy(compiler.linker);
         });
         beforeEach(function () {
             resetCalls(spiedCompiler);
             resetCalls(executorCompiler);
             resetCalls(executorLinker);
             resetCalls(spiedStatusManager);
+            resetCalls(spiedLinker);
+            when(spiedCompiler.mayCompile(anything())).thenReturn(true);
+            when(spiedLinker.mayLink(anything())).thenReturn(true);
         });
         it("Should call the compiler command", async function () {
             let spiedfs = spy(fs);
@@ -145,7 +151,7 @@ describe("VASM Tests", function () {
                 expect(error).to.be.equal("Please configure VASM compiler");
             });
         });
-        it.skip("Should build even if the linker is disable", async function () {
+        it("Should build even if the linker is disable", async function () {
             let spiedfs = spy(fs);
             this.timeout(3000);
             when(spiedfs.mkdirSync(anyString())).thenCall(function () { });
@@ -166,11 +172,68 @@ describe("VASM Tests", function () {
                 document.uri = file2;
                 resolve(document);
             }));
-            let spiedLinker = spy(compiler.linker);
             when(spiedCompiler.mayCompile(anything())).thenReturn(true);
             when(spiedLinker.mayLink(anything())).thenReturn(false);
             await compiler.buildWorkspace();
             reset(spiedLinker);
+        });
+        it("Should clean the workspace", async function () {
+            let spiedfs = spy(fs);
+            let spiedWorkspace = spy(vscode.workspace);
+            let spiedOutputChannel = spy(statusManager.outputChannel);
+            when(spiedfs.mkdirSync(anyString())).thenCall(function () { });
+            when(spiedfs.existsSync(anyString())).thenReturn(true);
+            when(spiedfs.unlink(anyString(), anything())).thenCall(function () { });
+            when(spiedCompiler.mayCompile(anything())).thenReturn(true);
+            let file1 = vscode.Uri.parse("file:///build/file1.o");
+            let file2 = vscode.Uri.parse("file:///build/file2.o");
+            when(spiedWorkspace.findFiles(anything())).thenReturn(new Promise((resolve, reject) => {
+                resolve([file1, file2]);
+            }));
+            await compiler.cleanWorkspace();
+            verify(spiedfs.unlink(anyString(), anything())).twice();
+            verify(spiedOutputChannel.appendLine(anyString())).thrice();
+        });
+        it("Should get an error when cleaning the workspace", async function () {
+            let spiedWorkspace = spy(vscode.workspace);
+            let spiedfs = spy(fs);
+            let spiedOutputChannel = spy(statusManager.outputChannel);
+            when(spiedCompiler.mayCompile(anything())).thenReturn(false);
+            await compiler.cleanWorkspace().then(() => {
+                expect.fail("Should reject");
+            }).catch(error => {
+                expect(error).to.be.equal("Please configure VASM compiler");
+            });
+            verify(spiedfs.unlink(anyString(), anything())).never();
+            verify(spiedOutputChannel.appendLine(anyString())).once();
+            resetCalls(spiedOutputChannel);
+
+            // delete error
+            when(spiedCompiler.mayCompile(anything())).thenReturn(true);
+            when(spiedfs.mkdirSync(anyString())).thenCall(function () { });
+            when(spiedfs.existsSync(anyString())).thenReturn(true);
+            let file1 = vscode.Uri.parse("file:///build/file1.o");
+            let file2 = vscode.Uri.parse("file:///build/file2.o");
+            when(spiedWorkspace.findFiles(anything())).thenReturn(new Promise((resolve, reject) => {
+                resolve([file1, file2]);
+            }));
+            when(spiedfs.unlink(anyString(), anything())).thenCall(function (file:string, callback:(err:NodeJS.ErrnoException)=>void) {
+                 callback(new Error('Nope')); 
+            });
+            await compiler.cleanWorkspace().then(() => {
+                expect.fail("Should reject");
+            }).catch(error => {
+                expect(error).to.be.equal("Nope");
+            });
+
+            // Workspace folder error
+            when(spiedCompiler.mayCompile(anything())).thenReturn(true);
+            when(spiedCompiler.getWorkspaceRootDir()).thenReturn(null);
+            await compiler.cleanWorkspace().then(() => {
+                expect.fail("Should reject");
+            }).catch(error => {
+                expect(error).to.be.equal("Root workspace not found");
+            });
         });
     });
     context("VASMController", function () {

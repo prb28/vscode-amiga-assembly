@@ -96,6 +96,14 @@ export function activate(context: vscode.ExtensionContext) {
             statusManager.onError(error);
         });
     });
+    // Clean the workspace
+    disposable = vscode.commands.registerCommand('amiga-assembly.clean-vasm-workspace', () => {
+        compiler.cleanWorkspace().then(() => {
+            statusManager.onDefault();
+        }).catch(error => {
+            statusManager.onError(error);
+        });
+    });
     context.subscriptions.push(disposable);
     statusManager.outputChannel.appendLine("------> done");
 }

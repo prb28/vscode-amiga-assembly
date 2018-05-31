@@ -168,5 +168,20 @@ describe("Global Extension Tests", function () {
             verify(spiedStatus.onDefault()).once();
             verify(spiedStatus.onError("nope")).once();
         });
+        it("Should clean the current workspace on command", async () => {
+            const spiedCompiler = spy(extension.compiler);
+            const spiedStatus = spy(extension.statusManager);
+            when(spiedCompiler.cleanWorkspace()).thenCall(() => { return Promise.resolve(); });
+            await vscode.commands.executeCommand("amiga-assembly.clean-vasm-workspace");
+            verify(spiedCompiler.cleanWorkspace()).once();
+            verify(spiedStatus.onDefault()).once();
+            // Generating a build error
+            resetCalls(spiedCompiler);
+            resetCalls(spiedStatus);
+            when(spiedCompiler.cleanWorkspace()).thenCall(() => { return Promise.reject("nope"); });
+            await vscode.commands.executeCommand("amiga-assembly.clean-vasm-workspace");
+            verify(spiedCompiler.cleanWorkspace()).once();
+            verify(spiedStatus.onError("nope")).once();
+        });
     });
 });

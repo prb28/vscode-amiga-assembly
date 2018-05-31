@@ -107,6 +107,40 @@ export class VASMCompiler {
         });
     }
 
+    /**
+     * CLeans the workspace
+     */
+    public cleanWorkspace(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            statusManager.outputChannel.appendLine('Cleaning workspace');
+            errorDiagnosticCollection.clear();
+            warningDiagnosticCollection.clear();
+            let configuration = workspace.getConfiguration('amiga-assembly');
+            let conf: any = configuration.get('vasm');
+            if (this.mayCompile(conf)) {
+                const workspaceRootDir = this.getWorkspaceRootDir();
+                if (workspaceRootDir) {
+                    return workspace.findFiles('build/**/*.o').then(filesURI => {
+                        for (let i = 0; i < filesURI.length; i++) {
+                            const fileUri = filesURI[i];
+                            statusManager.outputChannel.appendLine('Deleting ' + fileUri.fsPath);
+                            fs.unlink(fileUri.fsPath, (err) => {
+                                if (err) {
+                                    return reject(err.message);
+                                }
+                            });
+                        } 
+                        return resolve();
+                    });
+                } else {
+                    return reject("Root workspace not found");
+                }
+            } else {
+                reject("Please configure VASM compiler");
+            }
+        });
+    }
+
     private buildWorkspaceInner(includes: string, excludes: string, exefilename: string): Promise<void> {
         return new Promise((resolve, reject) => {
             const workspaceRootDir = this.getWorkspaceRootDir();
@@ -146,10 +180,10 @@ export class VASMCompiler {
                             statusManager.outputChannel.append("Warning : the linker vlink is not configured");
                             return resolve();
                         }
-                    });
+                    }).catch(err=>{return reject(new Error(err));});
                 });
             } else {
-                return reject("Root workspace path not found");
+                return reject("Root workspace or build path not found");
             }
         });
     }
