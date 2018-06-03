@@ -124,7 +124,7 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     // register a configuration provider for 'mock' debug type
-    const provider = new MockConfigurationProvider()
+    const provider = new MockConfigurationProvider();
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('mock', provider));
     context.subscriptions.push(provider);
     statusManager.outputChannel.appendLine("------> done");
