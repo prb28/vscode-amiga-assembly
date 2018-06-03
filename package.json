@@ -12,7 +12,7 @@
         "type": "git",
         "url": "https://github.com/prb28/vscode-amiga-assembly"
     },
-    "version": "0.6.1",
+    "version": "0.7.0",
     "publisher": "prb28",
     "engines": {
         "vscode": "^1.23.0"
@@ -20,7 +20,8 @@
     "categories": [
         "Formatters",
         "Programming Languages",
-        "Language Packs"
+        "Language Packs",
+        "Debuggers"
     ],
     "icon": "images/icon.png",
     "galleryBanner": {
@@ -28,7 +29,8 @@
         "theme": "dark"
     },
     "activationEvents": [
-        "onLanguage:m68k"
+        "onLanguage:m68k",
+        "onDebug"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -185,6 +187,82 @@
                 "title": "Amiga Assembly: Clean workspace",
                 "description": "Clean all the generated compilation objects"
             }
+        ],
+        "breakpoints": [
+            {
+                "language": "m68k"
+            }
+        ],
+        "debuggers": [
+            {
+                "type": "fs-uae",
+                "label": "FS-UAE Debug",
+                "program": "./out/debugAdapter.js",
+                "runtime": "node",
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Absolute path to an amiga program.",
+                                "default": "${workspaceFolder}/${command:AskForProgramName}"
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Automatically stop after launch.",
+                                "default": true
+                            },
+                            "trace": {
+                                "type": "boolean",
+                                "description": "Enable logging of the Debug Adapter Protocol.",
+                                "default": true
+                            },
+                            "host": {
+                                "type": "string",
+                                "description": "Host running fs-uae",
+                                "default": "localhost"
+                            },
+                            "port": {
+                                "type": "number",
+                                "description": "Socket port to connect to FS-UAE",
+                                "default": 6860
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "fs-uae",
+                        "request": "launch",
+                        "name": "Ask for file name",
+                        "program": "${workspaceFolder}/${command:AskForProgramName}",
+                        "stopOnEntry": true,
+                        "host": "localhost",
+                        "port": 6860
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "FS-UAE Debug: Launch",
+                        "description": "A new configuration for debugging a program in FS-UAE.",
+                        "body": {
+                            "type": "fs-uae",
+                            "request": "launch",
+                            "name": "Ask for file name",
+                            "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
+                            "stopOnEntry": true,
+                            "host": "localhost",
+                            "port": 6860
+                        }
+                    }
+                ],
+                "variables": {
+                    "AskForProgramName": "amiga-assembly.getProgramName"
+                }
+            }
         ]
     },
     "scripts": {
@@ -216,6 +294,12 @@
         "ts-mockito": "^2.3.0",
         "tslint": "^5.8.0",
         "typescript": "^2.7.2",
-        "vscode": "^1.1.18"
+        "vscode": "^1.1.18",
+        "vscode-debugadapter-testsupport": "^1.29.0"
+    },
+    "dependencies": {
+        "await-notify": "^1.0.1",
+        "vscode-debugadapter": "^1.29.0",
+        "vscode-debugprotocol": "^1.29.0"
     }
 }
