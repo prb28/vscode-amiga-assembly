@@ -7,7 +7,7 @@ import { M86kColorProvider } from './color';
 import { Calc, CalcController } from './calc';
 import { VASMCompiler, VASMController } from './vasm';
 import { StatusManager } from "./status";
-import { MockDebugSession } from './mockDebug';
+import { FsUAEDebugSession } from './fsUAEDebug';
 import * as Net from 'net';
 
 // Setting all the globals values
@@ -23,7 +23,7 @@ export let compiler: VASMCompiler;
  * debug adapter should run inside the extension host.
  * Please note: the test suite does no longer work in this mode.
  */
-const EMBED_DEBUG_ADAPTER = false;
+const EMBED_DEBUG_ADAPTER = true;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -123,9 +123,9 @@ export function activate(context: vscode.ExtensionContext) {
         });
     }));
 
-    // register a configuration provider for 'mock' debug type
-    const provider = new MockConfigurationProvider();
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('mock', provider));
+    // register a configuration provider for 'fs-uae' debug type
+    const provider = new FsUAEConfigurationProvider();
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', provider));
     context.subscriptions.push(provider);
     statusManager.outputChannel.appendLine("------> done");
 }
@@ -134,7 +134,7 @@ export function deactivate() {
     // nothing to do
 }
 
-class MockConfigurationProvider implements vscode.DebugConfigurationProvider {
+class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
 
     private _server?: Net.Server;
 
@@ -168,7 +168,7 @@ class MockConfigurationProvider implements vscode.DebugConfigurationProvider {
 
                 // start listening on a random port
                 this._server = Net.createServer(socket => {
-                    const session = new MockDebugSession();
+                    const session = new FsUAEDebugSession();
                     session.setRunAsServer(true);
                     session.start(<NodeJS.ReadableStream>socket, socket);
                 }).listen(0);

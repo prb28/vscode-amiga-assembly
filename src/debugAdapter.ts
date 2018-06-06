@@ -2,6 +2,6 @@
  * Copyright (C) Microsoft Corporation. All rights reserved.
  *--------------------------------------------------------*/
 
- import { MockDebugSession } from './mockDebug';
+import { FsUAEDebugSession } from './fsUAEDebug';
 
- MockDebugSession.run(MockDebugSession);
+FsUAEDebugSession.run(FsUAEDebugSession);

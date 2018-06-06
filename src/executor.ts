@@ -26,7 +26,7 @@ export class Executor {
      * @param printUnexpectedOutput If true, then output that doesnt match expected format is printed to the output channel
      * @param parser Parser for the output
      */
-    runTool(args: string[], cwd: string, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser, token?: vscode.CancellationToken): Promise<ICheckResult[]> {
+    runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken): Promise<ICheckResult[]> {
         let outputChannel = statusManager.outputChannel;
         let p: cp.ChildProcess;
         if (token) {
@@ -37,12 +37,18 @@ export class Executor {
             });
         }
         return new Promise((resolve, reject) => {
-            p = cp.execFile(cmd, args, { env: env, cwd: cwd }, (err, stdout, stderr) => {
+            let options: any = {
+                env: env
+            };
+            if (cwd) {
+                options.cwd = cwd;
+            }
+            p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
                     if (err && (<any>err).code === 'ENOENT') {
                         // Since the tool is run on save which can be frequent
                         // we avoid sending explicit notification if tool is missing
-                        console.log(`Cannot find ${cmd}`);
+                        console.log(`Cannot find ${cmd} : ${err.message}`);
                         return resolve([]);
                     }
                     outputChannel.appendLine(stdout);
@@ -55,7 +61,11 @@ export class Executor {
                     let text = (useStdErr ? stderr : stdout).toString();
                     outputChannel.appendLine([cwd + '>Finished running tool:', cmd, ...args].join(' '));
 
-                    let ret: ICheckResult[] = parser.parse(text);
+
+                    let ret: ICheckResult[] = [];
+                    if (parser) {
+                        parser.parse(text);
+                    }
                     outputChannel.appendLine('');
                     resolve(ret);
                 } catch (e) {

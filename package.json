@@ -207,8 +207,23 @@
                         "properties": {
                             "program": {
                                 "type": "string",
-                                "description": "Absolute path to an amiga program.",
+                                "description": "Path to an amiga program.",
                                 "default": "${workspaceFolder}/${command:AskForProgramName}"
+                            },
+                            "emulator": {
+                                "type": "string",
+                                "description": "Path to the fs-uae emulator.",
+                                "default": "Path to fs-uae executable"
+                            },
+                            "conf": {
+                                "type": "string",
+                                "description": "Path to a fs-uae configuration file.",
+                                "default": "Path to a .fs-uae configuration"
+                            },
+                            "drive": {
+                                "type": "string",
+                                "description": "Path to a directory containing the virtual fs-uae drive.",
+                                "default": "Path to a virtual drive directory."
                             },
                             "stopOnEntry": {
                                 "type": "boolean",
@@ -238,7 +253,9 @@
                         "type": "fs-uae",
                         "request": "launch",
                         "name": "Ask for file name",
+                        "emulator": "fs-uae",
                         "program": "${workspaceFolder}/${command:AskForProgramName}",
+                        "conf": "configuration/dev.fs-uae",
                         "stopOnEntry": true,
                         "host": "localhost",
                         "port": 6860
@@ -252,7 +269,9 @@
                             "type": "fs-uae",
                             "request": "launch",
                             "name": "Ask for file name",
+                            "emulator": "Path to fs-uae executable file",
                             "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
+                            "conf": "Path to fs-uae fs-uae configuration file",
                             "stopOnEntry": true,
                             "host": "localhost",
                             "port": 6860
