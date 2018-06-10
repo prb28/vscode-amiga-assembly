@@ -1,0 +1,10 @@
+[fs-uae]
+chip_memory = 1024
+hard_drive_0 = /Users/papa/developpements/vscode/vscode-amiga-assembly/test_files/debug/fs-uae/hd0
+joystick_port_1 = none
+remote_debugger = 200
+#console_debugger = 1
+use_remote_debugger = true
+amiga_model = A1200
+#kickstart_file = /Users/papa/Documents/FS-UAE/Kickstarts/Kickstart v3.1 rev 40.68 (1993)(Commodore)(A1200)[!].rom
+slow_memory = 1792

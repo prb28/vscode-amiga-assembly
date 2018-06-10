@@ -7,22 +7,55 @@ import assert = require('assert');
 import * as Path from 'path';
 import { DebugClient } from 'vscode-debugadapter-testsupport';
 import { DebugProtocol } from 'vscode-debugprotocol';
+import { LaunchRequestArguments, FsUAEDebugSession } from '../fsUAEDebug';
+import * as Net from 'net';
+import * as vscode from 'vscode';
 
 describe('Node Debug Adapter', () => {
 
-	const PROJECT_ROOT = Path.join(__dirname, '../../');
-	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out/debugAdapter.js');
-	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files/data/');
+	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
+	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js');
+	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug');
+	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae');
+	let launchArgs = <LaunchRequestArguments>{
+		program: Path.join(DATA_ROOT, 'hello'),
+		stopOnEntry: false,
+		serverName: 'localhost',
+		serverPort: 6860,
+		emulator: Path.join(FSUAE_ROOT, 'fs-uae'),
+		conf: Path.join(FSUAE_ROOT, 'test.fs-uae'),
+		drive: Path.join(FSUAE_ROOT, 'hd0'),
+	};
 
-
+	let session: FsUAEDebugSession;
 	let dc: DebugClient;
+	let server: any;
+
+	before(function () {
+		// Opening file to activate the extension
+		const newFile = vscode.Uri.parse("untitled://./debug.s");
+		return vscode.window.showTextDocument(newFile);
+	});
 
 	beforeEach(function () {
+		this.timeout(10000);
+		// start port listener on launch of first debug session
+		if (!server) {
+			// start listening on a random port
+			server = Net.createServer(socket => {
+				session = new FsUAEDebugSession();
+				session.setRunAsServer(true);
+				session.start(<NodeJS.ReadableStream>socket, socket);
+			}).listen(0);
+		}
+
+		// make VS Code connect to debug server instead of launching debug adapter
 		dc = new DebugClient('node', DEBUG_ADAPTER, 'fs-uae');
-		return dc.start();
+		return dc.start(server.address().port);
 	});
 
 	afterEach(function () {
+		session.terminate();
 		return dc.stop();
 	});
 
@@ -64,26 +97,24 @@ describe('Node Debug Adapter', () => {
 
 	describe('launch', () => {
 
-		it('should run program to the end', () => {
-
-			const PROGRAM = Path.join(DATA_ROOT, 'test.md');
-
+		it('should run program to the end', function () {
+			this.timeout(60000);
 			return Promise.all([
 				dc.configurationSequence(),
-				dc.launch({ program: PROGRAM }),
+				dc.launch(launchArgs),
 				dc.waitForEvent('terminated')
 			]);
 		});
 
-		it('should stop on entry', () => {
-
-			const PROGRAM = Path.join(DATA_ROOT, 'test.md');
-			const ENTRY_LINE = 1;
-
+		it.only('should stop on entry', function () {
+			this.timeout(60000);
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.stopOnEntry = true;
+			launchArgs.emulator = undefined;
 			return Promise.all([
 				dc.configurationSequence(),
-				dc.launch({ program: PROGRAM, stopOnEntry: true }),
-				dc.assertStoppedLocation('entry', { line: ENTRY_LINE })
+				dc.launch(launchArgsCopy),
+				dc.assertStoppedLocation('entry', { line: 1 })
 			]);
 		});
 	});

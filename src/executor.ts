@@ -52,7 +52,9 @@ export class Executor {
                         return resolve([]);
                     }
                     outputChannel.appendLine(stdout);
+                    console.log(stdout);
                     outputChannel.appendLine(stderr);
+                    console.log(stderr);
                     if (err && stderr && !useStdErr) {
                         let errorMessage = ['Error while running tool:', cmd, ...args].join(' ');
                         outputChannel.appendLine(['Error while running tool:', cmd, ...args].join(' '));
@@ -192,7 +194,7 @@ export class Executor {
         } else {
             // on linux and OS X we kill all direct and indirect child processes as well
             try {
-                const cmd = path.join(__dirname, '../../../scripts/terminateProcess.sh');
+                const cmd = path.join(__dirname, '../scripts/terminateProcess.sh');
                 cp.spawnSync(cmd, [processId.toString()]);
             } catch (err) {
             }

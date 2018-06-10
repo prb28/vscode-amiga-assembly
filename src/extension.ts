@@ -147,8 +147,9 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
         // if launch.json is missing or empty
         if (!config.type && !config.request && !config.name) {
             const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.languageId === 'markdown') {
-                config.type = 'mock';
+            if (editor && editor.document.languageId === 'm68k') {
+                //TODO : fill this
+                config.type = 'fs-uae';
                 config.name = 'Launch';
                 config.request = 'launch';
                 config.program = '${file}';

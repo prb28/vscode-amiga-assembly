@@ -5,12 +5,12 @@
 import { expect } from 'chai';
 import { GdbProxy } from '../gdbProxy';
 
-describe.only("GdbProxy Tests", function () {
-    it.only("Should connect to fs-UAE", async function () {
+describe("GdbProxy Tests", function () {
+    it("Should connect to fs-UAE", async function () {
         this.timeout(6000);
         let proxy = new GdbProxy();
         proxy.connect('localhost', 6860);
-        proxy.load('sys:hello');
+        //proxy.load('sys:hello');
         await proxy.sendPacketString('QStartNoAckMode').then(function (data: any) {
             console.log(data.toString());
         });
@@ -18,7 +18,7 @@ describe.only("GdbProxy Tests", function () {
         await proxy.sendPacketString('Z0,0,0').then(function (data) {
             console.log(data.toString());
         });
-        await proxy.sendPacketString('vRun;dh0:hello;').then(function (data) {
+        await proxy.sendPacketString('vRun;dh0:gencop;').then(function (data) {
             console.log(data.toString());
         });
         await proxy.sendPacketString('g').then(function (data) {
@@ -31,6 +31,16 @@ describe.only("GdbProxy Tests", function () {
             console.log(data.toString());
         });
 
+    });
+    it("Should connect to fs-UAE", async function () {
+        this.timeout(6000);
+        let proxy = new GdbProxy();
+        await proxy.connect('localhost', 6860);
+        await proxy.setBreakPoint('', 0);
+        await proxy.load('gencop');
+        await proxy.sendPacketString('g').then(function (data) {
+            console.log(data.toString());
+        });
     });
     it("Should calculate the checksum", function () {
         let proxy = new GdbProxy();

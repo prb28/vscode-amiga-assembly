@@ -5,12 +5,12 @@
 import {
 	Logger, logger,
 	LoggingDebugSession,
-	InitializedEvent, TerminatedEvent, StoppedEvent, BreakpointEvent, OutputEvent,
+	InitializedEvent, TerminatedEvent, StoppedEvent,
 	Thread, StackFrame, Scope, Source, Handles
 } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { basename } from 'path';
-import { GdbProxy, GdbBreakpoint, GdbStackFrame, GdbRegister } from './gdbProxy';
+import { GdbProxy, GdbStackFrame, GdbRegister, GdbBreakpoint } from './gdbProxy';
 import { Executor } from './executor';
 import { CancellationTokenSource } from 'vscode';
 const { Subject } = require('await-notify');
@@ -22,7 +22,7 @@ const { Subject } = require('await-notify');
  * The schema for these attributes lives in the package.json of the mock-debug extension.
  * The interface should always match this schema.
  */
-interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
+export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	/** An absolute path to the "program" to debug. */
 	program: string;
 	/** Automatically stop target after launch. If not specified, target does not stop. */
@@ -34,7 +34,7 @@ interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	/** Port of the server */
 	serverPort: number;
 	/** emulator program */
-	emulator: string;
+	emulator?: string;
 	/** configuration file */
 	conf: string;
 	/** drive */
@@ -62,7 +62,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	 * We configure the default implementation of a debug adapter here.
 	 */
 	public constructor() {
-		super("mock-debug.txt");
+		super("fsuae-debug.txt");
 
 		// this debugger uses zero-based lines and columns
 		this.setDebuggerLinesStartAt1(false);
@@ -81,18 +81,18 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this._gdbProxy.on('stopOnException', () => {
 			this.sendEvent(new StoppedEvent('exception', FsUAEDebugSession.THREAD_ID));
 		});
-		this._gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
-			this.sendEvent(new BreakpointEvent('changed', <DebugProtocol.Breakpoint>{ verified: bp.verified, id: bp.id }));
-		});
-		this._gdbProxy.on('output', (text: string, filePath: string, line: number, column: number) => {
-			const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
-			e.body.source = this.createSource(filePath);
-			e.body.line = this.convertDebuggerLineToClient(line);
-			e.body.column = this.convertDebuggerColumnToClient(column);
-			this.sendEvent(e);
-		});
+		//this._gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
+		//		this.sendEvent(new BreakpointEvent('changed', <DebugProtocol.Breakpoint>{ verified: bp.verified, id: bp.id }));
+		//		});
+		// this._gdbProxy.on('output', (text: string, filePath: string, line: number, column: number) => {
+		// 	const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
+		// 	e.body.source = this.createSource(filePath);
+		// 	e.body.line = this.convertDebuggerLineToClient(line);
+		// 	e.body.column = this.convertDebuggerColumnToClient(column);
+		// 	this.sendEvent(e);
+		// });
 		this._gdbProxy.on('end', () => {
-			this.sendEvent(new TerminatedEvent());
+			this.terminate();
 		});
 	}
 
@@ -144,7 +144,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.startEmulator(args);
 
 		// wait until configuration has finished (and configurationDoneRequest has been called)
-		await this._configurationDone.wait(1000);
+		//await this._configurationDone.wait(1000);
 
 		// temp to use in timeout
 		let debAdapter = this;
@@ -152,21 +152,40 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		setTimeout(function () {
 
 			// connects to FS-UAE
-			debAdapter._gdbProxy.connect(args.serverName, args.serverPort);
+			debAdapter._gdbProxy.connect(args.serverName, args.serverPort).then(() => {
+				if (args.stopOnEntry) {
+					debAdapter._gdbProxy.setBreakPoint("", 0).catch(err => console.error(err)).then(() => {
+						// Loads the program
+						debAdapter._gdbProxy.load(args.program);
+						debAdapter.sendResponse(response);
+					});
+				} else {
+					// Loads the program
+					debAdapter._gdbProxy.load(args.program);
+					debAdapter.sendResponse(response);
+				}
+			});
 
-			debAdapter._gdbProxy.setBreakPoint("", 0);
-			// Loads the program
-			debAdapter._gdbProxy.load(args.program);
-			//this._gdbProxy.start(args.program, !!args.stopOnEntry);
 
-			debAdapter.sendResponse(response);
 		}, 3000);
 	}
 
 	protected startEmulator(args: LaunchRequestArguments) {
 		this.cancellationTokenSource = new CancellationTokenSource();
-		let pargs = [args.conf];
-		this.executor.runTool(pargs, null, "warning", true, args.emulator, null, true, null, this.cancellationTokenSource.token);
+		if (args.emulator) {
+			let pargs = [args.conf];
+			this.executor.runTool(pargs, null, "warning", true, args.emulator, null, true, null, this.cancellationTokenSource.token).then(() => {
+				this.sendEvent(new TerminatedEvent());
+			}).catch(err => {
+				this.sendEvent(new TerminatedEvent());
+			});
+		}
+	}
+
+	protected terminateEmulator() {
+		if (this.cancellationTokenSource) {
+			this.cancellationTokenSource.cancel();
+		}
 	}
 
 	protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
@@ -250,6 +269,10 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 
 	}
 
+	public terminate() {
+		this.terminateEmulator();
+	}
+
 	protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
 		this._gdbProxy.continue();
 		this.sendResponse(response);
@@ -299,4 +322,6 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	private createSource(filePath: string): Source {
 		return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'mock-adapter-data');
 	}
+
+
 }

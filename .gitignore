@@ -5,3 +5,5 @@ node_modules
 .DS_Store
 coverage
 coverconfig.json
+test_files/debug/fs-uae/hd0_*
+test_files/debug/fs-uae/fs-uae
