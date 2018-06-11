@@ -106,7 +106,7 @@ describe('Node Debug Adapter', () => {
 			]);
 		});
 
-		it.only('should stop on entry', function () {
+		it('should stop on entry', function () {
 			this.timeout(60000);
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.stopOnEntry = true;
