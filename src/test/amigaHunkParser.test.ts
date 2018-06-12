@@ -3,11 +3,11 @@
 //
 
 import { expect } from 'chai';
-import { HunkParser, HunkType } from '../amigaHunkParser';
+import { HunkParser } from '../amigaHunkParser';
 import * as Path from 'path';
 
 describe("AmigaHunkFile", function () {
-    it.only("Should open a hunk file", function () {
+    it("Should open a hunk file", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
         let parser = new HunkParser();

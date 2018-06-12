@@ -39,7 +39,7 @@ export interface SourceLine {
 }
 
 export interface SourceFile {
-    name: String;
+    name: string;
     base_offset: number;
     lines: Array<SourceLine>;
 }
@@ -100,7 +100,7 @@ export class HunkParser {
     }
 
     public parse_bss(hunk: Hunk, fileData: DataView, fileOffset: number): number {
-        let [size, mem_type] = this.get_size_type(fileData.getUint32(fileOffset, false));
+        let [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
         //hunk.hunk_type = HunkType.Bss;
         //hunk.data_size = size;
         //hunk.mem_type = mem_type;
@@ -108,7 +108,7 @@ export class HunkParser {
     }
 
     public parse_code_or_data(hunk_type: HunkType, hunk: Hunk, fileData: DataView, fileOffset: number): number {
-        let [size, mem_type] = this.get_size_type(fileData.getUint32(fileOffset, false));
+        let [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
         let code_data = new Uint32Array(size / 4);
         let pos = fileOffset + 4;
 
