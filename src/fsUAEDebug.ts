@@ -5,14 +5,15 @@
 import {
 	Logger, logger,
 	LoggingDebugSession,
-	InitializedEvent, TerminatedEvent, StoppedEvent,
+	InitializedEvent, TerminatedEvent, StoppedEvent, BreakpointEvent,
 	Thread, StackFrame, Scope, Source, Handles
 } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { basename } from 'path';
-import { GdbProxy, GdbStackFrame, GdbRegister, GdbBreakpoint } from './gdbProxy';
+import { GdbProxy, GdbStackFrame, GdbRegister, GdbBreakpoint, Segment, GdbStackPosition } from './gdbProxy';
 import { Executor } from './executor';
 import { CancellationTokenSource } from 'vscode';
+import { DebugInfo } from './debugInfo';
 const { Subject } = require('await-notify');
 
 
@@ -39,6 +40,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	conf: string;
 	/** drive */
 	drive: string;
+	/** path replacements for source files */
+	sourceFileMap?: Map<string, string>;
 }
 
 export class FsUAEDebugSession extends LoggingDebugSession {
@@ -55,8 +58,12 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 
 	/** Executor to run fs-uae */
 	private executor = new Executor();
+
+	/** TOken to cancle the emulator */
 	private cancellationTokenSource?: CancellationTokenSource;
 
+	/** Debug information for the loaded program */
+	private debugInfo?: DebugInfo;
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
@@ -81,9 +88,16 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this._gdbProxy.on('stopOnException', () => {
 			this.sendEvent(new StoppedEvent('exception', FsUAEDebugSession.THREAD_ID));
 		});
-		//this._gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
-		//		this.sendEvent(new BreakpointEvent('changed', <DebugProtocol.Breakpoint>{ verified: bp.verified, id: bp.id }));
-		//		});
+		this._gdbProxy.on('segmentsUpdated', (segments: Array<Segment>) => {
+			this.updateSegments(segments);
+		});
+		this._gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
+			let debugBp = <DebugProtocol.Breakpoint>{
+				verified: bp.verified,
+				id: bp.id
+			};
+			this.sendEvent(new BreakpointEvent('changed', debugBp));
+		});
 		// this._gdbProxy.on('output', (text: string, filePath: string, line: number, column: number) => {
 		// 	const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
 		// 	e.body.source = this.createSource(filePath);
@@ -140,11 +154,15 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		// make sure to 'Stop' the buffered logging if 'trace' is not set
 		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
 
+		// Loads the debug info
+		this.debugInfo = new DebugInfo(args.sourceFileMap);
+		this.debugInfo.loadInfo(args.program);
+
 		// Launch the emulator
 		this.startEmulator(args);
 
 		// wait until configuration has finished (and configurationDoneRequest has been called)
-		//await this._configurationDone.wait(1000);
+		await this._configurationDone.wait(1000);
 
 		// temp to use in timeout
 		let debAdapter = this;
@@ -154,7 +172,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			// connects to FS-UAE
 			debAdapter._gdbProxy.connect(args.serverName, args.serverPort).then(() => {
 				if (args.stopOnEntry) {
-					debAdapter._gdbProxy.setBreakPoint("", 0).catch(err => console.error(err)).then(() => {
+					debAdapter._gdbProxy.setBreakPoint(0, 0).catch(err => console.error(err)).then(() => {
 						// Loads the program
 						debAdapter._gdbProxy.load(args.program);
 						debAdapter.sendResponse(response);
@@ -189,7 +207,6 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
-
 		const path = <string>args.source.path;
 		const clientLines = args.lines || [];
 
@@ -199,15 +216,39 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		// set and verify breakpoint locations
 		let promises: Promise<GdbBreakpoint>[] = [];
 		clientLines.map(l => {
-			promises.push(this._gdbProxy.setBreakPoint(path, this.convertClientLineToDebugger(l)).then(bp => {
-				return bp;
-			}));
+			if (this.debugInfo) {
+				let values = this.debugInfo.getAddressSeg(path, l);
+				if (values) {
+					promises.push(this._gdbProxy.setBreakPoint(values[0], values[1]).then(bp => {
+						return bp;
+					}));
+				}
+			} else {
+				// TODO : keep the breakpoint to do it later
+			}
 		});
 		Promise.all(promises).then((breakPoints: GdbBreakpoint[]) => {
-			// send back the actual breakpoint positions
-			response.body = {
-				breakpoints: breakPoints
-			};
+			if (this.debugInfo) {
+				let debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
+				for (let i = 0; i < breakPoints.length; i++) {
+					let breakpt = breakPoints[i];
+					let values = this.debugInfo.resolveFileLine(breakpt.segmentId, breakpt.offset);
+					if (values) {
+						debugBreakPoints.push(<DebugProtocol.Breakpoint>{
+							id: breakpt.id,
+							line: values[1],
+							source: values[0],
+							verified: breakpt.verified
+						});
+					}
+				}
+				// send back the actual breakpoint positions
+				response.body = {
+					breakpoints: debugBreakPoints
+				};
+			} else {
+				// TODO : keep the breakpoint to do it later
+			}
 			this.sendResponse(response);
 		});
 	}
@@ -224,13 +265,24 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
-		this._gdbProxy.stack().then((stk: GdbStackFrame) => {
+		let stk: GdbStackFrame = this._gdbProxy.stack();
+		if (this.debugInfo) {
+			const dbgInfo = this.debugInfo;
 			response.body = {
-				stackFrames: stk.frames.map((f: any) => new StackFrame(f.index, f.name, this.createSource(f.file), this.convertDebuggerLineToClient(f.line))),
+				stackFrames: stk.frames.map((f: GdbStackPosition) => {
+					let values = dbgInfo.resolveFileLine(f.segmentId, f.offset);
+					let file = "";
+					let line = 0;
+					if (values) {
+						file = values[0];
+						line = values[1];
+					}
+					return new StackFrame(f.index, file, this.createSource(file), line);
+				}),
 				totalFrames: stk.count
 			};
-			this.sendResponse(response);
-		});
+		}
+		this.sendResponse(response);
 	}
 
 	protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
@@ -254,8 +306,8 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 					let r = registers[i];
 					variables.push({
 						name: r.name,
-						type: "string",
-						value: r.value,
+						type: "number",
+						value: r.value.toString(),
 						variablesReference: 0
 					});
 				}
@@ -317,6 +369,23 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.sendResponse(response);
 	}
 
+	/**
+	 * Updates the segments addresses of th hunks
+	 * 
+	 *@param segment The list of returned segments from the debugger 
+	 */
+	private updateSegments(segments: Array<Segment>) {
+		let posSegment = 0;
+		if (this.debugInfo) {
+			for (let hunk of this.debugInfo.hunks) {
+				if (posSegment >= this.debugInfo.hunks.length) {
+					break;
+				}
+				hunk.segmentsId = posSegment;
+				hunk.segmentsAddress = segments[posSegment].address;
+			}
+		}
+	}
 	//---- helpers
 
 	private createSource(filePath: string): Source {

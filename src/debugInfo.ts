@@ -2,6 +2,11 @@ import { Hunk, HunkParser, SourceLine } from './amigaHunkParser';
 
 export class DebugInfo {
     public hunks = new Array<Hunk>();
+    private pathReplacements?: Map<string, string>;
+
+    constructor(pathReplacements?: Map<string, string>) {
+        this.pathReplacements = pathReplacements;
+    }
 
     public loadInfo(filePath: string) {
         console.log("Trying debug data from {:?}", filePath);
@@ -41,7 +46,7 @@ export class DebugInfo {
 
         let hunk = this.hunks[segId];
 
-        let source_files = hunk.line_debug_info;
+        let source_files = hunk.lineDebugInfo;
         if (source_files) {
             for (let i = 0; i < source_files.length; i++) {
                 let srcFile = source_files[i];
@@ -57,21 +62,23 @@ export class DebugInfo {
         return null;
     }
 
-    public getAddressSeg(filename: string, fileLine: number, pathReplacements: Map<string, string>): ([number, number] | null) {
+    public getAddressSeg(filename: string, fileLine: number): ([number, number] | null) {
         for (let i = 0; i < this.hunks.length; i++) {
             let hunk = this.hunks[i];
-            let sourceFiles = hunk.line_debug_info;
+            let sourceFiles = hunk.lineDebugInfo;
             if (sourceFiles) {
                 for (let j = 0; j < sourceFiles.length; j++) {
                     let srcFile = sourceFiles[j];
                     // Is there a path replacement
                     let name = srcFile.name;
-                    for (let key of Array.from(pathReplacements.keys())) {
-                        if (name.indexOf(key) >= 0) {
-                            let value = pathReplacements.get(key);
-                            if (value) {
-                                name = name.replace(key, value);
-                                break;
+                    if (this.pathReplacements) {
+                        for (let key of Array.from(this.pathReplacements.keys())) {
+                            if (name.indexOf(key) >= 0) {
+                                let value = this.pathReplacements.get(key);
+                                if (value) {
+                                    name = name.replace(key, value);
+                                    break;
+                                }
                             }
                         }
                     }

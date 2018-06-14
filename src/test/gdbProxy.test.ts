@@ -36,7 +36,7 @@ describe("GdbProxy Tests", function () {
         this.timeout(6000);
         let proxy = new GdbProxy();
         await proxy.connect('localhost', 6860);
-        await proxy.setBreakPoint('', 0);
+        await proxy.setBreakPoint(0, 0);
         await proxy.load('gencop');
         await proxy.sendPacketString('g').then(function (data) {
             console.log(data.toString());

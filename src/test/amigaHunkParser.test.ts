@@ -22,12 +22,12 @@ describe("AmigaHunkFile", function () {
             expect.fail("hunk has no symbol");
         }
         // tslint:disable-next-line:no-unused-expression
-        expect(hunk.code_data).to.exist;
+        expect(hunk.codeData).to.exist;
         // tslint:disable-next-line:no-unused-expression
-        expect(hunk.line_debug_info).to.exist;
-        if (hunk.line_debug_info) {
-            expect(hunk.line_debug_info.length).to.be.equal(1);
-            let sourceFile = hunk.line_debug_info[0];
+        expect(hunk.lineDebugInfo).to.exist;
+        if (hunk.lineDebugInfo) {
+            expect(hunk.lineDebugInfo.length).to.be.equal(1);
+            let sourceFile = hunk.lineDebugInfo[0];
             expect(sourceFile.lines.length).to.be.equal(106);
             expect(sourceFile.name).to.be.equal("/Users/papa/developpements/amiga/projects/helloworld/gencop.s");
         }

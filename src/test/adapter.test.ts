@@ -17,16 +17,21 @@ describe('Node Debug Adapter', () => {
 	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js');
 	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug');
 	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae');
+	const UAE_DRIVE = Path.join(FSUAE_ROOT, 'hd0');
+	//const SOURCE_FILE_NAME = Path.join(DATA_ROOT, 'gencop.s');
 	let launchArgs = <LaunchRequestArguments>{
-		program: Path.join(DATA_ROOT, 'hello'),
+		program: Path.join(UAE_DRIVE, 'hello'),
 		stopOnEntry: false,
 		serverName: 'localhost',
 		serverPort: 6860,
 		emulator: Path.join(FSUAE_ROOT, 'fs-uae'),
 		conf: Path.join(FSUAE_ROOT, 'test.fs-uae'),
 		drive: Path.join(FSUAE_ROOT, 'hd0'),
+		sourceFileMap: new Map<String, String>()
 	};
-
+	if (launchArgs.sourceFileMap) {
+		launchArgs.sourceFileMap.set("/Users/papa/developpements/amiga/projects/helloworld", DATA_ROOT);
+	}
 	let session: FsUAEDebugSession;
 	let dc: DebugClient;
 	let server: any;
@@ -106,15 +111,15 @@ describe('Node Debug Adapter', () => {
 			]);
 		});
 
-		it('should stop on entry', function () {
+		it.only('should stop on entry', function () {
 			this.timeout(60000);
 			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
-			launchArgs.emulator = undefined;
 			return Promise.all([
 				dc.configurationSequence(),
 				dc.launch(launchArgsCopy),
-				dc.assertStoppedLocation('entry', { line: 1 })
+				dc.assertStoppedLocation('entry', { line: 32 })
 			]);
 		});
 	});

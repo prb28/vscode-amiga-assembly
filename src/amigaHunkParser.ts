@@ -40,19 +40,21 @@ export interface SourceLine {
 
 export interface SourceFile {
     name: string;
-    base_offset: number;
+    baseOffset: number;
     lines: Array<SourceLine>;
 }
 
 export interface Hunk {
-    mem_type: MemoryType;
-    hunk_type: HunkType;
-    alloc_size: number;
-    data_size: number;
-    code_data?: Uint32Array;
-    reloc_32?: Array<RelocInfo32>;
+    memType: MemoryType;
+    hunkType: HunkType;
+    allocSize: number;
+    dataSize: number;
+    codeData?: Uint32Array;
+    reloc32?: Array<RelocInfo32>;
     symbols?: Array<Symbol>;
-    line_debug_info?: Array<SourceFile>;
+    lineDebugInfo?: Array<SourceFile>;
+    segmentsId?: number;
+    segmentsAddress?: number;
 }
 
 export enum MemoryType {
@@ -62,7 +64,7 @@ export enum MemoryType {
 }
 
 export interface SizesTypes {
-    mem_type: MemoryType;
+    memType: MemoryType;
     size: number;
 }
 
@@ -75,19 +77,19 @@ export class HunkParser {
     public get_size_type(t: number): [number, MemoryType] {
         let size = (t & 0x0fffffff) * 4;
         let mem_t = t & 0xf0000000;
-        let mem_type: MemoryType;
+        let memType: MemoryType;
         switch (mem_t) {
             case HUNKF_CHIP:
-                mem_type = MemoryType.Chip;
+                memType = MemoryType.Chip;
                 break;
             case HUNKF_FAST:
-                mem_type = MemoryType.Fast;
+                memType = MemoryType.Fast;
                 break;
             default:
-                mem_type = MemoryType.Any;
+                memType = MemoryType.Any;
                 break;
         }
-        return [size, mem_type];
+        return [size, memType];
     }
 
     private toArrayBuffer(buf: Buffer): ArrayBuffer {
@@ -101,27 +103,27 @@ export class HunkParser {
 
     public parse_bss(hunk: Hunk, fileData: DataView, fileOffset: number): number {
         let [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
-        //hunk.hunk_type = HunkType.Bss;
-        //hunk.data_size = size;
-        //hunk.mem_type = mem_type;
+        //hunk.hunkType = HunkType.Bss;
+        //hunk.dataSize = size;
+        //hunk.memType = memType;
         return fileOffset + size + 4;
     }
 
-    public parse_code_or_data(hunk_type: HunkType, hunk: Hunk, fileData: DataView, fileOffset: number): number {
+    public parse_code_or_data(hunkType: HunkType, hunk: Hunk, fileData: DataView, fileOffset: number): number {
         let [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
-        let code_data = new Uint32Array(size / 4);
+        let codeData = new Uint32Array(size / 4);
         let pos = fileOffset + 4;
 
-        //hunk.data_size = size;
-        //hunk.hunk_type = hunk_type;
-        //hunk.mem_type = mem_type;
+        //hunk.dataSize = size;
+        //hunk.hunkType = hunkType;
+        //hunk.memType = memType;
 
         for (let i = 0; i < (size / 4); i += 1) {
-            code_data[i] = fileData.getInt32(pos, false);
+            codeData[i] = fileData.getInt32(pos, false);
             pos += 4;
         }
 
-        hunk.code_data = code_data;
+        hunk.codeData = codeData;
         return pos;
     }
 
@@ -176,7 +178,7 @@ export class HunkParser {
         }
         return pos;
     }
-    protected fill_debug_info(base_offset: number, num_longs: number, fileData: DataView, fileOffset: number): SourceFile {
+    protected fill_debug_info(baseOffset: number, num_longs: number, fileData: DataView, fileOffset: number): SourceFile {
         let pos = fileOffset;
         let num_name_longs = fileData.getUint32(pos, false);
         pos += 4;
@@ -192,13 +194,13 @@ export class HunkParser {
             pos += 4;
             lines.push(<SourceLine>{
                 line: line_no,
-                offset: base_offset + offset,
+                offset: baseOffset + offset,
             });
         }
 
         return <SourceFile>{
             name: name,
-            base_offset: base_offset,
+            baseOffset: baseOffset,
             lines: lines,
         };
     }
@@ -207,19 +209,19 @@ export class HunkParser {
         let pos = fileOffset;
         let num_longs = fileData.getUint32(pos, false) - 2; // skip base offset and tag
         pos += 4;
-        let base_offset = fileData.getUint32(pos, false);
+        let baseOffset = fileData.getUint32(pos, false);
         pos += 4;
         let debug_tag = fileData.getUint32(pos, false);
         pos += 4;
 
         // We only support debug line as debug format currently so skip if not found
         if (debug_tag === DEBUG_LINE) {
-            let debug_info = hunk.line_debug_info;
+            let debug_info = hunk.lineDebugInfo;
             if (!debug_info) {
                 debug_info = new Array<SourceFile>();
-                hunk.line_debug_info = debug_info;
+                hunk.lineDebugInfo = debug_info;
             }
-            let source_file = this.fill_debug_info(base_offset, num_longs, fileData, pos);
+            let source_file = this.fill_debug_info(baseOffset, num_longs, fileData, pos);
             debug_info.push(source_file);
         }
         return pos + num_longs * 4;
@@ -246,16 +248,16 @@ export class HunkParser {
             count = fileData.getUint32(pos, false);
             pos += 4;
         }
-        hunk.reloc_32 = relocs;
+        hunk.reloc32 = relocs;
         return pos;
     }
 
     public fill_hunk(hunk: Hunk, fileData: DataView, fileOffset: number) {
         let pos = fileOffset;
-        let hunk_type = fileData.getUint32(pos, false);
+        let hunkType = fileData.getUint32(pos, false);
         pos += 4;
-        while (hunk_type !== HUNK_END) {
-            switch (hunk_type) {
+        while (hunkType !== HUNK_END) {
+            switch (hunkType) {
                 case HUNK_DEBUG:
                     pos = this.parse_debug(hunk, fileData, pos);
                     break;
@@ -282,10 +284,10 @@ export class HunkParser {
                 case HUNK_END:
                     break;
                 default:
-                    // thrown error : unknown "Unknown hunk type {:x}", hunk_type
+                    // thrown error : unknown "Unknown hunk type {:x}", hunkType
                     break;
             }
-            hunk_type = fileData.getUint32(pos, false);
+            hunkType = fileData.getUint32(pos, false);
             pos += 4;
         }
     }
@@ -324,10 +326,10 @@ export class HunkParser {
         let hunk_table = new Array<SizesTypes>();
 
         for (let i = 0; i < hunk_count; i++) {
-            let [size, mem_type] = this.get_size_type(fileData.getUint32(fileOffset, false));
+            let [size, memType] = this.get_size_type(fileData.getUint32(fileOffset, false));
             fileOffset += 4;
             hunk_table.push(<SizesTypes>{
-                mem_type: mem_type,
+                memType: memType,
                 size: size
             });
         }
@@ -336,10 +338,10 @@ export class HunkParser {
 
         for (let i = 0; i < hunk_count; i++) {
             let hunk = <Hunk>{
-                mem_type: hunk_table[i].mem_type,
-                //hunk_type: HunkType.Bss,
-                alloc_size: hunk_table[i].size,
-                //data_size: 0
+                memType: hunk_table[i].memType,
+                //hunkType: HunkType.Bss,
+                allocSize: hunk_table[i].size,
+                //dataSize: 0
             };
             this.fill_hunk(hunk, fileData, fileOffset);
             hunks.push(hunk);

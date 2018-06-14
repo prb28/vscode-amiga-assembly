@@ -244,6 +244,11 @@
                                 "type": "number",
                                 "description": "Socket port to connect to FS-UAE",
                                 "default": 6860
+                            },
+                            "sourceFileMap": {
+                                "type": "map",
+                                "description": "Source file path replacements",
+                                "default": null
                             }
                         }
                     }
