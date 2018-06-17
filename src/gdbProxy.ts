@@ -156,7 +156,7 @@ export class GdbProxy extends EventEmitter {
                     break;
                 case GdbPacketType.UNKNOWN:
                 default:
-                    console.info("Packet ignored : " + packet.message);
+                    console.info("Packet ignored by onData : " + packet.message);
                     break;
             }
         }
@@ -208,7 +208,7 @@ export class GdbProxy extends EventEmitter {
             cs += buffer[i];
         }
         cs = cs % 256;
-        let s = cs.toString(16);
+        let s = this.formatNumber(cs);
         if (s.length < 2) {
             return "0" + s;
         } else {
@@ -247,9 +247,9 @@ export class GdbProxy extends EventEmitter {
             if (this.segments && (segmentId > this.segments.length)) {
                 return Promise.reject("Invalid breakpoint segment id");
             } else {
-                let newOffset = 0;
+                let newOffset = "0";
                 if (this.segments) {
-                    newOffset = this.toAbsoluteOffset(segmentId, offset);
+                    newOffset = this.formatNumber(this.toAbsoluteOffset(segmentId, offset));
                 }
                 return this.sendPacketString('Z0,' + newOffset + ',0').then(function (data) {
                     //console.log("setBreakPoint :" + data.toString());
@@ -358,6 +358,17 @@ export class GdbProxy extends EventEmitter {
         });
     }
 
+    public memory(address: number, length: number): Promise<string> {
+        return this.sendPacketString("m" + this.formatNumber(address) + ',' + this.formatNumber(length)).then(data => {
+            let packets = GdbProxy.parseData(data);
+            if ((packets.length > 0) && (packets[0].type !== GdbPacketType.ERROR)) {
+                return Promise.resolve(packets[0].message);
+            } else {
+                return Promise.reject(new Error("Error :" + data.toString()));
+            }
+        });
+    }
+
     /**
      * Sends an event
      * @param event Event to send
@@ -382,6 +393,7 @@ export class GdbProxy extends EventEmitter {
             let address = segs[i];
             let size = segs[i + 1];
             this.segments.push(<Segment>{
+                // TODO the segments should be in hex --- modify in fs-uae
                 address: parseInt(address),
                 size: parseInt(size),
             });
@@ -408,6 +420,10 @@ export class GdbProxy extends EventEmitter {
             default:
                 break;
         }
+    }
+
+    protected formatNumber(n: number): string {
+        return n.toString(16);
     }
 
     protected askForStatus() {

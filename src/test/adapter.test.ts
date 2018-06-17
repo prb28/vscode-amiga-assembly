@@ -111,7 +111,7 @@ describe('Node Debug Adapter', () => {
 		});
 
 		it('should stop on entry', function () {
-			this.timeout(1800000);
+			this.timeout(60000);
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
@@ -125,7 +125,7 @@ describe('Node Debug Adapter', () => {
 
 	describe('setBreakpoints', function () {
 
-		it.only('should stop on a breakpoint', function () {
+		it('should stop on a breakpoint', function () {
 			this.timeout(60000);
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
@@ -147,7 +147,23 @@ describe('Node Debug Adapter', () => {
 			]);
 		});
 	});
-
+	describe('evaluateExpression', function () {
+		it.skip('should evaluate a memory location', async function () {
+			this.timeout(60000);
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			launchArgsCopy.stopOnEntry = true;
+			await Promise.all([
+				dc.configurationSequence(),
+				dc.launch(launchArgsCopy),
+				dc.assertStoppedLocation('entry', { line: 32 })
+			]);
+			dc.evaluateRequest({
+				expression: "m0,10"
+			});
+			return dc.assertOutput("", "");
+		});
+	});
 	describe('setExceptionBreakpoints', function () {
 
 		it('should stop on an exception', function () {

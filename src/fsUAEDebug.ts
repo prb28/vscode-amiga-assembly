@@ -260,7 +260,6 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
-
 		// runtime supports now threads so just return a default thread.
 		response.body = {
 			threads: [
@@ -314,7 +313,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 					variables.push({
 						name: r.name,
 						type: "string",
-						value: np.hexToString(r.value),
+						value: this.padStartWith0(r.value.toString(16), 8),
 						variablesReference: 0
 					});
 				}
@@ -343,37 +342,32 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-		/*
-				let reply: string | undefined = undefined;
-		
-				if (args.context === 'repl') {
-					// 'evaluate' supports to create and delete breakpoints from the 'repl':
-					const matches = /new +([0-9]+)/.exec(args.expression);
-					if (matches && matches.length === 2) {
-						const mbp = this._gdbProxy.setBreakPoint(this._gdbProxy.sourceFile, this.convertClientLineToDebugger(parseInt(matches[1])));
-						const bp = <DebugProtocol.Breakpoint>new Breakpoint(mbp.verified, this.convertDebuggerLineToClient(mbp.line), undefined, this.createSource(this._gdbProxy.sourceFile));
-						bp.id = mbp.id;
-						this.sendEvent(new BreakpointEvent('new', bp));
-						reply = `breakpoint created`;
-					} else {
-						const matches = /del +([0-9]+)/.exec(args.expression);
-						if (matches && matches.length === 2) {
-							const mbp = this._gdbProxy.clearBreakPoint(this._gdbProxy.sourceFile, this.convertClientLineToDebugger(parseInt(matches[1])));
-							if (mbp) {
-								const bp = <DebugProtocol.Breakpoint>new Breakpoint(false);
-								bp.id = mbp.id;
-								this.sendEvent(new BreakpointEvent('removed', bp));
-								reply = `breakpoint deleted`;
-							}
-						}
-					}
-				}
-		
-				response.body = {
-					result: reply ? reply : `evaluate(context: '${args.context}', '${args.expression}')`,
-					variablesReference: 0
-				};*/
-		this.sendResponse(response);
+		let reply: string | undefined = undefined;
+		// Evaluate an expression
+		const matches = /m\s*([0-9a-z]+)\s*,\s*([0-9a-z]+)/i.exec(args.expression);
+		if (matches) {
+			let address = parseInt(matches[1], 16);
+			let length = parseInt(matches[2], 16);
+			if ((address !== null) && (length !== null)) {
+				// ask for memory dump
+				this._gdbProxy.memory(address, length).then((memory) => {
+					response.body = {
+						result: this.chunk(memory.toString(), 8),
+						type: "string",
+						variablesReference: 0,
+					};
+					this.sendResponse(response);
+				});
+			} else {
+				response.success = false;
+				response.message = "Invalid memory dump expression";
+				this.sendResponse(response);
+			}
+		} else {
+			response.success = false;
+			response.message = "Expression non recognized";
+			this.sendResponse(response);
+		}
 	}
 
 	/**
@@ -399,5 +393,32 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'mock-adapter-data');
 	}
 
+	/**
+     * Padding on start of string
+     * @param stringToPad String to pad
+     * @param targetLength Length targetted
+     * @return Padding string
+     */
+	public padStartWith0(stringToPad: string, targetLength: number): string {
+		targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
+		let padString = '0';
+		if (stringToPad.length > targetLength) {
+			return stringToPad;
+		}
+		else {
+			targetLength = targetLength - stringToPad.length;
+			if (targetLength > padString.length) {
+				padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+			}
+			return padString.slice(0, targetLength) + stringToPad;
+		}
+	}
+	private chunk(str: string, n: number): string {
+		let ret = [];
+		for (let i = 0; i < str.length - n - 1; i += n) {
+			ret.push(str.substring(i, n + i));
+		}
+		return ret.join(' ');
+	};
 
 }

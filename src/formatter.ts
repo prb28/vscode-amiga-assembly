@@ -192,7 +192,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
     }
 
     /**
-     * Getting the pad of the goot size at the end of string
+     * Getting the pad of the good size at the end of string
      * @param stringToPad String to pad
      * @param targetLength Length targetted
      * @return Padding string
