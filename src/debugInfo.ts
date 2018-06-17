@@ -43,7 +43,6 @@ export class DebugInfo {
         if (segId >= this.hunks.length) {
             return null;
         }
-
         let hunk = this.hunks[segId];
 
         let source_files = hunk.lineDebugInfo;
@@ -55,6 +54,19 @@ export class DebugInfo {
                 //}
                 let data = this.tryFindLine(srcFile.name, srcFile.lines, offset);
                 if (data) {
+                    // transform the file path to a local one
+                    // Is there a path replacement
+                    if (this.pathReplacements) {
+                        let name = data[0];
+                        var it = this.pathReplacements[Symbol.iterator]();
+                        for (let item of it) {
+                            if (name.indexOf(item[0]) >= 0) {
+                                name = name.replace(item[0], item[1]);
+                                break;
+                            }
+                        }
+                        data[0] = name;
+                    }
                     return data;
                 }
             }

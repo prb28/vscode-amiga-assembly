@@ -18,7 +18,7 @@ describe('Node Debug Adapter', () => {
 	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug');
 	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae');
 	const UAE_DRIVE = Path.join(FSUAE_ROOT, 'hd0');
-	//const SOURCE_FILE_NAME = Path.join(DATA_ROOT, 'gencop.s');
+	const SOURCE_FILE_NAME = Path.join(DATA_ROOT, 'gencop.s');
 	let launchArgs = <LaunchRequestArguments>{
 		program: Path.join(UAE_DRIVE, 'hello'),
 		stopOnEntry: false,
@@ -27,11 +27,10 @@ describe('Node Debug Adapter', () => {
 		emulator: Path.join(FSUAE_ROOT, 'fs-uae'),
 		conf: Path.join(FSUAE_ROOT, 'test.fs-uae'),
 		drive: Path.join(FSUAE_ROOT, 'hd0'),
-		sourceFileMap: new Map<String, String>()
+		sourceFileMap: {
+			"/Users/papa/developpements/amiga/projects/helloworld": DATA_ROOT
+		}
 	};
-	if (launchArgs.sourceFileMap) {
-		launchArgs.sourceFileMap.set("/Users/papa/developpements/amiga/projects/helloworld", DATA_ROOT);
-	}
 	let session: FsUAEDebugSession;
 	let dc: DebugClient;
 	let server: any;
@@ -68,9 +67,9 @@ describe('Node Debug Adapter', () => {
 	describe('basic', function () {
 
 		it('unknown request should produce error', function () {
-			dc.send('illegal_request').then(() => {
+			dc.send('illegal_request').then(function () {
 				Promise.reject("does not report error on unknown request");
-			}).catch(() => {
+			}).catch(function () {
 				Promise.resolve();
 			});
 		});
@@ -79,21 +78,21 @@ describe('Node Debug Adapter', () => {
 	describe('initialize', () => {
 
 		it('should return supported features', function () {
-			return dc.initializeRequest().then(response => {
+			return dc.initializeRequest().then(function (response) {
 				response.body = response.body || {};
 				assert.equal(response.body.supportsConfigurationDoneRequest, true);
 			});
 		});
 
-		it('should produce error for invalid \'pathFormat\'', done => {
+		it('should produce error for invalid \'pathFormat\'', function (done) {
 			dc.initializeRequest({
 				adapterID: 'mock',
 				linesStartAt1: true,
 				columnsStartAt1: true,
 				pathFormat: 'url'
-			}).then(response => {
+			}).then(function (response) {
 				done(new Error("does not report error on invalid 'pathFormat' attribute"));
-			}).catch(err => {
+			}).catch(function (err) {
 				// error expected
 				done();
 			});
@@ -111,8 +110,8 @@ describe('Node Debug Adapter', () => {
 			]);
 		});
 
-		it.only('should stop on entry', function () {
-			this.timeout(60000);
+		it('should stop on entry', function () {
+			this.timeout(1800000);
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
@@ -124,17 +123,16 @@ describe('Node Debug Adapter', () => {
 		});
 	});
 
-	describe('setBreakpoints', () => {
+	describe('setBreakpoints', function () {
 
-		it('should stop on a breakpoint', () => {
-
-			const PROGRAM = Path.join(DATA_ROOT, 'test.md');
-			const BREAKPOINT_LINE = 2;
-
-			return dc.hitBreakpoint({ program: PROGRAM }, { path: PROGRAM, line: BREAKPOINT_LINE });
+		it.only('should stop on a breakpoint', function () {
+			this.timeout(60000);
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			return dc.hitBreakpoint(launchArgsCopy, { path: SOURCE_FILE_NAME, line: 32 });
 		});
 
-		it('hitting a lazy breakpoint should send a breakpoint event', () => {
+		it('hitting a lazy breakpoint should send a breakpoint event', function () {
 
 			const PROGRAM = Path.join(DATA_ROOT, 'testLazyBreakpoint.md');
 			const BREAKPOINT_LINE = 3;
@@ -143,27 +141,27 @@ describe('Node Debug Adapter', () => {
 
 				dc.hitBreakpoint({ program: PROGRAM }, { path: PROGRAM, line: BREAKPOINT_LINE, verified: false }),
 
-				dc.waitForEvent('breakpoint').then((event: DebugProtocol.Event) => {
+				dc.waitForEvent('breakpoint').then(function (event: DebugProtocol.Event) {
 					assert.equal(event.body.breakpoint.verified, true, "event mismatch: verified");
 				})
 			]);
 		});
 	});
 
-	describe('setExceptionBreakpoints', () => {
+	describe('setExceptionBreakpoints', function () {
 
-		it('should stop on an exception', () => {
+		it('should stop on an exception', function () {
 
 			const PROGRAM_WITH_EXCEPTION = Path.join(DATA_ROOT, 'testWithException.md');
 			const EXCEPTION_LINE = 4;
 
 			return Promise.all([
 
-				dc.waitForEvent('initialized').then(event => {
+				dc.waitForEvent('initialized').then(function (event) {
 					return dc.setExceptionBreakpointsRequest({
 						filters: ['all']
 					});
-				}).then(response => {
+				}).then(function (response) {
 					return dc.configurationDoneRequest();
 				}),
 

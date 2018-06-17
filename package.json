@@ -235,20 +235,22 @@
                                 "description": "Enable logging of the Debug Adapter Protocol.",
                                 "default": true
                             },
-                            "host": {
+                            "serverName": {
                                 "type": "string",
                                 "description": "Host running fs-uae",
                                 "default": "localhost"
                             },
-                            "port": {
+                            "serverPort": {
                                 "type": "number",
                                 "description": "Socket port to connect to FS-UAE",
                                 "default": 6860
                             },
                             "sourceFileMap": {
-                                "type": "map",
-                                "description": "Source file path replacements",
-                                "default": null
+                                "type": "object",
+                                "description": "Optional source file mappings passed to the debug engine. Example: '{ \"/original/source/path\":\"/current/source/path\" }'",
+                                "default": {
+                                    "<source-path>": "<target-path>"
+                                }
                             }
                         }
                     }
@@ -262,8 +264,8 @@
                         "program": "${workspaceFolder}/${command:AskForProgramName}",
                         "conf": "configuration/dev.fs-uae",
                         "stopOnEntry": true,
-                        "host": "localhost",
-                        "port": 6860
+                        "serverName": "localhost",
+                        "serverPort": 6860
                     }
                 ],
                 "configurationSnippets": [
@@ -278,8 +280,8 @@
                             "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
                             "conf": "Path to fs-uae fs-uae configuration file",
                             "stopOnEntry": true,
-                            "host": "localhost",
-                            "port": 6860
+                            "serverName": "localhost",
+                            "serverPort": 6860
                         }
                     }
                 ],

@@ -14,6 +14,7 @@ import { GdbProxy, GdbStackFrame, GdbRegister, GdbBreakpoint, Segment, GdbStackP
 import { Executor } from './executor';
 import { CancellationTokenSource } from 'vscode';
 import { DebugInfo } from './debugInfo';
+import { NumberParser } from './parser';
 const { Subject } = require('await-notify');
 
 
@@ -41,7 +42,7 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	/** drive */
 	drive: string;
 	/** path replacements for source files */
-	sourceFileMap?: Map<string, string>;
+	sourceFileMap?: Object;
 }
 
 export class FsUAEDebugSession extends LoggingDebugSession {
@@ -155,7 +156,18 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
 
 		// Loads the debug info
-		this.debugInfo = new DebugInfo(args.sourceFileMap);
+		console.log(args.sourceFileMap);
+		let sMap = new Map<string, string>();
+		if (args.sourceFileMap) {
+			let keys = Object.keys(args.sourceFileMap);
+			for (let k of keys) {
+				const desc = Object.getOwnPropertyDescriptor(args.sourceFileMap, k);
+				if (desc) {
+					sMap.set(k, desc.value);
+				}
+			}
+		}
+		this.debugInfo = new DebugInfo(sMap);
 		this.debugInfo.loadInfo(args.program);
 
 		// Launch the emulator
@@ -171,20 +183,14 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 
 			// connects to FS-UAE
 			debAdapter._gdbProxy.connect(args.serverName, args.serverPort).then(() => {
-				if (args.stopOnEntry) {
-					debAdapter._gdbProxy.setBreakPoint(0, 0).catch(err => console.error(err)).then(() => {
-						// Loads the program
-						debAdapter._gdbProxy.load(args.program);
-						debAdapter.sendResponse(response);
-					});
-				} else {
-					// Loads the program
-					debAdapter._gdbProxy.load(args.program);
-					debAdapter.sendResponse(response);
-				}
+				// Loads the program
+				debAdapter._gdbProxy.load(args.program, args.stopOnEntry);
+				debAdapter.sendResponse(response);
+			}).catch(err => {
+				response.success = false;
+				response.message = err.toString();
+				debAdapter.sendResponse(response);
 			});
-
-
 		}, 3000);
 	}
 
@@ -237,8 +243,8 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 						debugBreakPoints.push(<DebugProtocol.Breakpoint>{
 							id: breakpt.id,
 							line: values[1],
-							source: values[0],
-							verified: breakpt.verified
+							source: path, // The path is the local path and not the stored in binary file
+							verified: true // We assume that if the line is in the binary, it is verified
 						});
 					}
 				}
@@ -301,13 +307,14 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this._gdbProxy.registers().then((registers: Array<GdbRegister>) => {
 			const variables = new Array<DebugProtocol.Variable>();
 			const id = this._variableHandles.get(args.variablesReference);
+			let np = new NumberParser();
 			if (id !== null) {
 				for (let i = 0; i < registers.length; i++) {
 					let r = registers[i];
 					variables.push({
 						name: r.name,
-						type: "number",
-						value: r.value.toString(),
+						type: "string",
+						value: np.hexToString(r.value),
 						variablesReference: 0
 					});
 				}

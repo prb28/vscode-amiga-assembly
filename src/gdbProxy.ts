@@ -31,6 +31,23 @@ export interface Segment {
     size: number;
 }
 
+export enum GdbPacketType {
+    ERROR,
+    REGISTER,
+    MEMORY,
+    SEGMENT,
+    END,
+    STOP,
+    UNKNOWN,
+    OK,
+    PLUS
+}
+export interface GdbPacket {
+    type: GdbPacketType;
+    command?: string;
+    message: string;
+}
+
 export class GdbProxy extends EventEmitter {
     // Socket to connect
     private socket: Socket;
@@ -46,6 +63,8 @@ export class GdbProxy extends EventEmitter {
     private pendingBreakpoints: Array<GdbBreakpoint> | null = null;
     /** Current frames */
     private frames = new Array<GdbStackPosition>();
+    /** Stop on entry asked */
+    private stopOnEntryRequested = false;
 
     constructor() {
         super();
@@ -84,30 +103,101 @@ export class GdbProxy extends EventEmitter {
         this.socket.destroy();
     }
 
-    private onData(proxy: GdbProxy, data: any) {
+    protected static parseType(message: string): GdbPacketType {
+        if (message.startsWith("OK")) {
+            return GdbPacketType.OK;
+        } else if (message.startsWith("+")) {
+            return GdbPacketType.PLUS;
+        } else if (message.startsWith("AS")) {
+            return GdbPacketType.REGISTER;
+        } else if (message.startsWith("E")) {
+            return GdbPacketType.ERROR;
+        } else if (message.startsWith("S")) {
+            return GdbPacketType.STOP;
+        } else if (message.startsWith("W")) {
+            return GdbPacketType.END;
+        }
+        return GdbPacketType.UNKNOWN;
+    }
+
+    protected static parseData(data: any): GdbPacket[] {
         let s = data.toString();
-        console.log(s);
-        let messageRegexp = /(\$[.]+#\d[a-f]{2})/gi;
+        let messageRegexp = /\$([a-z\d;:/\\.]+)\#[\da-f]{2}/gi;
         let match;
+        let parsedData = new Array<GdbPacket>();
         while (match = messageRegexp.exec(s)) {
-            let message = proxy.extractPacket(match[1]);
-            if (message.startsWith("AS")) {
-                this.parseSegments(message);
-            } else if (message.startsWith("E")) {
-                proxy.parseError(message);
-            } else if (message.startsWith("S")) {
-                proxy.parseStop(message);
-            } else if (message.startsWith("W")) {
-                proxy.sendEvent("end");
+            let message = GdbProxy.extractPacket(match[1]);
+            parsedData.push(<GdbPacket>{
+                type: GdbProxy.parseType(message),
+                message: message
+            });
+        }
+        return parsedData;
+    }
+
+    private onData(proxy: GdbProxy, data: any) {
+        console.log("onData : " + data.toString());
+        for (let packet of GdbProxy.parseData(data)) {
+            switch (packet.type) {
+                case GdbPacketType.REGISTER:
+                    this.parseSegments(packet.message);
+                    break;
+                case GdbPacketType.ERROR:
+                    this.parseError(packet.message);
+                    break;
+                case GdbPacketType.STOP:
+                    this.parseStop(packet.message);
+                    break;
+                case GdbPacketType.END:
+                    this.sendEvent(packet.message);
+                    break;
+                case GdbPacketType.OK:
+                case GdbPacketType.PLUS:
+                    break;
+                case GdbPacketType.UNKNOWN:
+                default:
+                    console.info("Packet ignored : " + packet.message);
+                    break;
             }
         }
     }
 
-    public load(programFilename: string) {
+    protected responseHasNoError(data: any): boolean {
+        let packets = GdbProxy.parseData(data);
+        for (let packet of packets) {
+            if (packet.type === GdbPacketType.ERROR) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public load(programFilename: string, stopOnEntry: boolean | undefined) {
         if (this.programFilename !== programFilename) {
             this.programFilename = programFilename;
             let elms = this.programFilename.replace('\\', '/').split('/');
-            this.sendPacketString("vRun;dh0:" + elms[elms.length - 1] + ";");
+            if (stopOnEntry) {
+                this.sendPacketString("Z0,0,0").then(data => {
+                    //console.log("load : " + data.toString());
+                    let self = this;
+                    if (data.toString().indexOf('OK') > 0) {
+                        // Let fs-uae terminate before sending the run command
+                        // TODO : is this necessary ???
+                        setTimeout(function () {
+                            self.stopOnEntryRequested = true;
+                            self.sendPacketString("vRun;dh0:" + elms[elms.length - 1] + ";");
+                        }, 100);
+                    } else {
+                        // TODO Affichage de l'erreur
+                    }
+                });
+            } else {
+                this.sendPacketString("vRun;dh0:" + elms[elms.length - 1] + ";").then(data => {
+                    if (this.responseHasNoError(data)) {
+                        this.sendAllPendingBreakpoints();
+                    }
+                });
+            }
         }
     }
 
@@ -137,7 +227,7 @@ export class GdbProxy extends EventEmitter {
             data.write(this.calculateChecksum(text), offset);
             offset += 2;
             data.writeInt8(0, offset);
-            console.log(data.toString());
+            console.log(" --->" + data.toString());
             this.socket.write(data);
             this.socket.once('data', (data) => {
                 resolve(data);
@@ -161,10 +251,8 @@ export class GdbProxy extends EventEmitter {
                 if (this.segments) {
                     newOffset = this.toAbsoluteOffset(segmentId, offset);
                 }
-                // TODO : enable all breakpoints segments
-                newOffset = 0;
                 return this.sendPacketString('Z0,' + newOffset + ',0').then(function (data) {
-                    console.log(data.toString());
+                    //console.log("setBreakPoint :" + data.toString());
                     let bp = <GdbBreakpoint>{
                         verified: true,
                         segmentId: segmentId,
@@ -191,6 +279,22 @@ export class GdbProxy extends EventEmitter {
         }
     }
 
+    public sendAllPendingBreakpoints(): Promise<GdbBreakpoint[]> {
+        if ((this.pendingBreakpoints) && this.pendingBreakpoints.length > 0) {
+            let pending = this.pendingBreakpoints;
+            this.pendingBreakpoints = new Array<GdbBreakpoint>();
+            let promises: Promise<GdbBreakpoint>[] = [];
+            for (let bp of pending) {
+                promises.push(this.setBreakPoint(bp.segmentId, bp.offset).then(bp => {
+                    return bp;
+                }));
+            }
+            return Promise.all(promises);
+        } else {
+            return Promise.resolve([]);
+        }
+    }
+
     public clearBreakpoints(path: string) {
 
     }
@@ -213,7 +317,8 @@ export class GdbProxy extends EventEmitter {
 
     public registers(): Promise<Array<GdbRegister>> {
         return this.sendPacketString('g').then(data => {
-            let dataStr = this.extractPacket(data.toString());
+            //console.log("register : " + data.toString());
+            let dataStr = GdbProxy.extractPacket(data.toString());
             let registers = new Array<GdbRegister>();
             let pos = 0;
             let letter = 'd';
@@ -292,24 +397,12 @@ export class GdbProxy extends EventEmitter {
             case 5:
                 // A breakpoint has been reached
                 this.registers().then((registers: Array<GdbRegister>) => {
-                    if (this.segments) {
-                        let pc = -1;
-                        for (let register of registers) {
-                            if (register.name === "pc") {
-                                pc = register.value;
-                                for (let seg of this.segments) {
-                                    console.log('pc =' + pc + '   add = ' + seg.address);
-                                    if ((pc === seg.address) || (pc === (seg.address + 4))) {
-                                        this.sendEvent('stopOnEntry');
-                                        return;
-                                    }
-                                }
-                                break;
-                            }
-                        }
+                    if (this.stopOnEntryRequested) {
+                        this.stopOnEntryRequested = false;
+                        this.sendEvent('stopOnEntry');
+                    } else {
+                        this.sendEvent('stopOnBreakpoint');
                     }
-                    this.sendEvent('stopOnBreakpoint');
-
                 });
                 break;
             default:
@@ -321,7 +414,7 @@ export class GdbProxy extends EventEmitter {
         this.sendPacketString('?');
     }
 
-    protected extractPacket(message: string): string {
+    protected static extractPacket(message: string): string {
         if (message.startsWith('$')) {
             let pos = message.indexOf('#');
             if (pos > 0) {
@@ -339,11 +432,11 @@ export class GdbProxy extends EventEmitter {
         this.sendEvent('error', message);
     }
 
-    private toRelativeOffset(offset: number): [number, number] {
+    public toRelativeOffset(offset: number): [number, number] {
         if (this.segments) {
             let segmentId = 0;
             for (let segment of this.segments) {
-                if ((offset >= segment.address) && (offset <= segment.address + segment.size)) {
+                if ((offset >= (segment.address - 4)) && (offset <= segment.address + segment.size)) {
                     return [segmentId, offset - segment.address - 4];
                 }
                 segmentId++;
@@ -351,7 +444,7 @@ export class GdbProxy extends EventEmitter {
         }
         return [0, offset];
     }
-    private toAbsoluteOffset(segmentId: number, offset: number): number {
+    public toAbsoluteOffset(segmentId: number, offset: number): number {
         if (this.segments) {
             if (segmentId < this.segments.length) {
                 return segmentId + offset + 4;
