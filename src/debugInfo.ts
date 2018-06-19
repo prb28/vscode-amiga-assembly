@@ -74,6 +74,22 @@ export class DebugInfo {
         return null;
     }
 
+    private resolveReplacedPathName(path: string): string {
+        let name = path;
+        if (this.pathReplacements) {
+            for (let key of Array.from(this.pathReplacements.keys())) {
+                if (name.indexOf(key) >= 0) {
+                    let value = this.pathReplacements.get(key);
+                    if (value) {
+                        name = name.replace(key, value);
+                        break;
+                    }
+                }
+            }
+        }
+        return name;
+    }
+
     public getAddressSeg(filename: string, fileLine: number): ([number, number] | null) {
         for (let i = 0; i < this.hunks.length; i++) {
             let hunk = this.hunks[i];
@@ -82,18 +98,7 @@ export class DebugInfo {
                 for (let j = 0; j < sourceFiles.length; j++) {
                     let srcFile = sourceFiles[j];
                     // Is there a path replacement
-                    let name = srcFile.name;
-                    if (this.pathReplacements) {
-                        for (let key of Array.from(this.pathReplacements.keys())) {
-                            if (name.indexOf(key) >= 0) {
-                                let value = this.pathReplacements.get(key);
-                                if (value) {
-                                    name = name.replace(key, value);
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    let name = this.resolveReplacedPathName(srcFile.name);
                     if (name === filename) {
                         for (let k = 0; k < srcFile.lines.length; k++) {
                             let line = srcFile.lines[k];
@@ -105,7 +110,25 @@ export class DebugInfo {
                 }
             }
         }
-
         return null;
+    }
+
+    public getAllSegmentIds(filename: string): number[] {
+        let segIds: number[] = [];
+        for (let i = 0; i < this.hunks.length; i++) {
+            let hunk = this.hunks[i];
+            let sourceFiles = hunk.lineDebugInfo;
+            if (sourceFiles) {
+                for (let j = 0; j < sourceFiles.length; j++) {
+                    let srcFile = sourceFiles[j];
+                    // Is there a path replacement
+                    let name = this.resolveReplacedPathName(srcFile.name);
+                    if (name === filename) {
+                        segIds.push(i);
+                    }
+                }
+            }
+        }
+        return segIds;
     }
 }

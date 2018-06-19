@@ -1,9 +1,5 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
 import assert = require('assert');
+import { expect } from 'chai';
 import * as Path from 'path';
 import { DebugClient } from 'vscode-debugadapter-testsupport';
 import { DebugProtocol } from 'vscode-debugprotocol';
@@ -133,14 +129,11 @@ describe('Node Debug Adapter', () => {
 		});
 
 		it('hitting a lazy breakpoint should send a breakpoint event', function () {
-
-			const PROGRAM = Path.join(DATA_ROOT, 'testLazyBreakpoint.md');
-			const BREAKPOINT_LINE = 3;
-
+			this.timeout(60000);
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			return Promise.all([
-
-				dc.hitBreakpoint({ program: PROGRAM }, { path: PROGRAM, line: BREAKPOINT_LINE, verified: false }),
-
+				dc.hitBreakpoint(launchArgsCopy, { path: SOURCE_FILE_NAME, line: 33 }),
 				dc.waitForEvent('breakpoint').then(function (event: DebugProtocol.Event) {
 					assert.equal(event.body.breakpoint.verified, true, "event mismatch: verified");
 				})
@@ -148,7 +141,7 @@ describe('Node Debug Adapter', () => {
 		});
 	});
 	describe('evaluateExpression', function () {
-		it.skip('should evaluate a memory location', async function () {
+		it('should evaluate a memory location', async function () {
 			this.timeout(60000);
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
@@ -158,10 +151,11 @@ describe('Node Debug Adapter', () => {
 				dc.launch(launchArgsCopy),
 				dc.assertStoppedLocation('entry', { line: 32 })
 			]);
-			dc.evaluateRequest({
+			const evaluateResponse = await dc.evaluateRequest({
 				expression: "m0,10"
 			});
-			return dc.assertOutput("", "");
+			expect(evaluateResponse.body.type).to.equal('string');
+			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f80b0e');
 		});
 	});
 	describe('setExceptionBreakpoints', function () {

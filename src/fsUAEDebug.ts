@@ -14,7 +14,6 @@ import { GdbProxy, GdbStackFrame, GdbRegister, GdbBreakpoint, Segment, GdbStackP
 import { Executor } from './executor';
 import { CancellationTokenSource } from 'vscode';
 import { DebugInfo } from './debugInfo';
-import { NumberParser } from './parser';
 const { Subject } = require('await-notify');
 
 
@@ -171,7 +170,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.debugInfo.loadInfo(args.program);
 
 		// Launch the emulator
-		this.startEmulator(args);
+		//this.startEmulator(args);
 
 		// wait until configuration has finished (and configurationDoneRequest has been called)
 		await this._configurationDone.wait(1000);
@@ -217,7 +216,12 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		const clientLines = args.lines || [];
 
 		// clear all breakpoints for this file
-		this._gdbProxy.clearBreakpoints(path);
+		if (this.debugInfo) {
+			let values = this.debugInfo.getAllSegmentIds(path);
+			for (let segmentId of values) {
+				this._gdbProxy.clearBreakpoints(segmentId);
+			}
+		}
 
 		// set and verify breakpoint locations
 		let promises: Promise<GdbBreakpoint>[] = [];
@@ -306,7 +310,6 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this._gdbProxy.registers().then((registers: Array<GdbRegister>) => {
 			const variables = new Array<DebugProtocol.Variable>();
 			const id = this._variableHandles.get(args.variablesReference);
-			let np = new NumberParser();
 			if (id !== null) {
 				for (let i = 0; i < registers.length; i++) {
 					let r = registers[i];
@@ -332,7 +335,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
-		this._gdbProxy.continue();
+		this._gdbProxy.continueExecution();
 		this.sendResponse(response);
 	}
 
@@ -342,7 +345,6 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-		let reply: string | undefined = undefined;
 		// Evaluate an expression
 		const matches = /m\s*([0-9a-z]+)\s*,\s*([0-9a-z]+)/i.exec(args.expression);
 		if (matches) {
@@ -419,6 +421,6 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			ret.push(str.substring(i, n + i));
 		}
 		return ret.join(' ');
-	};
+	}
 
 }
