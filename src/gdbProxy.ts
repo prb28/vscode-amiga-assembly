@@ -354,15 +354,8 @@ export class GdbProxy extends EventEmitter {
                 name: "pc",
                 value: pc
             });
-            v = dataStr.slice(pos, pos + 8);
-            pos += 8;
-            let next_pc = parseInt(v, 16);
-            registers.push({
-                name: "next_pc",
-                value: next_pc
-            });
             this.frames = [];
-            let [segmentId, offset] = this.toRelativeOffset(next_pc);
+            let [segmentId, offset] = this.toRelativeOffset(pc);
             this.frames.push(<GdbStackPosition>{
                 index: 1,
                 segmentId: segmentId,

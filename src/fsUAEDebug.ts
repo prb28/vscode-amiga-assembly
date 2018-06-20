@@ -170,7 +170,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.debugInfo.loadInfo(args.program);
 
 		// Launch the emulator
-		//this.startEmulator(args);
+		this.startEmulator(args);
 
 		// wait until configuration has finished (and configurationDoneRequest has been called)
 		await this._configurationDone.wait(1000);
