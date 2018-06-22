@@ -40,7 +40,8 @@ export enum GdbPacketType {
     STOP,
     UNKNOWN,
     OK,
-    PLUS
+    PLUS,
+    MINUS
 }
 export interface GdbPacket {
     type: GdbPacketType;
@@ -86,7 +87,7 @@ export class GdbProxy extends EventEmitter {
                     }
                 });
             });
-            self.socket.once('error', (err) => {
+            self.socket.on('error', (err) => {
                 self.sendEvent("error", err);
                 reject(err);
             });
@@ -110,6 +111,8 @@ export class GdbProxy extends EventEmitter {
             return GdbPacketType.STOP;
         } else if (message.startsWith("W")) {
             return GdbPacketType.END;
+        } else if (message.startsWith("-")) {
+            return GdbPacketType.MINUS;
         }
         return GdbPacketType.UNKNOWN;
     }
@@ -144,6 +147,11 @@ export class GdbProxy extends EventEmitter {
                     break;
                 case GdbPacketType.END:
                     this.sendEvent("end");
+                    break;
+                case GdbPacketType.MINUS:
+                    // TODO: Send last message
+                    console.error("Unsupported packet : '-'");
+                    proxy.sendEvent("error", "Unsupported packet : '-'");
                     break;
                 case GdbPacketType.OK:
                 case GdbPacketType.PLUS:
@@ -401,8 +409,8 @@ export class GdbProxy extends EventEmitter {
             let size = segs[i + 1];
             this.segments.push(<Segment>{
                 // TODO the segments should be in hex --- modify in fs-uae
-                address: parseInt(address),
-                size: parseInt(size),
+                address: parseInt(address, 16),
+                size: parseInt(size, 16),
             });
         }
         this.sendEvent("segmentsUpdated", this.segments);
@@ -459,6 +467,14 @@ export class GdbProxy extends EventEmitter {
             }
         }
         return message;
+    }
+
+    /**
+     * Returns the current array of segments
+     * @return array of segments or undefined
+     */
+    public getSegments(): Segment[] | undefined {
+        return this.segments;
     }
 
     /**

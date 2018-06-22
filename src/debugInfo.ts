@@ -1,4 +1,4 @@
-import { Hunk, HunkParser, SourceLine } from './amigaHunkParser';
+import { Hunk, HunkParser, SourceLine, Symbol } from './amigaHunkParser';
 
 export class DebugInfo {
     public hunks = new Array<Hunk>();
@@ -12,6 +12,35 @@ export class DebugInfo {
         console.log("Trying debug data from {:?}", filePath);
         let parser = new HunkParser();
         this.hunks = parser.parse_file(filePath);
+    }
+    public getSymbols(filename: string | undefined): Symbol[] {
+        let symbols = Array<Symbol>();
+        for (let i = 0; i < this.hunks.length; i++) {
+            let hunk = this.hunks[i];
+            if (hunk.symbols) {
+                if (filename) {
+                    let sourceFiles = hunk.lineDebugInfo;
+                    if (sourceFiles) {
+                        for (let j = 0; j < sourceFiles.length; j++) {
+                            let srcFile = sourceFiles[j];
+                            // Is there a path replacement
+                            let name = this.resolveReplacedPathName(srcFile.name);
+                            if (name === filename) {
+                                for (let s of hunk.symbols) {
+                                    symbols.push(s);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    for (let s of hunk.symbols) {
+                        symbols.push(s);
+                    }
+                }
+            }
+        }
+        return symbols;
     }
 
     protected tryFindLine(filename: string, lines: Array<SourceLine>, offset: number): ([string, number] | null) {

@@ -1,7 +1,3 @@
-/*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
- *--------------------------------------------------------*/
-
 import {
 	Logger, logger,
 	LoggingDebugSession,
@@ -286,7 +282,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 						file = values[0];
 						line = values[1];
 					}
-					return new StackFrame(f.index, file, this.createSource(file), line);
+					return new StackFrame(f.index, "Thread CPU", this.createSource(file), line);
 				}),
 				totalFrames: stk.count
 			};
@@ -297,8 +293,9 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
 		const frameReference = args.frameId;
 		const scopes = new Array<Scope>();
-		scopes.push(new Scope("Local", this._variableHandles.create("local_" + frameReference), false));
-		scopes.push(new Scope("Global", this._variableHandles.create("global_" + frameReference), true));
+		scopes.push(new Scope("Registers", this._variableHandles.create("registers_" + frameReference), false));
+		scopes.push(new Scope("Segments", this._variableHandles.create("segments_" + frameReference), true));
+		scopes.push(new Scope("Symbols", this._variableHandles.create("symbols_" + frameReference), true));
 
 		response.body = {
 			scopes: scopes
@@ -307,27 +304,63 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments): void {
-		this._gdbProxy.registers().then((registers: Array<GdbRegister>) => {
-			const variables = new Array<DebugProtocol.Variable>();
-			const id = this._variableHandles.get(args.variablesReference);
-			if (id !== null) {
-				for (let i = 0; i < registers.length; i++) {
-					let r = registers[i];
-					variables.push({
-						name: r.name,
-						type: "string",
-						value: this.padStartWith0(r.value.toString(16), 8),
-						variablesReference: 0
-					});
+		const id = this._variableHandles.get(args.variablesReference);
+		if (id !== null) {
+			if (id.startsWith("registers_")) {
+				this._gdbProxy.registers().then((registers: Array<GdbRegister>) => {
+					const variables = new Array<DebugProtocol.Variable>();
+					for (let i = 0; i < registers.length; i++) {
+						let r = registers[i];
+						variables.push({
+							name: r.name,
+							type: "string",
+							value: this.padStartWith0(r.value.toString(16), 8),
+							variablesReference: 0
+						});
+					}
+					response.body = {
+						variables: variables
+					};
+					this.sendResponse(response);
+				});
+			} else if (id.startsWith("segments_")) {
+				const variables = new Array<DebugProtocol.Variable>();
+				const segments = this._gdbProxy.getSegments();
+				if (segments) {
+					for (let i = 0; i < segments.length; i++) {
+						let s = segments[i];
+						variables.push({
+							name: "Segment #" + i,
+							type: "string",
+							value: s.address.toString(16) + " {size:" + s.size + "}",
+							variablesReference: 0
+						});
+					}
+					response.body = {
+						variables: variables
+					};
+					this.sendResponse(response);
+				}
+			} else if (id.startsWith("symbols_") && this.debugInfo) {
+				const variables = new Array<DebugProtocol.Variable>();
+				const symbols = this.debugInfo.getSymbols(undefined);
+				if (symbols) {
+					for (let i = 0; i < symbols.length; i++) {
+						let s = symbols[i];
+						variables.push({
+							name: s.name,
+							type: "string",
+							value: s.offset.toString(16),
+							variablesReference: 0
+						});
+					}
+					response.body = {
+						variables: variables
+					};
+					this.sendResponse(response);
 				}
 			}
-
-			response.body = {
-				variables: variables
-			};
-			this.sendResponse(response);
-		});
-
+		}
 	}
 
 	public terminate() {
