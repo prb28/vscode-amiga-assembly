@@ -68,6 +68,8 @@ export class GdbProxy extends EventEmitter {
     private stopOnEntryRequested = false;
     /** Flag for the first stop - to install the breakpoints */
     private firstStop = true;
+    /** Map of the last register values */
+    private lastRegisters = new Map<string, string>();
 
     constructor() {
         super();
@@ -331,6 +333,7 @@ export class GdbProxy extends EventEmitter {
     }
 
     public registers(): Promise<Array<GdbRegister>> {
+        this.lastRegisters.clear();
         return this.sendPacketString('g').then(data => {
             //console.log("register : " + data.toString());
             let dataStr = GdbProxy.extractPacket(data.toString());
@@ -340,11 +343,13 @@ export class GdbProxy extends EventEmitter {
             let v = "";
             for (let j = 0; j < 2; j++) {
                 for (let i = 0; i < 8; i++) {
+                    let name = letter + i;
                     v = dataStr.slice(pos, pos + 8);
                     registers.push({
-                        name: letter + i,
+                        name: name,
                         value: parseInt(v, 16)
                     });
+                    this.lastRegisters.set(name, v);
                     pos += 8;
                 }
                 letter = 'a';
@@ -355,6 +360,7 @@ export class GdbProxy extends EventEmitter {
                 name: "sr",
                 value: parseInt(v, 16)
             });
+            this.lastRegisters.set("sr", v);
             v = dataStr.slice(pos, pos + 8);
             pos += 8;
             let pc = parseInt(v, 16);
@@ -362,6 +368,7 @@ export class GdbProxy extends EventEmitter {
                 name: "pc",
                 value: pc
             });
+            this.lastRegisters.set("pc", v);
             this.frames = [];
             let [segmentId, offset] = this.toRelativeOffset(pc);
             this.frames.push(<GdbStackPosition>{
@@ -373,7 +380,7 @@ export class GdbProxy extends EventEmitter {
         });
     }
 
-    public memory(address: number, length: number): Promise<string> {
+    public getMemory(address: number, length: number): Promise<string> {
         return this.sendPacketString("m" + this.formatNumber(address) + ',' + this.formatNumber(length)).then(data => {
             let packets = GdbProxy.parseData(data);
             if ((packets.length > 0) && (packets[0].type !== GdbPacketType.ERROR)) {
@@ -382,6 +389,22 @@ export class GdbProxy extends EventEmitter {
                 return Promise.reject(new Error("Error :" + data.toString()));
             }
         });
+    }
+
+    public setMemory(address: number, dataToSend: string): Promise<void> {
+        let size = dataToSend.length / 2;
+        return this.sendPacketString("M" + this.formatNumber(address) + ',' + size + ':' + dataToSend).then(data => {
+            let packets = GdbProxy.parseData(data);
+            if ((packets.length > 0) && (packets[0].type !== GdbPacketType.ERROR)) {
+                return Promise.resolve();
+            } else {
+                return Promise.reject(new Error("Error :" + data.toString()));
+            }
+        });
+    }
+
+    public getRegister(register: string): (string | undefined) {
+        return this.lastRegisters.get(register);
     }
 
     /**
@@ -467,6 +490,23 @@ export class GdbProxy extends EventEmitter {
             }
         }
         return message;
+    }
+
+    public setRegister(name: string, value: string): Promise<string> {
+        // Verify that the value is an hex
+        let valueRegExp = /[a-z\d]{1,8}/i;
+        if (valueRegExp.test(value)) {
+            return this.sendPacketString("P" + name + "=" + value).then(data => {
+                let packets = GdbProxy.parseData(data);
+                if ((packets.length > 0) && (packets[0].type !== GdbPacketType.ERROR)) {
+                    return Promise.resolve(value);
+                } else {
+                    return Promise.reject(new Error("Error :" + data.toString()));
+                }
+            });
+        } else {
+            return Promise.reject("The value must be a hex string with at most 8 digits");
+        }
     }
 
     /**

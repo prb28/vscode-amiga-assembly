@@ -46,11 +46,13 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	private static THREAD_ID = 1;
 
 	// a Mock runtime (or debugger)
-	private _variableHandles = new Handles<string>();
+	private variableHandles = new Handles<string>();
 
 	private _configurationDone = new Subject();
 
 	private _gdbProxy: GdbProxy = new GdbProxy();
+
+	private variableRefMap = new Map<number, DebugProtocol.Variable[]>();
 
 	/** Executor to run fs-uae */
 	private executor = new Executor();
@@ -125,6 +127,18 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 
 		// make VS Code to show a 'step back' button
 		response.body.supportsStepBack = false;
+
+		// Restart frame not supported
+		response.body.supportsRestartFrame = false;
+
+		// Conditionnal breakpoints not supported
+		response.body.supportsConditionalBreakpoints = false;
+
+		// Set expression is accepted - TODO : Try it later
+		//response.body.supportsSetExpression = true;
+
+		// This default debug adapter does support the 'setVariable' request.
+		response.body.supportsSetVariable = true;
 
 		this.sendResponse(response);
 
@@ -293,9 +307,9 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
 		const frameReference = args.frameId;
 		const scopes = new Array<Scope>();
-		scopes.push(new Scope("Registers", this._variableHandles.create("registers_" + frameReference), false));
-		scopes.push(new Scope("Segments", this._variableHandles.create("segments_" + frameReference), true));
-		scopes.push(new Scope("Symbols", this._variableHandles.create("symbols_" + frameReference), true));
+		scopes.push(new Scope("Registers", this.variableHandles.create("registers_" + frameReference), false));
+		scopes.push(new Scope("Segments", this.variableHandles.create("segments_" + frameReference), true));
+		scopes.push(new Scope("Symbols", this.variableHandles.create("symbols_" + frameReference), true));
 
 		response.body = {
 			scopes: scopes
@@ -304,67 +318,94 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments): void {
-		const id = this._variableHandles.get(args.variablesReference);
-		if (id !== null) {
-			if (id.startsWith("registers_")) {
-				this._gdbProxy.registers().then((registers: Array<GdbRegister>) => {
+		let variables = this.variableRefMap.get(args.variablesReference);
+		if (variables) {
+			response.body = {
+				variables: variables
+			};
+			this.sendResponse(response);
+		} else {
+			const id = this.variableHandles.get(args.variablesReference);
+			if (id !== null) {
+				if (id.startsWith("registers_")) {
+					this._gdbProxy.registers().then((registers: Array<GdbRegister>) => {
+						const variables = new Array<DebugProtocol.Variable>();
+						for (let i = 0; i < registers.length; i++) {
+							let r = registers[i];
+							variables.push({
+								name: r.name,
+								type: "register",
+								value: this.padStartWith0(r.value.toString(16), 8),
+								variablesReference: 0
+							});
+						}
+						response.body = {
+							variables: variables
+						};
+						this.sendResponse(response);
+					});
+				} else if (id.startsWith("segments_")) {
 					const variables = new Array<DebugProtocol.Variable>();
-					for (let i = 0; i < registers.length; i++) {
-						let r = registers[i];
-						variables.push({
-							name: r.name,
-							type: "string",
-							value: this.padStartWith0(r.value.toString(16), 8),
-							variablesReference: 0
-						});
+					const segments = this._gdbProxy.getSegments();
+					if (segments) {
+						for (let i = 0; i < segments.length; i++) {
+							let s = segments[i];
+							variables.push({
+								name: "Segment #" + i,
+								type: "segment",
+								value: s.address.toString(16) + " {size:" + s.size + "}",
+								variablesReference: 0
+							});
+						}
+						response.body = {
+							variables: variables
+						};
+						this.sendResponse(response);
 					}
-					response.body = {
-						variables: variables
-					};
-					this.sendResponse(response);
-				});
-			} else if (id.startsWith("segments_")) {
-				const variables = new Array<DebugProtocol.Variable>();
-				const segments = this._gdbProxy.getSegments();
-				if (segments) {
-					for (let i = 0; i < segments.length; i++) {
-						let s = segments[i];
-						variables.push({
-							name: "Segment #" + i,
-							type: "string",
-							value: s.address.toString(16) + " {size:" + s.size + "}",
-							variablesReference: 0
-						});
+				} else if (id.startsWith("symbols_") && this.debugInfo) {
+					const variables = new Array<DebugProtocol.Variable>();
+					const symbols = this.debugInfo.getSymbols(undefined);
+					if (symbols) {
+						for (let i = 0; i < symbols.length; i++) {
+							let s = symbols[i];
+							variables.push({
+								name: s.name,
+								type: "symbol",
+								value: s.offset.toString(16),
+								variablesReference: 0
+							});
+						}
+						response.body = {
+							variables: variables
+						};
+						this.sendResponse(response);
 					}
-					response.body = {
-						variables: variables
-					};
-					this.sendResponse(response);
-				}
-			} else if (id.startsWith("symbols_") && this.debugInfo) {
-				const variables = new Array<DebugProtocol.Variable>();
-				const symbols = this.debugInfo.getSymbols(undefined);
-				if (symbols) {
-					for (let i = 0; i < symbols.length; i++) {
-						let s = symbols[i];
-						variables.push({
-							name: s.name,
-							type: "string",
-							value: s.offset.toString(16),
-							variablesReference: 0
-						});
-					}
-					response.body = {
-						variables: variables
-					};
-					this.sendResponse(response);
 				}
 			}
 		}
 	}
 
+	protected setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments): void {
+		const id = this.variableHandles.get(args.variablesReference);
+		if ((id !== null) && (id.startsWith("registers_"))) {
+			this._gdbProxy.setRegister(args.name, args.value).then((newValue) => {
+				response.body = {
+					value: newValue
+				};
+				this.sendResponse(response);
+			});
+		} else {
+			response.success = false;
+			this.sendResponse(response);
+		}
+	}
+
 	public terminate() {
 		this.terminateEmulator();
+	}
+
+	public shutdown() {
+		this.terminate();
 	}
 
 	protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
@@ -377,19 +418,89 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.sendResponse(response);
 	}
 
-	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-		// Evaluate an expression
-		const matches = /m\s*([0-9a-z]+)\s*,\s*([0-9a-z]+)/i.exec(args.expression);
+	private evaluateRequestRegister(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+		// It's a reg value
+		let value = this._gdbProxy.getRegister(args.expression);
+		if (value) {
+			response.body = {
+				result: value,
+				variablesReference: 0,
+			};
+		} else {
+			response.success = false;
+		}
+		this.sendResponse(response);
+	}
+
+	private evaluateRequestGetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+		const matches = /m\s*([0-9a-z]+)\s*,\s*([0-9]+)(,\s*([0-9]+),\s*([0-9]+))?(,([ab]+))?/i.exec(args.expression);
 		if (matches) {
+			let rowLength = 4;
+			let wordLength = 4;
+			let mode = "ab";
 			let address = parseInt(matches[1], 16);
-			let length = parseInt(matches[2], 16);
+			let length = parseInt(matches[2]);
+			if ((matches.length > 5) && matches[4] && matches[5]) {
+				wordLength = parseInt(matches[4]);
+				rowLength = parseInt(matches[5]);
+			}
+			if ((matches.length > 7) && matches[7]) {
+				mode = matches[7];
+			}
 			if ((address !== null) && (length !== null)) {
 				// ask for memory dump
-				this._gdbProxy.memory(address, length).then((memory) => {
+				this._gdbProxy.getMemory(address, length).then((memory) => {
+					let variables = new Array<DebugProtocol.Variable>();
+					let startAddress = address;
+					let chunks = this.chunk(memory.toString(), wordLength * 2);
+					let i = 0;
+					let rowCount = 0;
+					let row = "";
+					let firstRow = "";
+					while (i < chunks.length) {
+						if (rowCount > 0) {
+							row += " ";
+						}
+						row += chunks[i];
+						if ((rowCount >= rowLength - 1) || (i === chunks.length - 1)) {
+							if (mode.indexOf('a') >= 0) {
+								let asciiText = this.convertToASCII(row.replace(/\s+/g, ''));
+								if (mode.indexOf('b') >= 0) {
+									if ((i === chunks.length - 1) && (rowCount < rowLength - 1)) {
+										let chuksMissing = rowLength - 1 - rowCount;
+										let padding = chuksMissing * wordLength * 2 + chuksMissing;
+										for (let j = 0; j < padding; j++) {
+											row += " ";
+										}
+									}
+									row += " | ";
+								} else {
+									row = "";
+								}
+								row += asciiText;
+							}
+							variables.push({
+								value: row,
+								name: this.padStartWith0(startAddress.toString(16), 8),
+								variablesReference: 0
+							});
+							if (firstRow.length <= 0) {
+								firstRow = row;
+							}
+							startAddress += rowCount * wordLength;
+							rowCount = 0;
+							row = "";
+						} else {
+							rowCount++;
+						}
+						i++;
+					}
+					let key = this.variableHandles.create(args.expression);
+					this.variableRefMap.set(key, variables);
 					response.body = {
-						result: this.chunk(memory.toString(), 8),
-						type: "string",
-						variablesReference: 0,
+						result: firstRow,
+						type: "array",
+						variablesReference: key,
 					};
 					this.sendResponse(response);
 				});
@@ -400,8 +511,44 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			}
 		} else {
 			response.success = false;
-			response.message = "Expression non recognized";
+			response.message = "Expression not recognized";
 			this.sendResponse(response);
+		}
+	}
+
+	private evaluateRequestSetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+		const matches = /M\s*([0-9a-z]+)\s*=\s*([0-9a-z]+)/i.exec(args.expression);
+		if (matches) {
+			let addrStr = matches[1];
+			let address = parseInt(addrStr, 16);
+			let data = matches[2];
+			if ((address !== null) && (data !== null) && (data.length > 0)) {
+				this._gdbProxy.setMemory(address, data).then(() => {
+					args.expression = 'm' + addrStr + ',' + data.length.toString(16);
+					return this.evaluateRequestGetMemory(response, args);
+				});
+			} else {
+				response.success = false;
+				response.message = "Invalid memory set expression";
+				this.sendResponse(response);
+			}
+		} else {
+			response.success = false;
+			response.message = "Expression not recognized";
+			this.sendResponse(response);
+		}
+	}
+
+	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+		// Evaluate an expression
+		// Evaluate an expression
+		let matches = /^[ad][0-7]$/i.exec(args.expression);
+		if (matches) {
+			return this.evaluateRequestRegister(response, args);
+		} else if (args.expression.startsWith('m')) {
+			return this.evaluateRequestGetMemory(response, args);
+		} else if (args.expression.startsWith('M')) {
+			return this.evaluateRequestSetMemory(response, args);
 		}
 	}
 
@@ -448,12 +595,29 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			return padString.slice(0, targetLength) + stringToPad;
 		}
 	}
-	private chunk(str: string, n: number): string {
+	private chunk(str: string, n: number): string[] {
 		let ret = [];
-		for (let i = 0; i < str.length - n - 1; i += n) {
+		let maxCount = str.length - n - 1;
+		let i;
+		for (i = 0; i < maxCount; i += n) {
 			ret.push(str.substring(i, n + i));
 		}
-		return ret.join(' ');
+		if ((str.length - i) > 0) {
+			ret.push(str.substring(i));
+		}
+		return ret;
 	}
-
+	private convertToASCII(memory: string): string {
+		let asciiContents = "";
+		var chunks = this.chunk(memory, 2);
+		for (let c of chunks) {
+			let i = parseInt(c, 16);
+			if ((i < 32) || (i > 176)) {
+				asciiContents += ".";
+			} else {
+				asciiContents += String.fromCharCode(i);
+			}
+		}
+		return asciiContents;
+	}
 }
