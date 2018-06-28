@@ -129,6 +129,9 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+### 0.6.1
+- Bug fixes (see changelog)
+
 ### 0.6.0
 - Integration of VASM : build and diagnostics in the editor
 - Integration of VLINK : linking the executable

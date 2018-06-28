@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - Debugging with FS-UAE
 
+### [0.6.1] - 2018-06-28
+### Fixed
+- [Issue #2](https://github.com/prb28/vscode-amiga-assembly/issues/2) Language Packs category is for display language extensions
+
 ### [0.6.0] - 2018-06-01
 ### Added
 - Integration of VASM : build and diagnostics in the editor
