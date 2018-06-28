@@ -1,36 +1,47 @@
 import { Socket } from 'net';
-//import { readFileSync } from 'fs';
 import { EventEmitter } from 'events';
-//import { resolve } from 'dns';
 
+/** Interface for a breakpoint */
 export interface GdbBreakpoint {
+    /** Indetifier */
     id: number;
+    /** Id for the segment */
     segmentId: number;
+    /** Offset relative to the segment*/
     offset: number;
+    /** if true the breakpoint is verifier */
     verified: boolean;
 }
 
+/** Stackframe position */
 export interface GdbStackPosition {
+    /** Index of the positions */
     index: number;
+    /** Segment identifier */
     segmentId: number;
+    /** Offset relative to the segment*/
     offset: number;
 }
 
+/** StackFrame */
 export interface GdbStackFrame {
     frames: Array<GdbStackPosition>;
     count: number;
 }
 
+/** Register value */
 export interface GdbRegister {
     name: string;
     value: number;
 }
 
+/** Memory segment */
 export interface Segment {
     address: number;
     size: number;
 }
 
+/** Type of the message packet */
 export enum GdbPacketType {
     ERROR,
     REGISTER,
@@ -43,12 +54,17 @@ export enum GdbPacketType {
     PLUS,
     MINUS
 }
+
+/** Packet sent by the debugging server */
 export interface GdbPacket {
     type: GdbPacketType;
     command?: string;
     message: string;
 }
 
+/**
+ * Class to contact the fs-UAE GDB server.
+ */
 export class GdbProxy extends EventEmitter {
     // Socket to connect
     private socket: Socket;
@@ -71,6 +87,11 @@ export class GdbProxy extends EventEmitter {
     /** Map of the last register values */
     private lastRegisters = new Map<string, string>();
 
+    /**
+     * Constructor 
+     * The socket is needed only for unit test mocking.
+     * @param socket Socket instance created to contact the server (for unit tests)
+     */
     constructor(socket: Socket | undefined) {
         super();
         if (socket) {
@@ -80,17 +101,20 @@ export class GdbProxy extends EventEmitter {
         }
     }
 
+    /**
+     * Function to connect to the server
+     * @param host Server host
+     * @param port Server socket port
+     */
     public connect(host: string, port: number): Promise<void> {
         let self = this;
         return new Promise((resolve, reject) => {
             self.socket.connect(port, host);
             self.socket.once('connect', () => {
-                return self.sendPacketString('QStartNoAckMode').then(function (data: any) {
-                    if (self.responseHasNoError(data)) {
-                        resolve();
-                    } else {
-                        reject(data.toString());
-                    }
+                self.sendPacketString('QStartNoAckMode').then(data => {
+                    resolve();
+                }).catch(error => {
+                    reject(error);
                 });
             });
             self.socket.on('error', (err) => {
@@ -100,10 +124,18 @@ export class GdbProxy extends EventEmitter {
             self.socket.on("data", (data) => { this.onData(this, data); });
         });
     }
+
+    /**
+     * Method to destroy the connection.
+     */
     public destroy(): void {
         this.socket.destroy();
     }
 
+    /**
+     * Parses the type of the packet
+     * @param message packet message to parse
+     */
     protected static parseType(message: string): GdbPacketType {
         if (message.startsWith("OK")) {
             return GdbPacketType.OK;
@@ -123,6 +155,24 @@ export class GdbProxy extends EventEmitter {
         return GdbPacketType.UNKNOWN;
     }
 
+    /**
+     * Extracts the contents of the packet
+     * @param message Packet message to parse
+     */
+    protected static extractPacket(message: string): string {
+        if (message.startsWith('$')) {
+            let pos = message.indexOf('#');
+            if (pos > 0) {
+                return message.substring(1, pos);
+            }
+        }
+        return message;
+    }
+
+    /**
+     * Parses the data recieved.
+     * @param data DAta to parse
+     */
     protected static parseData(data: any): GdbPacket[] {
         let s = data.toString();
         let messageRegexp = /\$([a-z\d;:/\\.]+)\#[\da-f]{2}/gi;
@@ -135,9 +185,15 @@ export class GdbProxy extends EventEmitter {
                 message: message
             });
         }
+        // TODO: check the checksum and ank to resend the message if it is not verified
         return parsedData;
     }
 
+    /**
+     * Method to precess the generics messages
+     * @param proxy A GdbProxy istance
+     * @param data Data to parse
+     */
     private onData(proxy: GdbProxy, data: any) {
         console.log("onData : " + data.toString());
         for (let packet of GdbProxy.parseData(data)) {
@@ -157,19 +213,24 @@ export class GdbProxy extends EventEmitter {
                 case GdbPacketType.MINUS:
                     // TODO: Send last message
                     console.error("Unsupported packet : '-'");
-                    proxy.sendEvent("error", "Unsupported packet : '-'");
+                    proxy.sendEvent("error", new Error("Unsupported packet : '-'"));
                     break;
                 case GdbPacketType.OK:
                 case GdbPacketType.PLUS:
                     break;
                 case GdbPacketType.UNKNOWN:
                 default:
-                    console.info("Packet ignored by onData : " + packet.message);
+                    console.trace("Packet ignored by onData : " + packet.message);
                     break;
             }
         }
     }
 
+    /**
+     * Check if the reponse has an error
+     * @param data The data to check
+     * @return True if it has an error
+     */
     protected responseHasNoError(data: any): boolean {
         let packets = GdbProxy.parseData(data);
         for (let packet of packets) {
@@ -180,27 +241,41 @@ export class GdbProxy extends EventEmitter {
         return true;
     }
 
-    public load(programFilename: string, stopOnEntry: boolean | undefined) {
-        if (this.programFilename !== programFilename) {
-            this.programFilename = programFilename;
-            let elms = this.programFilename.replace('\\', '/').split('/');
-            this.sendPacketString("Z0,0,0").then(data => {
-                //console.log("load : " + data.toString());
-                let self = this;
-                if (self.responseHasNoError(data)) {
+    /**
+     * Message to load the program
+     * @param programFilename Filename of the program with the local path
+     * @param stopOnEntry If true we will stop on entry
+     */
+    public load(programFilename: string, stopOnEntry: boolean | undefined): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (this.programFilename !== programFilename) {
+                this.programFilename = programFilename;
+                let elms = this.programFilename.replace('\\', '/').split('/');
+                this.sendPacketString("Z0,0,0").then(async data => {
+                    let self = this;
                     // Let fs-uae terminate before sending the run command
-                    // TODO : is this necessary ???
-                    setTimeout(function () {
+                    // TODO : check if this is necessary
+                    await setTimeout(async function () {
                         self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
-                        self.sendPacketString("vRun;dh0:" + elms[elms.length - 1] + ";");
+                        await self.sendPacketString("vRun;dh0:" + elms[elms.length - 1] + ";").then((message) => {
+                            resolve();
+                        }).catch(err => {
+                            reject(err);
+                        });
                     }, 100);
-                } else {
-                    // TODO Show error ?
-                }
-            });
-        }
+                }).catch(err => {
+                    reject(err);
+                });
+            } else {
+                resolve();
+            }
+        });
     }
 
+    /**
+     * Calculates a checksum for the text
+     * @param text Text to send
+     */
     public calculateChecksum(text: string): string {
         let cs = 0;
         var buffer = new Buffer(text);
@@ -216,7 +291,13 @@ export class GdbProxy extends EventEmitter {
         }
     }
 
-    public sendPacketString(text: string): Promise<any> {
+    /**
+     * Main send function.
+     * If sends a text in the format "$mymessage#checksum"
+     * @param text Text to send
+     * @return a Promise with the response contents - or a rejection
+     */
+    public sendPacketString(text: string): Promise<string> {
         return new Promise((resolve, reject) => {
             var data = new Buffer(text.length + 5);
             let offset = 0;
@@ -230,9 +311,19 @@ export class GdbProxy extends EventEmitter {
             console.log(" --->" + data.toString());
             this.socket.write(data);
             this.socket.once('data', (data) => {
-                resolve(data);
-                if (data.toString().endsWith('exit')) {
-                    this.socket.destroy();
+                let packets = GdbProxy.parseData(data);
+                let firstMessage = null;
+                for (let packet of packets) {
+                    if (packet.type === GdbPacketType.ERROR) {
+                        reject(new Error(packet.message));
+                    } else if (!firstMessage) {
+                        firstMessage = packet.message;
+                    }
+                }
+                if (firstMessage) {
+                    resolve(firstMessage);
+                } else {
+                    reject(new Error("Invalid message : '" + data.toString() + "'"));
                 }
             });
             this.socket.once('error', (err) => {
@@ -241,6 +332,12 @@ export class GdbProxy extends EventEmitter {
         });
     }
 
+    /**
+     * Ask for a new breakpoint
+     * @param segmentId Identifier of the segment
+     * @param offset Offset in segment coordinated
+     * @return Promise with a breakpoint
+     */
     public setBreakPoint(segmentId: number, offset: number): Promise<GdbBreakpoint> {
         let self = this;
         if (((this.segments) || ((segmentId === 0) && (offset === 0))) && (this.socket.writable)) {
@@ -274,6 +371,9 @@ export class GdbProxy extends EventEmitter {
         }
     }
 
+    /**
+     * Sends all the pending breakpoint
+     */
     public sendAllPendingBreakpoints(): Promise<GdbBreakpoint[]> {
         if ((this.pendingBreakpoints) && this.pendingBreakpoints.length > 0) {
             let pending = this.pendingBreakpoints;
@@ -290,6 +390,11 @@ export class GdbProxy extends EventEmitter {
         }
     }
 
+    /**
+     * Ask for a breakpoint removal
+     * @param segmentId Id of the segment
+     * @param offset Offset in local coordinates
+     */
     public removeBreakPoint(segmentId: number, offset: number) {
         if (this.segments) {
             // Look for the breakpoint in the current list
@@ -309,6 +414,10 @@ export class GdbProxy extends EventEmitter {
         }
     }
 
+    /**
+     * Clear all the breakpoints for a segment
+     * @param segmentId Id of the segment
+     */
     public clearBreakpoints(segmentId: number) {
         if ((this.segments) && (this.breakPoints.length > 0)) {
             let keep = new Array<GdbBreakpoint>();
@@ -325,6 +434,9 @@ export class GdbProxy extends EventEmitter {
         }
     }
 
+    /**
+     * Gets the current stack frame
+     */
     public stack(): GdbStackFrame {
         return {
             frames: this.frames,
@@ -332,15 +444,20 @@ export class GdbProxy extends EventEmitter {
         };
     }
 
+    /**
+     * Ask the debbuger to step 
+     */
     public step() {
         this.sendPacketString('s');
     }
 
+    /**
+     * Retrieves all the register values
+     */
     public registers(): Promise<Array<GdbRegister>> {
         this.lastRegisters.clear();
-        return this.sendPacketString('g').then(data => {
+        return this.sendPacketString('g').then(message => {
             //console.log("register : " + data.toString());
-            let dataStr = GdbProxy.extractPacket(data.toString());
             let registers = new Array<GdbRegister>();
             let pos = 0;
             let letter = 'd';
@@ -348,7 +465,7 @@ export class GdbProxy extends EventEmitter {
             for (let j = 0; j < 2; j++) {
                 for (let i = 0; i < 8; i++) {
                     let name = letter + i;
-                    v = dataStr.slice(pos, pos + 8);
+                    v = message.slice(pos, pos + 8);
                     registers.push({
                         name: name,
                         value: parseInt(v, 16)
@@ -358,14 +475,14 @@ export class GdbProxy extends EventEmitter {
                 }
                 letter = 'a';
             }
-            v = dataStr.slice(pos, pos + 8);
+            v = message.slice(pos, pos + 8);
             pos += 8;
             registers.push({
                 name: "sr",
                 value: parseInt(v, 16)
             });
             this.lastRegisters.set("sr", v);
-            v = dataStr.slice(pos, pos + 8);
+            v = message.slice(pos, pos + 8);
             pos += 8;
             let pc = parseInt(v, 16);
             registers.push({
@@ -384,6 +501,12 @@ export class GdbProxy extends EventEmitter {
         });
     }
 
+    /**
+     * Reads part of the memory
+     * @param address Memory address
+     * @param length Length to retrieve
+     * @return String returned by the server = bytes in hexa
+     */
     public getMemory(address: number, length: number): Promise<string> {
         return this.sendPacketString("m" + this.formatNumber(address) + ',' + this.formatNumber(length)).then(data => {
             let packets = GdbProxy.parseData(data);
@@ -395,6 +518,11 @@ export class GdbProxy extends EventEmitter {
         });
     }
 
+    /**
+     * Set values to memory, from address.
+     * @param address Address to write
+     * @param dataToSend Data to send
+     */
     public setMemory(address: number, dataToSend: string): Promise<void> {
         let size = dataToSend.length / 2;
         return this.sendPacketString("M" + this.formatNumber(address) + ',' + size + ':' + dataToSend).then(data => {
@@ -407,6 +535,10 @@ export class GdbProxy extends EventEmitter {
         });
     }
 
+    /**
+     * Reads a register value
+     * @param register Name of the register a1, a2, etc..
+     */
     public getRegister(register: string): (string | undefined) {
         return this.lastRegisters.get(register);
     }
@@ -474,28 +606,25 @@ export class GdbProxy extends EventEmitter {
         }
     }
 
-    protected formatNumber(n: number): string {
-        return n.toString(16);
-    }
-
+    /**
+     * Ask for the satus of the current stop
+     */
     protected askForStatus() {
         this.sendPacketString('?');
     }
 
+    /**
+     * Continue the execution
+     */
     public continueExecution() {
         this.sendPacketString('c');
     }
 
-    protected static extractPacket(message: string): string {
-        if (message.startsWith('$')) {
-            let pos = message.indexOf('#');
-            if (pos > 0) {
-                return message.substring(1, pos);
-            }
-        }
-        return message;
-    }
-
+    /**
+     * Sets tha value of a register
+     * @param name Name of the register
+     * @param value New value of the register
+     */
     public setRegister(name: string, value: string): Promise<string> {
         // Verify that the value is an hex
         let valueRegExp = /[a-z\d]{1,8}/i;
@@ -526,9 +655,14 @@ export class GdbProxy extends EventEmitter {
      * @param message Error message
      */
     protected parseError(message: string) {
-        this.sendEvent('error', message);
+        this.sendEvent('error', new Error(message));
     }
 
+    /**
+     * Transforms an absolute offset to a segmentsId and local offset
+     * @param offset Absolute offset
+     * @return Array with segmentId and a local offset
+     */
     public toRelativeOffset(offset: number): [number, number] {
         if (this.segments) {
             let segmentId = 0;
@@ -541,6 +675,10 @@ export class GdbProxy extends EventEmitter {
         }
         return [0, offset];
     }
+
+    /**
+     * Transforms an offset in local segment coordinated to an absolute offset
+     */
     public toAbsoluteOffset(segmentId: number, offset: number): number {
         if (this.segments) {
             if (segmentId < this.segments.length) {
@@ -549,5 +687,14 @@ export class GdbProxy extends EventEmitter {
         }
         return offset;
     }
+
+    /**
+     * Formats a number to send
+     * @param n number 
+     */
+    protected formatNumber(n: number): string {
+        return n.toString(16);
+    }
+
 }
 
