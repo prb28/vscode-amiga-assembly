@@ -50,7 +50,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 
 	private _configurationDone = new Subject();
 
-	private _gdbProxy: GdbProxy = new GdbProxy();
+	private _gdbProxy: GdbProxy = new GdbProxy(undefined);
 
 	private variableRefMap = new Map<number, DebugProtocol.Variable[]>();
 

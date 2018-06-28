@@ -71,9 +71,13 @@ export class GdbProxy extends EventEmitter {
     /** Map of the last register values */
     private lastRegisters = new Map<string, string>();
 
-    constructor() {
+    constructor(socket: Socket | undefined) {
         super();
-        this.socket = new Socket();
+        if (socket) {
+            this.socket = socket;
+        } else {
+            this.socket = new Socket();
+        }
     }
 
     public connect(host: string, port: number): Promise<void> {
