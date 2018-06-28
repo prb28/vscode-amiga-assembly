@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import * as chai from 'chai';
 import { GdbProxy } from '../gdbProxy';
 import { Socket } from 'net';
-import { spy, verify, anyString, instance, when, anything, mock, resetCalls, reset } from 'ts-mockito';
+import { spy, verify, anyString, instance, when, anything, mock } from 'ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
 
 chai.use(chaiAsPromised);
