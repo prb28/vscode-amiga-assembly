@@ -1,7 +1,5 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
-import { resolve } from 'url';
-import { ThemeIcon } from 'vscode';
 
 /** Interface for a breakpoint */
 export interface GdbBreakpoint {

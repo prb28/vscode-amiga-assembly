@@ -96,6 +96,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.continueExecution()).never();
         });
         it("Should load a program and continue if not stop on entry", async function () {
+            when(spiedProxy.sendPacketString('c')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('vRun;dh0:myprog;')).thenResolve("AS;aef;20");
             when(spiedProxy.sendPacketString('g')).thenResolve(RESPONSE_REGISTERS);
