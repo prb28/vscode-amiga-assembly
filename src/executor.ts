@@ -66,7 +66,7 @@ export class Executor {
 
                     let ret: ICheckResult[] = [];
                     if (parser) {
-                        parser.parse(text);
+                        ret = parser.parse(text);
                     }
                     outputChannel.appendLine('');
                     resolve(ret);
