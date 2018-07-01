@@ -121,7 +121,7 @@ export class GdbProxy extends EventEmitter {
                 self.sendEvent("error", err);
                 reject(err);
             });
-            self.socket.on("data", (data) => { this.onData(this, data); });
+            self.socket.on("data", async (data) => { await this.onData(this, data); });
         });
     }
 
@@ -194,36 +194,39 @@ export class GdbProxy extends EventEmitter {
      * @param proxy A GdbProxy istance
      * @param data Data to parse
      */
-    private onData(proxy: GdbProxy, data: any) {
+    private onData(proxy: GdbProxy, data: any): Promise<void> {
         console.log("onData : " + data.toString());
-        for (let packet of GdbProxy.parseData(data)) {
-            switch (packet.type) {
-                case GdbPacketType.REGISTER:
-                    this.parseSegments(packet.message);
-                    break;
-                case GdbPacketType.ERROR:
-                    this.parseError(packet.message);
-                    break;
-                case GdbPacketType.STOP:
-                    this.parseStop(packet.message);
-                    break;
-                case GdbPacketType.END:
-                    this.sendEvent("end");
-                    break;
-                case GdbPacketType.MINUS:
-                    // TODO: Send last message
-                    console.error("Unsupported packet : '-'");
-                    proxy.sendEvent("error", new Error("Unsupported packet : '-'"));
-                    break;
-                case GdbPacketType.OK:
-                case GdbPacketType.PLUS:
-                    break;
-                case GdbPacketType.UNKNOWN:
-                default:
-                    console.trace("Packet ignored by onData : " + packet.message);
-                    break;
+        return new Promise(async (resolve, reject) => {
+            for (let packet of GdbProxy.parseData(data)) {
+                switch (packet.type) {
+                    // case GdbPacketType.REGISTER:
+                    //     await this.parseSegments(packet.message);
+                    //     break;
+                    case GdbPacketType.ERROR:
+                        await this.parseError(packet.message);
+                        break;
+                    case GdbPacketType.STOP:
+                        await this.parseStop(packet.message);
+                        break;
+                    case GdbPacketType.END:
+                        await this.sendEvent("end");
+                        break;
+                    case GdbPacketType.MINUS:
+                        // TODO: Send last message
+                        console.error("Unsupported packet : '-'");
+                        proxy.sendEvent("error", new Error("Unsupported packet : '-'"));
+                        break;
+                    case GdbPacketType.OK:
+                    case GdbPacketType.PLUS:
+                        break;
+                    case GdbPacketType.UNKNOWN:
+                    default:
+                        console.trace("Packet ignored by onData : " + packet.message);
+                        break;
+                }
             }
-        }
+            resolve();
+        });
     }
 
     /**
@@ -258,6 +261,7 @@ export class GdbProxy extends EventEmitter {
                     await setTimeout(async function () {
                         self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
                         await self.sendPacketString("vRun;dh0:" + elms[elms.length - 1] + ";").then((message) => {
+                            self.parseSegments(message);
                             resolve();
                         }).catch(err => {
                             reject(err);
@@ -276,14 +280,14 @@ export class GdbProxy extends EventEmitter {
      * Calculates a checksum for the text
      * @param text Text to send
      */
-    public calculateChecksum(text: string): string {
+    public static calculateChecksum(text: string): string {
         let cs = 0;
         var buffer = new Buffer(text);
         for (let i = 0; i < buffer.length; ++i) {
             cs += buffer[i];
         }
         cs = cs % 256;
-        let s = this.formatNumber(cs);
+        let s = GdbProxy.formatNumber(cs);
         if (s.length < 2) {
             return "0" + s;
         } else {
@@ -305,7 +309,7 @@ export class GdbProxy extends EventEmitter {
             data.write(text, offset);
             offset += text.length;
             data.write('#', offset++);
-            data.write(this.calculateChecksum(text), offset);
+            data.write(GdbProxy.calculateChecksum(text), offset);
             offset += 2;
             data.writeInt8(0, offset);
             console.log(" --->" + data.toString());
@@ -344,7 +348,7 @@ export class GdbProxy extends EventEmitter {
             if (this.segments && (segmentId > this.segments.length)) {
                 return Promise.reject("Invalid breakpoint segment id");
             } else {
-                return this.sendPacketString('Z0,' + this.formatNumber(offset) + ',' + this.formatNumber(segmentId)).then(function (data) {
+                return this.sendPacketString('Z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId)).then(function (data) {
                     let bp = <GdbBreakpoint>{
                         verified: true,
                         segmentId: segmentId,
@@ -409,7 +413,7 @@ export class GdbProxy extends EventEmitter {
             }
             if (breakpoint) {
                 this.breakPoints.splice(pos, 1);
-                return this.sendPacketString('z0,' + this.formatNumber(offset) + ',' + this.formatNumber(segmentId));
+                return this.sendPacketString('z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId));
             }
         }
     }
@@ -424,7 +428,7 @@ export class GdbProxy extends EventEmitter {
             let bp = this.breakPoints.pop();
             while (bp) {
                 if (bp.segmentId === segmentId) {
-                    this.sendPacketString('z0,' + this.formatNumber(bp.offset) + ',' + this.formatNumber(bp.segmentId));
+                    this.sendPacketString('z0,' + GdbProxy.formatNumber(bp.offset) + ',' + GdbProxy.formatNumber(bp.segmentId));
                 } else {
                     keep.push(bp);
                 }
@@ -508,7 +512,7 @@ export class GdbProxy extends EventEmitter {
      * @return String returned by the server = bytes in hexa
      */
     public getMemory(address: number, length: number): Promise<string> {
-        return this.sendPacketString("m" + this.formatNumber(address) + ',' + this.formatNumber(length)).then(data => {
+        return this.sendPacketString("m" + GdbProxy.formatNumber(address) + ',' + GdbProxy.formatNumber(length)).then(data => {
             let packets = GdbProxy.parseData(data);
             if ((packets.length > 0) && (packets[0].type !== GdbPacketType.ERROR)) {
                 return Promise.resolve(packets[0].message);
@@ -525,7 +529,7 @@ export class GdbProxy extends EventEmitter {
      */
     public setMemory(address: number, dataToSend: string): Promise<void> {
         let size = dataToSend.length / 2;
-        return this.sendPacketString("M" + this.formatNumber(address) + ',' + size + ':' + dataToSend).then(data => {
+        return this.sendPacketString("M" + GdbProxy.formatNumber(address) + ',' + size + ':' + dataToSend).then(data => {
             let packets = GdbProxy.parseData(data);
             if ((packets.length > 0) && (packets[0].type !== GdbPacketType.ERROR)) {
                 return Promise.resolve();
@@ -575,35 +579,43 @@ export class GdbProxy extends EventEmitter {
         this.sendEvent("segmentsUpdated", this.segments);
     }
 
-    protected parseStop(message: string) {
-        // Retrieve the cause
-        let sid = message.split(';')[0];
-        let n = parseInt(sid.substring(1), 16);
-        switch (n) {
-            case 5:
-                // A breakpoint has been reached
-                this.registers().then((registers: Array<GdbRegister>) => {
-                    const continueDebugging = !this.stopOnEntryRequested;
-                    if (this.firstStop === true) {
-                        this.firstStop = false;
-                        this.sendAllPendingBreakpoints().then(() => {
-                            if (continueDebugging) {
-                                // Send continue command
-                                this.continueExecution();
-                            }
-                        });
-                    }
-                    if (this.stopOnEntryRequested) {
-                        this.stopOnEntryRequested = false;
-                        this.sendEvent('stopOnEntry');
-                    } else if (!continueDebugging || !this.firstStop) {
-                        this.sendEvent('stopOnBreakpoint');
-                    }
-                });
-                break;
-            default:
-                break;
-        }
+    protected parseStop(message: string): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            // Retrieve the cause
+            let sid = message.split(';')[0];
+            let n = parseInt(sid.substring(1), 16);
+            switch (n) {
+                case 5:
+                    // A breakpoint has been reached
+                    await this.registers().then(async (registers: Array<GdbRegister>) => {
+                        const continueDebugging = !this.stopOnEntryRequested;
+                        if (this.firstStop === true) {
+                            this.firstStop = false;
+                            await this.sendAllPendingBreakpoints().then(async () => {
+                                if (continueDebugging) {
+                                    // Send continue command
+                                    await this.continueExecution();
+                                    resolve();
+                                }
+                            }).catch(err => {
+                                reject(err);
+                            });
+                        }
+                        if (this.stopOnEntryRequested) {
+                            this.stopOnEntryRequested = false;
+                            this.sendEvent('stopOnEntry');
+                        } else if (!continueDebugging || !this.firstStop) {
+                            this.sendEvent('stopOnBreakpoint');
+                        }
+                    }).catch(err => {
+                        reject(err);
+                    });
+                    break;
+                default:
+                    break;
+            }
+            resolve();
+        });
     }
 
     /**
@@ -692,7 +704,7 @@ export class GdbProxy extends EventEmitter {
      * Formats a number to send
      * @param n number 
      */
-    protected formatNumber(n: number): string {
+    protected static formatNumber(n: number): string {
         return n.toString(16);
     }
 
