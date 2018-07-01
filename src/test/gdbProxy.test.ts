@@ -4,7 +4,7 @@
 
 import { expect } from 'chai';
 import * as chai from 'chai';
-import { GdbProxy, GdbBreakpoint, GdbRegister } from '../gdbProxy';
+import { GdbProxy, GdbBreakpoint, GdbRegister, GdbStackPosition, GdbStackFrame } from '../gdbProxy';
 import { Socket } from 'net';
 import { spy, verify, anyString, instance, when, anything, mock } from 'ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
@@ -44,7 +44,7 @@ function getRegistersString(): string {
 }
 
 describe("GdbProxy Tests", function () {
-    context.only('Communication', function () {
+    context('Communication', function () {
         const RESPONSE_OK = "OK";
         const RESPONSE_ERROR = "E1";
         const RESPONSE_REGISTERS = getRegistersString();
@@ -146,7 +146,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.sendPacketString('Z0,4,0')).once();
         });
-        context.only('Connexion established', function () {
+        context('Connexion established', function () {
             beforeEach(async function () {
                 when(spiedProxy.sendPacketString('g')).thenResolve(RESPONSE_REGISTERS);
                 when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
@@ -195,6 +195,18 @@ describe("GdbProxy Tests", function () {
                 expect(registers[17]).to.be.eql(<GdbRegister>{
                     name: "pc",
                     value: 17
+                });
+            });
+            it("Should get the stack frames", async function () {
+                await proxy.registers();
+                let stack = proxy.stack();
+                expect(stack).to.be.eql(<GdbStackFrame>{
+                    frames: [<GdbStackPosition>{
+                        index: 1,
+                        segmentId: 0,
+                        offset: 17
+                    }],
+                    count: 1
                 });
             });
         });

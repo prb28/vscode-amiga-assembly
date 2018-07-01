@@ -442,7 +442,7 @@ export class GdbProxy extends EventEmitter {
      * Gets the current stack frame
      */
     public stack(): GdbStackFrame {
-        return {
+        return <GdbStackFrame>{
             frames: this.frames,
             count: this.frames.length
         };
