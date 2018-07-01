@@ -304,14 +304,14 @@
         "publish": "vsce publish"
     },
     "devDependencies": {
-        "@types/chai": "^4.1.2",
+        "@types/chai": "^4.1.4",
+        "@types/chai-as-promised": "^7.1.0",
         "@types/glob": "^5.0.30",
         "@types/mocha": "^2.2.48",
-        "@types/node": "^7.0.65",
-        "@types/chai-as-promised": "^7.1.0",
+        "@types/node": "^7.0.66",
         "chai": "^4.1.2",
         "chai-as-promised": "^7.1.1",
-        "coveralls": "^3.0.1",
+        "coveralls": "^3.0.2",
         "decache": "^4.4.0",
         "del": "^3.0.0",
         "glob": "^7.1.1",
@@ -322,13 +322,13 @@
         "remap-istanbul": "^0.10.1",
         "ts-mockito": "^2.3.0",
         "tslint": "^5.8.0",
-        "typescript": "^2.7.2",
+        "typescript": "^2.9.2",
         "vscode": "^1.1.18",
         "vscode-debugadapter-testsupport": "^1.29.0"
     },
     "dependencies": {
         "await-notify": "^1.0.1",
-        "vscode-debugadapter": "^1.29.0",
+        "vscode-debugadapter": "^1.30.0",
         "vscode-debugprotocol": "^1.29.0"
     }
 }
