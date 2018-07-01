@@ -1,5 +1,7 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
+import { resolve } from 'url';
+import { ThemeIcon } from 'vscode';
 
 /** Interface for a breakpoint */
 export interface GdbBreakpoint {
@@ -345,8 +347,8 @@ export class GdbProxy extends EventEmitter {
     public setBreakPoint(segmentId: number, offset: number): Promise<GdbBreakpoint> {
         let self = this;
         if (((this.segments) || ((segmentId === 0) && (offset === 0))) && (this.socket.writable)) {
-            if (this.segments && (segmentId > this.segments.length)) {
-                return Promise.reject("Invalid breakpoint segment id");
+            if (this.segments && (segmentId >= this.segments.length)) {
+                return Promise.reject(new Error("Invalid breakpoint segment id: " + segmentId));
             } else {
                 return this.sendPacketString('Z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId)).then(function (data) {
                     let bp = <GdbBreakpoint>{
@@ -399,43 +401,64 @@ export class GdbProxy extends EventEmitter {
      * @param segmentId Id of the segment
      * @param offset Offset in local coordinates
      */
-    public removeBreakPoint(segmentId: number, offset: number) {
-        if (this.segments) {
-            // Look for the breakpoint in the current list
-            let breakpoint = null;
-            let pos = 0;
-            for (let bp of this.breakPoints) {
-                if ((bp.segmentId === segmentId) && (bp.offset === offset)) {
-                    breakpoint = bp;
-                    break;
+    public removeBreakPoint(segmentId: number, offset: number): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            if (this.segments && (segmentId < this.segments.length)) {
+                // Look for the breakpoint in the current list
+                let breakpoint = null;
+                let pos = 0;
+                for (let bp of this.breakPoints) {
+                    if ((bp.segmentId === segmentId) && (bp.offset === offset)) {
+                        breakpoint = bp;
+                        break;
+                    }
+                    pos++;
                 }
-                pos++;
+                if (breakpoint) {
+                    this.breakPoints.splice(pos, 1);
+                    await this.sendPacketString('z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId)).then(data => { resolve(); });
+                } else {
+                    reject(new Error("Breakpoint not found"));
+                }
+            } else {
+                reject(new Error("No segments are define or segmentId is invalid, is the debugger connected?"));
             }
-            if (breakpoint) {
-                this.breakPoints.splice(pos, 1);
-                return this.sendPacketString('z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId));
-            }
-        }
+        });
     }
 
     /**
      * Clear all the breakpoints for a segment
      * @param segmentId Id of the segment
      */
-    public clearBreakpoints(segmentId: number) {
-        if ((this.segments) && (this.breakPoints.length > 0)) {
-            let keep = new Array<GdbBreakpoint>();
-            let bp = this.breakPoints.pop();
-            while (bp) {
-                if (bp.segmentId === segmentId) {
-                    this.sendPacketString('z0,' + GdbProxy.formatNumber(bp.offset) + ',' + GdbProxy.formatNumber(bp.segmentId));
+    public clearBreakpoints(segmentId: number): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            if (this.breakPoints.length > 0) {
+                if (this.segments && (segmentId < this.segments.length)) {
+                    let keep = new Array<GdbBreakpoint>();
+                    let bp = this.breakPoints.pop();
+                    let promises = [];
+                    while (bp) {
+                        if (bp.segmentId === segmentId) {
+                            promises.push(this.sendPacketString('z0,' + GdbProxy.formatNumber(bp.offset) + ',' + GdbProxy.formatNumber(bp.segmentId)));
+                        } else {
+                            keep.push(bp);
+                        }
+                        bp = this.breakPoints.pop();
+                    }
+                    this.breakPoints = keep;
+                    Promise.all(promises).then(() => {
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    });
                 } else {
-                    keep.push(bp);
+                    reject(new Error("No segments are define, is the debugger connected?"));
                 }
-                bp = this.breakPoints.pop();
+            } else {
+                // there are no breakpoints to remove
+                resolve();
             }
-            this.breakPoints = keep;
-        }
+        });
     }
 
     /**
@@ -451,8 +474,8 @@ export class GdbProxy extends EventEmitter {
     /**
      * Ask the debbuger to step 
      */
-    public step() {
-        this.sendPacketString('s');
+    public step(): Promise<void> {
+        return this.sendPacketString('s').then(data => { return; });
     }
 
     /**
@@ -512,13 +535,12 @@ export class GdbProxy extends EventEmitter {
      * @return String returned by the server = bytes in hexa
      */
     public getMemory(address: number, length: number): Promise<string> {
-        return this.sendPacketString("m" + GdbProxy.formatNumber(address) + ',' + GdbProxy.formatNumber(length)).then(data => {
-            let packets = GdbProxy.parseData(data);
-            if ((packets.length > 0) && (packets[0].type !== GdbPacketType.ERROR)) {
-                return Promise.resolve(packets[0].message);
-            } else {
-                return Promise.reject(new Error("Error :" + data.toString()));
-            }
+        return new Promise((resolve, reject) => {
+            this.sendPacketString("m" + GdbProxy.formatNumber(address) + ',' + GdbProxy.formatNumber(length)).then(data => {
+                resolve(data);
+            }).catch(err => {
+                reject(err);
+            });
         });
     }
 
@@ -529,13 +551,10 @@ export class GdbProxy extends EventEmitter {
      */
     public setMemory(address: number, dataToSend: string): Promise<void> {
         let size = dataToSend.length / 2;
-        return this.sendPacketString("M" + GdbProxy.formatNumber(address) + ',' + size + ':' + dataToSend).then(data => {
-            let packets = GdbProxy.parseData(data);
-            if ((packets.length > 0) && (packets[0].type !== GdbPacketType.ERROR)) {
-                return Promise.resolve();
-            } else {
-                return Promise.reject(new Error("Error :" + data.toString()));
-            }
+        return new Promise((resolve, reject) => {
+            this.sendPacketString("M" + GdbProxy.formatNumber(address) + ',' + size + ':' + dataToSend).then(data => {
+                resolve();
+            }).catch(err => { reject(err); });
         });
     }
 
@@ -621,15 +640,15 @@ export class GdbProxy extends EventEmitter {
     /**
      * Ask for the satus of the current stop
      */
-    protected askForStatus() {
-        this.sendPacketString('?');
-    }
+    // protected askForStatus(): Promise<void> {
+    //     return this.sendPacketString('?').then(data => { return; });
+    // }
 
     /**
      * Continue the execution
      */
-    public continueExecution() {
-        this.sendPacketString('c');
+    public continueExecution(): Promise<void> {
+        return this.sendPacketString('c').then(data => { return; });
     }
 
     /**
@@ -638,20 +657,15 @@ export class GdbProxy extends EventEmitter {
      * @param value New value of the register
      */
     public setRegister(name: string, value: string): Promise<string> {
-        // Verify that the value is an hex
-        let valueRegExp = /[a-z\d]{1,8}/i;
-        if (valueRegExp.test(value)) {
-            return this.sendPacketString("P" + name + "=" + value).then(data => {
-                let packets = GdbProxy.parseData(data);
-                if ((packets.length > 0) && (packets[0].type !== GdbPacketType.ERROR)) {
-                    return Promise.resolve(value);
-                } else {
-                    return Promise.reject(new Error("Error :" + data.toString()));
-                }
-            });
-        } else {
-            return Promise.reject("The value must be a hex string with at most 8 digits");
-        }
+        return new Promise(async (resolve, reject) => {
+            // Verify that the value is an hex
+            let valueRegExp = /[a-z\d]{1,8}/i;
+            if (valueRegExp.test(value)) {
+                return this.sendPacketString("P" + name + "=" + value).then(data => { resolve(data); }).catch(err => { reject(err); });
+            } else {
+                reject(new Error("The value must be a hex string with at most 8 digits"));
+            }
+        });
     }
 
     /**

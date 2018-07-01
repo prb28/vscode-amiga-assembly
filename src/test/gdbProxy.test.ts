@@ -146,6 +146,12 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.sendPacketString('Z0,4,0')).once();
         });
+        it("Should get an error when removing breakpoint whitout connexion", async function () {
+            // Remove
+            when(spiedProxy.sendPacketString('z0,5,0')).thenResolve(RESPONSE_OK);
+            await expect(proxy.removeBreakPoint(0, 5)).to.be.rejected;
+            verify(spiedProxy.sendPacketString('z0,5,0')).never();
+        });
         context('Connexion established', function () {
             beforeEach(async function () {
                 when(spiedProxy.sendPacketString('g')).thenResolve(RESPONSE_REGISTERS);
@@ -173,6 +179,12 @@ describe("GdbProxy Tests", function () {
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenReject(error);
                 await expect(proxy.setBreakPoint(0, 4)).to.be.rejectedWith(error);
                 verify(spiedProxy.sendPacketString('Z0,4,0')).once();
+            });
+            it("Should return an error on invalid breakpoint", async function () {
+                // segment 1 is invalid
+                when(spiedProxy.sendPacketString('Z0,4,1')).thenResolve(RESPONSE_OK);
+                await expect(proxy.setBreakPoint(1, 4)).to.be.rejected;
+                verify(spiedProxy.sendPacketString('Z0,4,1')).never();
             });
             it("Should get the registers", async function () {
                 let registers = await proxy.registers();
@@ -208,6 +220,103 @@ describe("GdbProxy Tests", function () {
                     }],
                     count: 1
                 });
+            });
+            it("Should remove an existing breakpoint", async function () {
+                // Set a breakpoint
+                when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
+                await proxy.setBreakPoint(0, 4);
+                // Remove
+                when(spiedProxy.sendPacketString('z0,4,0')).thenResolve(RESPONSE_OK);
+                await proxy.removeBreakPoint(0, 4);
+                verify(spiedProxy.sendPacketString('z0,4,0')).once();
+            });
+            it("Should get an error when removing a non existing breakpoint", async function () {
+                // Set a breakpoint
+                when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
+                await proxy.setBreakPoint(0, 4);
+                // Remove
+                when(spiedProxy.sendPacketString('z0,5,0')).thenResolve(RESPONSE_OK);
+                await expect(proxy.removeBreakPoint(0, 5)).to.be.rejected;
+                verify(spiedProxy.sendPacketString('z0,5,0')).never();
+            });
+            it("Should clear all breakpoints", async function () {
+                // without breakpoints - it's ok
+                await expect(proxy.clearBreakpoints(0)).to.fulfilled;
+                // Set a breakpoint
+                when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
+                await proxy.setBreakPoint(0, 4);
+                // Remove
+                when(spiedProxy.sendPacketString('z0,4,0')).thenResolve(RESPONSE_OK);
+                await expect(proxy.clearBreakpoints(0)).to.fulfilled;
+                verify(spiedProxy.sendPacketString('z0,4,0')).once();
+            });
+            it("Should get an error when clearing all breakpoint of a non existing segment", async function () {
+                // Set a breakpoint
+                when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
+                await proxy.setBreakPoint(0, 4);
+                // Remove
+                when(spiedProxy.sendPacketString('z0,4,0')).thenResolve(RESPONSE_OK);
+                await expect(proxy.clearBreakpoints(1)).to.be.rejected;
+                verify(spiedProxy.sendPacketString('z0,4,0')).never();
+            });
+            it("Should get an error when clearing all breakpoint and there is on brkpt error", async function () {
+                // Set a breakpoint
+                when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
+                await proxy.setBreakPoint(0, 4);
+                // Remove
+                when(spiedProxy.sendPacketString('z0,4,0')).thenReject(error);
+                await expect(proxy.clearBreakpoints(0)).to.be.rejectedWith(error);
+                verify(spiedProxy.sendPacketString('z0,4,0')).once();
+            });
+            it("Should step instruciton", async function () {
+                when(spiedProxy.sendPacketString('s')).thenResolve(RESPONSE_OK);
+                await expect(proxy.step()).to.be.fulfilled;
+                verify(spiedProxy.sendPacketString('s')).once();
+            });
+            it("Should reject on step instruciton error", async function () {
+                when(spiedProxy.sendPacketString('s')).thenReject(error);
+                await expect(proxy.step()).to.be.rejectedWith(error);
+                verify(spiedProxy.sendPacketString('s')).once();
+            });
+            it("Should get memory contents", async function () {
+                when(spiedProxy.sendPacketString('ma,8')).thenResolve("cccccccc");
+                await expect(proxy.getMemory(10, 8)).to.eventually.equals("cccccccc");
+                verify(spiedProxy.sendPacketString('ma,8')).once();
+            });
+            it("Should send an error if get memory contents fails", async function () {
+                when(spiedProxy.sendPacketString('ma,8')).thenReject(error);
+                await expect(proxy.getMemory(10, 8)).to.be.rejectedWith(error);
+                verify(spiedProxy.sendPacketString('ma,8')).once();
+            });
+            it("Should set memory contents", async function () {
+                when(spiedProxy.sendPacketString('Ma,2:8aff')).thenResolve(RESPONSE_OK);
+                await expect(proxy.setMemory(10, '8aff')).to.be.fulfilled;
+                verify(spiedProxy.sendPacketString('Ma,2:8aff')).once();
+            });
+            it("Should send an error if set memory contents fails", async function () {
+                when(spiedProxy.sendPacketString('Ma,2:8aff')).thenReject(error);
+                await expect(proxy.setMemory(10, '8aff')).to.be.rejectedWith(error);
+                verify(spiedProxy.sendPacketString('Ma,2:8aff')).once();
+            });
+            it("Should continue execution", async function () {
+                when(spiedProxy.sendPacketString('c')).thenResolve(RESPONSE_OK);
+                await expect(proxy.continueExecution()).to.be.fulfilled;
+                verify(spiedProxy.sendPacketString('c')).once();
+            });
+            it("Should reject continue execution error", async function () {
+                when(spiedProxy.sendPacketString('c')).thenReject(error);
+                await expect(proxy.continueExecution()).to.be.rejectedWith(error);
+                verify(spiedProxy.sendPacketString('c')).once();
+            });
+            it("Should set register", async function () {
+                when(spiedProxy.sendPacketString('Pd0=8aff')).thenResolve(RESPONSE_OK);
+                await expect(proxy.setRegister('d0', '8aff')).to.be.fulfilled;
+                verify(spiedProxy.sendPacketString('Pd0=8aff')).once();
+            });
+            it("Should send an error if set memory contents fails", async function () {
+                when(spiedProxy.sendPacketString('Pd0=8aff')).thenReject(error);
+                await expect(proxy.setRegister('d0', '8aff')).to.be.rejectedWith(error);
+                verify(spiedProxy.sendPacketString('Pd0=8aff')).once();
             });
         });
     });
