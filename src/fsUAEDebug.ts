@@ -48,9 +48,9 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	// a Mock runtime (or debugger)
 	private variableHandles = new Handles<string>();
 
-	private _configurationDone = new Subject();
+	private configurationDone = new Subject();
 
-	private _gdbProxy: GdbProxy = new GdbProxy(undefined);
+	private gdbProxy: GdbProxy = new GdbProxy(undefined);
 
 	private variableRefMap = new Map<number, DebugProtocol.Variable[]>();
 
@@ -74,36 +74,36 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.setDebuggerColumnsStartAt1(false);
 
 		// setup event handlers
-		this._gdbProxy.on('stopOnEntry', () => {
+		this.gdbProxy.on('stopOnEntry', () => {
 			this.sendEvent(new StoppedEvent('entry', FsUAEDebugSession.THREAD_ID));
 		});
-		this._gdbProxy.on('stopOnStep', () => {
+		this.gdbProxy.on('stopOnStep', () => {
 			this.sendEvent(new StoppedEvent('step', FsUAEDebugSession.THREAD_ID));
 		});
-		this._gdbProxy.on('stopOnBreakpoint', () => {
+		this.gdbProxy.on('stopOnBreakpoint', () => {
 			this.sendEvent(new StoppedEvent('breakpoint', FsUAEDebugSession.THREAD_ID));
 		});
-		this._gdbProxy.on('stopOnException', () => {
+		this.gdbProxy.on('stopOnException', () => {
 			this.sendEvent(new StoppedEvent('exception', FsUAEDebugSession.THREAD_ID));
 		});
-		this._gdbProxy.on('segmentsUpdated', (segments: Array<Segment>) => {
+		this.gdbProxy.on('segmentsUpdated', (segments: Array<Segment>) => {
 			this.updateSegments(segments);
 		});
-		this._gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
+		this.gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
 			let debugBp = <DebugProtocol.Breakpoint>{
 				verified: bp.verified,
 				id: bp.id
 			};
 			this.sendEvent(new BreakpointEvent('changed', debugBp));
 		});
-		// this._gdbProxy.on('output', (text: string, filePath: string, line: number, column: number) => {
+		// this.gdbProxy.on('output', (text: string, filePath: string, line: number, column: number) => {
 		// 	const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
 		// 	e.body.source = this.createSource(filePath);
 		// 	e.body.line = this.convertDebuggerLineToClient(line);
 		// 	e.body.column = this.convertDebuggerColumnToClient(column);
 		// 	this.sendEvent(e);
 		// });
-		this._gdbProxy.on('end', () => {
+		this.gdbProxy.on('end', () => {
 			this.terminate();
 		});
 	}
@@ -156,7 +156,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		super.configurationDoneRequest(response, args);
 
 		// notify the launchRequest that configuration has finished
-		this._configurationDone.notify();
+		this.configurationDone.notify();
 	}
 
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
@@ -183,7 +183,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.startEmulator(args);
 
 		// wait until configuration has finished (and configurationDoneRequest has been called)
-		await this._configurationDone.wait(1000);
+		await this.configurationDone.wait(1000);
 
 		// temp to use in timeout
 		let debAdapter = this;
@@ -191,9 +191,9 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		setTimeout(function () {
 
 			// connects to FS-UAE
-			debAdapter._gdbProxy.connect(args.serverName, args.serverPort).then(() => {
+			debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(() => {
 				// Loads the program
-				debAdapter._gdbProxy.load(args.program, args.stopOnEntry);
+				debAdapter.gdbProxy.load(args.program, args.stopOnEntry);
 				debAdapter.sendResponse(response);
 			}).catch(err => {
 				response.success = false;
@@ -229,7 +229,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		if (this.debugInfo) {
 			let values = this.debugInfo.getAllSegmentIds(path);
 			for (let segmentId of values) {
-				this._gdbProxy.clearBreakpoints(segmentId);
+				this.gdbProxy.clearBreakpoints(segmentId);
 			}
 		}
 
@@ -239,7 +239,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			if (this.debugInfo) {
 				let values = this.debugInfo.getAddressSeg(path, l);
 				if (values) {
-					promises.push(this._gdbProxy.setBreakPoint(values[0], values[1]).then(bp => {
+					promises.push(this.gdbProxy.setBreakPoint(values[0], values[1]).then(bp => {
 						return bp;
 					}));
 				}
@@ -284,7 +284,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
-		let stk: GdbStackFrame = this._gdbProxy.stack();
+		let stk: GdbStackFrame = this.gdbProxy.stack();
 		if (this.debugInfo) {
 			const dbgInfo = this.debugInfo;
 			response.body = {
@@ -328,7 +328,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			const id = this.variableHandles.get(args.variablesReference);
 			if (id !== null) {
 				if (id.startsWith("registers_")) {
-					this._gdbProxy.registers().then((registers: Array<GdbRegister>) => {
+					this.gdbProxy.registers().then((registers: Array<GdbRegister>) => {
 						const variables = new Array<DebugProtocol.Variable>();
 						for (let i = 0; i < registers.length; i++) {
 							let r = registers[i];
@@ -346,7 +346,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 					});
 				} else if (id.startsWith("segments_")) {
 					const variables = new Array<DebugProtocol.Variable>();
-					const segments = this._gdbProxy.getSegments();
+					const segments = this.gdbProxy.getSegments();
 					if (segments) {
 						for (let i = 0; i < segments.length; i++) {
 							let s = segments[i];
@@ -388,7 +388,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	protected setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments): void {
 		const id = this.variableHandles.get(args.variablesReference);
 		if ((id !== null) && (id.startsWith("registers_"))) {
-			this._gdbProxy.setRegister(args.name, args.value).then((newValue) => {
+			this.gdbProxy.setRegister(args.name, args.value).then((newValue) => {
 				response.body = {
 					value: newValue
 				};
@@ -409,18 +409,18 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
-		this._gdbProxy.continueExecution();
+		this.gdbProxy.continueExecution();
 		this.sendResponse(response);
 	}
 
 	protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
-		this._gdbProxy.step();
+		this.gdbProxy.step();
 		this.sendResponse(response);
 	}
 
 	private evaluateRequestRegister(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
 		// It's a reg value
-		let value = this._gdbProxy.getRegister(args.expression);
+		let value = this.gdbProxy.getRegister(args.expression);
 		if (value) {
 			response.body = {
 				result: value,
@@ -449,7 +449,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			}
 			if ((address !== null) && (length !== null)) {
 				// ask for memory dump
-				this._gdbProxy.getMemory(address, length).then((memory) => {
+				this.gdbProxy.getMemory(address, length).then((memory) => {
 					let variables = new Array<DebugProtocol.Variable>();
 					let startAddress = address;
 					let chunks = this.chunk(memory.toString(), wordLength * 2);
@@ -523,7 +523,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			let address = parseInt(addrStr, 16);
 			let data = matches[2];
 			if ((address !== null) && (data !== null) && (data.length > 0)) {
-				this._gdbProxy.setMemory(address, data).then(() => {
+				this.gdbProxy.setMemory(address, data).then(() => {
 					args.expression = 'm' + addrStr + ',' + data.length.toString(16);
 					return this.evaluateRequestGetMemory(response, args);
 				});
