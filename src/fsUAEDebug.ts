@@ -48,14 +48,20 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	// a Mock runtime (or debugger)
 	private variableHandles = new Handles<string>();
 
+	/** Configuration object */
 	private configurationDone = new Subject();
 
-	private gdbProxy: GdbProxy = new GdbProxy(undefined);
+	/** Proxy to Gdb */
+	private gdbProxy: GdbProxy;
 
+	/** Variables map */
 	private variableRefMap = new Map<number, DebugProtocol.Variable[]>();
 
+	/** Test mode activated */
+	private testMode = false;
+
 	/** Executor to run fs-uae */
-	private executor = new Executor();
+	private executor: Executor;
 
 	/** TOken to cancle the emulator */
 	private cancellationTokenSource?: CancellationTokenSource;
@@ -68,11 +74,30 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	 */
 	public constructor() {
 		super("fsuae-debug.txt");
-
 		// this debugger uses zero-based lines and columns
 		this.setDebuggerLinesStartAt1(false);
 		this.setDebuggerColumnsStartAt1(false);
+		this.gdbProxy = new GdbProxy(undefined);
+		this.initProxy();
+		this.executor = new Executor();
+	}
 
+	/**
+	 * Setting the context to run the tests.
+	 * @param gdbProxy mocked proxy
+	 * @param executor mocked executor
+	 */
+	public setTestContext(gdbProxy: GdbProxy, executor: Executor) {
+		this.executor = executor;
+		this.gdbProxy = gdbProxy;
+		this.initProxy();
+		this.testMode = true;
+	}
+
+	/**
+	 * Initialize proxy
+	 */
+	public initProxy() {
 		// setup event handlers
 		this.gdbProxy.on('stopOnEntry', () => {
 			this.sendEvent(new StoppedEvent('entry', FsUAEDebugSession.THREAD_ID));
@@ -165,7 +190,6 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
 
 		// Loads the debug info
-		console.log(args.sourceFileMap);
 		let sMap = new Map<string, string>();
 		if (args.sourceFileMap) {
 			let keys = Object.keys(args.sourceFileMap);
@@ -188,8 +212,11 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		// temp to use in timeout
 		let debAdapter = this;
 
+		let timeoutValue = 3000;
+		if (this.testMode) {
+			timeoutValue = 1;
+		}
 		setTimeout(function () {
-
 			// connects to FS-UAE
 			debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(() => {
 				// Loads the program
@@ -200,10 +227,10 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 				response.message = err.toString();
 				debAdapter.sendResponse(response);
 			});
-		}, 3000);
+		}, timeoutValue);
 	}
 
-	protected startEmulator(args: LaunchRequestArguments) {
+	public startEmulator(args: LaunchRequestArguments) {
 		this.cancellationTokenSource = new CancellationTokenSource();
 		if (args.emulator) {
 			let pargs = [args.conf];

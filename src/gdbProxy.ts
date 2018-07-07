@@ -92,7 +92,7 @@ export class GdbProxy extends EventEmitter {
      * The socket is needed only for unit test mocking.
      * @param socket Socket instance created to contact the server (for unit tests)
      */
-    constructor(socket: Socket | undefined) {
+    constructor(socket?: Socket) {
         super();
         if (socket) {
             this.socket = socket;
@@ -569,7 +569,7 @@ export class GdbProxy extends EventEmitter {
      * @param event Event to send
      * @param args Arguments
      */
-    private sendEvent(event: string, ...args: any[]) {
+    public sendEvent(event: string, ...args: any[]) {
         setImmediate(_ => {
             this.emit(event, ...args);
         });

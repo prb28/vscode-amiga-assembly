@@ -9,7 +9,6 @@ export class DebugInfo {
     }
 
     public loadInfo(filePath: string) {
-        console.log("Trying debug data from {:?}", filePath);
         let parser = new HunkParser();
         this.hunks = parser.parse_file(filePath);
     }
