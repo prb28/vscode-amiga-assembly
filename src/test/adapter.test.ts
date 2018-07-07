@@ -7,10 +7,10 @@ import { LaunchRequestArguments, FsUAEDebugSession } from '../fsUAEDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
 import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint } from '../gdbProxy';
-import { spy, verify, anyString, instance, when, anything, mock, anyNumber } from 'ts-mockito';
+import { spy, anyString, instance, when, anything, mock, anyNumber } from 'ts-mockito';
 import { Executor } from '../executor';
 
-describe.only('Node Debug Adapter', () => {
+describe('Node Debug Adapter', () => {
 
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
 	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js');
