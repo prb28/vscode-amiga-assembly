@@ -175,17 +175,24 @@ export class GdbProxy extends EventEmitter {
      */
     protected static parseData(data: any): GdbPacket[] {
         let s = data.toString();
-        let messageRegexp = /\$([a-z\d;:/\\.]+)\#[\da-f]{2}/gi;
-        let match;
         let parsedData = new Array<GdbPacket>();
-        while (match = messageRegexp.exec(s)) {
-            let message = GdbProxy.extractPacket(match[1]);
+        if (s === '+') {
             parsedData.push(<GdbPacket>{
-                type: GdbProxy.parseType(message),
-                message: message
+                type: GdbPacketType.PLUS,
+                message: s
             });
+        } else {
+            let messageRegexp = /\$([a-z\d;:/\\.]+)\#[\da-f]{2}/gi;
+            let match;
+            while (match = messageRegexp.exec(s)) {
+                let message = GdbProxy.extractPacket(match[1]);
+                parsedData.push(<GdbPacket>{
+                    type: GdbProxy.parseType(message),
+                    message: message
+                });
+            }
         }
-        // TODO: check the checksum and ank to resend the message if it is not verified
+        // TODO: check the checksum and and to resend the message if it is not verified
         return parsedData;
     }
 
