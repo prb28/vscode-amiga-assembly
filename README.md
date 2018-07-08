@@ -1,5 +1,5 @@
 [![Build Status Travis](https://travis-ci.org/prb28/vscode-amiga-assembly.svg?branch=dev-debug)](https://travis-ci.org/prb28/vscode-amiga-assembly) [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/github/prb28/vscode-amiga-assembly?branch=dev-debug)](https://ci.appveyor.com/project/prb28/vscode-amiga-assembly)
-[![Coverage Status](https://coveralls.io/repos/github/prb28/vscode-amiga-assembly/badge.svg?branch=dev-debug)](https://coveralls.io/github/prb28/vscode-amiga-assembly?branch=dev-debug)
+[![Coverage Status](https://coveralls.io/repos/github/prb28/vscode-amiga-assembly/badge.png?branch=dev-debug)](https://coveralls.io/github/prb28/vscode-amiga-assembly?branch=dev-debug)
 
 # Amiga Assembly for Visual Studio Code
 Amiga Assembly for Visual Studio Code is a extension to support assembly language for the Amiga Motorolla 68000 machines and emulators.
