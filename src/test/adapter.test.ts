@@ -6,7 +6,7 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import { LaunchRequestArguments, FsUAEDebugSession } from '../fsUAEDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
-import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint } from '../gdbProxy';
+import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister } from '../gdbProxy';
 import { spy, anyString, instance, when, anything, mock, anyNumber } from 'ts-mockito';
 import { Executor } from '../executor';
 
@@ -39,8 +39,13 @@ describe('Node Debug Adapter', () => {
 	let mockedExecutor: Executor;
 	let executor: Executor;
 	let callbacks = new Map<String, any>();
+	let testWithRealEmulator = false;
+	let defaultTimeout = 10000;
 
 	before(function () {
+		if (testWithRealEmulator) {
+			defaultTimeout = 60000;
+		}
 		// Opening file to activate the extension
 		const newFile = vscode.Uri.parse("untitled://./debug.s");
 		return vscode.window.showTextDocument(newFile);
@@ -54,13 +59,15 @@ describe('Node Debug Adapter', () => {
 			callbacks.set(event, callback);
 		});
 		gdbProxy = instance(mockedGdbProxy);
-		this.timeout(10000);
+		this.timeout(defaultTimeout);
 		// start port listener on launch of first debug session
 		if (!server) {
 			// start listening on a random port
 			server = Net.createServer(socket => {
 				session = new FsUAEDebugSession();
-				session.setTestContext(gdbProxy, executor);
+				if (!testWithRealEmulator) {
+					session.setTestContext(gdbProxy, executor);
+				}
 				session.setRunAsServer(true);
 				session.start(<NodeJS.ReadableStream>socket, socket);
 				spiedSession = spy(session);
@@ -125,7 +132,7 @@ describe('Node Debug Adapter', () => {
 				}
 				return Promise.resolve();
 			});
-			this.timeout(60000);
+			this.timeout(defaultTimeout);
 			return Promise.all([
 				dc.configurationSequence(),
 				dc.launch(launchArgs),
@@ -134,7 +141,7 @@ describe('Node Debug Adapter', () => {
 		});
 
 		it('should stop on entry', function () {
-			this.timeout(60000);
+			this.timeout(defaultTimeout);
 			when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
 			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				setTimeout(function () {
@@ -142,7 +149,7 @@ describe('Node Debug Adapter', () => {
 					if (cb) {
 						cb();
 					}
-				}, 100);
+				}, 10);
 				return Promise.resolve();
 			});
 			when(mockedGdbProxy.stack()).thenReturn(<GdbStackFrame>{
@@ -170,14 +177,14 @@ describe('Node Debug Adapter', () => {
 			when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
 		});
 		it('should stop on a breakpoint', function () {
-			this.timeout(60000);
+			this.timeout(defaultTimeout);
 			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				setTimeout(function () {
 					let cb = callbacks.get('stopOnBreakpoint');
 					if (cb) {
 						cb();
 					}
-				}, 100);
+				}, 10);
 				return Promise.resolve();
 			});
 			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
@@ -196,20 +203,24 @@ describe('Node Debug Adapter', () => {
 				}],
 				count: 1
 			});
+			when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
+				name: "d0",
+				value: 1
+			}]));
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			return dc.hitBreakpoint(launchArgsCopy, { path: SOURCE_FILE_NAME, line: 33 });
 		});
 
 		it('hitting a lazy breakpoint should send a breakpoint event', function () {
-			this.timeout(60000);
+			this.timeout(defaultTimeout);
 			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				setTimeout(function () {
 					let cb = callbacks.get('stopOnBreakpoint');
 					if (cb) {
 						cb();
 					}
-				}, 200);
+				}, 20);
 				setTimeout(function () {
 					let cb = callbacks.get('breakpointValidated');
 					if (cb) {
@@ -220,7 +231,7 @@ describe('Node Debug Adapter', () => {
 							verified: true,
 						});
 					}
-				}, 400);
+				}, 40);
 				return Promise.resolve();
 			});
 			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
@@ -249,9 +260,42 @@ describe('Node Debug Adapter', () => {
 			]);
 		});
 	});
-	describe.skip('evaluateExpression', function () {
+	describe('evaluateExpression', function () {
 		it('should evaluate a memory location', async function () {
-			this.timeout(60000);
+			this.timeout(defaultTimeout);
+			when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+			when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+				setTimeout(function () {
+					let cb = callbacks.get('stopOnEntry');
+					if (cb) {
+						cb();
+					}
+				}, 20);
+				return Promise.resolve();
+			});
+			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
+				return Promise.resolve(<GdbBreakpoint>{
+					id: 0,
+					segmentId: 0,
+					offset: 0,
+					verified: false,
+				});
+			});
+			when(mockedGdbProxy.stack()).thenReturn(<GdbStackFrame>{
+				frames: [<GdbStackPosition>{
+					index: 1,
+					segmentId: 0,
+					offset: 0
+				}],
+				count: 1
+			});
+			when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
+				name: "d0",
+				value: 1
+			}]));
+			when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f80b0e"));
+
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
@@ -263,8 +307,8 @@ describe('Node Debug Adapter', () => {
 			const evaluateResponse = await dc.evaluateRequest({
 				expression: "m0,10"
 			});
-			expect(evaluateResponse.body.type).to.equal('string');
-			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f80b0e');
+			expect(evaluateResponse.body.type).to.equal('array');
+			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f80b0e          | ............');
 		});
 	});
 	describe.skip('setExceptionBreakpoints', function () {
