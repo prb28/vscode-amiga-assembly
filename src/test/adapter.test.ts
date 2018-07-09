@@ -11,7 +11,6 @@ import { spy, anyString, instance, when, anything, mock, anyNumber } from 'ts-mo
 import { Executor } from '../executor';
 
 describe('Node Debug Adapter', () => {
-
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
 	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js');
 	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug');
@@ -84,9 +83,9 @@ describe('Node Debug Adapter', () => {
 	});
 
 
-	describe.skip('basic', function () {
+	describe('basic', function () {
 		it('unknown request should produce error', function () {
-			dc.send('illegal_request').then(function () {
+			return dc.send('illegal_request').then(function () {
 				Promise.reject("does not report error on unknown request");
 			}).catch(function () {
 				Promise.resolve();
@@ -94,12 +93,17 @@ describe('Node Debug Adapter', () => {
 		});
 	});
 
-	describe.skip('initialize', () => {
+	describe('initialize', () => {
 
 		it('should return supported features', function () {
 			return dc.initializeRequest().then(function (response) {
 				response.body = response.body || {};
 				assert.equal(response.body.supportsConfigurationDoneRequest, true);
+				assert.equal(response.body.supportsEvaluateForHovers, true);
+				assert.equal(response.body.supportsStepBack, false);
+				assert.equal(response.body.supportsRestartFrame, false);
+				assert.equal(response.body.supportsConditionalBreakpoints, false);
+				assert.equal(response.body.supportsSetVariable, true);
 			});
 		});
 
@@ -142,39 +146,43 @@ describe('Node Debug Adapter', () => {
 
 		it('should stop on entry', function () {
 			this.timeout(defaultTimeout);
-			when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
-			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
-				setTimeout(function () {
-					let cb = callbacks.get('stopOnEntry');
-					if (cb) {
-						cb();
-					}
-				}, 10);
-				return Promise.resolve();
-			});
-			when(mockedGdbProxy.stack()).thenReturn(<GdbStackFrame>{
-				frames: [<GdbStackPosition>{
-					index: 1,
-					segmentId: 0,
-					offset: 4
-				}],
-				count: 1
-			});
+			if (!testWithRealEmulator) {
+				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnEntry');
+						if (cb) {
+							cb();
+						}
+					}, 10);
+					return Promise.resolve();
+				});
+				when(mockedGdbProxy.stack()).thenReturn(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 0
+					}],
+					count: 1
+				});
+			}
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
 			return Promise.all([
 				dc.configurationSequence(),
 				dc.launch(launchArgsCopy),
-				dc.assertStoppedLocation('entry', { line: 33 })
+				dc.assertStoppedLocation('entry', { line: 32 })
 			]);
 		});
 	});
 
 	describe('setBreakpoints', function () {
 		beforeEach(function () {
-			when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-			when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+			if (!testWithRealEmulator) {
+				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+			}
 		});
 		it('should stop on a breakpoint', function () {
 			this.timeout(defaultTimeout);
@@ -227,7 +235,7 @@ describe('Node Debug Adapter', () => {
 						cb(<GdbBreakpoint>{
 							id: 0,
 							segmentId: 0,
-							offset: 4,
+							offset: 0,
 							verified: true,
 						});
 					}
@@ -263,58 +271,59 @@ describe('Node Debug Adapter', () => {
 	describe('evaluateExpression', function () {
 		it('should evaluate a memory location', async function () {
 			this.timeout(defaultTimeout);
-			when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-			when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
-			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
-				setTimeout(function () {
-					let cb = callbacks.get('stopOnEntry');
-					if (cb) {
-						cb();
-					}
-				}, 20);
-				return Promise.resolve();
-			});
-			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
-				return Promise.resolve(<GdbBreakpoint>{
-					id: 0,
-					segmentId: 0,
-					offset: 0,
-					verified: false,
-				});
-			});
-			when(mockedGdbProxy.stack()).thenReturn(<GdbStackFrame>{
-				frames: [<GdbStackPosition>{
-					index: 1,
-					segmentId: 0,
-					offset: 0
-				}],
-				count: 1
-			});
-			when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
-				name: "d0",
-				value: 1
-			}]));
-			when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f80b0e"));
+			if (!testWithRealEmulator) {
 
+				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnEntry');
+						if (cb) {
+							cb();
+						}
+					}, 20);
+					return Promise.resolve();
+				});
+				when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
+					return Promise.resolve(<GdbBreakpoint>{
+						id: 0,
+						segmentId: 0,
+						offset: 0,
+						verified: false,
+					});
+				});
+				when(mockedGdbProxy.stack()).thenReturn(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 4
+					}],
+					count: 1
+				});
+				when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
+					name: "d0",
+					value: 1
+				}]));
+				when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
+			}
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
 			await Promise.all([
 				dc.configurationSequence(),
 				dc.launch(launchArgsCopy),
-				dc.assertStoppedLocation('entry', { line: 32 })
+				dc.assertStoppedLocation('entry', { line: 33 })
 			]);
 			const evaluateResponse = await dc.evaluateRequest({
 				expression: "m0,10"
 			});
 			expect(evaluateResponse.body.type).to.equal('array');
-			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f80b0e          | ............');
+			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | ..........');
 		});
 	});
 	describe.skip('setExceptionBreakpoints', function () {
 
 		it('should stop on an exception', function () {
-
 			const PROGRAM_WITH_EXCEPTION = Path.join(DATA_ROOT, 'testWithException.md');
 			const EXCEPTION_LINE = 4;
 

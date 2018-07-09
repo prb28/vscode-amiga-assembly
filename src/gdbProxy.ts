@@ -228,7 +228,7 @@ export class GdbProxy extends EventEmitter {
                         break;
                     case GdbPacketType.UNKNOWN:
                     default:
-                        console.trace("Packet ignored by onData : " + packet.message);
+                        //console.trace("Packet ignored by onData : " + packet.message);
                         break;
                 }
             }
