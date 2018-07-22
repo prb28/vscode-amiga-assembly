@@ -1,7 +1,6 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
 import { logger } from 'vscode-debugadapter';
-import { resolve } from 'dns';
 
 /** Interface for a breakpoint */
 export interface GdbBreakpoint {
