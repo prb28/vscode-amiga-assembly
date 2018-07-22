@@ -209,6 +209,11 @@
                                 "description": "Path to an amiga program.",
                                 "default": "${workspaceFolder}/${command:AskForProgramName}"
                             },
+                            "startEmulator": {
+                                "type": "boolean",
+                                "description": "If true the emulator will be started before debugging.",
+                                "default": "true"
+                            },
                             "emulator": {
                                 "type": "string",
                                 "description": "Path to the fs-uae emulator.",
@@ -259,6 +264,7 @@
                         "type": "fs-uae",
                         "request": "launch",
                         "name": "Ask for file name",
+                        "startEmulator": true,
                         "emulator": "fs-uae",
                         "program": "${workspaceFolder}/${command:AskForProgramName}",
                         "conf": "configuration/dev.fs-uae",
@@ -275,6 +281,7 @@
                             "type": "fs-uae",
                             "request": "launch",
                             "name": "Ask for file name",
+                            "startEmulator": true,
                             "emulator": "Path to fs-uae executable file",
                             "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
                             "conf": "Path to fs-uae fs-uae configuration file",

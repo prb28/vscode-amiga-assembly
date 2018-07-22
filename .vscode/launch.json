@@ -20,19 +20,6 @@
             "preLaunchTask": "npm: watch"
         },
         {
-            "type": "node",
-            "request": "launch",
-            "name": "Server",
-            "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/src/debugAdapter.ts",
-            "args": [
-                "--server=4711"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
-            ]
-        },
-        {
             "name": "Extension Tests",
             "type": "extensionHost",
             "request": "launch",
@@ -46,13 +33,6 @@
                 "${workspaceFolder}/out/test/**/*.js"
             ],
             "preLaunchTask": "npm: watch"
-        },
-        {
-            "type": "fs-uae",
-            "request": "launch",
-            "name": "Mock Sample",
-            "program": "${workspaceFolder}/${command:AskForProgramName}",
-            "stopOnEntry": true
         }
     ]
 }

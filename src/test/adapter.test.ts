@@ -22,6 +22,7 @@ describe('Node Debug Adapter', () => {
 		stopOnEntry: false,
 		serverName: 'localhost',
 		serverPort: 6860,
+		startEmulator: true,
 		emulator: Path.join(FSUAE_ROOT, 'fs-uae'),
 		conf: Path.join(FSUAE_ROOT, 'test.fs-uae'),
 		drive: Path.join(FSUAE_ROOT, 'hd0'),

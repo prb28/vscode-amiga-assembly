@@ -30,6 +30,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	serverName: string;
 	/** Port of the server */
 	serverPort: number;
+	/** Start emulator */
+	startEmulator: boolean;
 	/** emulator program */
 	emulator?: string;
 	/** configuration file */
@@ -185,9 +187,17 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
+		// make sure to set the buffered logging to warn if 'trace' is not set
+		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Warn, false);
 
-		// make sure to 'Stop' the buffered logging if 'trace' is not set
-		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
+		// Showing the help text
+		logger.warn("Commands :");
+		logger.warn("    Memory dump:");
+		logger.warn("        m address, size[, wordSizeInBytes, rowSizeInWords]");
+		logger.warn("            example: m 5c50,10,2,4");
+		logger.warn("    Memory set:");
+		logger.warn("        M address, bytes");
+		logger.warn("            example: M 5c50,0ff534");
 
 		// Loads the debug info
 		let sMap = new Map<string, string>();
@@ -220,8 +230,14 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			// connects to FS-UAE
 			debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(() => {
 				// Loads the program
-				debAdapter.gdbProxy.load(args.program, args.stopOnEntry);
-				debAdapter.sendResponse(response);
+				logger.warn("Starting program: " + args.program);
+				debAdapter.gdbProxy.load(args.program, args.stopOnEntry).then(() => {
+					debAdapter.sendResponse(response);
+				}).catch(err => {
+					response.success = false;
+					response.message = err.toString();
+					debAdapter.sendResponse(response);
+				});
 			}).catch(err => {
 				response.success = false;
 				response.message = err.toString();
@@ -231,14 +247,19 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	public startEmulator(args: LaunchRequestArguments) {
-		this.cancellationTokenSource = new CancellationTokenSource();
-		if (args.emulator) {
-			let pargs = [args.conf];
-			this.executor.runTool(pargs, null, "warning", true, args.emulator, null, true, null, this.cancellationTokenSource.token).then(() => {
-				this.sendEvent(new TerminatedEvent());
-			}).catch(err => {
-				this.sendEvent(new TerminatedEvent());
-			});
+		if (args.startEmulator) {
+			logger.warn("Starting emulator: " + args.emulator);
+			this.cancellationTokenSource = new CancellationTokenSource();
+			if (args.emulator) {
+				let pargs = [args.conf];
+				this.executor.runTool(pargs, null, "warning", true, args.emulator, null, true, null, this.cancellationTokenSource.token).then(() => {
+					this.sendEvent(new TerminatedEvent());
+				}).catch(err => {
+					this.sendEvent(new TerminatedEvent());
+				});
+			}
+		} else {
+			logger.warn("Emulator starting skipped by settings");
 		}
 	}
 
@@ -249,32 +270,32 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
-		const path = <string>args.source.path;
-		const clientLines = args.lines || [];
+		new Promise(async (resolve, reject) => {
+			const path = <string>args.source.path;
+			const clientLines = args.lines || [];
 
-		// clear all breakpoints for this file
-		if (this.debugInfo) {
-			let values = this.debugInfo.getAllSegmentIds(path);
-			for (let segmentId of values) {
-				this.gdbProxy.clearBreakpoints(segmentId);
-			}
-		}
-
-		// set and verify breakpoint locations
-		let promises: Promise<GdbBreakpoint>[] = [];
-		clientLines.map(l => {
+			// clear all breakpoints for this file
 			if (this.debugInfo) {
-				let values = this.debugInfo.getAddressSeg(path, l);
-				if (values) {
-					promises.push(this.gdbProxy.setBreakPoint(values[0], values[1]).then(bp => {
-						return bp;
-					}));
+				let values = this.debugInfo.getAllSegmentIds(path);
+				for (let segmentId of values) {
+					await this.gdbProxy.clearBreakpoints(segmentId);
 				}
-			} else {
-				// TODO : keep the breakpoint to do it later
 			}
-		});
-		Promise.all(promises).then((breakPoints: GdbBreakpoint[]) => {
+
+			// set and verify breakpoint locations
+			let breakPoints: GdbBreakpoint[] = [];
+			for (let l of clientLines) {
+				if (this.debugInfo) {
+					let values = this.debugInfo.getAddressSeg(path, l);
+					if (values) {
+						await this.gdbProxy.setBreakPoint(values[0], values[1]).then(bp => {
+							breakPoints.push(bp);
+						});
+					}
+				} else {
+					// TODO : keep the breakpoint to do it later
+				}
+			}
 			if (this.debugInfo) {
 				let debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
 				for (let i = 0; i < breakPoints.length; i++) {
@@ -296,6 +317,12 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			} else {
 				// TODO : keep the breakpoint to do it later
 			}
+			resolve();
+		}).then(() => {
+			this.sendResponse(response);
+		}).catch((err) => {
+			response.success = false;
+			response.message = err.toString();
 			this.sendResponse(response);
 		});
 	}
@@ -389,24 +416,41 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 						};
 						this.sendResponse(response);
 					}
-				} else if (id.startsWith("symbols_") && this.debugInfo) {
-					const variables = new Array<DebugProtocol.Variable>();
-					const symbols = this.debugInfo.getSymbols(undefined);
-					if (symbols) {
-						for (let i = 0; i < symbols.length; i++) {
-							let s = symbols[i];
-							variables.push({
-								name: s.name,
-								type: "symbol",
-								value: s.offset.toString(16),
-								variablesReference: 0
-							});
+				} else if (id.startsWith("symbols_")) {
+					let self = this;
+					new Promise<Array<DebugProtocol.Variable>>(async (resolve, reject) => {
+						const variables = new Array<DebugProtocol.Variable>();
+						if (self.debugInfo) {
+							// Retrieve the segment address
+							let segAddress = 0;
+							let segs = self.gdbProxy.getSegments();
+							if (segs) {
+								segAddress = segs[0].address;
+							}
+							const symbols = self.debugInfo.getSymbols(undefined);
+							if (symbols) {
+								for (let i = 0; i < symbols.length; i++) {
+									let s = symbols[i];
+									variables.push({
+										name: s.name,
+										type: "symbol",
+										value: (segAddress + s.offset).toString(16),
+										variablesReference: 0
+									});
+								}
+							}
 						}
+						resolve(variables);
+					}).then((variables) => {
 						response.body = {
 							variables: variables
 						};
-						this.sendResponse(response);
-					}
+						self.sendResponse(response);
+					}).catch(err => {
+						response.success = false;
+						response.message = err.toString();
+						self.sendResponse(response);
+					});
 				}
 			}
 		}
@@ -436,12 +480,38 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
-		this.gdbProxy.continueExecution();
-		this.sendResponse(response);
+		this.gdbProxy.continueExecution().then(() => {
+			this.sendResponse(response);
+		}).catch(err => {
+			response.success = false;
+			response.message = err.toString();
+			this.sendResponse(response);
+		});
 	}
 
 	protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
-		this.gdbProxy.step();
+		this.gdbProxy.step().then(() => {
+			this.sendResponse(response);
+		}).catch(err => {
+			response.success = false;
+			response.message = err.toString();
+			this.sendResponse(response);
+		});
+	}
+
+	protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments): void {
+		this.gdbProxy.stepIn().then(() => {
+			this.sendResponse(response);
+		}).catch(err => {
+			response.success = false;
+			response.message = err.toString();
+			this.sendResponse(response);
+		});
+	}
+
+	protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
+		response.success = false;
+		response.message = "Option not availaible";
 		this.sendResponse(response);
 	}
 

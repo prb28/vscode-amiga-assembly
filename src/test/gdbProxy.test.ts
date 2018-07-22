@@ -269,14 +269,24 @@ describe("GdbProxy Tests", function () {
                 await expect(proxy.clearBreakpoints(0)).to.be.rejectedWith(error);
                 verify(spiedProxy.sendPacketString('z0,4,0')).once();
             });
-            it("Should step instruciton", async function () {
-                when(spiedProxy.sendPacketString('s')).thenResolve(RESPONSE_OK);
+            it("Should step instruction", async function () {
+                when(spiedProxy.sendPacketString('n')).thenResolve(RESPONSE_OK);
                 await expect(proxy.step()).to.be.fulfilled;
+                verify(spiedProxy.sendPacketString('n')).once();
+            });
+            it("Should reject on step instruction error", async function () {
+                when(spiedProxy.sendPacketString('n')).thenReject(error);
+                await expect(proxy.step()).to.be.rejectedWith(error);
+                verify(spiedProxy.sendPacketString('n')).once();
+            });
+            it("Should step in instruction", async function () {
+                when(spiedProxy.sendPacketString('s')).thenResolve(RESPONSE_OK);
+                await expect(proxy.stepIn()).to.be.fulfilled;
                 verify(spiedProxy.sendPacketString('s')).once();
             });
-            it("Should reject on step instruciton error", async function () {
+            it("Should reject on step in instruction error", async function () {
                 when(spiedProxy.sendPacketString('s')).thenReject(error);
-                await expect(proxy.step()).to.be.rejectedWith(error);
+                await expect(proxy.stepIn()).to.be.rejectedWith(error);
                 verify(spiedProxy.sendPacketString('s')).once();
             });
             it("Should get memory contents", async function () {

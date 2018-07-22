@@ -1,5 +1,7 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
+import { logger } from 'vscode-debugadapter';
+import { resolve } from 'dns';
 
 /** Interface for a breakpoint */
 export interface GdbBreakpoint {
@@ -202,7 +204,7 @@ export class GdbProxy extends EventEmitter {
      * @param data Data to parse
      */
     private onData(proxy: GdbProxy, data: any): Promise<void> {
-        console.log("onData : " + data.toString());
+        logger.log("<---" + data.toString());
         return new Promise(async (resolve, reject) => {
             for (let packet of GdbProxy.parseData(data)) {
                 switch (packet.type) {
@@ -220,7 +222,7 @@ export class GdbProxy extends EventEmitter {
                         break;
                     case GdbPacketType.MINUS:
                         // TODO: Send last message
-                        console.error("Unsupported packet : '-'");
+                        logger.error("Unsupported packet : '-'");
                         proxy.sendEvent("error", new Error("Unsupported packet : '-'"));
                         break;
                     case GdbPacketType.OK:
@@ -228,7 +230,7 @@ export class GdbProxy extends EventEmitter {
                         break;
                     case GdbPacketType.UNKNOWN:
                     default:
-                        //console.trace("Packet ignored by onData : " + packet.message);
+                        //logger.trace("Packet ignored by onData : " + packet.message);
                         break;
                 }
             }
@@ -319,7 +321,7 @@ export class GdbProxy extends EventEmitter {
             data.write(GdbProxy.calculateChecksum(text), offset);
             offset += 2;
             data.writeInt8(0, offset);
-            console.log(" --->" + data.toString());
+            logger.log(" --->" + data.toString());
             this.socket.write(data);
             this.socket.once('data', (data) => {
                 let packets = GdbProxy.parseData(data);
@@ -378,6 +380,7 @@ export class GdbProxy extends EventEmitter {
                 this.pendingBreakpoints = new Array<GdbBreakpoint>();
             }
             this.pendingBreakpoints.push(bp);
+            logger.log("Breakpoint added to pending: " + segmentId + "," + offset);
             return Promise.resolve(bp);
         }
     }
@@ -386,19 +389,21 @@ export class GdbProxy extends EventEmitter {
      * Sends all the pending breakpoint
      */
     public sendAllPendingBreakpoints(): Promise<GdbBreakpoint[]> {
-        if ((this.pendingBreakpoints) && this.pendingBreakpoints.length > 0) {
-            let pending = this.pendingBreakpoints;
-            this.pendingBreakpoints = new Array<GdbBreakpoint>();
-            let promises: Promise<GdbBreakpoint>[] = [];
-            for (let bp of pending) {
-                promises.push(this.setBreakPoint(bp.segmentId, bp.offset).then(bp => {
-                    return bp;
-                }));
+        return new Promise(async (resolve, reject) => {
+            if ((this.pendingBreakpoints) && this.pendingBreakpoints.length > 0) {
+                let pending = this.pendingBreakpoints;
+                this.pendingBreakpoints = new Array<GdbBreakpoint>();
+                let breakpoints: GdbBreakpoint[] = [];
+                for (let bp of pending) {
+                    await this.setBreakPoint(bp.segmentId, bp.offset).then(bp => {
+                        breakpoints.push(bp);
+                    });
+                }
+                resolve(breakpoints);
+            } else {
+                resolve([]);
             }
-            return Promise.all(promises);
-        } else {
-            return Promise.resolve([]);
-        }
+        });
     }
 
     /**
@@ -441,21 +446,18 @@ export class GdbProxy extends EventEmitter {
                 if (this.segments && (segmentId < this.segments.length)) {
                     let keep = new Array<GdbBreakpoint>();
                     let bp = this.breakPoints.pop();
-                    let promises = [];
                     while (bp) {
                         if (bp.segmentId === segmentId) {
-                            promises.push(this.sendPacketString('z0,' + GdbProxy.formatNumber(bp.offset) + ',' + GdbProxy.formatNumber(bp.segmentId)));
+                            await this.sendPacketString('z0,' + GdbProxy.formatNumber(bp.offset) + ',' + GdbProxy.formatNumber(bp.segmentId)).catch(err => {
+                                reject(err);
+                            });
                         } else {
                             keep.push(bp);
                         }
                         bp = this.breakPoints.pop();
                     }
                     this.breakPoints = keep;
-                    Promise.all(promises).then(() => {
-                        resolve();
-                    }).catch(err => {
-                        reject(err);
-                    });
+                    resolve();
                 } else {
                     reject(new Error("No segments are define, is the debugger connected?"));
                 }
@@ -480,6 +482,13 @@ export class GdbProxy extends EventEmitter {
      * Ask the debbuger to step 
      */
     public step(): Promise<void> {
+        return this.sendPacketString('n').then(data => { return; });
+    }
+
+    /**
+     * Ask the debbuger to step in
+     */
+    public stepIn(): Promise<void> {
         return this.sendPacketString('s').then(data => { return; });
     }
 
@@ -489,7 +498,7 @@ export class GdbProxy extends EventEmitter {
     public registers(): Promise<Array<GdbRegister>> {
         this.lastRegisters.clear();
         return this.sendPacketString('g').then(message => {
-            //console.log("register : " + data.toString());
+            //logger.log("register : " + data.toString());
             let registers = new Array<GdbRegister>();
             let pos = 0;
             let letter = 'd';
