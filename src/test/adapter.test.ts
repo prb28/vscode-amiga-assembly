@@ -7,7 +7,7 @@ import { LaunchRequestArguments, FsUAEDebugSession } from '../fsUAEDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
 import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister, Segment } from '../gdbProxy';
-import { spy, anyString, instance, when, anything, mock, anyNumber, reset } from 'ts-mockito';
+import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls } from 'ts-mockito';
 import { Executor } from '../executor';
 
 describe('Node Debug Adapter', () => {
@@ -280,10 +280,8 @@ describe('Node Debug Adapter', () => {
 		});
 	});
 	describe('evaluateExpression', function () {
-		it('should evaluate a memory location', async function () {
-			this.timeout(defaultTimeout);
+		beforeEach(async function () {
 			if (!testWithRealEmulator) {
-
 				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
 				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
 				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
@@ -323,6 +321,9 @@ describe('Node Debug Adapter', () => {
 					name: "a0",
 					value: 10
 				}]));
+				when(mockedGdbProxy.setMemory(0, anyString())).thenReturn(Promise.resolve());
+				when(mockedGdbProxy.setMemory(10, anyString())).thenReturn(Promise.resolve());
+				when(mockedGdbProxy.setMemory(11, anyString())).thenReturn(Promise.resolve());
 				when(mockedGdbProxy.getMemory(0, anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
 				when(mockedGdbProxy.getMemory(10, anyNumber())).thenReturn(Promise.resolve("aa00000000c00b0000f8"));
 				when(mockedGdbProxy.getMemory(422, anyNumber())).thenReturn(Promise.resolve("0000000b")); // 422 = 19c + 10
@@ -336,6 +337,9 @@ describe('Node Debug Adapter', () => {
 				dc.launch(launchArgsCopy),
 				dc.assertStoppedLocation('entry', { line: 33 })
 			]);
+		});
+		it('should evaluate a memory location', async function () {
+			this.timeout(defaultTimeout);
 			let evaluateResponse = await dc.evaluateRequest({
 				expression: "m0,10"
 			});
@@ -343,12 +347,35 @@ describe('Node Debug Adapter', () => {
 			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | ..........');
 			// Test variable replacement
 			evaluateResponse = await dc.evaluateRequest({
-				expression: "m${a0},10"
+				expression: "m ${a0},10"
 			});
 			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª.........');
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "m ${copperlist},10"
 			});
+			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
+		});
+		it('should evaluate a set memory command', async function () {
+			this.timeout(defaultTimeout);
+			let evaluateResponse = await dc.evaluateRequest({
+				expression: "M0=10"
+			});
+			verify(mockedGdbProxy.setMemory(0, anyString())).once();
+			resetCalls(mockedGdbProxy);
+			expect(evaluateResponse.body.type).to.equal('array');
+			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | ..........');
+			// Test variable replacement
+			evaluateResponse = await dc.evaluateRequest({
+				expression: "M${a0}=10"
+			});
+			verify(mockedGdbProxy.setMemory(10, anyString())).once();
+			resetCalls(mockedGdbProxy);
+			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª.........');
+			evaluateResponse = await dc.evaluateRequest({
+				expression: "M ${copperlist}=10"
+			});
+			verify(mockedGdbProxy.setMemory(11, anyString())).once();
+			resetCalls(mockedGdbProxy);
 			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
 		});
 	});

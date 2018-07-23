@@ -212,15 +212,17 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Log, false);
 
 		// Showing the help text
-		logger.warn("Commands :");
+		logger.warn("Commands:");
 		logger.warn("    Memory dump:");
 		logger.warn("        m address, size[, wordSizeInBytes, rowSizeInWords]");
 		logger.warn("            example: m 5c50,10,2,4");
 		logger.warn("        m ${register|symbol}, size[, wordSizeInBytes, rowSizeInWords]");
 		logger.warn("            example: m ${mycopperlabel},10,2,4");
 		logger.warn("    Memory set:");
-		logger.warn("        M address, bytes");
-		logger.warn("            example: M 5c50,0ff534");
+		logger.warn("        M address=bytes");
+		logger.warn("            example: M 5c50=0ff534");
+		logger.warn("        M ${register|symbol}=bytes");
+		logger.warn("            example: M ${mycopperlabel}=0ff534");
 
 		// Loads the debug info
 		this.loadDebugInfo(args);
@@ -665,15 +667,25 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	private evaluateRequestSetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-		const matches = /M\s*([0-9a-z]+)\s*=\s*([0-9a-z]+)/i.exec(args.expression);
+		const matches = /M\s*([\{\}\$0-9a-z]+)\s*=\s*([0-9a-z]+)/i.exec(args.expression);
 		if (matches) {
 			let addrStr = matches[1];
-			let address = parseInt(addrStr, 16);
 			let data = matches[2];
-			if ((address !== null) && (data !== null) && (data.length > 0)) {
-				this.gdbProxy.setMemory(address, data).then(() => {
-					args.expression = 'm' + addrStr + ',' + data.length.toString(16);
-					return this.evaluateRequestGetMemory(response, args);
+			if ((addrStr !== null) && (data !== null) && (data.length > 0)) {
+				// reaplace the address if it is a variable
+				this.checkAddressForEvaluation(addrStr).then((address) => {
+					this.gdbProxy.setMemory(address, data).then(() => {
+						args.expression = 'm' + addrStr + ',' + data.length.toString(16);
+						return this.evaluateRequestGetMemory(response, args);
+					}).catch((err) => {
+						response.success = false;
+						response.message = err.toString();
+						this.sendResponse(response);
+					});
+				}).catch((err) => {
+					response.success = false;
+					response.message = err.toString();
+					this.sendResponse(response);
 				});
 			} else {
 				response.success = false;
