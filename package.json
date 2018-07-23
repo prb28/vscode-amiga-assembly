@@ -335,6 +335,7 @@
     },
     "dependencies": {
         "await-notify": "^1.0.1",
+        "ts-simple-mutex": "0.0.4",
         "vscode-debugadapter": "^1.30.0",
         "vscode-debugprotocol": "^1.29.0"
     }

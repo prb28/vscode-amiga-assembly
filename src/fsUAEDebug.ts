@@ -56,8 +56,14 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	/** Proxy to Gdb */
 	private gdbProxy: GdbProxy;
 
-	/** Variables map */
+	/** Variables references map */
 	private variableRefMap = new Map<number, DebugProtocol.Variable[]>();
+
+	/** Variables expression map */
+	private variableExpressionMap = new Map<string, number>();
+
+	/** All the symbols in the file */
+	private symbolsMap = new Map<string, number>();
 
 	/** Test mode activated */
 	private testMode = false;
@@ -186,20 +192,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.configurationDone.notify();
 	}
 
-	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
-		// make sure to set the buffered logging to warn if 'trace' is not set
-		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Warn, false);
-
-		// Showing the help text
-		logger.warn("Commands :");
-		logger.warn("    Memory dump:");
-		logger.warn("        m address, size[, wordSizeInBytes, rowSizeInWords]");
-		logger.warn("            example: m 5c50,10,2,4");
-		logger.warn("    Memory set:");
-		logger.warn("        M address, bytes");
-		logger.warn("            example: M 5c50,0ff534");
-
-		// Loads the debug info
+	protected loadDebugInfo(args: LaunchRequestArguments) {
 		let sMap = new Map<string, string>();
 		if (args.sourceFileMap) {
 			let keys = Object.keys(args.sourceFileMap);
@@ -212,6 +205,25 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		}
 		this.debugInfo = new DebugInfo(sMap);
 		this.debugInfo.loadInfo(args.program);
+	}
+
+	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
+		// make sure to set the buffered logging to warn if 'trace' is not set
+		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Log, false);
+
+		// Showing the help text
+		logger.warn("Commands :");
+		logger.warn("    Memory dump:");
+		logger.warn("        m address, size[, wordSizeInBytes, rowSizeInWords]");
+		logger.warn("            example: m 5c50,10,2,4");
+		logger.warn("        m ${register|symbol}, size[, wordSizeInBytes, rowSizeInWords]");
+		logger.warn("            example: m ${mycopperlabel},10,2,4");
+		logger.warn("    Memory set:");
+		logger.warn("        M address, bytes");
+		logger.warn("            example: M 5c50,0ff534");
+
+		// Loads the debug info
+		this.loadDebugInfo(args);
 
 		// Launch the emulator
 		this.startEmulator(args);
@@ -417,40 +429,21 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 						this.sendResponse(response);
 					}
 				} else if (id.startsWith("symbols_")) {
-					let self = this;
-					new Promise<Array<DebugProtocol.Variable>>(async (resolve, reject) => {
-						const variables = new Array<DebugProtocol.Variable>();
-						if (self.debugInfo) {
-							// Retrieve the segment address
-							let segAddress = 0;
-							let segs = self.gdbProxy.getSegments();
-							if (segs) {
-								segAddress = segs[0].address;
-							}
-							const symbols = self.debugInfo.getSymbols(undefined);
-							if (symbols) {
-								for (let i = 0; i < symbols.length; i++) {
-									let s = symbols[i];
-									variables.push({
-										name: s.name,
-										type: "symbol",
-										value: (segAddress + s.offset).toString(16),
-										variablesReference: 0
-									});
-								}
-							}
-						}
-						resolve(variables);
-					}).then((variables) => {
-						response.body = {
-							variables: variables
-						};
-						self.sendResponse(response);
-					}).catch(err => {
-						response.success = false;
-						response.message = err.toString();
-						self.sendResponse(response);
-					});
+					const variables = new Array<DebugProtocol.Variable>();
+					for (let entry of Array.from(this.symbolsMap.entries())) {
+						let key = entry[0];
+						let value = entry[1];
+						variables.push({
+							name: key,
+							type: "symbol",
+							value: value.toString(16),
+							variablesReference: 0
+						});
+					}
+					response.body = {
+						variables: variables
+					};
+					this.sendResponse(response);
 				}
 			}
 		}
@@ -529,13 +522,56 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.sendResponse(response);
 	}
 
+	protected getVariableValue(variableName: string): Promise<string> {
+		return new Promise<(any | null)>((resolve, reject) => {
+			// Is it a register?
+			let matches = /^[ad][0-7]$/i.exec(variableName);
+			if (matches) {
+				resolve(this.gdbProxy.getRegister(variableName));
+			} else {
+				// Is it a symbol?
+				let address = this.symbolsMap.get(variableName);
+				if (address !== undefined) {
+					// call to get the value in memory for this address
+					this.gdbProxy.getMemory(address, 4).then((memory) => {
+						resolve(memory);
+					}).catch(err => {
+						reject(err);
+					});
+				} else {
+					reject(new Error("Unknown symbol " + variableName));
+				}
+			}
+		});
+	}
+
+	private checkAddressForEvaluation(address: string): Promise<number> {
+		return new Promise<number>((resolve, reject) => {
+			if (address !== null) {
+				if (address.startsWith('$')) {
+					// It's a variable designation
+					let variable = address.substring(2, address.length - 1);
+					this.getVariableValue(variable).then(value => {
+						let v = parseInt(value, 16);
+						resolve(v);
+					}).catch(err => {
+						reject(err);
+					});
+				} else {
+					resolve(parseInt(address, 16));
+				}
+			} else {
+				reject(new Error("Invalid address"));
+			}
+		});
+	}
+
 	private evaluateRequestGetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-		const matches = /m\s*([0-9a-z]+)\s*,\s*([0-9]+)(,\s*([0-9]+),\s*([0-9]+))?(,([ab]+))?/i.exec(args.expression);
+		const matches = /m\s*([\{\}\$0-9a-z]+)\s*,\s*([0-9]+)(,\s*([0-9]+),\s*([0-9]+))?(,([ab]+))?/i.exec(args.expression);
 		if (matches) {
 			let rowLength = 4;
 			let wordLength = 4;
 			let mode = "ab";
-			let address = parseInt(matches[1], 16);
 			let length = parseInt(matches[2]);
 			if ((matches.length > 5) && matches[4] && matches[5]) {
 				wordLength = parseInt(matches[4]);
@@ -544,61 +580,76 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			if ((matches.length > 7) && matches[7]) {
 				mode = matches[7];
 			}
-			if ((address !== null) && (length !== null)) {
-				// ask for memory dump
-				this.gdbProxy.getMemory(address, length).then((memory) => {
-					let variables = new Array<DebugProtocol.Variable>();
-					let startAddress = address;
-					let chunks = this.chunk(memory.toString(), wordLength * 2);
-					let i = 0;
-					let rowCount = 0;
-					let row = "";
-					let firstRow = "";
-					while (i < chunks.length) {
-						if (rowCount > 0) {
-							row += " ";
-						}
-						row += chunks[i];
-						if ((rowCount >= rowLength - 1) || (i === chunks.length - 1)) {
-							if (mode.indexOf('a') >= 0) {
-								let asciiText = this.convertToASCII(row.replace(/\s+/g, ''));
-								if (mode.indexOf('b') >= 0) {
-									if ((i === chunks.length - 1) && (rowCount < rowLength - 1)) {
-										let chuksMissing = rowLength - 1 - rowCount;
-										let padding = chuksMissing * wordLength * 2 + chuksMissing;
-										for (let j = 0; j < padding; j++) {
-											row += " ";
+			if (length !== null) {
+				// reaplace the address if it is a variable
+				this.checkAddressForEvaluation(matches[1]).then((address) => {
+					// ask for memory dump
+					this.gdbProxy.getMemory(address, length).then((memory) => {
+						let variables = new Array<DebugProtocol.Variable>();
+						let startAddress = address;
+						let chunks = this.chunk(memory.toString(), wordLength * 2);
+						let i = 0;
+						let rowCount = 0;
+						let row = "";
+						let firstRow = "";
+						while (i < chunks.length) {
+							if (rowCount > 0) {
+								row += " ";
+							}
+							row += chunks[i];
+							if ((rowCount >= rowLength - 1) || (i === chunks.length - 1)) {
+								if (mode.indexOf('a') >= 0) {
+									let asciiText = this.convertToASCII(row.replace(/\s+/g, ''));
+									if (mode.indexOf('b') >= 0) {
+										if ((i === chunks.length - 1) && (rowCount < rowLength - 1)) {
+											let chuksMissing = rowLength - 1 - rowCount;
+											let padding = chuksMissing * wordLength * 2 + chuksMissing;
+											for (let j = 0; j < padding; j++) {
+												row += " ";
+											}
 										}
+										row += " | ";
+									} else {
+										row = "";
 									}
-									row += " | ";
-								} else {
-									row = "";
+									row += asciiText;
 								}
-								row += asciiText;
+								variables.push({
+									value: row,
+									name: this.padStartWith0(startAddress.toString(16), 8),
+									variablesReference: 0
+								});
+								if (firstRow.length <= 0) {
+									firstRow = row;
+								}
+								startAddress += rowCount * wordLength;
+								rowCount = 0;
+								row = "";
+							} else {
+								rowCount++;
 							}
-							variables.push({
-								value: row,
-								name: this.padStartWith0(startAddress.toString(16), 8),
-								variablesReference: 0
-							});
-							if (firstRow.length <= 0) {
-								firstRow = row;
-							}
-							startAddress += rowCount * wordLength;
-							rowCount = 0;
-							row = "";
-						} else {
-							rowCount++;
+							i++;
 						}
-						i++;
-					}
-					let key = this.variableHandles.create(args.expression);
-					this.variableRefMap.set(key, variables);
-					response.body = {
-						result: firstRow,
-						type: "array",
-						variablesReference: key,
-					};
+						let key = this.variableExpressionMap.get(args.expression);
+						if (!key) {
+							key = this.variableHandles.create(args.expression);
+						}
+						this.variableRefMap.set(key, variables);
+						this.variableExpressionMap.set(args.expression, key);
+						response.body = {
+							result: firstRow,
+							type: "array",
+							variablesReference: key,
+						};
+						this.sendResponse(response);
+					}).catch((err) => {
+						response.success = false;
+						response.message = err.toString();
+						this.sendResponse(response);
+					});
+				}).catch((err) => {
+					response.success = false;
+					response.message = err.toString();
 					this.sendResponse(response);
 				});
 			} else {
@@ -638,7 +689,6 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 
 	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
 		// Evaluate an expression
-		// Evaluate an expression
 		let matches = /^[ad][0-7]$/i.exec(args.expression);
 		if (matches) {
 			return this.evaluateRequestRegister(response, args);
@@ -654,15 +704,21 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	 * 
 	 *@param segment The list of returned segments from the debugger 
 	 */
-	private updateSegments(segments: Array<Segment>) {
+	public updateSegments(segments: Array<Segment>) {
 		let posSegment = 0;
 		if (this.debugInfo) {
+			let address = segments[posSegment].address;
 			for (let hunk of this.debugInfo.hunks) {
 				if (posSegment >= this.debugInfo.hunks.length) {
 					break;
 				}
 				hunk.segmentsId = posSegment;
-				hunk.segmentsAddress = segments[posSegment].address;
+				hunk.segmentsAddress = address;
+			}
+			// Retrieve the symbols
+			const symbols = this.debugInfo.getSymbols(undefined);
+			for (let s of symbols) {
+				this.symbolsMap.set(s.name, s.offset + address);
 			}
 		}
 	}

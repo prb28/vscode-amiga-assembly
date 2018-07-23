@@ -6,8 +6,8 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import { LaunchRequestArguments, FsUAEDebugSession } from '../fsUAEDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
-import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister } from '../gdbProxy';
-import { spy, anyString, instance, when, anything, mock, anyNumber } from 'ts-mockito';
+import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister, Segment } from '../gdbProxy';
+import { spy, anyString, instance, when, anything, mock, anyNumber, reset } from 'ts-mockito';
 import { Executor } from '../executor';
 
 describe('Node Debug Adapter', () => {
@@ -33,7 +33,7 @@ describe('Node Debug Adapter', () => {
 	let session: FsUAEDebugSession;
 	let spiedSession: FsUAEDebugSession;
 	let dc: DebugClient;
-	let server: any;
+	let server: Net.Server;
 	let mockedGdbProxy: GdbProxy;
 	let gdbProxy: GdbProxy;
 	let mockedExecutor: Executor;
@@ -80,8 +80,18 @@ describe('Node Debug Adapter', () => {
 
 	afterEach(function () {
 		session.terminate();
+		reset(mockedExecutor);
+		reset(mockedGdbProxy);
+		reset(spiedSession);
 		return dc.stop();
 	});
+
+	after(function () {
+		session.removeAllListeners();
+		session.shutdown();
+		server.close();
+	});
+
 
 
 	describe('basic', function () {
@@ -283,6 +293,10 @@ describe('Node Debug Adapter', () => {
 							cb();
 						}
 					}, 20);
+					session.updateSegments([<Segment>{
+						address: 10,
+						size: 20
+					}]);
 					return Promise.resolve();
 				});
 				when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
@@ -301,11 +315,18 @@ describe('Node Debug Adapter', () => {
 					}],
 					count: 1
 				});
+				when(mockedGdbProxy.getRegister(anyString())).thenReturn("a");
 				when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
 					name: "d0",
 					value: 1
+				}, <GdbRegister>{
+					name: "a0",
+					value: 10
 				}]));
-				when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
+				when(mockedGdbProxy.getMemory(0, anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
+				when(mockedGdbProxy.getMemory(10, anyNumber())).thenReturn(Promise.resolve("aa00000000c00b0000f8"));
+				when(mockedGdbProxy.getMemory(422, anyNumber())).thenReturn(Promise.resolve("0000000b")); // 422 = 19c + 10
+				when(mockedGdbProxy.getMemory(11, anyNumber())).thenReturn(Promise.resolve("bb00000000c00b0000f8"));
 			}
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
@@ -315,11 +336,20 @@ describe('Node Debug Adapter', () => {
 				dc.launch(launchArgsCopy),
 				dc.assertStoppedLocation('entry', { line: 33 })
 			]);
-			const evaluateResponse = await dc.evaluateRequest({
+			let evaluateResponse = await dc.evaluateRequest({
 				expression: "m0,10"
 			});
 			expect(evaluateResponse.body.type).to.equal('array');
 			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | ..........');
+			// Test variable replacement
+			evaluateResponse = await dc.evaluateRequest({
+				expression: "m${a0},10"
+			});
+			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª.........');
+			evaluateResponse = await dc.evaluateRequest({
+				expression: "m ${copperlist},10"
+			});
+			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
 		});
 	});
 	describe.skip('setExceptionBreakpoints', function () {

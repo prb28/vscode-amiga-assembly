@@ -1,6 +1,6 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
-import { logger } from 'vscode-debugadapter';
+import { Mutex } from 'ts-simple-mutex';
 
 /** Interface for a breakpoint */
 export interface GdbBreakpoint {
@@ -87,6 +87,11 @@ export class GdbProxy extends EventEmitter {
     private firstStop = true;
     /** Map of the last register values */
     private lastRegisters = new Map<string, string>();
+    /** Mutex to just have one call to gdb */
+    private mutex = new Mutex({
+        autoUnlockTimeoutMs: 1200,
+        intervalMs: 100,
+    });
 
     /**
      * Constructor 
@@ -203,7 +208,7 @@ export class GdbProxy extends EventEmitter {
      * @param data Data to parse
      */
     private onData(proxy: GdbProxy, data: any): Promise<void> {
-        logger.log("<---" + data.toString());
+        //console.log("<---" + data.toString());
         return new Promise(async (resolve, reject) => {
             for (let packet of GdbProxy.parseData(data)) {
                 switch (packet.type) {
@@ -221,7 +226,7 @@ export class GdbProxy extends EventEmitter {
                         break;
                     case GdbPacketType.MINUS:
                         // TODO: Send last message
-                        logger.error("Unsupported packet : '-'");
+                        console.error("Unsupported packet : '-'");
                         proxy.sendEvent("error", new Error("Unsupported packet : '-'"));
                         break;
                     case GdbPacketType.OK:
@@ -229,7 +234,7 @@ export class GdbProxy extends EventEmitter {
                         break;
                     case GdbPacketType.UNKNOWN:
                     default:
-                        //logger.trace("Packet ignored by onData : " + packet.message);
+                        ////console.log("Packet ignored by onData : " + packet.message);
                         break;
                 }
             }
@@ -310,7 +315,7 @@ export class GdbProxy extends EventEmitter {
      * @return a Promise with the response contents - or a rejection
      */
     public sendPacketString(text: string): Promise<string> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             var data = new Buffer(text.length + 5);
             let offset = 0;
             data.write('$', offset++);
@@ -320,9 +325,11 @@ export class GdbProxy extends EventEmitter {
             data.write(GdbProxy.calculateChecksum(text), offset);
             offset += 2;
             data.writeInt8(0, offset);
-            logger.log(" --->" + data.toString());
+            //console.log(" --->" + data.toString());
+            const unlock = await this.mutex.capture('key');
             this.socket.write(data);
             this.socket.once('data', (data) => {
+                unlock();
                 let packets = GdbProxy.parseData(data);
                 let firstMessage = null;
                 for (let packet of packets) {
@@ -339,6 +346,7 @@ export class GdbProxy extends EventEmitter {
                 }
             });
             this.socket.once('error', (err) => {
+                unlock();
                 reject(err);
             });
         });
@@ -379,7 +387,7 @@ export class GdbProxy extends EventEmitter {
                 this.pendingBreakpoints = new Array<GdbBreakpoint>();
             }
             this.pendingBreakpoints.push(bp);
-            logger.log("Breakpoint added to pending: " + segmentId + "," + offset);
+            //console.log("Breakpoint added to pending: " + segmentId + "," + offset);
             return Promise.resolve(bp);
         }
     }
@@ -497,7 +505,7 @@ export class GdbProxy extends EventEmitter {
     public registers(): Promise<Array<GdbRegister>> {
         this.lastRegisters.clear();
         return this.sendPacketString('g').then(message => {
-            //logger.log("register : " + data.toString());
+            //console.trace("register : " + data.toString());
             let registers = new Array<GdbRegister>();
             let pos = 0;
             let letter = 'd';

@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import * as chai from 'chai';
 import { GdbProxy, GdbBreakpoint, GdbRegister, GdbStackPosition, GdbStackFrame } from '../gdbProxy';
 import { Socket } from 'net';
-import { spy, verify, anyString, instance, when, anything, mock } from 'ts-mockito';
+import { spy, verify, anyString, instance, when, anything, mock, reset } from 'ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
 
 chai.use(chaiAsPromised);
@@ -67,6 +67,9 @@ describe("GdbProxy Tests", function () {
             socket = instance(mockedSocket);
             proxy = new GdbProxy(socket);
             spiedProxy = spy(proxy);
+        });
+        afterEach(function () {
+            reset(mockedSocket);
         });
         it("Should connect to fs-UAE", async function () {
             when(spiedProxy.sendPacketString(anyString())).thenResolve(RESPONSE_OK);
