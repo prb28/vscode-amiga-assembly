@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { statusManager } from '../extension';
-import { spy, verify, anyString, when } from 'ts-mockito';
+import { spy, verify, anyString, when } from 'ts-mockito/lib/ts-mockito';
 import * as vscode from 'vscode';
 
 // tslint:disable:no-unused-expression
@@ -28,9 +28,9 @@ describe("Status Tests", function () {
             // dispose
             let spiedDiag = spy(statusManager.diagnosticsStatusBarItem);
             let spiedOutput = spy(statusManager.outputChannel);
-            when(spiedDiag.dispose()).thenCall(()=>{});
-            when(spiedOutput.dispose()).thenCall(()=>{});
-            when(spiedStatusBarEntry.dispose()).thenCall(()=>{});
+            when(spiedDiag.dispose()).thenCall(() => { });
+            when(spiedOutput.dispose()).thenCall(() => { });
+            when(spiedStatusBarEntry.dispose()).thenCall(() => { });
             statusManager.dispose();
             verify(spiedDiag.dispose()).once();
             verify(spiedOutput.dispose()).once();

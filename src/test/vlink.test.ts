@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as fs from "fs";
-import { capture, reset, spy, verify, anyString, when, anything } from 'ts-mockito';
+import { capture, reset, spy, verify, anyString, when, anything } from 'ts-mockito/lib/ts-mockito';
 import { VLINKParser, VLINKLinker } from '../vlink';
 import { Executor } from '../executor';
 

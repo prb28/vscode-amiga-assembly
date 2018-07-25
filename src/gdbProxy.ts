@@ -1,6 +1,6 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
-import { Mutex } from 'ts-simple-mutex';
+import { Mutex } from 'ts-simple-mutex/build';
 
 /** Interface for a breakpoint */
 export interface GdbBreakpoint {

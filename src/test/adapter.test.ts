@@ -1,13 +1,13 @@
 import assert = require('assert');
 import { expect } from 'chai';
 import * as Path from 'path';
-import { DebugClient } from 'vscode-debugadapter-testsupport';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugClient } from 'vscode-debugadapter-testsupport/lib/main';
+import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { LaunchRequestArguments, FsUAEDebugSession } from '../fsUAEDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
 import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister, Segment } from '../gdbProxy';
-import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls } from 'ts-mockito';
+import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { Executor } from '../executor';
 
 describe('Node Debug Adapter', () => {

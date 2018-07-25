@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
-import { capture, spy, verify, anyString, instance, when, anything, mock, resetCalls } from 'ts-mockito';
+import { capture, spy, verify, anyString, instance, when, anything, mock, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { Executor, ExecutorParser, ICheckResult } from '../executor';
 import { statusManager, errorDiagnosticCollection, warningDiagnosticCollection } from '../extension';
 import { DummyTextDocument } from './dummy';

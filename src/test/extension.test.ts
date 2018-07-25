@@ -8,7 +8,7 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { spy, verify, anyString, capture, when, anything, resetCalls } from 'ts-mockito';
+import { spy, verify, anyString, capture, when, anything, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import * as extension from '../extension';
 
 // Defines a Mocha test suite to group tests of similar kind together

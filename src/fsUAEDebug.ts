@@ -3,8 +3,8 @@ import {
 	LoggingDebugSession,
 	InitializedEvent, TerminatedEvent, StoppedEvent, BreakpointEvent,
 	Thread, StackFrame, Scope, Source, Handles
-} from 'vscode-debugadapter';
-import { DebugProtocol } from 'vscode-debugprotocol';
+} from 'vscode-debugadapter/lib/main';
+import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
 import { GdbProxy, GdbStackFrame, GdbRegister, GdbBreakpoint, Segment, GdbStackPosition } from './gdbProxy';
 import { Executor } from './executor';
@@ -73,7 +73,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	/** Executor to run fs-uae */
 	private executor: Executor;
 
-	/** TOken to cancle the emulator */
+	/** Token to cancle the emulator */
 	private cancellationTokenSource?: CancellationTokenSource;
 
 	/** Debug information for the loaded program */

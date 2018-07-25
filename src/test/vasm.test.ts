@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
-import { capture, spy, verify, anyString, when, anything, resetCalls } from 'ts-mockito';
+import { capture, spy, verify, anyString, when, anything, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { VASMCompiler, VASMParser, VASMController } from '../vasm';
 import { Executor, ICheckResult } from '../executor';
 import { DummyTextDocument } from './dummy';
