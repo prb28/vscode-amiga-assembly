@@ -176,11 +176,13 @@ describe("Parser Tests", function () {
         });
         it("Should display a binarry correctly", function () {
             let np = new NumberParser();
-            expect(np.binaryToString(3840)).to.be.equal("1111.00000000");
+            expect(np.binaryToString(3840, true)).to.be.equal("1111.00000000");
+            expect(np.binaryToString(3840, false)).to.be.equal("111100000000");
         });
         it("Should display an hex correctly", function () {
             let np = new NumberParser();
-            expect(np.hexToString(703710)).to.be.equal("a.bcde");
+            expect(np.hexToString(703710, true)).to.be.equal("a.bcde");
+            expect(np.hexToString(703710, false)).to.be.equal("abcde");
         });
     });
 });

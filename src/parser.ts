@@ -345,22 +345,31 @@ export class NumberParser {
         return ret;
     }
 
-    public binaryToString(num: number): string {
+    public binaryToString(num: number, chunk: boolean): string {
         let bin;
         if (num < 0) {
             bin = (num >>> 0).toString(2);
         } else {
             bin = num.toString(2);
         }
-        return this.chunk(bin, 8).join('.');
+        if (chunk) {
+            return this.chunk(bin, 8).join('.');
+        } else {
+            return bin;
+        }
     }
-    public hexToString(num: number): string {
+
+    public hexToString(num: number, chunk: boolean): string {
         let hex;
         if (num < 0) {
             hex = (num >>> 0).toString(16);
         } else {
             hex = num.toString(16);
         }
-        return this.chunk(hex, 4).join('.');
+        if (chunk) {
+            return this.chunk(hex, 4).join('.');
+        } else {
+            return hex;
+        }
     }
 }

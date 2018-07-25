@@ -112,9 +112,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             // Transform to hex
             let dec = value.toString(10);
             // Transform to hex
-            let hex = this.numberParser.hexToString(value);
+            let hex = this.numberParser.hexToString(value, true);
             // Transform to bin
-            let bin = this.numberParser.binaryToString(value);
+            let bin = this.numberParser.binaryToString(value, true);
             return new vscode.MarkdownString("#`" + dec + "` - $`" + hex + "` - %`" + bin + "`");
         }
         return null;

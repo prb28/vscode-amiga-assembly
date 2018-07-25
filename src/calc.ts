@@ -39,9 +39,9 @@ export class Calc {
             // Transform to hex
             let dec = result.toString(10);
             // Transform to hex
-            let hex = this.numberParser.hexToString(result);
+            let hex = this.numberParser.hexToString(result, false);
             // Transform to bin
-            let bin = this.numberParser.binaryToString(result);
+            let bin = this.numberParser.binaryToString(result, false);
             // Format the text
             s = "#" + dec + "/$" + hex + "/%" + bin;
             if (expression) {

@@ -16,7 +16,7 @@ describe("Calc Tests", function () {
     it("Should format a result", function () {
         let c = new Calc();
         expect(c.formatResult("3+2", 5)).to.be.equal("3+2=#5/$5/%101");
-        expect(c.formatResult(null, 2145)).to.be.equal("#2145/$861/%1000.01100001");
-        expect(c.formatResult("$1000+$100", 4352)).to.be.equal("$1000+$100=#4352/$1100/%10001.00000000");
+        expect(c.formatResult(null, 2145)).to.be.equal("#2145/$861/%100001100001");
+        expect(c.formatResult("$1000+$100", 4352)).to.be.equal("$1000+$100=#4352/$1100/%1000100000000");
     });
 });
