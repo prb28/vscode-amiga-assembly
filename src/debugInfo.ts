@@ -1,4 +1,5 @@
 import { Hunk, HunkParser, SourceLine, Symbol } from './amigaHunkParser';
+import * as fs from 'fs';
 
 export class DebugInfo {
     public hunks = new Array<Hunk>();
@@ -8,9 +9,15 @@ export class DebugInfo {
         this.pathReplacements = pathReplacements;
     }
 
-    public loadInfo(filePath: string) {
-        let parser = new HunkParser();
-        this.hunks = parser.parse_file(filePath);
+    public loadInfo(filePath: string): boolean {
+        // Does the file exists
+        if (fs.existsSync(filePath)) {
+            let parser = new HunkParser();
+            this.hunks = parser.parse_file(filePath);
+            return true;
+        } else {
+            return false;
+        }
     }
     public getSymbols(filename: string | undefined): Symbol[] {
         let symbols = Array<Symbol>();

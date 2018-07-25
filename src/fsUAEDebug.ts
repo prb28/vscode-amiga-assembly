@@ -192,7 +192,10 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.configurationDone.notify();
 	}
 
-	protected loadDebugInfo(args: LaunchRequestArguments) {
+	/**
+	 * Load the program with all the debug information
+	 */
+	protected loadDebugInfo(args: LaunchRequestArguments): boolean {
 		let sMap = new Map<string, string>();
 		if (args.sourceFileMap) {
 			let keys = Object.keys(args.sourceFileMap);
@@ -204,12 +207,19 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			}
 		}
 		this.debugInfo = new DebugInfo(sMap);
-		this.debugInfo.loadInfo(args.program);
+		return this.debugInfo.loadInfo(args.program);
 	}
 
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
 		// make sure to set the buffered logging to warn if 'trace' is not set
 		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Log, false);
+
+		// Does the program exists ? -> Loads the debug info
+		if ((!args.program) || (!this.loadDebugInfo(args))) {
+			response.success = false;
+			response.message = "Invalid program to debug - review launch settings";
+			this.sendResponse(response);
+		}
 
 		// Showing the help text
 		logger.warn("Commands:");
@@ -224,9 +234,6 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		logger.warn("            example: M 5c50=0ff534");
 		logger.warn("        M ${register|symbol}=bytes");
 		logger.warn("            example: M ${mycopperlabel}=0ff534");
-
-		// Loads the debug info
-		this.loadDebugInfo(args);
 
 		// Launch the emulator
 		this.startEmulator(args);
