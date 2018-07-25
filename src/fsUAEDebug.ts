@@ -40,6 +40,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	drive: string;
 	/** path replacements for source files */
 	sourceFileMap?: Object;
+	/** Build the workspace before debug */
+	buildWorkspace?: boolean;
 }
 
 export class FsUAEDebugSession extends LoggingDebugSession {
