@@ -301,6 +301,67 @@
                 "variables": {
                     "AskForProgramName": "amiga-assembly.getProgramName"
                 }
+            },
+            {
+                "type": "fs-uae-run",
+                "label": "FS-UAE Run",
+                "program": "./out/runNoDebugAdapter.js",
+                "runtime": "node",
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "emulator",
+                            "conf"
+                        ],
+                        "properties": {
+                            "emulator": {
+                                "type": "string",
+                                "description": "Path to the fs-uae emulator.",
+                                "default": "Path to fs-uae executable"
+                            },
+                            "conf": {
+                                "type": "string",
+                                "description": "Path to a fs-uae configuration file.",
+                                "default": "Path to a .fs-uae configuration"
+                            },
+                            "buildWorkspace": {
+                                "type": "boolean",
+                                "description": "Build workspace before launch.",
+                                "default": true
+                            },
+                            "trace": {
+                                "type": "boolean",
+                                "description": "Enable logging of the Debug Adapter Protocol.",
+                                "default": true
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "fs-uae-run",
+                        "request": "launch",
+                        "name": "Run",
+                        "startEmulator": true,
+                        "emulator": "fs-uae",
+                        "conf": "configuration/dev.fs-uae",
+                        "buildWorkspace": true
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "FS-UAE Run",
+                        "description": "A new configuration for running FS-UAE.",
+                        "body": {
+                            "type": "fs-uae-run",
+                            "request": "launch",
+                            "name": "Run",
+                            "emulator": "Path to fs-uae executable file",
+                            "conf": "Path to fs-uae fs-uae configuration file",
+                            "buildWorkspace": true
+                        }
+                    }
+                ]
             }
         ]
     },

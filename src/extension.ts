@@ -9,6 +9,7 @@ import { VASMCompiler, VASMController } from './vasm';
 import { StatusManager } from "./status";
 import { FsUAEDebugSession } from './fsUAEDebug';
 import * as Net from 'net';
+import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -128,6 +129,9 @@ export function activate(context: vscode.ExtensionContext) {
     const provider = new FsUAEConfigurationProvider();
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', provider));
     context.subscriptions.push(provider);
+    const runProvider = new RunFsUAEConfigurationProvider();
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae-run', runProvider));
+    context.subscriptions.push(runProvider);
     statusManager.outputChannel.appendLine("------> done");
 }
 
@@ -137,7 +141,7 @@ export function deactivate() {
 
 class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
 
-    private _server?: Net.Server;
+    private server?: Net.Server;
 
 	/**
 	 * Massage a debug configuration just before a debug session is being launched,
@@ -186,24 +190,66 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
     private setSession(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
         if (EMBED_DEBUG_ADAPTER) {
             // start port listener on launch of first debug session
-            if (!this._server) {
-
+            if (!this.server) {
                 // start listening on a random port
-                this._server = Net.createServer(socket => {
+                this.server = Net.createServer(socket => {
                     const session = new FsUAEDebugSession();
                     session.setRunAsServer(true);
                     session.start(<NodeJS.ReadableStream>socket, socket);
                 }).listen(0);
             }
             // make VS Code connect to debug server instead of launching debug adapter
-            config.debugServer = this._server.address().port;
+            config.debugServer = this.server.address().port;
         }
         return config;
     }
 
     dispose() {
-        if (this._server) {
-            this._server.close();
+        if (this.server) {
+            this.server.close();
+        }
+    }
+}
+
+class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
+    private server?: Net.Server;
+	/**
+	 * Massage a debug configuration just before a debug session is being launched,
+	 * e.g. add all missing attributes to the debug configuration.
+	 */
+    resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
+
+        // if launch.json is missing or empty
+        if (!config.type && !config.request && !config.name) {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document.languageId === 'm68k') {
+                config.type = 'fs-uae-run';
+                config.name = 'Launch';
+                config.request = 'launch';
+                config.emulator = "fs-uae";
+                config.conf = "configuration/dev.fs-uae";
+                config.buildWorkspace = true;
+            }
+        }
+        if (EMBED_DEBUG_ADAPTER) {
+            // start port listener on launch of first debug session
+            if (!this.server) {
+                // start listening on a random port
+                this.server = Net.createServer(socket => {
+                    const session = new RunFsUAENoDebugSession();
+                    session.setRunAsServer(true);
+                    session.start(<NodeJS.ReadableStream>socket, socket);
+                }).listen(0);
+            }
+            // make VS Code connect to debug server instead of launching debug adapter
+            config.debugServer = this.server.address().port;
+        }
+        return config;
+    }
+
+    dispose() {
+        if (this.server) {
+            this.server.close();
         }
     }
 }
