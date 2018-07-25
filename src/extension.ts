@@ -98,6 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vController);
     // Build the workspace
     disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', () => {
+
         statusManager.onDefault();
         return compiler.buildWorkspace().then(() => {
             statusManager.onSuccess();
@@ -118,8 +119,8 @@ export function activate(context: vscode.ExtensionContext) {
     // Debug configuration
     context.subscriptions.push(vscode.commands.registerCommand('amiga-assembly.getProgramName', config => {
         return vscode.window.showInputBox({
-            placeHolder: "Please enter the name of a markdown file in the workspace folder",
-            value: "readme.md"
+            placeHolder: "Please enter the name of a program file in the workspace folder",
+            value: "myprogram"
         });
     }));
 
@@ -148,12 +149,18 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (!config.type && !config.request && !config.name) {
             const editor = vscode.window.activeTextEditor;
             if (editor && editor.document.languageId === 'm68k') {
-                //TODO : fill this
                 config.type = 'fs-uae';
                 config.name = 'Launch';
                 config.request = 'launch';
                 config.program = '${file}';
                 config.stopOnEntry = true;
+                config.startEmulator = true;
+                config.emulator = "fs-uae";
+                config.program = "${workspaceFolder}/${command:AskForProgramName}";
+                config.conf = "configuration/dev.fs-uae";
+                config.buildWorkspace = true;
+                config.serverName = "localhost";
+                config.serverPort = 6860;
             }
         }
 
@@ -163,6 +170,20 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
             });
         }
 
+        const self = this;
+        if (config.buildWorkspace) {
+            return vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace").then(() => {
+                return self.setSession(folder, config, token);
+            });
+        } else {
+            return this.setSession(folder, config, token);
+        }
+    }
+
+    /**
+     * Sets the session config
+     */
+    private setSession(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
         if (EMBED_DEBUG_ADAPTER) {
             // start port listener on launch of first debug session
             if (!this._server) {
@@ -174,11 +195,9 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
                     session.start(<NodeJS.ReadableStream>socket, socket);
                 }).listen(0);
             }
-
             // make VS Code connect to debug server instead of launching debug adapter
             config.debugServer = this._server.address().port;
         }
-
         return config;
     }
 

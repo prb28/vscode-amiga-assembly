@@ -229,6 +229,11 @@
                                 "description": "Path to a directory containing the virtual fs-uae drive.",
                                 "default": "Path to a virtual drive directory."
                             },
+                            "buildWorkspace": {
+                                "type": "boolean",
+                                "description": "Build workspace before launch.",
+                                "default": true
+                            },
                             "stopOnEntry": {
                                 "type": "boolean",
                                 "description": "Automatically stop after launch.",
@@ -263,11 +268,12 @@
                     {
                         "type": "fs-uae",
                         "request": "launch",
-                        "name": "Ask for file name",
+                        "name": "Launch",
                         "startEmulator": true,
                         "emulator": "fs-uae",
                         "program": "${workspaceFolder}/${command:AskForProgramName}",
                         "conf": "configuration/dev.fs-uae",
+                        "buildWorkspace": true,
                         "stopOnEntry": true,
                         "serverName": "localhost",
                         "serverPort": 6860
@@ -280,11 +286,12 @@
                         "body": {
                             "type": "fs-uae",
                             "request": "launch",
-                            "name": "Ask for file name",
+                            "name": "Launch",
                             "startEmulator": true,
                             "emulator": "Path to fs-uae executable file",
                             "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
                             "conf": "Path to fs-uae fs-uae configuration file",
+                            "buildWorkspace": true,
                             "stopOnEntry": true,
                             "serverName": "localhost",
                             "serverPort": 6860
