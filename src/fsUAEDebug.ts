@@ -214,7 +214,8 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		// Showing the help text
 		logger.warn("Commands:");
 		logger.warn("    Memory dump:");
-		logger.warn("        m address, size[, wordSizeInBytes, rowSizeInWords]");
+		logger.warn("        m address, size[, wordSizeInBytes, rowSizeInWords,ab]");
+		logger.warn("        			a: show ascii output, b: show bytes output");
 		logger.warn("            example: m 5c50,10,2,4");
 		logger.warn("        m ${register|symbol}, size[, wordSizeInBytes, rowSizeInWords]");
 		logger.warn("            example: m ${mycopperlabel},10,2,4");
