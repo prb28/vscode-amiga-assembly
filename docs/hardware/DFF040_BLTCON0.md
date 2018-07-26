@@ -2,9 +2,8 @@
 
 These two control registers are used together to control blitter operations. There are 2 basic modes, are and line, which are selected by bit 0 of BLTCON1, as show below.
 
-| AREA MODE| LINE MODE  |
-|---|---  |
-|Bit| BLTCON0| BLTCON1| Bit| BLTCON0| BLTCON1  |
+|AREA MODE Bit| BLTCON0| BLTCON1|LINE MODE Bit| BLTCON0| BLTCON1  |
+|---:|---|---|---:|---|---|
 |15| ASH3| BSH3| 15| ASH3| BSH3  |
 |14| ASH2| BSH2| 14| ASH2| BSH2  |
 |13| ASH1| BSH1| 13| ASH1| BSH1  |
