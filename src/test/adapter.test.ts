@@ -24,7 +24,7 @@ describe('Node Debug Adapter', () => {
 		serverPort: 6860,
 		startEmulator: true,
 		emulator: Path.join(FSUAE_ROOT, 'fs-uae'),
-		conf: Path.join(FSUAE_ROOT, 'test.fs-uae'),
+		options: [Path.join(FSUAE_ROOT, 'test.fs-uae')],
 		drive: Path.join(FSUAE_ROOT, 'hd0'),
 		sourceFileMap: {
 			"/Users/papa/developpements/amiga/projects/helloworld": DATA_ROOT

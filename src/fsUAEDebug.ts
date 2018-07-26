@@ -34,10 +34,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	startEmulator: boolean;
 	/** emulator program */
 	emulator?: string;
-	/** configuration file */
-	conf: string;
-	/** drive */
-	drive: string;
+	/** Emulator options */
+	options: Array<string>;
 	/** path replacements for source files */
 	sourceFileMap?: Object;
 	/** Build the workspace before debug */
@@ -275,8 +273,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			logger.warn("Starting emulator: " + args.emulator);
 			this.cancellationTokenSource = new CancellationTokenSource();
 			if (args.emulator) {
-				let pargs = [args.conf];
-				this.executor.runTool(pargs, null, "warning", true, args.emulator, null, true, null, this.cancellationTokenSource.token).then(() => {
+				this.executor.runTool(args.options, null, "warning", true, args.emulator, null, true, null, this.cancellationTokenSource.token).then(() => {
 					this.sendEvent(new TerminatedEvent());
 				}).catch(err => {
 					this.sendEvent(new TerminatedEvent());

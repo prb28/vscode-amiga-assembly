@@ -219,16 +219,6 @@
                                 "description": "Path to the fs-uae emulator.",
                                 "default": "Path to fs-uae executable"
                             },
-                            "conf": {
-                                "type": "string",
-                                "description": "Path to a fs-uae configuration file.",
-                                "default": "Path to a .fs-uae configuration"
-                            },
-                            "drive": {
-                                "type": "string",
-                                "description": "Path to a directory containing the virtual fs-uae drive.",
-                                "default": "Path to a virtual drive directory."
-                            },
                             "buildWorkspace": {
                                 "type": "boolean",
                                 "description": "Build workspace before launch.",
@@ -260,6 +250,15 @@
                                 "default": {
                                     "<source-path>": "<target-path>"
                                 }
+                            },
+                            "options": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "title": "Emulator option"
+                                },
+                                "default": [],
+                                "description": "Emulator options"
                             }
                         }
                     }
@@ -269,14 +268,22 @@
                         "type": "fs-uae",
                         "request": "launch",
                         "name": "Launch",
-                        "startEmulator": true,
-                        "emulator": "fs-uae",
-                        "program": "${workspaceFolder}/${command:AskForProgramName}",
-                        "conf": "configuration/dev.fs-uae",
                         "buildWorkspace": true,
                         "stopOnEntry": true,
                         "serverName": "localhost",
-                        "serverPort": 6860
+                        "serverPort": 6860,
+                        "startEmulator": true,
+                        "emulator": "fs-uae",
+                        "program": "${workspaceFolder}/${command:AskForProgramName}",
+                        "options": [
+                            "--chip_memory=1024",
+                            "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
+                            "--joystick_port_1=none",
+                            "--amiga_model=A1200",
+                            "--slow_memory=1792",
+                            "--remote_debugger=200",
+                            "--use_remote_debugger=true"
+                        ]
                     }
                 ],
                 "configurationSnippets": [
@@ -287,14 +294,22 @@
                             "type": "fs-uae",
                             "request": "launch",
                             "name": "Launch",
-                            "startEmulator": true,
-                            "emulator": "Path to fs-uae executable file",
-                            "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
-                            "conf": "Path to fs-uae fs-uae configuration file",
                             "buildWorkspace": true,
                             "stopOnEntry": true,
                             "serverName": "localhost",
-                            "serverPort": 6860
+                            "serverPort": 6860,
+                            "startEmulator": true,
+                            "emulator": "Path to fs-uae executable file",
+                            "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
+                            "options": [
+                                "--chip_memory=1024",
+                                "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
+                                "--joystick_port_1=none",
+                                "--amiga_model=A1200",
+                                "--slow_memory=1792",
+                                "--remote_debugger=200",
+                                "--use_remote_debugger=true"
+                            ]
                         }
                     }
                 ],
@@ -319,11 +334,6 @@
                                 "description": "Path to the fs-uae emulator.",
                                 "default": "Path to fs-uae executable"
                             },
-                            "conf": {
-                                "type": "string",
-                                "description": "Path to a fs-uae configuration file.",
-                                "default": "Path to a .fs-uae configuration"
-                            },
                             "buildWorkspace": {
                                 "type": "boolean",
                                 "description": "Build workspace before launch.",
@@ -333,6 +343,15 @@
                                 "type": "boolean",
                                 "description": "Enable logging of the Debug Adapter Protocol.",
                                 "default": true
+                            },
+                            "options": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "title": "Emulator option"
+                                },
+                                "default": [],
+                                "description": "Emulator options"
                             }
                         }
                     }
@@ -342,10 +361,15 @@
                         "type": "fs-uae-run",
                         "request": "launch",
                         "name": "Run",
-                        "startEmulator": true,
+                        "buildWorkspace": true,
                         "emulator": "fs-uae",
-                        "conf": "configuration/dev.fs-uae",
-                        "buildWorkspace": true
+                        "options": [
+                            "--chip_memory=1024",
+                            "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
+                            "--joystick_port_1=none",
+                            "--amiga_model=A1200",
+                            "--slow_memory=1792"
+                        ]
                     }
                 ],
                 "configurationSnippets": [
@@ -356,9 +380,15 @@
                             "type": "fs-uae-run",
                             "request": "launch",
                             "name": "Run",
+                            "buildWorkspace": true,
                             "emulator": "Path to fs-uae executable file",
-                            "conf": "Path to fs-uae fs-uae configuration file",
-                            "buildWorkspace": true
+                            "options": [
+                                "--chip_memory=1024",
+                                "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
+                                "--joystick_port_1=none",
+                                "--amiga_model=A1200",
+                                "--slow_memory=1792"
+                            ]
                         }
                     }
                 ]

@@ -24,14 +24,12 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	program: string;
 	/** enable logging the Debug Adapter Protocol */
 	trace?: boolean;
-	/** emulator program */
-	emulator?: string;
-	/** configuration file */
-	conf: string;
-	/** drive */
-	drive: string;
 	/** Build the workspace before debug */
 	buildWorkspace?: boolean;
+	/** emulator program */
+	emulator?: string;
+	/** Emulator options */
+	options: Array<string>;
 }
 export class RunFsUAENoDebugSession extends LoggingDebugSession {
 	private configurationDone = new Subject();
@@ -62,16 +60,13 @@ export class RunFsUAENoDebugSession extends LoggingDebugSession {
 
 		// build and return the capabilities of this debug adapter:
 		response.body = response.body || {};
-
-		// the adapter implements the configurationDoneRequest.
 		response.body.supportsConfigurationDoneRequest = true;
-
-		// make VS Code to use 'evaluate' when hovering over source
-		response.body.supportsEvaluateForHovers = true;
-
-		// make VS Code to show a 'step back' button
-		response.body.supportsStepBack = true;
-
+		response.body.supportsEvaluateForHovers = false;
+		response.body.supportsStepBack = false;
+		response.body.supportsRestartFrame = false;
+		response.body.supportsConditionalBreakpoints = false;
+		response.body.supportsSetExpression = false;
+		response.body.supportsSetVariable = false;
 		this.sendResponse(response);
 
 		// since this debug adapter can accept configuration requests like 'setBreakpoint' at any time,
@@ -107,8 +102,7 @@ export class RunFsUAENoDebugSession extends LoggingDebugSession {
 		logger.warn("Starting emulator: " + args.emulator);
 		this.cancellationTokenSource = new CancellationTokenSource();
 		if (args.emulator) {
-			let pargs = [args.conf];
-			this.executor.runTool(pargs, null, "warning", true, args.emulator, null, true, null, this.cancellationTokenSource.token).then(() => {
+			this.executor.runTool(args.options, null, "warning", true, args.emulator, null, true, null, this.cancellationTokenSource.token).then(() => {
 				this.sendEvent(new TerminatedEvent());
 			}).catch(err => {
 				this.sendEvent(new TerminatedEvent());
