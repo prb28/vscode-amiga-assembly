@@ -231,6 +231,20 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
                 config.buildWorkspace = true;
             }
         }
+        const self = this;
+        if (config.buildWorkspace) {
+            return vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace").then(() => {
+                return self.setSession(folder, config, token);
+            });
+        } else {
+            return this.setSession(folder, config, token);
+        }
+    }
+
+    /**
+     * Sets the session config
+     */
+    private setSession(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
         if (EMBED_DEBUG_ADAPTER) {
             // start port listener on launch of first debug session
             if (!this.server) {
