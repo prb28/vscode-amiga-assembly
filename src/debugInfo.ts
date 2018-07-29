@@ -1,4 +1,4 @@
-import { Hunk, HunkParser, SourceLine, Symbol } from './amigaHunkParser';
+import { Hunk, HunkParser, SourceLine, Symbol, HunkType } from './amigaHunkParser';
 import * as fs from 'fs';
 
 export class DebugInfo {
@@ -19,6 +19,17 @@ export class DebugInfo {
             return false;
         }
     }
+
+    public getCodeData(): (Uint32Array | null) {
+        for (let i = 0; i < this.hunks.length; i++) {
+            let hunk = this.hunks[i];
+            if ((hunk.hunkType === HunkType.Code) && hunk.codeData) {
+                return hunk.codeData;
+            }
+        }
+        return null;
+    }
+
     public getSymbols(filename: string | undefined): Symbol[] {
         let symbols = Array<Symbol>();
         for (let i = 0; i < this.hunks.length; i++) {

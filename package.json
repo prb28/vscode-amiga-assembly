@@ -75,6 +75,11 @@
                     "default": 4,
                     "description": "Specifies the distance between the data and the comment."
                 },
+                "amiga-assembly.cstool": {
+                    "type": "string",
+                    "default": "cstool",
+                    "description": "Specifies the path to the Capstone cstool binary."
+                },
                 "amiga-assembly.vasm": {
                     "type": "object",
                     "properties": {

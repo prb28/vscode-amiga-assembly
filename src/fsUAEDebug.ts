@@ -8,8 +8,9 @@ import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
 import { GdbProxy, GdbStackFrame, GdbRegister, GdbBreakpoint, Segment, GdbStackPosition } from './gdbProxy';
 import { Executor } from './executor';
-import { CancellationTokenSource } from 'vscode';
+import { CancellationTokenSource, workspace } from 'vscode';
 import { DebugInfo } from './debugInfo';
+import { Capstone } from './capstone';
 const { Subject } = require('await-notify');
 
 
@@ -71,11 +72,15 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	/** Executor to run fs-uae */
 	private executor: Executor;
 
-	/** Token to cancle the emulator */
+	/** Token to cancel the emulator */
 	private cancellationTokenSource?: CancellationTokenSource;
 
 	/** Debug information for the loaded program */
 	private debugInfo?: DebugInfo;
+
+	/** Tool to disassemble */
+	private capstone?: Capstone;
+
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
@@ -173,6 +178,13 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		// This default debug adapter does support the 'setVariable' request.
 		response.body.supportsSetVariable = true;
 
+		// Sets the capstone path
+		let configuration = workspace.getConfiguration('amiga-assembly');
+		let conf: any = configuration.get('cstool');
+		if (conf && (conf.length > 5)) {
+			this.capstone = new Capstone(conf);
+		}
+
 		this.sendResponse(response);
 
 		// since this debug adapter can accept configuration requests like 'setBreakpoint' at any time,
@@ -229,6 +241,9 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		logger.warn("            example: m 5c50,10,2,4");
 		logger.warn("        m ${register|symbol}, size[, wordSizeInBytes, rowSizeInWords]");
 		logger.warn("            example: m ${mycopperlabel},10,2,4");
+		logger.warn("    Disassembled Memory dump:");
+		logger.warn("        m address|${register|symbol},size,d");
+		logger.warn("            example: m ${pc},10,d");
 		logger.warn("    Memory set:");
 		logger.warn("        M address=bytes");
 		logger.warn("            example: M 5c50=0ff534");
@@ -534,7 +549,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	protected getVariableValue(variableName: string): Promise<string> {
 		return new Promise<(any | null)>((resolve, reject) => {
 			// Is it a register?
-			let matches = /^[ad][0-7]$/i.exec(variableName);
+			let matches = /^([ad][0-7]|pc|sr)$/i.exec(variableName);
 			if (matches) {
 				resolve(this.gdbProxy.getRegister(variableName));
 			} else {
@@ -576,7 +591,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	private evaluateRequestGetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-		const matches = /m\s*([\{\}\$0-9a-z]+)\s*,\s*([0-9]+)(,\s*([0-9]+),\s*([0-9]+))?(,([ab]+))?/i.exec(args.expression);
+		const matches = /m\s*([\{\}\$0-9a-z]+)\s*,\s*([0-9]+)(,\s*([0-9]+),\s*([0-9]+))?(,([abd]+))?/i.exec(args.expression);
 		if (matches) {
 			let rowLength = 4;
 			let wordLength = 4;
@@ -594,63 +609,119 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 				this.checkAddressForEvaluation(matches[1]).then((address) => {
 					// ask for memory dump
 					this.gdbProxy.getMemory(address, length).then((memory) => {
-						let variables = new Array<DebugProtocol.Variable>();
-						let startAddress = address;
-						let chunks = this.chunk(memory.toString(), wordLength * 2);
-						let i = 0;
-						let rowCount = 0;
-						let row = "";
-						let firstRow = "";
-						while (i < chunks.length) {
-							if (rowCount > 0) {
-								row += " ";
-							}
-							row += chunks[i];
-							if ((rowCount >= rowLength - 1) || (i === chunks.length - 1)) {
-								if (mode.indexOf('a') >= 0) {
-									let asciiText = this.convertToASCII(row.replace(/\s+/g, ''));
-									if (mode.indexOf('b') >= 0) {
-										if ((i === chunks.length - 1) && (rowCount < rowLength - 1)) {
-											let chuksMissing = rowLength - 1 - rowCount;
-											let padding = chuksMissing * wordLength * 2 + chuksMissing;
-											for (let j = 0; j < padding; j++) {
-												row += " ";
-											}
-										}
-										row += " | ";
-									} else {
-										row = "";
-									}
-									row += asciiText;
-								}
-								variables.push({
-									value: row,
-									name: this.padStartWith0(startAddress.toString(16), 8),
-									variablesReference: 0
-								});
-								if (firstRow.length <= 0) {
-									firstRow = row;
-								}
-								startAddress += rowCount * wordLength;
-								rowCount = 0;
-								row = "";
-							} else {
-								rowCount++;
-							}
-							i++;
-						}
 						let key = this.variableExpressionMap.get(args.expression);
 						if (!key) {
 							key = this.variableHandles.create(args.expression);
 						}
-						this.variableRefMap.set(key, variables);
-						this.variableExpressionMap.set(args.expression, key);
-						response.body = {
-							result: firstRow,
-							type: "array",
-							variablesReference: key,
-						};
-						this.sendResponse(response);
+						let variables = new Array<DebugProtocol.Variable>();
+						let startAddress = address;
+						let firstRow = "";
+						if (mode !== "d") {
+							let chunks = this.chunk(memory.toString(), wordLength * 2);
+							let i = 0;
+							let rowCount = 0;
+							let row = "";
+							while (i < chunks.length) {
+								if (rowCount > 0) {
+									row += " ";
+								}
+								row += chunks[i];
+								if ((rowCount >= rowLength - 1) || (i === chunks.length - 1)) {
+									if (mode.indexOf('a') >= 0) {
+										let asciiText = this.convertToASCII(row.replace(/\s+/g, ''));
+										if (mode.indexOf('b') >= 0) {
+											if ((i === chunks.length - 1) && (rowCount < rowLength - 1)) {
+												let chuksMissing = rowLength - 1 - rowCount;
+												let padding = chuksMissing * wordLength * 2 + chuksMissing;
+												for (let j = 0; j < padding; j++) {
+													row += " ";
+												}
+											}
+											row += " | ";
+										} else {
+											row = "";
+										}
+										row += asciiText;
+									}
+									variables.push({
+										value: row,
+										name: this.padStartWith0(startAddress.toString(16), 8),
+										variablesReference: 0
+									});
+									if (firstRow.length <= 0) {
+										firstRow = row;
+									}
+									startAddress += rowCount * wordLength;
+									rowCount = 0;
+									row = "";
+								} else {
+									rowCount++;
+								}
+								i++;
+							}
+							this.variableRefMap.set(key, variables);
+							this.variableExpressionMap.set(args.expression, key);
+							response.body = {
+								result: firstRow,
+								type: "array",
+								variablesReference: key,
+							};
+							this.sendResponse(response);
+						} else {
+							if (this.capstone) {
+								const ckey = key;
+								// disassemble the code 
+								this.capstone.disassemble(memory).then((code) => {
+									let lines = code.split('\n');
+									let i = 0;
+									for (let l of lines) {
+										let elms = l.split("  ");
+										if (elms.length > 2) {
+											let instructionElms = elms[2].split('\t');
+											let instuction = elms[2];
+											if (instructionElms.length > 1) {
+												instuction = instructionElms[0] + this.getEndPad(instructionElms[0], 10) + instructionElms[1];
+											}
+											let v = elms[1] + this.getEndPad(elms[1], 26) + instuction;
+											if (firstRow.length <= 0) {
+												firstRow = elms[2].replace("\t", " ");
+											}
+											variables.push({
+												value: v,
+												name: elms[0],
+												variablesReference: 0
+											});
+										} else {
+											if (firstRow.length <= 0) {
+												firstRow = l;
+											}
+											variables.push({
+												value: l,
+												name: i.toString(),
+												variablesReference: 0
+											});
+										}
+										i++;
+									}
+									this.variableRefMap.set(ckey, variables);
+									this.variableExpressionMap.set(args.expression, ckey);
+									response.body = {
+										result: firstRow,
+										type: "array",
+										variablesReference: ckey,
+									};
+									this.sendResponse(response);
+								}).catch((err) => {
+									response.success = false;
+									response.message = err.toString();
+									this.sendResponse(response);
+								});
+							} else {
+								response.success = false;
+								response.message = "Capstone cstool must be configured in the settings";
+								this.sendResponse(response);
+							}
+						}
 					}).catch((err) => {
 						response.success = false;
 						response.message = err.toString();
@@ -765,6 +836,26 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 				padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
 			}
 			return padString.slice(0, targetLength) + stringToPad;
+		}
+	}
+	/**
+	 * Getting the pad of the good size at the end of string
+	 * @param stringToPad String to pad
+	 * @param targetLength Length targetted
+	 * @return Padding string
+	 */
+	public getEndPad(stringToPad: string, targetLength: number): string {
+		targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
+		let padString = ' ';
+		if (stringToPad.length > targetLength) {
+			return '';
+		}
+		else {
+			targetLength = targetLength - stringToPad.length;
+			if (targetLength > padString.length) {
+				padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+			}
+			return padString.slice(0, targetLength);
 		}
 	}
 	private chunk(str: string, n: number): string[] {

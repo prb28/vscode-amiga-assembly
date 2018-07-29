@@ -46,10 +46,7 @@ export class Executor {
             p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
                     if (err && (<any>err).code === 'ENOENT') {
-                        // Since the tool is run on save which can be frequent
-                        // we avoid sending explicit notification if tool is missing
-                        console.log(`Cannot find ${cmd} : ${err.message}`);
-                        return resolve([]);
+                        return reject(new Error(`Cannot find ${cmd} : ${err.message}`));
                     }
                     outputChannel.appendLine(stdout);
                     console.log(stdout);
@@ -70,6 +67,43 @@ export class Executor {
                     }
                     outputChannel.appendLine('');
                     resolve(ret);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+
+    /**
+     * Runs the given tool and returns the stdout
+     * @param args Arguments to be passed while running given tool
+     * @param cwd cwd that will passed in the env object while running given tool
+     * @param cmd The path and name of the tool to run
+     * @param env Environment variables
+     * @param token Cancellation token
+     */
+    runToolRetrieveStdout(args: string[], cwd: string | null, cmd: string, env: any, token?: vscode.CancellationToken): Promise<string> {
+        let p: cp.ChildProcess;
+        if (token) {
+            token.onCancellationRequested(() => {
+                if (p) {
+                    this.killTree(p.pid);
+                }
+            });
+        }
+        return new Promise((resolve, reject) => {
+            let options: any = {
+                env: env
+            };
+            if (cwd) {
+                options.cwd = cwd;
+            }
+            p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
+                try {
+                    if (err && (<any>err).code === 'ENOENT') {
+                        return reject(new Error(`Cannot find ${cmd} : ${err.message}`));
+                    }
+                    resolve(stdout);
                 } catch (e) {
                     reject(e);
                 }

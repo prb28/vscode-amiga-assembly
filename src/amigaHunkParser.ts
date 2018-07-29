@@ -103,7 +103,7 @@ export class HunkParser {
 
     public parse_bss(hunk: Hunk, fileData: DataView, fileOffset: number): number {
         let [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
-        //hunk.hunkType = HunkType.Bss;
+        hunk.hunkType = HunkType.Bss;
         //hunk.dataSize = size;
         //hunk.memType = memType;
         return fileOffset + size + 4;
@@ -115,7 +115,7 @@ export class HunkParser {
         let pos = fileOffset + 4;
 
         //hunk.dataSize = size;
-        //hunk.hunkType = hunkType;
+        hunk.hunkType = hunkType;
         //hunk.memType = memType;
 
         for (let i = 0; i < (size / 4); i += 1) {
