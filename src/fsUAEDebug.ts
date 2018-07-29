@@ -686,9 +686,11 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 											if (firstRow.length <= 0) {
 												firstRow = elms[2].replace("\t", " ");
 											}
+											let offset = parseInt(elms[0], 16);
+											let addOffset = address + offset;
 											variables.push({
 												value: v,
-												name: elms[0],
+												name: addOffset.toString(16),
 												variablesReference: 0
 											});
 										} else {
