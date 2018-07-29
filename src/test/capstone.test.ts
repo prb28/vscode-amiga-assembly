@@ -26,7 +26,7 @@ describe("Capstone test", function () {
         capstone.setTestContext(executor);
         return expect(capstone.disassemble('9091')).to.be.eventually.equal(" 0  90 91  sub.l\t(a1), d0\n");
     });
-    it.only("Should disassemble a file", async function () {
+    it("Should disassemble a file", async function () {
         when(mockedExecutor.runToolRetrieveStdout(anything(), anything(), anything(), anything(), anything())).thenResolve(" 0  90 91  sub.l\t(a1), d0\n");
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
