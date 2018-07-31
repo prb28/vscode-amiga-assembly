@@ -344,6 +344,7 @@ export class HunkParser {
                 //dataSize: 0
             };
             this.fill_hunk(hunk, fileData, fileOffset);
+            fileOffset += hunk_table[i].size;
             hunks.push(hunk);
         }
         return hunks;

@@ -190,6 +190,11 @@
                 "command": "amiga-assembly.clean-vasm-workspace",
                 "title": "Amiga Assembly: Clean workspace",
                 "description": "Clean all the generated compilation objects"
+            },
+            {
+                "command": "amiga-assembly.disassemble-file",
+                "title": "Amiga Assembly: Disassemble file",
+                "description": "Disassembles an Amiga executable file"
             }
         ],
         "breakpoints": [
@@ -330,8 +335,7 @@
                 "configurationAttributes": {
                     "launch": {
                         "required": [
-                            "emulator",
-                            "conf"
+                            "emulator"
                         ],
                         "properties": {
                             "emulator": {

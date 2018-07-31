@@ -34,7 +34,7 @@ describe("Capstone test", function () {
         capstone.setTestContext(executor);
 
         return capstone.disassembleFile(programFilename).then((data) => {
-            expect(data).to.be.equal(" 0  90 91  sub.l\t(a1), d0\n");
+            expect(data).to.be.equal(" 0  90 91  sub.l\t(a1), d0\n\n");
             const [args, , , ,] = capture(mockedExecutor.runToolRetrieveStdout).last();
             expect(args[0]).to.be.equal("m68k");
             expect(args[1].substring(0, 4)).to.be.equal("2c78");

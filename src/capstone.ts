@@ -1,4 +1,4 @@
-import { CancellationToken } from "vscode";
+import { CancellationToken, Uri, workspace } from "vscode";
 import { Executor } from "./executor";
 import { DebugInfo } from "./debugInfo";
 
@@ -27,7 +27,12 @@ export class Capstone {
      */
     public disassemble(buffer: string, cancellationToken?: CancellationToken): Promise<string> {
         let args = ["m68k", buffer];
-        return this.executor.runToolRetrieveStdout(args, null, this.cstoolPath, null, cancellationToken);
+        const workspaceRootDir = this.getWorkspaceRootDir();
+        let rootPath = null;
+        if (workspaceRootDir) {
+            rootPath = workspaceRootDir.fsPath;
+        }
+        return this.executor.runToolRetrieveStdout(args, rootPath, this.cstoolPath, null, cancellationToken);
     }
 
     /**
@@ -36,21 +41,25 @@ export class Capstone {
      * @param cancellationToken Token to cancel the process
      */
     public disassembleFile(filename: string, cancellationToken?: CancellationToken): Promise<string> {
-        let di = new DebugInfo();
-        if (di.loadInfo(filename)) {
-            let codeData = di.getCodeData();
-            if (codeData !== null) {
-                let s = "";
-                for (let b of codeData) {
-                    s += b.toString(16);
+        return new Promise(async (resolve, reject) => {
+            let di = new DebugInfo();
+            if (di.loadInfo(filename)) {
+                let codeDataArray = di.getCodeData();
+                let allCode = "";
+                for (let codeData of codeDataArray) {
+                    let s = "";
+                    for (let b of codeData) {
+                        s += this.padStartWith0(b.toString(16), 8);
+                    }
+                    await this.disassemble(s, cancellationToken).then((data) => {
+                        allCode += data + "\n";
+                    });
                 }
-                return this.disassemble(s, cancellationToken);
+                resolve(allCode);
             } else {
-                return Promise.reject(new Error("No data in file to disassemble"));
+                reject(new Error(`File '${filename}' could not be parsed`));
             }
-        } else {
-            return Promise.reject(new Error(`File '${filename}' could not be parsed`));
-        }
+        });
     }
 
     /**
@@ -59,5 +68,30 @@ export class Capstone {
      */
     public setTestContext(executor: Executor) {
         this.executor = executor;
+    }
+
+    /**
+     * Reads the workspace forlder dir
+     */
+    private getWorkspaceRootDir(): Uri | null {
+        if (workspace.workspaceFolders && (workspace.workspaceFolders.length > 0)) {
+            return workspace.workspaceFolders[0].uri;
+        }
+        return null;
+    }
+
+    private padStartWith0(stringToPad: string, targetLength: number): string {
+        targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
+        let padString = '0';
+        if (stringToPad.length > targetLength) {
+            return stringToPad;
+        }
+        else {
+            targetLength = targetLength - stringToPad.length;
+            if (targetLength > padString.length) {
+                padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+            }
+            return padString.slice(0, targetLength) + stringToPad;
+        }
     }
 }

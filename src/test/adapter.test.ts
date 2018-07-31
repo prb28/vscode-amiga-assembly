@@ -196,7 +196,7 @@ describe('Node Debug Adapter', () => {
 			}
 		});
 		it('should stop on a breakpoint', function () {
-			this.timeout(defaultTimeout);
+			this.timeout(20000);
 			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				setTimeout(function () {
 					let cb = callbacks.get('stopOnBreakpoint');

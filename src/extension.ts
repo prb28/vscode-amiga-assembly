@@ -10,6 +10,7 @@ import { StatusManager } from "./status";
 import { FsUAEDebugSession } from './fsUAEDebug';
 import * as Net from 'net';
 import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
+import { Disassembler } from './disassemble';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -18,6 +19,7 @@ export let warningDiagnosticCollection: vscode.DiagnosticCollection;
 export let statusManager: StatusManager;
 export let calc: Calc;
 export let compiler: VASMCompiler;
+export let disassembler: Disassembler;
 
 /*
  * Set the following compile time flag to true if the
@@ -52,6 +54,14 @@ export function activate(context: vscode.ExtensionContext) {
     // Declaring the Hover
     disposable = vscode.languages.registerHoverProvider(AMIGA_ASM_MODE, new M68kHoverProvider());
     context.subscriptions.push(disposable);
+
+    // create a new disassembler
+    disassembler = new Disassembler();
+    disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-file', () => {
+        return disassembler.showInputPanel();
+    });
+    context.subscriptions.push(disposable);
+
 
     // create a new calculator
     calc = new Calc();
