@@ -168,14 +168,14 @@ describe('Node Debug Adapter', () => {
 					}, 10);
 					return Promise.resolve();
 				});
-				when(mockedGdbProxy.stack()).thenReturn(<GdbStackFrame>{
+				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
 						index: 1,
 						segmentId: 0,
 						offset: 0
 					}],
 					count: 1
-				});
+				}));
 			}
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
@@ -214,14 +214,14 @@ describe('Node Debug Adapter', () => {
 					verified: false,
 				});
 			});
-			when(mockedGdbProxy.stack()).thenReturn(<GdbStackFrame>{
+			when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 				frames: [<GdbStackPosition>{
 					index: 1,
 					segmentId: 0,
 					offset: 4
 				}],
 				count: 1
-			});
+			}));
 			when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
 				name: "d0",
 				value: 1
@@ -261,14 +261,14 @@ describe('Node Debug Adapter', () => {
 					verified: false,
 				});
 			});
-			when(mockedGdbProxy.stack()).thenReturn(<GdbStackFrame>{
+			when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 				frames: [<GdbStackPosition>{
 					index: 1,
 					segmentId: 0,
 					offset: 4
 				}],
 				count: 1
-			});
+			}));
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			return Promise.all([
@@ -305,14 +305,14 @@ describe('Node Debug Adapter', () => {
 						verified: false,
 					});
 				});
-				when(mockedGdbProxy.stack()).thenReturn(<GdbStackFrame>{
+				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
 						index: 1,
 						segmentId: 0,
 						offset: 4
 					}],
 					count: 1
-				});
+				}));
 				when(mockedGdbProxy.getRegister(anyString())).thenReturn("a");
 				when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
 					name: "d0",

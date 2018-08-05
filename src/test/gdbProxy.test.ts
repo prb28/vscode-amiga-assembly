@@ -134,6 +134,7 @@ describe("GdbProxy Tests", function () {
                 segmentId: 0,
                 offset: 4,
                 verified: false,
+                exceptionMask: undefined
             });
             verify(spiedProxy.sendPacketString('Z0,4,0')).never();
             // connect
@@ -176,6 +177,7 @@ describe("GdbProxy Tests", function () {
                     offset: 4,
                     id: 0,
                     verified: true,
+                    exceptionMask: undefined
                 });
                 verify(spiedProxy.sendPacketString('Z0,4,0')).once();
             });
@@ -214,12 +216,10 @@ describe("GdbProxy Tests", function () {
                 });
             });
             it("Should get the stack frames", async function () {
-                await proxy.registers();
-                let stack = proxy.stack();
-                expect(stack).to.be.eql(<GdbStackFrame>{
+                return expect(proxy.stack()).to.eventually.eql(<GdbStackFrame>{
                     frames: [<GdbStackPosition>{
                         index: 1,
-                        segmentId: 0,
+                        segmentId: -1,
                         offset: 17
                     }],
                     count: 1

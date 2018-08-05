@@ -6,7 +6,7 @@ import {
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
-import { GdbProxy, GdbStackFrame, GdbRegister, GdbBreakpoint, Segment, GdbStackPosition } from './gdbProxy';
+import { GdbProxy, GdbRegister, GdbBreakpoint, Segment, GdbStackPosition, GdbHaltStatus } from './gdbProxy';
 import { Executor } from './executor';
 import { CancellationTokenSource, workspace } from 'vscode';
 import { DebugInfo } from './debugInfo';
@@ -121,7 +121,8 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		this.gdbProxy.on('stopOnBreakpoint', () => {
 			this.sendEvent(new StoppedEvent('breakpoint', FsUAEDebugSession.THREAD_ID));
 		});
-		this.gdbProxy.on('stopOnException', () => {
+		this.gdbProxy.on('stopOnException', (status: GdbHaltStatus) => {
+			logger.error("Exception raised: " + status.details);
 			this.sendEvent(new StoppedEvent('exception', FsUAEDebugSession.THREAD_ID));
 		});
 		this.gdbProxy.on('segmentsUpdated', (segments: Array<Segment>) => {
@@ -174,6 +175,14 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 
 		// Set expression is accepted - TODO : Try it later
 		//response.body.supportsSetExpression = true;
+
+		response.body.supportsExceptionInfoRequest = true;
+		response.body.supportsExceptionOptions = true;
+		response.body.exceptionBreakpointFilters = [{
+			filter: "all",
+			label: "All Exceptions",
+			default: true
+		}];
 
 		// This default debug adapter does support the 'setVariable' request.
 		response.body.supportsSetVariable = true;
@@ -374,24 +383,26 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
-		let stk: GdbStackFrame = this.gdbProxy.stack();
 		if (this.debugInfo) {
 			const dbgInfo = this.debugInfo;
-			response.body = {
-				stackFrames: stk.frames.map((f: GdbStackPosition) => {
-					let values = dbgInfo.resolveFileLine(f.segmentId, f.offset);
-					let file = "";
-					let line = 0;
-					if (values) {
-						file = values[0];
-						line = values[1];
-					}
-					return new StackFrame(f.index, "Thread CPU", this.createSource(file), line);
-				}),
-				totalFrames: stk.count
-			};
+			this.gdbProxy.stack().then(stk => {
+				response.body = {
+					stackFrames: stk.frames.map((f: GdbStackPosition) => {
+						if (f.segmentId >= 0) {
+							let values = dbgInfo.resolveFileLine(f.segmentId, f.offset);
+							if (values) {
+								return new StackFrame(f.index, "Thread CPU", this.createSource(values[0]), values[1], 1);
+							}
+						}
+						return new StackFrame(f.index, "Thread CPU");
+					}),
+					totalFrames: stk.count
+				};
+				this.sendResponse(response);
+			});
+		} else {
+			this.sendResponse(response);
 		}
-		this.sendResponse(response);
 	}
 
 	protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
@@ -572,7 +583,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	private checkAddressForEvaluation(address: string): Promise<number> {
 		return new Promise<number>((resolve, reject) => {
 			if (address !== null) {
-				if (address.startsWith('$')) {
+				if (address.startsWith('${')) {
 					// It's a variable designation
 					let variable = address.substring(2, address.length - 1);
 					this.getVariableValue(variable).then(value => {
@@ -582,7 +593,13 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 						reject(err);
 					});
 				} else {
-					resolve(parseInt(address, 16));
+					if (address.startsWith('$')) {
+						resolve(parseInt(address.substring(1), 16));
+					} else if (address.startsWith('#')) {
+						resolve(parseInt(address.substring(1)));
+					} else {
+						resolve(parseInt(address, 16));
+					}
 				}
 			} else {
 				reject(new Error("Invalid address"));
@@ -788,6 +805,45 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			return this.evaluateRequestGetMemory(response, args);
 		} else if (args.expression.startsWith('M')) {
 			return this.evaluateRequestSetMemory(response, args);
+		}
+	}
+
+	protected exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments): void {
+		this.gdbProxy.getHaltStatus().then((haltStatus) => {
+			/*response.body.exceptionId = haltStatus.code.toString();
+			response.body.breakMode = 'always';
+			response.body.description = haltStatus.details;*/
+			response.body = {
+				exceptionId: haltStatus.code.toString(),
+				description: haltStatus.details,
+				breakMode: 'always'
+			};
+			this.sendResponse(response);
+		}).catch(err => {
+			response.success = false;
+			response.message = err.toString();
+			this.sendResponse(response);
+		});
+	}
+
+	protected setExceptionBreakPointsRequest(response: DebugProtocol.SetExceptionBreakpointsResponse, args: DebugProtocol.SetExceptionBreakpointsArguments): void {
+		let mask = 0b1111111000000010000011110000000000000000011111111111100;
+		if (args.filters.length > 0) {
+			this.gdbProxy.setBreakPoint(0, 0, mask).then(() => {
+				this.sendResponse(response);
+			}).catch((err) => {
+				response.success = false;
+				response.message = err.toString();
+				this.sendResponse(response);
+			});
+		} else {
+			this.gdbProxy.removeBreakPoint(0, 0, mask).then(() => {
+				this.sendResponse(response);
+			}).catch((err) => {
+				response.success = false;
+				response.message = err.toString();
+				this.sendResponse(response);
+			});
 		}
 	}
 

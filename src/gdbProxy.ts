@@ -10,8 +10,10 @@ export interface GdbBreakpoint {
     segmentId: number;
     /** Offset relative to the segment*/
     offset: number;
-    /** if true the breakpoint is verifier */
+    /** if true the breakpoint is verified */
     verified: boolean;
+    /** exception mask : if present it is an exception breakpoint */
+    exceptionMask?: number;
 }
 
 /** Stackframe position */
@@ -61,6 +63,31 @@ export interface GdbPacket {
     type: GdbPacketType;
     command?: string;
     message: string;
+}
+
+/** Halt signal */
+export enum GdbSignal {
+    // Interrupt
+    GDB_SIGNAL_INT = 2,
+    // Illegal instruction
+    GDB_SIGNAL_ILL = 4,
+    // Trace/breakpoint trap
+    GDB_SIGNAL_TRAP = 5,
+    // Emulation trap
+    GDB_SIGNAL_EMT = 7,
+    // Arithmetic exception
+    GDB_SIGNAL_FPE = 8,
+    // Bus error
+    GDB_SIGNAL_BUS = 10,
+    // Segmentation fault
+    GDB_SIGNAL_SEGV = 11
+
+}
+
+/** Status for the current halt */
+export interface GdbHaltStatus {
+    code: number;
+    details: string;
 }
 
 /**
@@ -148,10 +175,10 @@ export class GdbProxy extends EventEmitter {
         } else if (message.startsWith("+")) {
             return GdbPacketType.PLUS;
         } else if (message.startsWith("AS")) {
-            return GdbPacketType.REGISTER;
+            return GdbPacketType.SEGMENT;
         } else if (message.startsWith("E")) {
             return GdbPacketType.ERROR;
-        } else if (message.startsWith("S")) {
+        } else if ((message.startsWith("S") || (message.startsWith("T")))) {
             return GdbPacketType.STOP;
         } else if (message.startsWith("W")) {
             return GdbPacketType.END;
@@ -188,7 +215,7 @@ export class GdbProxy extends EventEmitter {
                 message: s
             });
         } else {
-            let messageRegexp = /\$([a-z\d;:/\\.]+)\#[\da-f]{2}/gi;
+            let messageRegexp = /\$([\sa-z\d;:/\\.]+)\#[\da-f]{2}/gi;
             let match;
             while (match = messageRegexp.exec(s)) {
                 let message = GdbProxy.extractPacket(match[1]);
@@ -212,9 +239,6 @@ export class GdbProxy extends EventEmitter {
         return new Promise(async (resolve, reject) => {
             for (let packet of GdbProxy.parseData(data)) {
                 switch (packet.type) {
-                    // case GdbPacketType.REGISTER:
-                    //     await this.parseSegments(packet.message);
-                    //     break;
                     case GdbPacketType.ERROR:
                         await this.parseError(packet.message);
                         break;
@@ -228,6 +252,9 @@ export class GdbProxy extends EventEmitter {
                         // TODO: Send last message
                         console.error("Unsupported packet : '-'");
                         proxy.sendEvent("error", new Error("Unsupported packet : '-'"));
+                        break;
+                    case GdbPacketType.SEGMENT:
+                        this.parseSegments(packet.message);
                         break;
                     case GdbPacketType.OK:
                     case GdbPacketType.PLUS:
@@ -274,7 +301,12 @@ export class GdbProxy extends EventEmitter {
                     await setTimeout(async function () {
                         self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
                         await self.sendPacketString("vRun;dh0:" + elms[elms.length - 1] + ";").then((message) => {
-                            self.parseSegments(message);
+                            let type = GdbProxy.parseType(message);
+                            if (type === GdbPacketType.SEGMENT) {
+                                self.parseSegments(message);
+                            } else {
+                                console.error("Unexpected return message for program lauch command");
+                            }
                             resolve();
                         }).catch(err => {
                             reject(err);
@@ -358,18 +390,27 @@ export class GdbProxy extends EventEmitter {
      * @param offset Offset in segment coordinated
      * @return Promise with a breakpoint
      */
-    public setBreakPoint(segmentId: number, offset: number): Promise<GdbBreakpoint> {
+    public setBreakPoint(segmentId: number, offset: number, exceptionMask?: number): Promise<GdbBreakpoint> {
         let self = this;
         if (((this.segments) || ((segmentId === 0) && (offset === 0))) && (this.socket.writable)) {
             if (this.segments && (segmentId >= this.segments.length)) {
                 return Promise.reject(new Error("Invalid breakpoint segment id: " + segmentId));
             } else {
-                return this.sendPacketString('Z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId)).then(function (data) {
+                let message: string;
+                if (exceptionMask) {
+                    let expMskHex = GdbProxy.formatNumber(exceptionMask);
+                    let expMskHexSz = GdbProxy.formatNumber(expMskHex.length);
+                    message = 'Z1,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId) + ";X" + expMskHexSz + "," + expMskHex;
+                } else {
+                    message = 'Z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId);
+                }
+                return this.sendPacketString(message).then(function (data) {
                     let bp = <GdbBreakpoint>{
                         verified: true,
                         segmentId: segmentId,
                         offset: offset,
-                        id: self.nextBreakPointId++
+                        id: self.nextBreakPointId++,
+                        exceptionMask: exceptionMask
                     };
                     self.breakPoints.push(bp);
                     self.sendEvent("breakpointValidated", bp);
@@ -381,7 +422,8 @@ export class GdbProxy extends EventEmitter {
                 verified: false,
                 segmentId: segmentId,
                 offset: offset,
-                id: self.nextBreakPointId++
+                id: self.nextBreakPointId++,
+                exceptionMask: exceptionMask
             };
             if (!this.pendingBreakpoints) {
                 this.pendingBreakpoints = new Array<GdbBreakpoint>();
@@ -402,7 +444,7 @@ export class GdbProxy extends EventEmitter {
                 this.pendingBreakpoints = new Array<GdbBreakpoint>();
                 let breakpoints: GdbBreakpoint[] = [];
                 for (let bp of pending) {
-                    await this.setBreakPoint(bp.segmentId, bp.offset).then(bp => {
+                    await this.setBreakPoint(bp.segmentId, bp.offset, bp.exceptionMask).then(bp => {
                         breakpoints.push(bp);
                     });
                 }
@@ -418,14 +460,14 @@ export class GdbProxy extends EventEmitter {
      * @param segmentId Id of the segment
      * @param offset Offset in local coordinates
      */
-    public removeBreakPoint(segmentId: number, offset: number): Promise<void> {
+    public removeBreakPoint(segmentId: number, offset: number, exceptionMask?: number): Promise<void> {
         return new Promise(async (resolve, reject) => {
             if (this.segments && (segmentId < this.segments.length)) {
                 // Look for the breakpoint in the current list
                 let breakpoint = null;
                 let pos = 0;
                 for (let bp of this.breakPoints) {
-                    if ((bp.segmentId === segmentId) && (bp.offset === offset)) {
+                    if ((bp.segmentId === segmentId) && (bp.offset === offset) && (bp.exceptionMask === exceptionMask)) {
                         breakpoint = bp;
                         break;
                     }
@@ -433,7 +475,11 @@ export class GdbProxy extends EventEmitter {
                 }
                 if (breakpoint) {
                     this.breakPoints.splice(pos, 1);
-                    await this.sendPacketString('z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId)).then(data => { resolve(); });
+                    let code = 0;
+                    if (exceptionMask) {
+                        code = 1;
+                    }
+                    await this.sendPacketString('z' + code + ',' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId)).then(data => { resolve(); });
                 } else {
                     reject(new Error("Breakpoint not found"));
                 }
@@ -478,11 +524,17 @@ export class GdbProxy extends EventEmitter {
     /**
      * Gets the current stack frame
      */
-    public stack(): GdbStackFrame {
-        return <GdbStackFrame>{
-            frames: this.frames,
-            count: this.frames.length
-        };
+    public stack(): Promise<GdbStackFrame> {
+        return new Promise((resolve, reject) => {
+            return this.registers().then(() => {
+                resolve(<GdbStackFrame>{
+                    frames: this.frames,
+                    count: this.frames.length
+                });
+            }).catch(err => {
+                reject(err);
+            });
+        });
     }
 
     /**
@@ -601,10 +653,11 @@ export class GdbProxy extends EventEmitter {
     /**
      * Parse of the segment message :
      *          AS;addr;size;add2;size
+     *  or      AS addr;size;add2;size
      * @param segmentReply The message containing the segments
      */
     protected parseSegments(segmentReply: string) {
-        let segs = segmentReply.split(";");
+        let segs = segmentReply.substring(2).split(";"); // removing "AS"
         this.segments = new Array<Segment>();
         // The segments message begins with the keyword AS
         for (let i = 1; i < segs.length - 1; i += 2) {
@@ -621,11 +674,9 @@ export class GdbProxy extends EventEmitter {
 
     protected parseStop(message: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            // Retrieve the cause
-            let sid = message.split(';')[0];
-            let n = parseInt(sid.substring(1), 16);
-            switch (n) {
-                case 5:
+            let haltStatus = this.parseHaltStatus(message);
+            switch (haltStatus.code) {
+                case GdbSignal.GDB_SIGNAL_TRAP: // Trace/breakpoint trap
                     // A breakpoint has been reached
                     await this.registers().then(async (registers: Array<GdbRegister>) => {
                         const continueDebugging = !this.stopOnEntryRequested;
@@ -647,23 +698,95 @@ export class GdbProxy extends EventEmitter {
                         } else if (!continueDebugging || !this.firstStop) {
                             this.sendEvent('stopOnBreakpoint');
                         }
+                        resolve();
                     }).catch(err => {
                         reject(err);
                     });
                     break;
                 default:
+                    // Exception reached
+                    this.sendEvent('stopOnException', haltStatus);
+                    resolve();
                     break;
             }
-            resolve();
         });
+    }
+
+    private parseHaltParameters(parameters: string): Map<string, string> {
+        let map = new Map<string, string>();
+        let elms = parameters.split(';');
+        for (let elm of elms) {
+            let kv = elm.split(':');
+            if (kv.length > 0) {
+                map.set(kv[0], kv[1]);
+            }
+        }
+        return map;
+    }
+
+    private getPcFromHaltParameters(parameters: string): string | undefined {
+        let map = this.parseHaltParameters(parameters);
+        return map.get('00');
+    }
+
+    /**
+     * Parses the halt status
+     * ‘TAAn1:r1;n2:r2;…’
+     * @param message Message to be parsed
+     */
+    private parseHaltStatus(message: string): GdbHaltStatus {
+        // Retrieve the cause
+        let sig = parseInt(message.substring(1, 3), 16);
+        let parameters: string | null = null;
+        if (message.length > 3) {
+            parameters = message.substring(3);
+        }
+        let details = "";
+        switch (sig) {
+            case GdbSignal.GDB_SIGNAL_INT: // Interrupt
+                details = "Interrupt";
+                break;
+            case GdbSignal.GDB_SIGNAL_ILL: // Illegal instruction
+                details = "Illegal instruction";
+                break;
+            case GdbSignal.GDB_SIGNAL_TRAP: // Trace/breakpoint trap
+                details = "Trace/breakpoint trap";
+                break;
+            case GdbSignal.GDB_SIGNAL_EMT: // Emulation trap
+                details = "Emulation trap";
+                break;
+            case GdbSignal.GDB_SIGNAL_FPE: // Arithmetic exception
+                details = "Arithmetic exception";
+                break;
+            case GdbSignal.GDB_SIGNAL_BUS: // Bus error
+                details = "Bus error";
+                break;
+            case GdbSignal.GDB_SIGNAL_SEGV: // Segmentation fault
+                details = "Segmentation fault";
+                break;
+            default:
+                details = "Other exception";
+                break;
+
+        }
+        let posString = "";
+        if (parameters) {
+            let pc = this.getPcFromHaltParameters(parameters);
+            if (pc) {
+                posString = " in $" + pc;
+            }
+        }
+        return <GdbHaltStatus>{ code: sig, details: "Exception " + sig + posString + ": " + details };
     }
 
     /**
      * Ask for the satus of the current stop
      */
-    // protected askForStatus(): Promise<void> {
-    //     return this.sendPacketString('?').then(data => { return; });
-    // }
+    public getHaltStatus(): Promise<GdbHaltStatus> {
+        return this.sendPacketString('?').then(message => {
+            return this.parseHaltStatus(message);
+        });
+    }
 
     /**
      * Continue the execution
@@ -720,7 +843,7 @@ export class GdbProxy extends EventEmitter {
                 segmentId++;
             }
         }
-        return [0, offset];
+        return [-1, offset];
     }
 
     /**
