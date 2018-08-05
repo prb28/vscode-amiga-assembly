@@ -23,7 +23,7 @@ describe("Debug Info", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
         let di = new DebugInfo();
-        di.loadInfo(programFilename);
+        expect(di.loadInfo(programFilename)).to.be.equal(true);
         expect(di.resolveFileLine(0, 4)).to.be.eql(["/Users/papa/developpements/amiga/projects/helloworld/gencop.s", 33]);
     });
     it("Should return all segments from a file", function () {
@@ -34,9 +34,11 @@ describe("Debug Info", function () {
         let pathReplacements = new Map<string, string>();
         pathReplacements.set("/Users/papa/developpements/amiga/projects/helloworld", sourceRootPath);
         let di = new DebugInfo(pathReplacements);
-        di.loadInfo(programFilename);
+        expect(di.loadInfo(programFilename)).to.be.equal(true);
         expect(di.getAllSegmentIds(sourceFilename)).to.be.eql([0]);
     });
-    it.skip("Should raise an error if the file is not found", function () {
+    it("Should raise an error if the file is not found", function () {
+        let di = new DebugInfo();
+        expect(di.loadInfo("nothere")).to.be.equal(false);
     });
 });

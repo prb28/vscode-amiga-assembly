@@ -6,7 +6,7 @@ import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { LaunchRequestArguments, FsUAEDebugSession } from '../fsUAEDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
-import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister, Segment } from '../gdbProxy';
+import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister, Segment, GdbHaltStatus } from '../gdbProxy';
 import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { Executor } from '../executor';
 
@@ -165,7 +165,7 @@ describe('Node Debug Adapter', () => {
 						if (cb) {
 							cb();
 						}
-					}, 10);
+					}, 5);
 					return Promise.resolve();
 				});
 				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
@@ -203,7 +203,7 @@ describe('Node Debug Adapter', () => {
 					if (cb) {
 						cb();
 					}
-				}, 10);
+				}, 5);
 				return Promise.resolve();
 			});
 			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
@@ -239,7 +239,7 @@ describe('Node Debug Adapter', () => {
 					if (cb) {
 						cb();
 					}
-				}, 20);
+				}, 5);
 				setTimeout(function () {
 					let cb = callbacks.get('breakpointValidated');
 					if (cb) {
@@ -290,7 +290,7 @@ describe('Node Debug Adapter', () => {
 						if (cb) {
 							cb();
 						}
-					}, 20);
+					}, 5);
 					session.updateSegments([<Segment>{
 						address: 10,
 						size: 20
@@ -379,14 +379,55 @@ describe('Node Debug Adapter', () => {
 			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
 		});
 	});
-	describe.skip('setExceptionBreakpoints', function () {
-
+	describe('setExceptionBreakpoints', function () {
+		beforeEach(function () {
+			if (!testWithRealEmulator) {
+				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+			}
+		});
 		it('should stop on an exception', function () {
-			const PROGRAM_WITH_EXCEPTION = Path.join(DATA_ROOT, 'testWithException.md');
-			const EXCEPTION_LINE = 4;
-
+			this.timeout(defaultTimeout);
+			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+				setTimeout(function () {
+					let cb = callbacks.get('stopOnException');
+					if (cb) {
+						cb(<GdbHaltStatus>{
+							code: 8,
+							details: "details"
+						});
+					}
+				}, 5);
+				return Promise.resolve();
+			});
+			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number, mask: number) => {
+				return Promise.resolve(<GdbBreakpoint>{
+					id: 0,
+					segmentId: 0,
+					offset: 4,
+					verified: false,
+					exceptionMask: mask
+				});
+			});
+			when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+				frames: [<GdbStackPosition>{
+					index: 1,
+					segmentId: 0,
+					offset: 4
+				}],
+				count: 1
+			}));
+			when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
+				name: "d0",
+				value: 1
+			}]));
+			when(mockedGdbProxy.getHaltStatus()).thenReturn(Promise.resolve(<GdbHaltStatus>{
+				code: 8,
+				details: "details"
+			}));
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			return Promise.all([
-
 				dc.waitForEvent('initialized').then(function (event) {
 					return dc.setExceptionBreakpointsRequest({
 						filters: ['all']
@@ -395,9 +436,9 @@ describe('Node Debug Adapter', () => {
 					return dc.configurationDoneRequest();
 				}),
 
-				dc.launch({ program: PROGRAM_WITH_EXCEPTION }),
+				dc.launch(launchArgsCopy),
 
-				dc.assertStoppedLocation('exception', { line: EXCEPTION_LINE })
+				dc.assertStoppedLocation('exception', { line: 33 })
 			]);
 		});
 	});

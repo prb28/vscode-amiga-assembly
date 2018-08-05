@@ -6,7 +6,7 @@ import {
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
-import { GdbProxy, GdbRegister, GdbBreakpoint, Segment, GdbStackPosition, GdbHaltStatus } from './gdbProxy';
+import { GdbProxy, GdbRegister, GdbBreakpoint, Segment, GdbHaltStatus } from './gdbProxy';
 import { Executor } from './executor';
 import { CancellationTokenSource, workspace } from 'vscode';
 import { DebugInfo } from './debugInfo';
@@ -385,17 +385,19 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
 		if (this.debugInfo) {
 			const dbgInfo = this.debugInfo;
-			this.gdbProxy.stack().then(stk => {
-				response.body = {
-					stackFrames: stk.frames.map((f: GdbStackPosition) => {
-						if (f.segmentId >= 0) {
-							let values = dbgInfo.resolveFileLine(f.segmentId, f.offset);
-							if (values) {
-								return new StackFrame(f.index, "Thread CPU", this.createSource(values[0]), values[1], 1);
-							}
+			this.gdbProxy.stack().then(async stk => {
+				let stackFrames = [];
+				for (let f of stk.frames) {
+					if (f.segmentId >= 0) {
+						let values = dbgInfo.resolveFileLine(f.segmentId, f.offset);
+						if (values) {
+							stackFrames.push(new StackFrame(f.index, "Thread CPU", this.createSource(values[0]), values[1], 1));
 						}
-						return new StackFrame(f.index, "Thread CPU");
-					}),
+					}
+					stackFrames.push(new StackFrame(f.index, "Thread CPU"));
+				}
+				response.body = {
+					stackFrames: stackFrames,
 					totalFrames: stk.count
 				};
 				this.sendResponse(response);
