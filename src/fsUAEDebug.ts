@@ -810,11 +810,18 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		}
 	}
 
+	protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): void {
+		this.gdbProxy.pause().then(() => {
+			this.sendResponse(response);
+		}).catch(err => {
+			response.success = false;
+			response.message = err.toString();
+			this.sendResponse(response);
+		});
+	}
+
 	protected exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments): void {
 		this.gdbProxy.getHaltStatus().then((haltStatus) => {
-			/*response.body.exceptionId = haltStatus.code.toString();
-			response.body.breakMode = 'always';
-			response.body.description = haltStatus.details;*/
 			response.body = {
 				exceptionId: haltStatus.code.toString(),
 				description: haltStatus.details,

@@ -780,11 +780,20 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Ask for the satus of the current stop
+     * Ask for the status of the current stop
      */
     public getHaltStatus(): Promise<GdbHaltStatus> {
         return this.sendPacketString('?').then(message => {
             return this.parseHaltStatus(message);
+        });
+    }
+
+    /**
+     * Ask for a pause
+     */
+    public pause(): Promise<void> {
+        return this.sendPacketString('vCtrlC').then(() => {
+            return;
         });
     }
 
