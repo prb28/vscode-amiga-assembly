@@ -44,6 +44,7 @@ These two control registers are used together to control blitter operations. The
 |DOFF| Disables the D output- for external ALUs The cycle occurs normally, but the data bus is tristate (hires chips only)|
 
 **Calculation of LF7->LF0 copy mask**
+
 |Bit|Ch A|Ch B|Ch C|Example expected on D|
 |:-|:-:|:-:|:-:|:-:|
 |LF0|0|0|0|0|
@@ -54,5 +55,6 @@ These two control registers are used together to control blitter operations. The
 |LF5|1|0|1|1|
 |LF6|1|1|0|1|
 |LF7|1|1|1|1|
+
 Result for BLTCON0 %11110000=$f0 => 'move.w #$??f0,BLTCON0(a6)'
 
