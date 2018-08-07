@@ -43,3 +43,16 @@ These two control registers are used together to control blitter operations. The
 |SING| Line draw, Single bit per horiz line  |
 |DOFF| Disables the D output- for external ALUs The cycle occurs normally, but the data bus is tristate (hires chips only)|
 
+**Calculation of LF7->LF0 copy mask**
+|Bit|Ch A|Ch B|Ch C|Example expected on D|
+|:-|:-:|:-:|:-:|:-:|
+|LF0|0|0|0|0|
+|LF1|0|0|1|0|
+|LF2|0|1|0|0|
+|LF3|0|1|1|0|
+|LF4|1|0|0|1|
+|LF5|1|0|1|1|
+|LF6|1|1|0|1|
+|LF7|1|1|1|1|
+Result for BLTCON0 %11110000=$f0 => 'move.w #$??f0,BLTCON0(a6)'
+
