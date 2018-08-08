@@ -293,7 +293,7 @@ export class GdbProxy extends EventEmitter {
         return new Promise((resolve, reject) => {
             if (this.programFilename !== programFilename) {
                 this.programFilename = programFilename;
-                let elms = this.programFilename.replace('\\', '/').split('/');
+                let elms = this.programFilename.replace(/\\/g, '/').split('/');
                 this.sendPacketString("Z0,0,0").then(async data => {
                     let self = this;
                     // Let fs-uae terminate before sending the run command
