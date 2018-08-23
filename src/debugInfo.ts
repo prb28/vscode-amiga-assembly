@@ -4,6 +4,7 @@ import * as fs from 'fs';
 export class DebugInfo {
     public hunks = new Array<Hunk>();
     private pathReplacements?: Map<string, string>;
+    private sourceFilesCacheMap = new Map<string, Array<string>>();
 
     constructor(pathReplacements?: Map<string, string>) {
         this.pathReplacements = pathReplacements;
@@ -86,11 +87,25 @@ export class DebugInfo {
         }
     }
 
-    public resolveFileLine(segId: number, offset: number): ([string, number] | null) {
+    private getSourceLineText(filename: string, line: number): string | null {
+        let contents = this.sourceFilesCacheMap.get(filename);
+        if (contents === undefined) {
+            // Load source file
+            contents = fs.readFileSync(filename).toString().split('\n');
+            this.sourceFilesCacheMap.set(filename, contents);
+        }
+        if (line < contents.length) {
+            return contents[line];
+        }
+        return null;
+    }
+
+    public resolveFileLine(segId: number, offset: number): ([string, number, string | null] | null) {
         if (segId >= this.hunks.length) {
             return null;
         }
         let hunk = this.hunks[segId];
+        let sourceLineText = null;
 
         let source_files = hunk.lineDebugInfo;
         if (source_files) {
@@ -114,7 +129,10 @@ export class DebugInfo {
                         }
                         data[0] = name;
                     }
-                    return data;
+                    if (data[1] > 0) {
+                        sourceLineText = this.getSourceLineText(data[0], data[1] - 1);
+                    }
+                    return [data[0], data[1], sourceLineText];
                 }
             }
         }

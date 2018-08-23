@@ -97,15 +97,14 @@ describe('Node Debug Adapter', () => {
 	describe('basic', function () {
 		it('unknown request should produce error', function () {
 			return dc.send('illegal_request').then(function () {
-				Promise.reject("does not report error on unknown request");
+				return Promise.reject("does not report error on unknown request");
 			}).catch(function () {
-				Promise.resolve();
+				return Promise.resolve();
 			});
 		});
 	});
 
 	describe('initialize', () => {
-
 		it('should return supported features', function () {
 			return dc.initializeRequest().then(function (response) {
 				response.body = response.body || {};
@@ -165,14 +164,16 @@ describe('Node Debug Adapter', () => {
 						if (cb) {
 							cb();
 						}
-					}, 5);
+					}, 1);
 					return Promise.resolve();
 				});
 				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
 						index: 1,
 						segmentId: 0,
-						offset: 0
+						offset: 0,
+						pc: 0,
+						stackFrameIndex: 0
 					}],
 					count: 1
 				}));
@@ -203,7 +204,7 @@ describe('Node Debug Adapter', () => {
 					if (cb) {
 						cb();
 					}
-				}, 5);
+				}, 1);
 				return Promise.resolve();
 			});
 			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
@@ -218,11 +219,13 @@ describe('Node Debug Adapter', () => {
 				frames: [<GdbStackPosition>{
 					index: 1,
 					segmentId: 0,
-					offset: 4
+					offset: 4,
+					pc: 10,
+					stackFrameIndex: 0
 				}],
 				count: 1
 			}));
-			when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
+			when(mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
 				name: "d0",
 				value: 1
 			}]));
@@ -239,7 +242,7 @@ describe('Node Debug Adapter', () => {
 					if (cb) {
 						cb();
 					}
-				}, 5);
+				}, 1);
 				setTimeout(function () {
 					let cb = callbacks.get('breakpointValidated');
 					if (cb) {
@@ -265,7 +268,9 @@ describe('Node Debug Adapter', () => {
 				frames: [<GdbStackPosition>{
 					index: 1,
 					segmentId: 0,
-					offset: 4
+					offset: 4,
+					pc: 10,
+					stackFrameIndex: 0
 				}],
 				count: 1
 			}));
@@ -290,7 +295,7 @@ describe('Node Debug Adapter', () => {
 						if (cb) {
 							cb();
 						}
-					}, 5);
+					}, 1);
 					session.updateSegments([<Segment>{
 						address: 10,
 						size: 20
@@ -309,12 +314,14 @@ describe('Node Debug Adapter', () => {
 					frames: [<GdbStackPosition>{
 						index: 1,
 						segmentId: 0,
-						offset: 4
+						offset: 4,
+						pc: 10,
+						stackFrameIndex: 0
 					}],
 					count: 1
 				}));
-				when(mockedGdbProxy.getRegister(anyString())).thenReturn("a");
-				when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
+				when(mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, reject) => { resolve(["a", -1]); }));
+				when(mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
 					name: "d0",
 					value: 1
 				}, <GdbRegister>{
@@ -397,7 +404,7 @@ describe('Node Debug Adapter', () => {
 							details: "details"
 						});
 					}
-				}, 5);
+				}, 1);
 				return Promise.resolve();
 			});
 			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number, mask: number) => {
@@ -413,11 +420,13 @@ describe('Node Debug Adapter', () => {
 				frames: [<GdbStackPosition>{
 					index: 1,
 					segmentId: 0,
-					offset: 4
+					offset: 4,
+					pc: 10,
+					stackFrameIndex: 0
 				}],
 				count: 1
 			}));
-			when(mockedGdbProxy.registers()).thenReturn(Promise.resolve([<GdbRegister>{
+			when(mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
 				name: "d0",
 				value: 1
 			}]));

@@ -24,7 +24,7 @@ describe("Debug Info", function () {
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
         let di = new DebugInfo();
         expect(di.loadInfo(programFilename)).to.be.equal(true);
-        expect(di.resolveFileLine(0, 4)).to.be.eql(["/Users/papa/developpements/amiga/projects/helloworld/gencop.s", 33]);
+        expect(di.resolveFileLine(0, 4)).to.be.eql(["/Users/papa/developpements/amiga/projects/helloworld/gencop.s", 33, "              clr.l      d0                      ; les registres sont des long - il faut les nettoyer avec un .l"]);
     });
     it("Should return all segments from a file", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');

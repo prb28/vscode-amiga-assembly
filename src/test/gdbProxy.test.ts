@@ -168,7 +168,7 @@ describe("GdbProxy Tests", function () {
                 when(spiedProxy.sendPacketString('vRun;dh0:myprog;')).thenResolve("AS;aef;20");
                 await proxy.load("/home/myh\\myprog", true);
                 // the stop command arrives  - should send pending breakpoints
-                await mockedOnData(formatBuffer("S5;0"));
+                await mockedOnData(formatBuffer("S05;0"));
             });
             it("Should set a breakpoint", async function () {
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
@@ -204,7 +204,7 @@ describe("GdbProxy Tests", function () {
                 verify(spiedProxy.sendPacketString('Z0,4,1')).never();
             });
             it("Should get the registers", async function () {
-                let registers = await proxy.registers();
+                let registers = await proxy.registers(null);
                 for (let i = 0; i < 8; i++) {
                     expect(registers[i]).to.be.eql(<GdbRegister>{
                         name: "d" + i,
@@ -227,14 +227,30 @@ describe("GdbProxy Tests", function () {
                 });
             });
             it("Should get the stack frames", async function () {
-                return expect(proxy.stack()).to.eventually.eql(<GdbStackFrame>{
-                    frames: [<GdbStackPosition>{
-                        index: 1,
-                        segmentId: -1,
-                        offset: 17
-                    }],
-                    count: 1
-                });
+                when(spiedProxy.sendPacketString("QTFrame:-1")).thenResolve("00000001");
+                let rIdx = proxy.getRegisterIndex("pc");
+                expect(rIdx).to.be.not.null;
+                if (rIdx !== null) {
+                    let pcGetRegisterMessage = "p" + rIdx.toString(16);
+                    when(spiedProxy.sendPacketString(pcGetRegisterMessage)).thenResolve("0000000a");
+                    when(spiedProxy.sendPacketString("QTFrame:1")).thenResolve("00000001");
+                    return expect(proxy.stack()).to.eventually.eql(<GdbStackFrame>{
+                        frames: [<GdbStackPosition>{
+                            index: -1,
+                            segmentId: -1,
+                            offset: 10,
+                            pc: 10,
+                            stackFrameIndex: 1
+                        }, <GdbStackPosition>{
+                            index: 1,
+                            segmentId: -1,
+                            offset: 10,
+                            pc: 10,
+                            stackFrameIndex: 1
+                        }],
+                        count: 2
+                    });
+                }
             });
             it("Should remove an existing breakpoint", async function () {
                 // Set a breakpoint
@@ -343,14 +359,14 @@ describe("GdbProxy Tests", function () {
                 verify(spiedProxy.sendPacketString('c')).once();
             });
             it("Should set register", async function () {
-                when(spiedProxy.sendPacketString('Pd0=8aff')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('P0=8aff')).thenResolve(RESPONSE_OK);
                 await expect(proxy.setRegister('d0', '8aff')).to.be.fulfilled;
-                verify(spiedProxy.sendPacketString('Pd0=8aff')).once();
+                verify(spiedProxy.sendPacketString('P0=8aff')).once();
             });
             it("Should send an error if set memory contents fails", async function () {
-                when(spiedProxy.sendPacketString('Pd0=8aff')).thenReject(error);
+                when(spiedProxy.sendPacketString('P0=8aff')).thenReject(error);
                 await expect(proxy.setRegister('d0', '8aff')).to.be.rejectedWith(error);
-                verify(spiedProxy.sendPacketString('Pd0=8aff')).once();
+                verify(spiedProxy.sendPacketString('P0=8aff')).once();
             });
         });
     });

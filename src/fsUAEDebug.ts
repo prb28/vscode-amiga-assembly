@@ -81,6 +81,9 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	/** Tool to disassemble */
 	private capstone?: Capstone;
 
+	/** Cache for disassembled code */
+	private disassembledCache = new Map<number, string>();
+
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
@@ -388,19 +391,61 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			this.gdbProxy.stack().then(async stk => {
 				let stackFrames = [];
 				for (let f of stk.frames) {
+					let stackFrameDone = false;
+					let pc = f.pc.toString(16);
 					if (f.segmentId >= 0) {
 						let values = dbgInfo.resolveFileLine(f.segmentId, f.offset);
 						if (values) {
-							stackFrames.push(new StackFrame(f.index, "Thread CPU", this.createSource(values[0]), values[1], 1));
+							let line = values[2];
+							if (line) {
+								let idx = line.indexOf(';');
+								if (idx > 0) {
+									line = line.substring(0, idx);
+								}
+								line = pc + ": " + line.trim().replace(/\s\s+/g, ' ');
+							} else {
+								line = pc;
+							}
+							stackFrames.push(new StackFrame(f.index, line, this.createSource(values[0]), values[1], 1));
+							stackFrameDone = true;
 						}
 					}
-					stackFrames.push(new StackFrame(f.index, "Thread CPU"));
+					if (!stackFrameDone) {
+						let line: string;
+						let dCode = this.disassembledCache.get(f.pc);
+						if (dCode) {
+							line = dCode;
+						} else {
+							// Get the disassembled line
+							line = pc + ": ";
+							if (this.capstone) {
+								let memory = await this.gdbProxy.getMemory(f.pc, 10);
+								if (memory) {
+									let disassembled = await this.capstone.disassemble(memory);
+									let selectedLine = disassembled.split('\n')[0];
+									let elms = selectedLine.split("  ");
+									if (elms.length > 2) {
+										selectedLine = elms[2];
+									}
+									line += selectedLine.trim().replace(/\s\s+/g, ' ');
+								}
+							}
+							this.disassembledCache.set(f.pc, line);
+						}
+						stackFrames.push(new StackFrame(f.index, line));
+					}
 				}
 				response.body = {
 					stackFrames: stackFrames,
 					totalFrames: stk.count
 				};
 				this.sendResponse(response);
+				return;
+			}).catch((err) => {
+				response.success = false;
+				response.message = err.toString();
+				this.sendResponse(response);
+				return;
 			});
 		} else {
 			this.sendResponse(response);
@@ -431,7 +476,9 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			const id = this.variableHandles.get(args.variablesReference);
 			if (id !== null) {
 				if (id.startsWith("registers_")) {
-					this.gdbProxy.registers().then((registers: Array<GdbRegister>) => {
+					//Gets the frameId
+					let frameId = parseInt(id.substring(10));
+					this.gdbProxy.registers(frameId).then((registers: Array<GdbRegister>) => {
 						const variables = new Array<DebugProtocol.Variable>();
 						for (let i = 0; i < registers.length; i++) {
 							let r = registers[i];
@@ -547,24 +594,25 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 
 	private evaluateRequestRegister(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
 		// It's a reg value
-		let value = this.gdbProxy.getRegister(args.expression);
-		if (value) {
+		this.gdbProxy.getRegister(args.expression, args.frameId).then(value => {
 			response.body = {
-				result: value,
+				result: value[0],
 				variablesReference: 0,
 			};
-		} else {
+			this.sendResponse(response);
+		}).catch(err => {
 			response.success = false;
-		}
-		this.sendResponse(response);
+			response.message = err.toString();
+			this.sendResponse(response);
+		});
 	}
 
-	protected getVariableValue(variableName: string): Promise<string> {
+	protected getVariableValue(variableName: string, frameIndex: number | undefined): Promise<string> {
 		return new Promise<(any | null)>((resolve, reject) => {
 			// Is it a register?
 			let matches = /^([ad][0-7]|pc|sr)$/i.exec(variableName);
 			if (matches) {
-				resolve(this.gdbProxy.getRegister(variableName));
+				resolve(this.gdbProxy.getRegister(variableName, frameIndex));
 			} else {
 				// Is it a symbol?
 				let address = this.symbolsMap.get(variableName);
@@ -582,13 +630,13 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		});
 	}
 
-	private checkAddressForEvaluation(address: string): Promise<number> {
+	private checkAddressForEvaluation(address: string, frameIndex: number | undefined): Promise<number> {
 		return new Promise<number>((resolve, reject) => {
 			if (address !== null) {
 				if (address.startsWith('${')) {
 					// It's a variable designation
 					let variable = address.substring(2, address.length - 1);
-					this.getVariableValue(variable).then(value => {
+					this.getVariableValue(variable, frameIndex).then(value => {
 						let v = parseInt(value, 16);
 						resolve(v);
 					}).catch(err => {
@@ -625,7 +673,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			}
 			if (length !== null) {
 				// reaplace the address if it is a variable
-				this.checkAddressForEvaluation(matches[1]).then((address) => {
+				this.checkAddressForEvaluation(matches[1], args.frameId).then((address) => {
 					// ask for memory dump
 					this.gdbProxy.getMemory(address, length).then((memory) => {
 						let key = this.variableExpressionMap.get(args.expression);
@@ -772,7 +820,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 			let data = matches[2];
 			if ((addrStr !== null) && (data !== null) && (data.length > 0)) {
 				// reaplace the address if it is a variable
-				this.checkAddressForEvaluation(addrStr).then((address) => {
+				this.checkAddressForEvaluation(addrStr, args.frameId).then((address) => {
 					this.gdbProxy.setMemory(address, data).then(() => {
 						args.expression = 'm' + addrStr + ',' + data.length.toString(16);
 						return this.evaluateRequestGetMemory(response, args);
@@ -800,7 +848,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 
 	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
 		// Evaluate an expression
-		let matches = /^[ad][0-7]$/i.exec(args.expression);
+		let matches = /^([ad][0-7]|pc|sr)$/i.exec(args.expression);
 		if (matches) {
 			return this.evaluateRequestRegister(response, args);
 		} else if (args.expression.startsWith('m')) {

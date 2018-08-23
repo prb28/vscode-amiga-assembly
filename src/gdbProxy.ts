@@ -18,12 +18,16 @@ export interface GdbBreakpoint {
 
 /** Stackframe position */
 export interface GdbStackPosition {
-    /** Index of the positions */
+    /** Index of the position */
     index: number;
+    /** Index of the stack frame */
+    stackFrameIndex: number;
     /** Segment identifier */
     segmentId: number;
     /** Offset relative to the segment*/
     offset: number;
+    /** Pc of the frame */
+    pc: number;
 }
 
 /** StackFrame */
@@ -55,6 +59,7 @@ export enum GdbPacketType {
     UNKNOWN,
     OK,
     PLUS,
+    FRAME,
     MINUS
 }
 
@@ -94,6 +99,19 @@ export interface GdbHaltStatus {
  * Class to contact the fs-UAE GDB server.
  */
 export class GdbProxy extends EventEmitter {
+    // Registers Indexes
+    // order of registers are assumed to be
+    // d0-d7, a0-a7, sr, pc [optional fp0-fp7, control, iar]
+    static readonly REGISTER_D0_INDEX = 0; // -> 0 to 7
+    static readonly REGISTER_A0_INDEX = 8; // -> 8 to 15
+    static readonly REGISTER_SR_INDEX = 16;
+    static readonly REGISTER_PC_INDEX = 17;
+    static readonly REGISTER_FP0_INDEX = 18; // -> 18 to 25
+    static readonly REGISTER_CTRL_INDEX = 26;
+    static readonly REGISTER_IAR_INDEX = 27;
+    static readonly REGISTER_LAST_VALID_INDEX = 24;
+    /** Code to set the debugger to the current frame index */
+    static readonly DEFAULT_FRAME_INDEX = -1;
     // Socket to connect
     private socket: Socket;
     // break point id counter
@@ -106,14 +124,10 @@ export class GdbProxy extends EventEmitter {
     private breakPoints = new Array<GdbBreakpoint>();
     /** Pending breakpoint no yet sent to debuger */
     private pendingBreakpoints: Array<GdbBreakpoint> | null = null;
-    /** Current frames */
-    private frames = new Array<GdbStackPosition>();
     /** Stop on entry asked */
     private stopOnEntryRequested = false;
     /** Flag for the first stop - to install the breakpoints */
     private firstStop = true;
-    /** Map of the last register values */
-    private lastRegisters = new Map<string, string>();
     /** Mutex to just have one call to gdb */
     private mutex = new Mutex({
         autoUnlockTimeoutMs: 1200,
@@ -182,6 +196,8 @@ export class GdbProxy extends EventEmitter {
             return GdbPacketType.STOP;
         } else if (message.startsWith("W")) {
             return GdbPacketType.END;
+        } else if (message.startsWith("F")) {
+            return GdbPacketType.FRAME;
         } else if (message.startsWith("-")) {
             return GdbPacketType.MINUS;
         }
@@ -215,7 +231,7 @@ export class GdbProxy extends EventEmitter {
                 message: s
             });
         } else {
-            let messageRegexp = /\$([\sa-z\d;:/\\.]+)\#[\da-f]{2}/gi;
+            let messageRegexp = /\$(.+)\#[\da-f]{2}/gi;
             let match;
             while (match = messageRegexp.exec(s)) {
                 let message = GdbProxy.extractPacket(match[1]);
@@ -358,7 +374,7 @@ export class GdbProxy extends EventEmitter {
             offset += 2;
             data.writeInt8(0, offset);
             //console.log(" --->" + data.toString());
-            const unlock = await this.mutex.capture('key');
+            const unlock = await this.mutex.capture('sendPacketString');
             this.socket.write(data);
             this.socket.once('data', (data) => {
                 unlock();
@@ -522,17 +538,83 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
+     * Ask the frame index for pc offset
+     */
+    public selectFrame(num: number | null, pc: number | null): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            let message = "QTFrame:";
+            if (num !== null) {
+                message += GdbProxy.formatNumber(num);
+            } else if (pc !== null) {
+                message += "pc:" + GdbProxy.formatNumber(pc);
+            } else {
+                reject(new Error("No arguments to select a frame"));
+                return;
+            }
+            await this.sendPacketString(message).then(data => {
+                if (data === "-1") {
+                    resolve(GdbProxy.DEFAULT_FRAME_INDEX);
+                } else {
+                    resolve(parseInt(data.substring(1), 16));
+                }
+            }).catch(err => {
+                reject(err);
+            });
+        });
+    }
+
+    /**
+     * Retrieves the stack postition for a frame
+     */
+    private getStackPosition(frameIndex: number): Promise<GdbStackPosition> {
+        return new Promise(async (resolve, reject) => {
+            // Get the current frame
+            let values = await this.getRegisterNumerical('pc', frameIndex).catch(err => {
+                reject(err);
+            });
+            if (values) {
+                let pc = values[0];
+                let [segmentId, offset] = this.toRelativeOffset(pc);
+                resolve(<GdbStackPosition>{
+                    index: frameIndex,
+                    stackFrameIndex: values[1],
+                    segmentId: segmentId,
+                    offset: offset,
+                    pc: pc
+                });
+            } else {
+                reject(new Error("Error retrieving stack frame for index " + frameIndex + ": pc not retrieved"));
+            }
+        });
+    }
+
+    /**
      * Gets the current stack frame
      */
     public stack(): Promise<GdbStackFrame> {
-        return new Promise((resolve, reject) => {
-            return this.registers().then(() => {
-                resolve(<GdbStackFrame>{
-                    frames: this.frames,
-                    count: this.frames.length
-                });
-            }).catch(err => {
+        return new Promise(async (resolve, reject) => {
+            let frames = new Array<GdbStackPosition>();
+            // Retrieve the current frame id
+            let stackPosition = await this.getStackPosition(GdbProxy.DEFAULT_FRAME_INDEX).catch(err => {
                 reject(err);
+            });
+            if (!stackPosition) {
+                return;
+            }
+            frames.push(stackPosition);
+            let current_frame_index = stackPosition.stackFrameIndex;
+            for (let i = current_frame_index; i > 0; i--) {
+                stackPosition = await this.getStackPosition(i).catch(err => {
+                    reject(err);
+                });
+                if (!stackPosition) {
+                    return;
+                }
+                frames.push(stackPosition);
+            }
+            resolve(<GdbStackFrame>{
+                frames: frames,
+                count: frames.length
             });
         });
     }
@@ -554,50 +636,54 @@ export class GdbProxy extends EventEmitter {
     /**
      * Retrieves all the register values
      */
-    public registers(): Promise<Array<GdbRegister>> {
-        this.lastRegisters.clear();
-        return this.sendPacketString('g').then(message => {
-            //console.trace("register : " + data.toString());
-            let registers = new Array<GdbRegister>();
-            let pos = 0;
-            let letter = 'd';
-            let v = "";
-            for (let j = 0; j < 2; j++) {
-                for (let i = 0; i < 8; i++) {
-                    let name = letter + i;
-                    v = message.slice(pos, pos + 8);
-                    registers.push({
-                        name: name,
-                        value: parseInt(v, 16)
-                    });
-                    this.lastRegisters.set(name, v);
-                    pos += 8;
-                }
-                letter = 'a';
+    public registers(frameId: number | null): Promise<Array<GdbRegister>> {
+        return new Promise(async (resolve, reject) => {
+            const unlock = await this.mutex.capture('selectFrame');
+            if (frameId !== null) {
+                // sets the current frameId
+                await this.selectFrame(frameId, null).catch(err => {
+                    unlock();
+                    reject(err);
+                    return;
+                });
             }
-            v = message.slice(pos, pos + 8);
-            pos += 8;
-            registers.push({
-                name: "sr",
-                value: parseInt(v, 16)
+            await this.sendPacketString('g').then(message => {
+                unlock();
+                //console.trace("register : " + data.toString());
+                let registers = new Array<GdbRegister>();
+                let pos = 0;
+                let letter = 'd';
+                let v = "";
+                for (let j = 0; j < 2; j++) {
+                    for (let i = 0; i < 8; i++) {
+                        let name = letter + i;
+                        v = message.slice(pos, pos + 8);
+                        registers.push({
+                            name: name,
+                            value: parseInt(v, 16)
+                        });
+                        pos += 8;
+                    }
+                    letter = 'a';
+                }
+                v = message.slice(pos, pos + 8);
+                pos += 8;
+                registers.push({
+                    name: "sr",
+                    value: parseInt(v, 16)
+                });
+                v = message.slice(pos, pos + 8);
+                pos += 8;
+                let pc = parseInt(v, 16);
+                registers.push({
+                    name: "pc",
+                    value: pc
+                });
+                resolve(registers);
+            }).catch(err => {
+                unlock();
+                reject(err);
             });
-            this.lastRegisters.set("sr", v);
-            v = message.slice(pos, pos + 8);
-            pos += 8;
-            let pc = parseInt(v, 16);
-            registers.push({
-                name: "pc",
-                value: pc
-            });
-            this.lastRegisters.set("pc", v);
-            this.frames = [];
-            let [segmentId, offset] = this.toRelativeOffset(pc);
-            this.frames.push(<GdbStackPosition>{
-                index: 1,
-                segmentId: segmentId,
-                offset: offset,
-            });
-            return registers;
         });
     }
 
@@ -635,8 +721,53 @@ export class GdbProxy extends EventEmitter {
      * Reads a register value
      * @param register Name of the register a1, a2, etc..
      */
-    public getRegister(register: string): (string | undefined) {
-        return this.lastRegisters.get(register);
+    public getRegister(name: string, frameIndex: number | undefined): Promise<[string, number]> {
+        return new Promise(async (resolve, reject) => {
+            const unlock = await this.mutex.capture('selectFrame');
+            let returnedFrameIndex = GdbProxy.DEFAULT_FRAME_INDEX;
+            // the current frame
+            if (frameIndex) {
+                let sReturnedFrameIndex = await this.selectFrame(frameIndex, null).catch(err => {
+                    unlock();
+                    reject(err);
+                });
+                if (sReturnedFrameIndex) {
+                    returnedFrameIndex = sReturnedFrameIndex;
+                }
+                if ((frameIndex !== GdbProxy.DEFAULT_FRAME_INDEX) && (sReturnedFrameIndex !== frameIndex)) {
+                    unlock();
+                    reject(new Error("Error during frame selection: " + frameIndex));
+                    return;
+                }
+            }
+            let regIdx = this.getRegisterIndex(name);
+            if (regIdx) {
+                await this.sendPacketString("p" + GdbProxy.formatNumber(regIdx)).then(data => {
+                    unlock();
+                    resolve([data, returnedFrameIndex]);
+                }).catch(err => {
+                    unlock();
+                    reject(err);
+                });
+            } else {
+                reject(new Error("No index found for register: " + name));
+            }
+            unlock();
+        });
+    }
+
+    /**
+     * Reads a register value
+     * @param register Name of the register a1, a2, etc..
+     */
+    public getRegisterNumerical(name: string, frameIndex: number): Promise<[number, number]> {
+        return new Promise(async (resolve, reject) => {
+            await this.getRegister(name, frameIndex).then(values => {
+                resolve([parseInt(values[0], 16), values[1]]);
+            }).catch(err => {
+                reject(err);
+            });
+        });
     }
 
     /**
@@ -678,19 +809,26 @@ export class GdbProxy extends EventEmitter {
             switch (haltStatus.code) {
                 case GdbSignal.GDB_SIGNAL_TRAP: // Trace/breakpoint trap
                     // A breakpoint has been reached
-                    await this.registers().then(async (registers: Array<GdbRegister>) => {
+                    await this.registers(null).then(async (registers: Array<GdbRegister>) => {
                         const continueDebugging = !this.stopOnEntryRequested;
                         if (this.firstStop === true) {
                             this.firstStop = false;
-                            await this.sendAllPendingBreakpoints().then(async () => {
-                                if (continueDebugging) {
-                                    // Send continue command
-                                    await this.continueExecution();
-                                    resolve();
-                                }
-                            }).catch(err => {
+                            let rejected = false;
+                            await this.sendAllPendingBreakpoints().catch(err => {
                                 reject(err);
+                                rejected = true;
                             });
+                            if (rejected) {
+                                return;
+                            }
+                            if (continueDebugging) {
+                                // Send continue command
+                                await this.continueExecution().catch(err => {
+                                    reject(err);
+                                });
+                                resolve();
+                                return;
+                            }
                         }
                         if (this.stopOnEntryRequested) {
                             this.stopOnEntryRequested = false;
@@ -712,13 +850,13 @@ export class GdbProxy extends EventEmitter {
         });
     }
 
-    private parseHaltParameters(parameters: string): Map<string, string> {
-        let map = new Map<string, string>();
-        let elms = parameters.split(';');
+    private parseHaltParameters(parameters: string): Map<number, string> {
+        let map = new Map<number, string>();
+        let elms = parameters.trim().split(';');
         for (let elm of elms) {
             let kv = elm.split(':');
             if (kv.length > 0) {
-                map.set(kv[0], kv[1]);
+                map.set(parseInt(kv[0], 16), kv[1]);
             }
         }
         return map;
@@ -726,7 +864,7 @@ export class GdbProxy extends EventEmitter {
 
     private getPcFromHaltParameters(parameters: string): string | undefined {
         let map = this.parseHaltParameters(parameters);
-        return map.get('00');
+        return map.get(GdbProxy.REGISTER_PC_INDEX);
     }
 
     /**
@@ -805,6 +943,26 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
+     * Gets the register index from it's name
+     */
+    public getRegisterIndex(name: string): number | null {
+        if (name.length === 2) {
+            let type = name.charAt(0);
+            let idx = parseInt(name.charAt(1));
+            if (type === 'd') {
+                return idx + GdbProxy.REGISTER_D0_INDEX;
+            } else if (type === 'a') {
+                return idx + GdbProxy.REGISTER_A0_INDEX;
+            } else if (name === 'pc') {
+                return GdbProxy.REGISTER_PC_INDEX;
+            } else if (name === 'sr') {
+                return GdbProxy.REGISTER_SR_INDEX;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Sets tha value of a register
      * @param name Name of the register
      * @param value New value of the register
@@ -814,7 +972,17 @@ export class GdbProxy extends EventEmitter {
             // Verify that the value is an hex
             let valueRegExp = /[a-z\d]{1,8}/i;
             if (valueRegExp.test(value)) {
-                return this.sendPacketString("P" + name + "=" + value).then(data => { resolve(data); }).catch(err => { reject(err); });
+                let regIdx = this.getRegisterIndex(name);
+                if (regIdx !== null) {
+                    let message = "P" + regIdx.toString(16) + "=" + value;
+                    await this.sendPacketString(message).then(data => {
+                        resolve(data);
+                    }).catch(err => {
+                        reject(err);
+                    });
+                } else {
+                    reject(new Error("Invalid register name: " + name));
+                }
             } else {
                 reject(new Error("The value must be a hex string with at most 8 digits"));
             }
@@ -872,6 +1040,9 @@ export class GdbProxy extends EventEmitter {
      * @param n number 
      */
     protected static formatNumber(n: number): string {
+        if (n === 0) {
+            return "0";
+        }
         return n.toString(16);
     }
 
