@@ -10,6 +10,13 @@ import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister, 
 import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { Executor } from '../executor';
 
+process.on('unhandledRejection', (reason: Error, promise: Promise<any>) => {
+	// Will print "unhandledRejection err is not defined"
+	console.log('unhandledRejection', reason.message);
+	console.log('unhandledRejection', reason.stack);
+});
+
+
 describe('Node Debug Adapter', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
 	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js');
@@ -135,10 +142,11 @@ describe('Node Debug Adapter', () => {
 	describe('launch', () => {
 		beforeEach(function () {
 			when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+			when(mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
 		});
 
 		it('should run program to the end', function () {
-			when(mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenResolve([]);
+			when(mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
 			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				let cb = callbacks.get('end');
 				if (cb) {
@@ -253,7 +261,7 @@ describe('Node Debug Adapter', () => {
 							verified: true,
 						});
 					}
-				}, 40);
+				}, 2);
 				return Promise.resolve();
 			});
 			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
@@ -287,6 +295,7 @@ describe('Node Debug Adapter', () => {
 	describe('evaluateExpression', function () {
 		beforeEach(async function () {
 			if (!testWithRealEmulator) {
+				when(mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
 				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
 				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
 				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
