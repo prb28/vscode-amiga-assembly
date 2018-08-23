@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import { DebugInfo } from '../debugInfo';
 import * as Path from 'path';
 
-describe.only("Debug Info", function () {
+describe("Debug Info", function () {
     it("Should find the segment address", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
