@@ -229,7 +229,7 @@ describe("GdbProxy Tests", function () {
             it("Should get the stack frames", async function () {
                 when(spiedProxy.sendPacketString("QTFrame:-1")).thenResolve("00000001");
                 let rIdx = proxy.getRegisterIndex("pc");
-                expect(rIdx).to.be.not.null;
+                expect(rIdx).not.to.be.equal(null);
                 if (rIdx !== null) {
                     let pcGetRegisterMessage = "p" + rIdx.toString(16);
                     when(spiedProxy.sendPacketString(pcGetRegisterMessage)).thenResolve("0000000a");
