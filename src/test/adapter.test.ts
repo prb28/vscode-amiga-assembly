@@ -66,6 +66,7 @@ describe('Node Debug Adapter', () => {
 			callbacks.set(event, callback);
 		});
 		gdbProxy = instance(mockedGdbProxy);
+		when(mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
 		this.timeout(defaultTimeout);
 		// start port listener on launch of first debug session
 		if (!server) {
@@ -142,11 +143,9 @@ describe('Node Debug Adapter', () => {
 	describe('launch', () => {
 		beforeEach(function () {
 			when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-			when(mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
 		});
 
 		it('should run program to the end', function () {
-			when(mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
 			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				let cb = callbacks.get('end');
 				if (cb) {
@@ -295,7 +294,6 @@ describe('Node Debug Adapter', () => {
 	describe('evaluateExpression', function () {
 		beforeEach(async function () {
 			if (!testWithRealEmulator) {
-				when(mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
 				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
 				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
 				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
