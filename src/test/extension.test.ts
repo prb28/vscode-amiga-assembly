@@ -8,16 +8,17 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { spy, verify, anyString, capture, when, anything, resetCalls } from 'ts-mockito/lib/ts-mockito';
+import { spy, verify, anyString, capture, when, anything, resetCalls, mock, instance } from 'ts-mockito/lib/ts-mockito';
 import * as extension from '../extension';
+import { Capstone } from '../capstone';
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
+    // Creating the relative path to find the test file
+    const testFilesPath = path.join(__dirname, "..", "..", "test_files");
     context("Formatting comand", function () {
         it("Should format a simple file", async () => {
             this.timeout(2000);
-            // Creating the relative path to find the test file
-            const testFilesPath = path.join(__dirname, "..", "..", "test_files");
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw-toform.s"));
             // Read the expected file
@@ -185,6 +186,32 @@ describe("Global Extension Tests", function () {
             verify(spiedStatus.onDefault()).never();
             verify(spiedStatus.onSuccess()).never();
             verify(spiedStatus.onError("nope")).once();
+        });
+        describe("Disassemble comand", function () {
+            it("Should disassemble a file", async () => {
+                let spiedDisassembler = spy(extension.disassembler);
+                let mockedCapstone = mock(Capstone);
+                let capstone = instance(mockedCapstone);
+                when(spiedDisassembler.getCapstone()).thenCall(() => { return capstone; });
+                when(mockedCapstone.disassembleFile(anything())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0"));
+                const uri = vscode.Uri.file(path.join(testFilesPath, "debug", "fs-uae", "hd0", "gencop"));
+                const spiedWindow = spy(vscode.window);
+                let promise = new Promise<vscode.Uri[] | undefined>((resolve, reject) => { resolve([uri]); });
+                when(spiedWindow.showOpenDialog(anything())).thenReturn(promise);
+                await vscode.commands.executeCommand("amiga-assembly.disassemble-file");
+                verify(spiedWindow.showOpenDialog(anything())).once();
+                await vscode.commands.executeCommand("cursorMove", { to: 'left', by: 'character', value: 3, select: true });
+
+                // Read the expected file
+                let expectedFileContents = fs.readFileSync(path.join(testFilesPath, "disassemble-exp.s"), 'utf8');
+                let editor = vscode.window.activeTextEditor;
+                // tslint:disable-next-line:no-unused-expression
+                expect(editor).to.not.be.undefined;
+                if (editor) {
+                    // Editor openned
+                    expect(editor.document.getText()).to.be.equal(expectedFileContents);
+                }
+            });
         });
     });
 });

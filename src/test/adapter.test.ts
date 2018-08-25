@@ -11,13 +11,6 @@ import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verif
 import { Executor } from '../executor';
 import { Capstone } from '../capstone';
 
-process.on('unhandledRejection', (reason: Error, promise: Promise<any>) => {
-	// Will print "unhandledRejection err is not defined"
-	console.log('unhandledRejection', reason.message);
-	console.log('unhandledRejection', reason.stack);
-});
-
-
 describe('Node Debug Adapter', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
 	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js');

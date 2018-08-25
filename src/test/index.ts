@@ -8,6 +8,13 @@ const istanbul = require("istanbul");
 const Mocha = require("mocha");
 const remapIstanbul = require("remap-istanbul");
 
+
+// Will print the stack on promise rejection
+process.on('unhandledRejection', (reason: Error, promise: Promise<any>) => {
+    console.log('unhandledRejection', reason.message);
+    console.log('unhandledRejection', reason.stack);
+});
+
 // Linux: prevent a weird NPE when mocha on Linux requires the window size from the TTY
 // Since we are not running in a tty environment, we just implementt he method statically
 const tty = require("tty");

@@ -58,7 +58,9 @@ export function activate(context: vscode.ExtensionContext) {
     // create a new disassembler
     disassembler = new Disassembler();
     disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-file', () => {
-        return disassembler.showInputPanel();
+        return disassembler.showInputPanel().catch(err => {
+            vscode.window.showErrorMessage(err);
+        });
     });
     context.subscriptions.push(disposable);
 

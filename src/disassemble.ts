@@ -3,7 +3,7 @@ import { Capstone } from './capstone';
 import * as path from 'path';
 
 export class Disassembler {
-    private getCapstone(): (Capstone | null) {
+    public getCapstone(): (Capstone | null) {
         let configuration = workspace.getConfiguration('amiga-assembly');
         let conf: any = configuration.get('cstool');
         if (conf && (conf.length > 5)) {
@@ -15,20 +15,21 @@ export class Disassembler {
     /**
      * Shows an input panel to calculate
      */
-    public showInputPanel() {
-        const capstone = this.getCapstone();
-        if (capstone) {
-            return window.showOpenDialog(<OpenDialogOptions>{
-                prompt: "Select a file to disassemble",
-                canSelectMany: false,
-                canSelectFiles: true,
-                canSelectFolders: false,
-            }).then((selectedFiles) => {
+    public showInputPanel(): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            const capstone = this.getCapstone();
+            if (capstone) {
+                let selectedFiles = await window.showOpenDialog(<OpenDialogOptions>{
+                    prompt: "Select a file to disassemble",
+                    canSelectMany: false,
+                    canSelectFiles: true,
+                    canSelectFolders: false,
+                });
                 if (selectedFiles && (selectedFiles.length > 0)) {
                     const selectedFile = selectedFiles[0];
                     const filePath = selectedFile.fsPath;
                     // Disassembles the file
-                    return capstone.disassembleFile(filePath).then((data) => {
+                    await capstone.disassembleFile(filePath).then(async data => {
                         // opens a new editor document
                         let folder = ".";
                         let folders = workspace.workspaceFolders;
@@ -37,7 +38,7 @@ export class Disassembler {
                         }
                         let filename = path.basename(filePath) + "_" + Date.now() + "_dis.s";
                         const newFile = Uri.parse("untitled:" + folder + "/" + filename);
-                        return window.showTextDocument(newFile).then((textEditor) => {
+                        await window.showTextDocument(newFile).then((textEditor) => {
                             textEditor.edit(edit => {
                                 let text = "";
                                 let lines = data.split('\n');
@@ -50,14 +51,19 @@ export class Disassembler {
                                     }
                                 }
                                 edit.insert(new Position(0, 0), text);
+                                resolve();
                             });
                         });
+                    }).catch(err => {
+                        reject(err);
                     });
+                } else {
+                    reject(new Error("No selected File to disassemble"));
                 }
-            });
-        } else {
-            window.showErrorMessage("To use this command: configure the capstone path in the settings");
-        }
+            } else {
+                reject(new Error("To use this command: configure the capstone path in the settings"));
+            }
+        });
     }
 
 }
