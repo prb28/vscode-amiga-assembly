@@ -9,6 +9,7 @@ import * as vscode from 'vscode';
 import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister, Segment, GdbHaltStatus } from '../gdbProxy';
 import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { Executor } from '../executor';
+import { Capstone } from '../capstone';
 
 process.on('unhandledRejection', (reason: Error, promise: Promise<any>) => {
 	// Will print "unhandledRejection err is not defined"
@@ -45,6 +46,8 @@ describe('Node Debug Adapter', () => {
 	let gdbProxy: GdbProxy;
 	let mockedExecutor: Executor;
 	let executor: Executor;
+	let mockedCapstone: Capstone;
+	let capstone: Capstone;
 	let callbacks = new Map<String, any>();
 	let testWithRealEmulator = false;
 	let defaultTimeout = 10000;
@@ -62,6 +65,8 @@ describe('Node Debug Adapter', () => {
 		mockedExecutor = mock(Executor);
 		executor = instance(mockedExecutor);
 		mockedGdbProxy = mock(GdbProxy);
+		mockedCapstone = mock(Capstone);
+		capstone = instance(mockedCapstone);
 		when(mockedGdbProxy.on(anyString(), anything())).thenCall(async (event: string, callback: (() => void)) => {
 			callbacks.set(event, callback);
 		});
@@ -74,7 +79,7 @@ describe('Node Debug Adapter', () => {
 			server = Net.createServer(socket => {
 				session = new FsUAEDebugSession();
 				if (!testWithRealEmulator) {
-					session.setTestContext(gdbProxy, executor);
+					session.setTestContext(gdbProxy, executor, capstone);
 				}
 				session.setRunAsServer(true);
 				session.start(<NodeJS.ReadableStream>socket, socket);
@@ -410,6 +415,151 @@ describe('Node Debug Adapter', () => {
 				dc.assertStoppedLocation('breakpoint', { line: 37 }),
 			]);
 		});
+		it('should continue and stop', async function () {
+			this.timeout(defaultTimeout);
+			if (!testWithRealEmulator) {
+				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 0,
+						pc: 0,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				})).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 4,
+						pc: 4,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				}));
+				when(mockedGdbProxy.continueExecution()).thenCall(() => {
+					return Promise.resolve();
+				});
+				when(mockedGdbProxy.pause()).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnBreakpoint');
+						if (cb) {
+							cb();
+						}
+					}, 1);
+					return Promise.resolve();
+				});
+			}
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			launchArgsCopy.stopOnEntry = true;
+			await Promise.all([
+				dc.configurationSequence(),
+				dc.launch(launchArgsCopy),
+				dc.assertStoppedLocation('entry', { line: 32 })
+			]);
+			await Promise.all([
+				dc.continueRequest(<DebugProtocol.ContinueArguments>{}),
+				dc.pauseRequest(<DebugProtocol.PauseArguments>{}),
+				dc.assertStoppedLocation('breakpoint', { line: 33 }),
+			]);
+		});
+	});
+	describe('stack frame index', function () {
+		beforeEach(function () {
+			if (!testWithRealEmulator) {
+				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(mockedCapstone.disassemble(anyString())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0\n"));
+				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnEntry');
+						if (cb) {
+							cb();
+						}
+						cb = callbacks.get('segmentsUpdated');
+						if (cb) {
+							cb([<Segment>{ address: 10, size: 10 }]);
+						}
+					}, 1);
+					return Promise.resolve();
+				});
+				when(mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, _reject) => { resolve(["0", -1]); })).thenReturn(new Promise((resolve, _reject) => { resolve(["a", 1]); }));
+				when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
+				when(mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
+					name: "d0",
+					value: 1
+				}, <GdbRegister>{
+					name: "a0",
+					value: 10
+				}]));
+				when(mockedGdbProxy.getSegments()).thenReturn([<Segment>{ address: 10, size: 10 }]);
+			}
+		});
+		it('should retrieve a complex stack', async function () {
+			this.timeout(defaultTimeout);
+			if (!testWithRealEmulator) {
+				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: -1,
+						segmentId: 0,
+						offset: 0,
+						pc: 0,
+						stackFrameIndex: 1
+					}, <GdbStackPosition>{
+						index: 1,
+						segmentId: -1,
+						offset: 0,
+						pc: 10,
+						stackFrameIndex: 0
+					}],
+					count: 2
+				}));
+			}
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			launchArgsCopy.stopOnEntry = true;
+			await Promise.all([
+				dc.configurationSequence(),
+				dc.launch(launchArgsCopy),
+				dc.assertStoppedLocation('entry', { line: 32 })
+			]);
+			let response: DebugProtocol.StackTraceResponse = await dc.stackTraceRequest(<DebugProtocol.StackTraceArguments>{});
+			expect(response.success).to.be.equal(true);
+			expect(response.body.totalFrames).to.be.equal(2);
+			let stackFrames = response.body.stackFrames;
+			expect(stackFrames[0].id).to.be.equal(-1);
+			expect(stackFrames[0].line).to.be.equal(32);
+			expect(stackFrames[0].name).to.be.equal("0: move.l 4.w,a6");
+			let src = stackFrames[0].source;
+			if (src) {
+				expect(src.name).to.be.equal("gencop.s");
+				expect(src.path).to.be.equal("/Users/papa/developpements/vscode/vscode-amiga-assembly/test_files/debug/gencop.s");
+			}
+			expect(stackFrames[1].id).to.be.equal(1);
+			expect(stackFrames[1].line).to.be.equal(0);
+			expect(stackFrames[1].name).to.be.equal("a: sub.l	(a1), d0");
+			let responseScopes: DebugProtocol.ScopesResponse = await dc.scopesRequest(<DebugProtocol.ScopesArguments>{ frameId: 0 });
+			expect(responseScopes.body.scopes[0].name).to.be.equal('Registers');
+			expect(responseScopes.body.scopes[1].name).to.be.equal('Segments');
+			expect(responseScopes.body.scopes[2].name).to.be.equal('Symbols');
+			let vRegistersResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[0].variablesReference });
+			expect(vRegistersResponse.body.variables[0].name).to.be.equal("d0");
+			expect(vRegistersResponse.body.variables[0].type).to.be.equal("register");
+			expect(vRegistersResponse.body.variables[0].value).to.be.equal("00000001");
+			expect(vRegistersResponse.body.variables[0].variablesReference).to.be.equal(0);
+			expect(vRegistersResponse.body.variables[1].name).to.be.equal("a0");
+			let vSegmentsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[1].variablesReference });
+			expect(vSegmentsResponse.body.variables[0].name).to.be.equal("Segment #0");
+			expect(vSegmentsResponse.body.variables[0].type).to.be.equal("segment");
+			expect(vSegmentsResponse.body.variables[0].value).to.be.equal("a {size:10}");
+			expect(vSegmentsResponse.body.variables[0].variablesReference).to.be.equal(0);
+			let vSymbolsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[2].variablesReference });
+			expect(vSymbolsResponse.body.variables[0].name).to.be.equal("init");
+			expect(vSymbolsResponse.body.variables[0].type).to.be.equal("symbol");
+			expect(vSymbolsResponse.body.variables[0].value).to.be.equal("a");
+			expect(vSymbolsResponse.body.variables[0].variablesReference).to.be.equal(0);
+		});
 	});
 	describe('evaluateExpression', function () {
 		beforeEach(async function () {
@@ -455,6 +605,7 @@ describe('Node Debug Adapter', () => {
 					name: "a0",
 					value: 10
 				}]));
+				when(mockedCapstone.disassemble(anyString())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0\n"));
 				when(mockedGdbProxy.setMemory(0, anyString())).thenReturn(Promise.resolve());
 				when(mockedGdbProxy.setMemory(10, anyString())).thenReturn(Promise.resolve());
 				when(mockedGdbProxy.setMemory(11, anyString())).thenReturn(Promise.resolve());
@@ -511,6 +662,23 @@ describe('Node Debug Adapter', () => {
 			verify(mockedGdbProxy.setMemory(11, anyString())).once();
 			resetCalls(mockedGdbProxy);
 			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
+		});
+		it('should evaluate a memory disassemble', async function () {
+			this.timeout(defaultTimeout);
+			let evaluateResponse = await dc.evaluateRequest({
+				expression: "m0,10,d"
+			});
+			expect(evaluateResponse.body.type).to.equal('array');
+			expect(evaluateResponse.body.result).to.equal('sub.l (a1), d0');
+			// Test variable replacement
+			evaluateResponse = await dc.evaluateRequest({
+				expression: "m ${pc},10,d"
+			});
+			expect(evaluateResponse.body.result).to.equal('sub.l (a1), d0');
+			evaluateResponse = await dc.evaluateRequest({
+				expression: "m ${copperlist},10,d"
+			});
+			expect(evaluateResponse.body.result).to.equal('sub.l (a1), d0');
 		});
 	});
 	describe('setExceptionBreakpoints', function () {

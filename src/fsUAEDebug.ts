@@ -103,11 +103,12 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	 * @param gdbProxy mocked proxy
 	 * @param executor mocked executor
 	 */
-	public setTestContext(gdbProxy: GdbProxy, executor: Executor) {
+	public setTestContext(gdbProxy: GdbProxy, executor: Executor, capstone: Capstone) {
 		this.executor = executor;
 		this.gdbProxy = gdbProxy;
 		this.initProxy();
 		this.testMode = true;
+		this.capstone = capstone;
 	}
 
 	/**
@@ -193,7 +194,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		// Sets the capstone path
 		let configuration = workspace.getConfiguration('amiga-assembly');
 		let conf: any = configuration.get('cstool');
-		if (conf && (conf.length > 5)) {
+		if (!this.capstone && conf && (conf.length > 5)) {
 			this.capstone = new Capstone(conf);
 		}
 
@@ -421,7 +422,9 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 							// Get the disassembled line
 							line = pc + ": ";
 							if (this.capstone) {
-								let memory = await this.gdbProxy.getMemory(f.pc, 10);
+								let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
+									console.error("Error ingored: " + err.getMessage());
+								});
 								if (memory) {
 									let disassembled = await this.capstone.disassemble(memory);
 									let selectedLine = disassembled.split('\n')[0];
@@ -495,6 +498,10 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 							variables: variables
 						};
 						this.sendResponse(response);
+					}).catch(err => {
+						response.success = false;
+						response.message = err.toString();
+						this.sendResponse(response);
 					});
 				} else if (id.startsWith("segments_")) {
 					const variables = new Array<DebugProtocol.Variable>();
@@ -512,8 +519,11 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 						response.body = {
 							variables: variables
 						};
-						this.sendResponse(response);
+					} else {
+						response.success = false;
+						response.message = "No Segments found";
 					}
+					this.sendResponse(response);
 				} else if (id.startsWith("symbols_")) {
 					const variables = new Array<DebugProtocol.Variable>();
 					for (let entry of Array.from(this.symbolsMap.entries())) {
@@ -932,7 +942,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	//---- helpers
 
 	private createSource(filePath: string): Source {
-		return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'mock-adapter-data');
+		return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath));
 	}
 
 	/**
