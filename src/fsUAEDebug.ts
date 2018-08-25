@@ -246,21 +246,23 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 		}
 
 		// Showing the help text
-		logger.warn("Commands:");
-		logger.warn("    Memory dump:");
-		logger.warn("        m address, size[, wordSizeInBytes, rowSizeInWords,ab]");
-		logger.warn("        			a: show ascii output, b: show bytes output");
-		logger.warn("            example: m 5c50,10,2,4");
-		logger.warn("        m ${register|symbol}, size[, wordSizeInBytes, rowSizeInWords]");
-		logger.warn("            example: m ${mycopperlabel},10,2,4");
-		logger.warn("    Disassembled Memory dump:");
-		logger.warn("        m address|${register|symbol},size,d");
-		logger.warn("            example: m ${pc},10,d");
-		logger.warn("    Memory set:");
-		logger.warn("        M address=bytes");
-		logger.warn("            example: M 5c50=0ff534");
-		logger.warn("        M ${register|symbol}=bytes");
-		logger.warn("            example: M ${mycopperlabel}=0ff534");
+		if (!this.testMode) {
+			logger.warn("Commands:");
+			logger.warn("    Memory dump:");
+			logger.warn("        m address, size[, wordSizeInBytes, rowSizeInWords,ab]");
+			logger.warn("        			a: show ascii output, b: show bytes output");
+			logger.warn("            example: m 5c50,10,2,4");
+			logger.warn("        m ${register|symbol}, size[, wordSizeInBytes, rowSizeInWords]");
+			logger.warn("            example: m ${mycopperlabel},10,2,4");
+			logger.warn("    Disassembled Memory dump:");
+			logger.warn("        m address|${register|symbol},size,d");
+			logger.warn("            example: m ${pc},10,d");
+			logger.warn("    Memory set:");
+			logger.warn("        M address=bytes");
+			logger.warn("            example: M 5c50=0ff534");
+			logger.warn("        M ${register|symbol}=bytes");
+			logger.warn("            example: M ${mycopperlabel}=0ff534");
+		}
 
 		// Launch the emulator
 		this.startEmulator(args);
