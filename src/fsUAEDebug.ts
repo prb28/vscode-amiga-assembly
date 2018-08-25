@@ -44,6 +44,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 }
 
 export class FsUAEDebugSession extends LoggingDebugSession {
+	// Default selection mask for exception : each bit is a exception code
+	static readonly DEFAULT_EXCEPTION_MASK = 0b1111111000000010000011110000000000000000011111111111100;
 
 	// we don't support multiple threads, so we can use a hardcoded ID for the default thread
 	private static THREAD_ID = 1;
@@ -896,9 +898,8 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	}
 
 	protected setExceptionBreakPointsRequest(response: DebugProtocol.SetExceptionBreakpointsResponse, args: DebugProtocol.SetExceptionBreakpointsArguments): void {
-		let mask = 0b1111111000000010000011110000000000000000011111111111100;
 		if (args.filters.length > 0) {
-			this.gdbProxy.setBreakPoint(0, 0, mask).then(() => {
+			this.gdbProxy.setBreakPoint(0, 0, FsUAEDebugSession.DEFAULT_EXCEPTION_MASK).then(() => {
 				this.sendResponse(response);
 			}).catch((err) => {
 				response.success = false;
@@ -906,7 +907,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 				this.sendResponse(response);
 			});
 		} else {
-			this.gdbProxy.removeBreakPoint(0, 0, mask).then(() => {
+			this.gdbProxy.removeBreakPoint(0, 0, FsUAEDebugSession.DEFAULT_EXCEPTION_MASK).then(() => {
 				this.sendResponse(response);
 			}).catch((err) => {
 				response.success = false;

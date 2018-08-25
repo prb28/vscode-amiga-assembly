@@ -7,7 +7,7 @@ import { LaunchRequestArguments, FsUAEDebugSession } from '../fsUAEDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
 import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister, Segment, GdbHaltStatus } from '../gdbProxy';
-import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls } from 'ts-mockito/lib/ts-mockito';
+import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls, capture } from 'ts-mockito/lib/ts-mockito';
 import { Executor } from '../executor';
 import { Capstone } from '../capstone';
 
@@ -681,6 +681,62 @@ describe('Node Debug Adapter', () => {
 			expect(evaluateResponse.body.result).to.equal('sub.l (a1), d0');
 		});
 	});
+	describe('Set variables', function () {
+		beforeEach(async function () {
+			if (!testWithRealEmulator) {
+				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnEntry');
+						if (cb) {
+							cb();
+						}
+					}, 1);
+					session.updateSegments([<Segment>{
+						address: 10,
+						size: 20
+					}]);
+					return Promise.resolve();
+				});
+				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 4,
+						pc: 10,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				}));
+				when(mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, reject) => { resolve(["a", -1]); }));
+				when(mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
+					name: "d0",
+					value: 1
+				}, <GdbRegister>{
+					name: "a0",
+					value: 10
+				}]));
+			}
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			launchArgsCopy.stopOnEntry = true;
+			await Promise.all([
+				dc.configurationSequence(),
+				dc.launch(launchArgsCopy),
+				dc.assertStoppedLocation('entry', { line: 33 })
+			]);
+		});
+		it('should set a variable value', async function () {
+			this.timeout(defaultTimeout);
+			let responseScopes: DebugProtocol.ScopesResponse = await dc.scopesRequest(<DebugProtocol.ScopesArguments>{ frameId: 0 });
+			when(mockedGdbProxy.setRegister(anything(), anything())).thenReturn(Promise.resolve("af"));
+			let response = await dc.setVariableRequest(<DebugProtocol.SetVariableArguments>{
+				variablesReference: responseScopes.body.scopes[0].variablesReference
+			});
+			expect(response.body.value).to.be.equal("af");
+		});
+	});
 	describe('setExceptionBreakpoints', function () {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
@@ -688,7 +744,7 @@ describe('Node Debug Adapter', () => {
 				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
 			}
 		});
-		it('should stop on an exception', function () {
+		it('should stop on an exception', async function () {
 			this.timeout(defaultTimeout);
 			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				setTimeout(function () {
@@ -731,7 +787,7 @@ describe('Node Debug Adapter', () => {
 			}));
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
-			return Promise.all([
+			await Promise.all([
 				dc.waitForEvent('initialized').then(function (event) {
 					return dc.setExceptionBreakpointsRequest({
 						filters: ['all']
@@ -744,6 +800,16 @@ describe('Node Debug Adapter', () => {
 
 				dc.assertStoppedLocation('exception', { line: 33 })
 			]);
+			// Test Breakpoint removal
+			when(mockedGdbProxy.removeBreakPoint(anyNumber(), anyNumber(), anyNumber())).thenReturn(Promise.resolve());
+			let response = await dc.setExceptionBreakpointsRequest(<DebugProtocol.SetExceptionBreakpointsArguments>{
+				filters: []
+			});
+			expect(response.success).to.be.equal(true);
+			const [segId, offset, mask] = capture(mockedGdbProxy.removeBreakPoint).last();
+			expect(segId).to.be.equal(0);
+			expect(offset).to.be.equal(0);
+			expect(mask).to.be.equal(FsUAEDebugSession.DEFAULT_EXCEPTION_MASK);
 		});
 	});
 });

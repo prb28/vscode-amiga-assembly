@@ -368,6 +368,16 @@ describe("GdbProxy Tests", function () {
                 await expect(proxy.setRegister('d0', '8aff')).to.be.rejectedWith(error);
                 verify(spiedProxy.sendPacketString('P0=8aff')).once();
             });
+            it("Should query for halt status", async function () {
+                when(spiedProxy.sendPacketString('?')).thenResolve("S05");
+                await expect(proxy.getHaltStatus()).to.be.fulfilled;
+                verify(spiedProxy.sendPacketString('?')).once();
+            });
+            it("Should query for pause", async function () {
+                when(spiedProxy.sendPacketString('vCtrlC')).thenResolve(RESPONSE_OK);
+                await expect(proxy.pause()).to.be.fulfilled;
+                verify(spiedProxy.sendPacketString('vCtrlC')).once();
+            });
         });
     });
 
