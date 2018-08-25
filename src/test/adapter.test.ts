@@ -534,7 +534,9 @@ describe('Node Debug Adapter', () => {
 			let src = stackFrames[0].source;
 			if (src) {
 				expect(src.name).to.be.equal("gencop.s");
-				expect(src.path).to.be.equal("/Users/papa/developpements/vscode/vscode-amiga-assembly/test_files/debug/gencop.s");
+				if (src.path) {
+					expect(src.path.endsWith("test_files/debug/gencop.s")).to.be.equal(true);
+				}
 			}
 			expect(stackFrames[1].id).to.be.equal(1);
 			expect(stackFrames[1].line).to.be.equal(0);
