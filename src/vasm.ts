@@ -259,7 +259,7 @@ export class VASMCompiler {
     mkdirSync(dirPath: string): Promise<void> {
         return new Promise((resolve, reject) => {
             try {
-                if (!fs.exists(dirPath)) {
+                if (!fs.existsSync(dirPath)) {
                     fs.mkdirSync(dirPath);
                 }
             } catch (err) {

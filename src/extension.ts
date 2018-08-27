@@ -211,7 +211,10 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
                 }).listen(0);
             }
             // make VS Code connect to debug server instead of launching debug adapter
-            config.debugServer = this.server.address().port;
+            let address: any = this.server.address();
+            if (address instanceof Object) {
+                config.debugServer = address.port;
+            }
         }
         return config;
     }
@@ -268,7 +271,10 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
                 }).listen(0);
             }
             // make VS Code connect to debug server instead of launching debug adapter
-            config.debugServer = this.server.address().port;
+            let address: any = this.server.address();
+            if (address instanceof Object) {
+                config.debugServer = address.port;
+            }
         }
         return config;
     }

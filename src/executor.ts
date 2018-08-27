@@ -48,9 +48,13 @@ export class Executor {
                     if (err && (<any>err).code === 'ENOENT') {
                         return reject(new Error(`Cannot find ${cmd} : ${err.message}`));
                     }
-                    outputChannel.appendLine(stdout);
-                    console.log(stdout);
-                    outputChannel.appendLine(stderr);
+                    if (stdout) {
+                        outputChannel.appendLine(stdout.toString());
+                        console.log(stdout);
+                    }
+                    if (stderr) {
+                        outputChannel.appendLine(stderr.toString());
+                    }
                     console.log(stderr);
                     if (err && stderr && !useStdErr) {
                         let errorMessage = ['Error while running tool:', cmd, ...args].join(' ');
@@ -103,7 +107,9 @@ export class Executor {
                     if (err && (<any>err).code === 'ENOENT') {
                         return reject(new Error(`Cannot find ${cmd} : ${err.message}`));
                     }
-                    resolve(stdout);
+                    if (stdout) {
+                        resolve(stdout.toString());
+                    }
                 } catch (e) {
                     reject(e);
                 }

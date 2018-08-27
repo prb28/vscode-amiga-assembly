@@ -31,16 +31,7 @@ describe('Node Debug Adapter', () => {
 			"/Users/papa/developpements/amiga/projects/helloworld": DATA_ROOT
 		}
 	};
-	let session: FsUAEDebugSession;
-	let spiedSession: FsUAEDebugSession;
 	let dc: DebugClient;
-	let server: Net.Server;
-	let mockedGdbProxy: GdbProxy;
-	let gdbProxy: GdbProxy;
-	let mockedExecutor: Executor;
-	let executor: Executor;
-	let mockedCapstone: Capstone;
-	let capstone: Capstone;
 	let callbacks = new Map<String, any>();
 	let testWithRealEmulator = false;
 	let defaultTimeout = 10000;
@@ -55,47 +46,52 @@ describe('Node Debug Adapter', () => {
 	});
 
 	beforeEach(function () {
-		mockedExecutor = mock(Executor);
-		executor = instance(mockedExecutor);
-		mockedGdbProxy = mock(GdbProxy);
-		mockedCapstone = mock(Capstone);
-		capstone = instance(mockedCapstone);
-		when(mockedGdbProxy.on(anyString(), anything())).thenCall(async (event: string, callback: (() => void)) => {
+		this.mockedExecutor = mock(Executor);
+		this.executor = instance(this.mockedExecutor);
+		this.mockedGdbProxy = mock(GdbProxy);
+		this.mockedCapstone = mock(Capstone);
+		this.capstone = instance(this.mockedCapstone);
+		when(this.mockedGdbProxy.on(anyString(), anything())).thenCall(async (event: string, callback: (() => void)) => {
 			callbacks.set(event, callback);
 		});
-		gdbProxy = instance(mockedGdbProxy);
-		when(mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
-		this.timeout(defaultTimeout);
-		// start port listener on launch of first debug session
-		if (!server) {
+		this.gdbProxy = instance(this.mockedGdbProxy);
+		when(this.mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
+		this.timeout(this.defaultTimeout);
+		// start port listener on launch of first debug this.session
+		if (!this.server) {
 			// start listening on a random port
-			server = Net.createServer(socket => {
-				session = new FsUAEDebugSession();
+			this.server = Net.createServer(socket => {
+				this.session = new FsUAEDebugSession();
 				if (!testWithRealEmulator) {
-					session.setTestContext(gdbProxy, executor, capstone);
+					this.session.setTestContext(this.gdbProxy, this.executor, this.capstone);
 				}
-				session.setRunAsServer(true);
-				session.start(<NodeJS.ReadableStream>socket, socket);
-				spiedSession = spy(session);
+				this.session.setRunAsServer(true);
+				this.session.start(<NodeJS.ReadableStream>socket, socket);
+				this.spiedSession = spy(this.session);
 			}).listen(0);
 		}
 		// make VS Code connect to debug server instead of launching debug adapter
 		dc = new DebugClient('node', DEBUG_ADAPTER, 'fs-uae');
-		return dc.start(server.address().port);
+		let address: any = this.server.address();
+		let port = 0;
+		if (address instanceof Object) {
+			port = address.port;
+		}
+		return dc.start(port);
 	});
 
 	afterEach(function () {
-		session.terminate();
-		reset(mockedExecutor);
-		reset(mockedGdbProxy);
-		reset(spiedSession);
+		this.session.terminate();
+		reset(this.mockedExecutor);
+		reset(this.mockedGdbProxy);
+		reset(this.spiedSession);
 		return dc.stop();
 	});
 
 	after(function () {
-		session.removeAllListeners();
-		session.shutdown();
-		server.close();
+		this.session.removeAllListeners();
+		this.session.shutdown();
+		this.server.close();
 	});
 
 
@@ -140,11 +136,11 @@ describe('Node Debug Adapter', () => {
 
 	describe('launch', () => {
 		beforeEach(function () {
-			when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+			when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
 		});
 
 		it('should run program to the end', function () {
-			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+			when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				let cb = callbacks.get('end');
 				if (cb) {
 					cb();
@@ -162,8 +158,8 @@ describe('Node Debug Adapter', () => {
 		it('should stop on entry', function () {
 			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
-				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
-				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
 						if (cb) {
@@ -172,7 +168,7 @@ describe('Node Debug Adapter', () => {
 					}, 1);
 					return Promise.resolve();
 				});
-				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+				when(this.mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
 						index: 1,
 						segmentId: 0,
@@ -197,8 +193,8 @@ describe('Node Debug Adapter', () => {
 		it('should stop on entry', function () {
 			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
-				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
-				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
 						if (cb) {
@@ -207,7 +203,7 @@ describe('Node Debug Adapter', () => {
 					}, 1);
 					return Promise.resolve();
 				});
-				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+				when(this.mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
 						index: 1,
 						segmentId: 0,
@@ -232,13 +228,13 @@ describe('Node Debug Adapter', () => {
 	describe('setBreakpoints', function () {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
-				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
 			}
 		});
 		it('should stop on a breakpoint', function () {
 			this.timeout(20000);
-			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+			when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				setTimeout(function () {
 					let cb = callbacks.get('stopOnBreakpoint');
 					if (cb) {
@@ -247,7 +243,7 @@ describe('Node Debug Adapter', () => {
 				}, 1);
 				return Promise.resolve();
 			});
-			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
+			when(this.mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
 				return Promise.resolve(<GdbBreakpoint>{
 					id: 0,
 					segmentId: 0,
@@ -255,7 +251,7 @@ describe('Node Debug Adapter', () => {
 					verified: false,
 				});
 			});
-			when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+			when(this.mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 				frames: [<GdbStackPosition>{
 					index: 1,
 					segmentId: 0,
@@ -265,7 +261,7 @@ describe('Node Debug Adapter', () => {
 				}],
 				count: 1
 			}));
-			when(mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
+			when(this.mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
 				name: "d0",
 				value: 1
 			}]));
@@ -276,7 +272,7 @@ describe('Node Debug Adapter', () => {
 
 		it('hitting a lazy breakpoint should send a breakpoint event', function () {
 			this.timeout(defaultTimeout);
-			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+			when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				setTimeout(function () {
 					let cb = callbacks.get('stopOnBreakpoint');
 					if (cb) {
@@ -296,7 +292,7 @@ describe('Node Debug Adapter', () => {
 				}, 2);
 				return Promise.resolve();
 			});
-			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
+			when(this.mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
 				return Promise.resolve(<GdbBreakpoint>{
 					id: 0,
 					segmentId: 0,
@@ -304,7 +300,7 @@ describe('Node Debug Adapter', () => {
 					verified: false,
 				});
 			});
-			when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+			when(this.mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 				frames: [<GdbStackPosition>{
 					index: 1,
 					segmentId: 0,
@@ -328,9 +324,9 @@ describe('Node Debug Adapter', () => {
 	describe('stepping', function () {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
-				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
-				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
 						if (cb) {
@@ -344,7 +340,7 @@ describe('Node Debug Adapter', () => {
 		it('should step', async function () {
 			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
-				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+				when(this.mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
 						index: 1,
 						segmentId: 0,
@@ -372,7 +368,7 @@ describe('Node Debug Adapter', () => {
 					}],
 					count: 1
 				}));
-				when(mockedGdbProxy.step()).thenCall(() => {
+				when(this.mockedGdbProxy.step()).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnBreakpoint');
 						if (cb) {
@@ -381,7 +377,7 @@ describe('Node Debug Adapter', () => {
 					}, 1);
 					return Promise.resolve();
 				});
-				when(mockedGdbProxy.stepIn()).thenCall(() => {
+				when(this.mockedGdbProxy.stepIn()).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnBreakpoint');
 						if (cb) {
@@ -411,7 +407,7 @@ describe('Node Debug Adapter', () => {
 		it('should continue and stop', async function () {
 			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
-				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+				when(this.mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
 						index: 1,
 						segmentId: 0,
@@ -430,10 +426,10 @@ describe('Node Debug Adapter', () => {
 					}],
 					count: 1
 				}));
-				when(mockedGdbProxy.continueExecution()).thenCall(() => {
+				when(this.mockedGdbProxy.continueExecution()).thenCall(() => {
 					return Promise.resolve();
 				});
-				when(mockedGdbProxy.pause()).thenCall(() => {
+				when(this.mockedGdbProxy.pause()).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnBreakpoint');
 						if (cb) {
@@ -461,10 +457,10 @@ describe('Node Debug Adapter', () => {
 	describe('stack frame index', function () {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
-				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
-				when(mockedCapstone.disassemble(anyString())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0\n"));
-				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.mockedCapstone.disassemble(anyString())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0\n"));
+				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
 						if (cb) {
@@ -477,22 +473,22 @@ describe('Node Debug Adapter', () => {
 					}, 1);
 					return Promise.resolve();
 				});
-				when(mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, _reject) => { resolve(["0", -1]); })).thenReturn(new Promise((resolve, _reject) => { resolve(["a", 1]); }));
-				when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
-				when(mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
+				when(this.mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, _reject) => { resolve(["0", -1]); })).thenReturn(new Promise((resolve, _reject) => { resolve(["a", 1]); }));
+				when(this.mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
+				when(this.mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
 					name: "d0",
 					value: 1
 				}, <GdbRegister>{
 					name: "a0",
 					value: 10
 				}]));
-				when(mockedGdbProxy.getSegments()).thenReturn([<Segment>{ address: 10, size: 10 }]);
+				when(this.mockedGdbProxy.getSegments()).thenReturn([<Segment>{ address: 10, size: 10 }]);
 			}
 		});
 		it('should retrieve a complex stack', async function () {
 			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
-				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+				when(this.mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
 						index: -1,
 						segmentId: 0,
@@ -559,22 +555,22 @@ describe('Node Debug Adapter', () => {
 	describe('evaluateExpression', function () {
 		beforeEach(async function () {
 			if (!testWithRealEmulator) {
-				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
-				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
 						if (cb) {
 							cb();
 						}
 					}, 1);
-					session.updateSegments([<Segment>{
+					this.session.updateSegments([<Segment>{
 						address: 10,
 						size: 20
 					}]);
 					return Promise.resolve();
 				});
-				when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
+				when(this.mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number) => {
 					return Promise.resolve(<GdbBreakpoint>{
 						id: 0,
 						segmentId: 0,
@@ -582,7 +578,7 @@ describe('Node Debug Adapter', () => {
 						verified: false,
 					});
 				});
-				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+				when(this.mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
 						index: 1,
 						segmentId: 0,
@@ -592,22 +588,22 @@ describe('Node Debug Adapter', () => {
 					}],
 					count: 1
 				}));
-				when(mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, reject) => { resolve(["a", -1]); }));
-				when(mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
+				when(this.mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, reject) => { resolve(["a", -1]); }));
+				when(this.mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
 					name: "d0",
 					value: 1
 				}, <GdbRegister>{
 					name: "a0",
 					value: 10
 				}]));
-				when(mockedCapstone.disassemble(anyString())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0\n"));
-				when(mockedGdbProxy.setMemory(0, anyString())).thenReturn(Promise.resolve());
-				when(mockedGdbProxy.setMemory(10, anyString())).thenReturn(Promise.resolve());
-				when(mockedGdbProxy.setMemory(11, anyString())).thenReturn(Promise.resolve());
-				when(mockedGdbProxy.getMemory(0, anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
-				when(mockedGdbProxy.getMemory(10, anyNumber())).thenReturn(Promise.resolve("aa00000000c00b0000f8"));
-				when(mockedGdbProxy.getMemory(422, anyNumber())).thenReturn(Promise.resolve("0000000b")); // 422 = 19c + 10
-				when(mockedGdbProxy.getMemory(11, anyNumber())).thenReturn(Promise.resolve("bb00000000c00b0000f8"));
+				when(this.mockedCapstone.disassemble(anyString())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0\n"));
+				when(this.mockedGdbProxy.setMemory(0, anyString())).thenReturn(Promise.resolve());
+				when(this.mockedGdbProxy.setMemory(10, anyString())).thenReturn(Promise.resolve());
+				when(this.mockedGdbProxy.setMemory(11, anyString())).thenReturn(Promise.resolve());
+				when(this.mockedGdbProxy.getMemory(0, anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
+				when(this.mockedGdbProxy.getMemory(10, anyNumber())).thenReturn(Promise.resolve("aa00000000c00b0000f8"));
+				when(this.mockedGdbProxy.getMemory(422, anyNumber())).thenReturn(Promise.resolve("0000000b")); // 422 = 19c + 10
+				when(this.mockedGdbProxy.getMemory(11, anyNumber())).thenReturn(Promise.resolve("bb00000000c00b0000f8"));
 			}
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
@@ -640,22 +636,22 @@ describe('Node Debug Adapter', () => {
 			let evaluateResponse = await dc.evaluateRequest({
 				expression: "M0=10"
 			});
-			verify(mockedGdbProxy.setMemory(0, anyString())).once();
-			resetCalls(mockedGdbProxy);
+			verify(this.mockedGdbProxy.setMemory(0, anyString())).once();
+			resetCalls(this.mockedGdbProxy);
 			expect(evaluateResponse.body.type).to.equal('array');
 			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | ..........');
 			// Test variable replacement
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "M${a0}=10"
 			});
-			verify(mockedGdbProxy.setMemory(10, anyString())).once();
-			resetCalls(mockedGdbProxy);
+			verify(this.mockedGdbProxy.setMemory(10, anyString())).once();
+			resetCalls(this.mockedGdbProxy);
 			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª.........');
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "M ${copperlist}=10"
 			});
-			verify(mockedGdbProxy.setMemory(11, anyString())).once();
-			resetCalls(mockedGdbProxy);
+			verify(this.mockedGdbProxy.setMemory(11, anyString())).once();
+			resetCalls(this.mockedGdbProxy);
 			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
 		});
 		it('should evaluate a memory disassemble', async function () {
@@ -679,22 +675,22 @@ describe('Node Debug Adapter', () => {
 	describe('Set variables', function () {
 		beforeEach(async function () {
 			if (!testWithRealEmulator) {
-				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
-				when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
 						if (cb) {
 							cb();
 						}
 					}, 1);
-					session.updateSegments([<Segment>{
+					this.session.updateSegments([<Segment>{
 						address: 10,
 						size: 20
 					}]);
 					return Promise.resolve();
 				});
-				when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+				when(this.mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
 						index: 1,
 						segmentId: 0,
@@ -704,8 +700,8 @@ describe('Node Debug Adapter', () => {
 					}],
 					count: 1
 				}));
-				when(mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, reject) => { resolve(["a", -1]); }));
-				when(mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
+				when(this.mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, reject) => { resolve(["a", -1]); }));
+				when(this.mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
 					name: "d0",
 					value: 1
 				}, <GdbRegister>{
@@ -725,7 +721,7 @@ describe('Node Debug Adapter', () => {
 		it('should set a variable value', async function () {
 			this.timeout(defaultTimeout);
 			let responseScopes: DebugProtocol.ScopesResponse = await dc.scopesRequest(<DebugProtocol.ScopesArguments>{ frameId: 0 });
-			when(mockedGdbProxy.setRegister(anything(), anything())).thenReturn(Promise.resolve("af"));
+			when(this.mockedGdbProxy.setRegister(anything(), anything())).thenReturn(Promise.resolve("af"));
 			let response = await dc.setVariableRequest(<DebugProtocol.SetVariableArguments>{
 				variablesReference: responseScopes.body.scopes[0].variablesReference
 			});
@@ -735,13 +731,13 @@ describe('Node Debug Adapter', () => {
 	describe('setExceptionBreakpoints', function () {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
-				when(mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
 			}
 		});
 		it('should stop on an exception', async function () {
 			this.timeout(defaultTimeout);
-			when(mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+			when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				setTimeout(function () {
 					let cb = callbacks.get('stopOnException');
 					if (cb) {
@@ -753,7 +749,7 @@ describe('Node Debug Adapter', () => {
 				}, 1);
 				return Promise.resolve();
 			});
-			when(mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number, mask: number) => {
+			when(this.mockedGdbProxy.setBreakPoint(anyNumber(), anyNumber(), anyNumber())).thenCall((segmentId: number, offset: number, mask: number) => {
 				return Promise.resolve(<GdbBreakpoint>{
 					id: 0,
 					segmentId: 0,
@@ -762,7 +758,7 @@ describe('Node Debug Adapter', () => {
 					exceptionMask: mask
 				});
 			});
-			when(mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
+			when(this.mockedGdbProxy.stack()).thenReturn(Promise.resolve(<GdbStackFrame>{
 				frames: [<GdbStackPosition>{
 					index: 1,
 					segmentId: 0,
@@ -772,11 +768,11 @@ describe('Node Debug Adapter', () => {
 				}],
 				count: 1
 			}));
-			when(mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
+			when(this.mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
 				name: "d0",
 				value: 1
 			}]));
-			when(mockedGdbProxy.getHaltStatus()).thenReturn(Promise.resolve(<GdbHaltStatus>{
+			when(this.mockedGdbProxy.getHaltStatus()).thenReturn(Promise.resolve(<GdbHaltStatus>{
 				code: 8,
 				details: "details"
 			}));
@@ -796,12 +792,12 @@ describe('Node Debug Adapter', () => {
 				dc.assertStoppedLocation('exception', { line: 33 })
 			]);
 			// Test Breakpoint removal
-			when(mockedGdbProxy.removeBreakPoint(anyNumber(), anyNumber(), anyNumber())).thenReturn(Promise.resolve());
+			when(this.mockedGdbProxy.removeBreakPoint(anyNumber(), anyNumber(), anyNumber())).thenReturn(Promise.resolve());
 			let response = await dc.setExceptionBreakpointsRequest(<DebugProtocol.SetExceptionBreakpointsArguments>{
 				filters: []
 			});
 			expect(response.success).to.be.equal(true);
-			const [segId, offset, mask] = capture(mockedGdbProxy.removeBreakPoint).last();
+			const [segId, offset, mask] = capture(this.mockedGdbProxy.removeBreakPoint).last();
 			expect(segId).to.be.equal(0);
 			expect(offset).to.be.equal(0);
 			expect(mask).to.be.equal(FsUAEDebugSession.DEFAULT_EXCEPTION_MASK);
