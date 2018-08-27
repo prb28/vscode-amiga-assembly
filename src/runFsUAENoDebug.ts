@@ -53,6 +53,15 @@ export class RunFsUAENoDebugSession extends LoggingDebugSession {
 	}
 
 	/**
+	 * Setting the context to run the tests.
+	 * @param executor mocked executor
+	 */
+	public setTestContext(executor: Executor) {
+		this.executor = executor;
+	}
+
+
+	/**
 	 * The 'initialize' request is the first request called by the frontend
 	 * to interrogate the features the debug adapter provides.
 	 */

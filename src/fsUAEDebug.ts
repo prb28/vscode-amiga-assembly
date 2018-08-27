@@ -104,6 +104,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 	 * Setting the context to run the tests.
 	 * @param gdbProxy mocked proxy
 	 * @param executor mocked executor
+	 * @param capstone mocked capstone
 	 */
 	public setTestContext(gdbProxy: GdbProxy, executor: Executor, capstone: Capstone) {
 		this.executor = executor;
