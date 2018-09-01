@@ -105,9 +105,9 @@
                         "enabled": false,
                         "file": "my/path/to/vasmm68k_mot",
                         "options": [
-                            "-kick1hunks",
-                            "-devpac",
-                            "-Fhunk"
+                            "-m68000",
+                            "-Fhunk",
+                            "-linedebug"
                         ]
                     },
                     "description": "VASM copiler configuration"
@@ -277,7 +277,7 @@
                     {
                         "type": "fs-uae",
                         "request": "launch",
-                        "name": "Launch",
+                        "name": "Debug",
                         "buildWorkspace": true,
                         "stopOnEntry": true,
                         "serverName": "localhost",
@@ -303,7 +303,7 @@
                         "body": {
                             "type": "fs-uae",
                             "request": "launch",
-                            "name": "Launch",
+                            "name": "Debug",
                             "buildWorkspace": true,
                             "stopOnEntry": true,
                             "serverName": "localhost",
@@ -371,7 +371,7 @@
                         "request": "launch",
                         "name": "Run",
                         "buildWorkspace": true,
-                        "emulator": "fs-uae",
+                        "emulator": "Path to fs-uae executable file",
                         "options": [
                             "--chip_memory=1024",
                             "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
