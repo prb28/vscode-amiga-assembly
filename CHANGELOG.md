@@ -5,7 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- Debugging with FS-UAE
+- [Issue #16](https://github.com/prb28/vscode-amiga-assembly/issues/16) Add VASM directives to documentation
+- [Issue #15](https://github.com/prb28/vscode-amiga-assembly/issues/15) Calculation in memory dump and disassemble command
+- [Issue #14](https://github.com/prb28/vscode-amiga-assembly/issues/14) Translate gdb error codes
+- [Issue #13](https://github.com/prb28/vscode-amiga-assembly/issues/13) Copper and interruptions as threads
+- [Issue #12](https://github.com/prb28/vscode-amiga-assembly/issues/12) Step back in debugger
+
+### [0.7.0] - 2018-09-03
+- Run and Debug with FS-UAE
+- Disassemble a file
 
 ### [0.6.2] - 2018-06-28
 ### Fixed
