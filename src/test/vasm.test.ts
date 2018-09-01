@@ -47,13 +47,13 @@ describe("VASM Tests", function () {
             await compiler.buildFile(fileUri, false);
             verify(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
             let args = capture(executorCompiler.runTool).last();
-            expect(args[0]).to.be.eql(["-kick1hunks", "-devpac", "-Fhunk", "-o", "/workdir/build/file1.o", "/file1.s"]);
+            expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", "/workdir/build/file1.o", "/file1.s"]);
         });
         it("Should build the current editor file", async function () {
             return compiler.buildCurrentEditorFile().then(function () {
                 verify(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
                 let args = capture(executorCompiler.runTool).last();
-                expect(args[0]).to.be.eql(["-kick1hunks", "-devpac", "-Fhunk", "-o", "/workdir/build/vasm.o", "/vasm.s"]);
+                expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", "/workdir/build/vasm.o", "/vasm.s"]);
             });
         });
         it("Should process the global errors to find the line in document", async function () {
@@ -92,9 +92,9 @@ describe("VASM Tests", function () {
             verify(executorLinker.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).calledAfter(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything()));
 
             let args = capture(executorCompiler.runTool).last();
-            expect(args[0]).to.be.eql(["-kick1hunks", "-devpac", "-Fhunk", "-o", "/workdir/build/file2.o", "/file2"]);
+            expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", "/workdir/build/file2.o", "/file2"]);
             args = capture(executorCompiler.runTool).beforeLast();
-            expect(args[0]).to.be.eql(["-kick1hunks", "-devpac", "-Fhunk", "-o", "/workdir/build/file1.o", "/file1.s"]);
+            expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", "/workdir/build/file1.o", "/file1.s"]);
 
             args = capture(executorLinker.runTool).last();
             expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", "/workdir/build/a.out", "/workdir/build/file1.o", "/workdir/build/file2.o"]);
