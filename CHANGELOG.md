@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - [Issue #13](https://github.com/prb28/vscode-amiga-assembly/issues/13) Copper and interruptions as threads
 - [Issue #12](https://github.com/prb28/vscode-amiga-assembly/issues/12) Step back in debugger
 
-### [0.7.0] - 2018-09-03
+### [0.7.0] - 2018-09-
 - Run and Debug with FS-UAE
 - Disassemble a file
 
