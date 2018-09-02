@@ -14,13 +14,12 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 - Run a program in [FS-UAE](https://fs-uae.net/)
 - Disassemble a file with capstone
 
-## New in 0.6
+## Features
 ### VASM and VLINK integration
 You can compile your program with [VASM](http://sun.hasenbraten.de/vasm/) and [VLINK](http://sun.hasenbraten.de/vlink/).
 
 ![Output window screenshot](images/buildworkspace.gif)
 
-## Features
 ### Motorola 68K Assembly Language Support
 This feature is based on the work of Steve Saunders for Sublime Text m68k extension, it's available at https://github.com/stevenjs/M68k-Assembly. Some keywords have been added to be more accurate with the Amiga assembly.
 
@@ -99,4 +98,4 @@ The assembly language will be formatted with the standard shortcuts :
 - Document Formatting
 
 ## Misc credits
-See the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) for details.
+See the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) for detailed credits.
