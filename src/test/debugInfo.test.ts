@@ -49,7 +49,7 @@ describe("Debug Info", function () {
         if (Path.sep === '\\') {
             expect(di.normalize("\\\\a//b//c/d")).to.be.equal("\\\\a\\b\\c\\d");
         } else {
-            expect(di.normalize("\\\\a//b\\c/d")).to.be.equal("/a/b/c/d");
+            expect(di.normalize("\\\\a//b\\c/d")).to.be.equal("/a//b/c/d");
         }
     });
 });
