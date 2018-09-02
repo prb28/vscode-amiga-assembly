@@ -251,7 +251,7 @@ export class GdbProxy extends EventEmitter {
      * @param data Data to parse
      */
     private onData(proxy: GdbProxy, data: any): Promise<void> {
-        //console.log("--->" + data.toString());
+        console.log("--->" + data.toString());
         return new Promise(async (resolve, reject) => {
             for (let packet of GdbProxy.parseData(data)) {
                 switch (packet.type) {
@@ -259,7 +259,7 @@ export class GdbProxy extends EventEmitter {
                         await this.parseError(packet.message);
                         break;
                     case GdbPacketType.STOP:
-                        await this.parseStop(packet.message);
+                        this.parseStop(packet.message);
                         break;
                     case GdbPacketType.END:
                         await this.sendEvent("end");
@@ -373,7 +373,7 @@ export class GdbProxy extends EventEmitter {
             data.write(GdbProxy.calculateChecksum(text), offset);
             offset += 2;
             data.writeInt8(0, offset);
-            //console.log(" <---" + data.toString());
+            console.log(" <---" + data.toString());
             const unlock = await this.mutex.capture('sendPacketString');
             this.socket.write(data);
             this.socket.once('data', (data) => {
@@ -809,37 +809,33 @@ export class GdbProxy extends EventEmitter {
             switch (haltStatus.code) {
                 case GdbSignal.GDB_SIGNAL_TRAP: // Trace/breakpoint trap
                     // A breakpoint has been reached
-                    await this.registers(null).then(async (registers: Array<GdbRegister>) => {
-                        const continueDebugging = !this.stopOnEntryRequested;
-                        if (this.firstStop === true) {
-                            this.firstStop = false;
-                            let rejected = false;
-                            await this.sendAllPendingBreakpoints().catch(err => {
+                    const continueDebugging = !this.stopOnEntryRequested;
+                    if (this.firstStop === true) {
+                        this.firstStop = false;
+                        let rejected = false;
+                        await this.sendAllPendingBreakpoints().catch(err => {
+                            reject(err);
+                            rejected = true;
+                        });
+                        if (rejected) {
+                            return;
+                        }
+                        if (continueDebugging) {
+                            // Send continue command
+                            await this.continueExecution().catch(err => {
                                 reject(err);
-                                rejected = true;
                             });
-                            if (rejected) {
-                                return;
-                            }
-                            if (continueDebugging) {
-                                // Send continue command
-                                await this.continueExecution().catch(err => {
-                                    reject(err);
-                                });
-                                resolve();
-                                return;
-                            }
+                            resolve();
+                            break;
                         }
-                        if (this.stopOnEntryRequested) {
-                            this.stopOnEntryRequested = false;
-                            this.sendEvent('stopOnEntry');
-                        } else if (!continueDebugging || !this.firstStop) {
-                            this.sendEvent('stopOnBreakpoint');
-                        }
-                        resolve();
-                    }).catch(err => {
-                        reject(err);
-                    });
+                    }
+                    if (this.stopOnEntryRequested) {
+                        this.stopOnEntryRequested = false;
+                        this.sendEvent('stopOnEntry');
+                    } else if (!continueDebugging || !this.firstStop) {
+                        this.sendEvent('stopOnBreakpoint');
+                    }
+                    resolve();
                     break;
                 default:
                     // Exception reached
