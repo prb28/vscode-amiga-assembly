@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
+import * as Path from 'path';
 import { capture, spy, verify, anyString, when, anything, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { VASMCompiler, VASMParser, VASMController } from '../vasm';
 import { Executor, ICheckResult } from '../executor';
@@ -47,13 +48,15 @@ describe("VASM Tests", function () {
             await compiler.buildFile(fileUri, false);
             verify(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
             let args = capture(executorCompiler.runTool).last();
-            expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", "/workdir/build/file1.o", "/file1.s"]);
+            let filePath = "/workdir/build/file1.o".replace(/\/+/g, Path.sep);
+            expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", filePath, Path.sep + "file1.s"]);
         });
         it("Should build the current editor file", async function () {
             return compiler.buildCurrentEditorFile().then(function () {
                 verify(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
                 let args = capture(executorCompiler.runTool).last();
-                expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", "/workdir/build/vasm.o", "/vasm.s"]);
+                let filePath = "/workdir/build/vasm.o".replace(/\/+/g, Path.sep);
+                expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", filePath, Path.sep + "vasm.s"]);
             });
         });
         it("Should process the global errors to find the line in document", async function () {
@@ -92,12 +95,14 @@ describe("VASM Tests", function () {
             verify(executorLinker.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).calledAfter(executorCompiler.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything()));
 
             let args = capture(executorCompiler.runTool).last();
-            expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", "/workdir/build/file2.o", "/file2"]);
+
+            let buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
+            expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", buildPath + "file2.o", Path.sep + "file2"]);
             args = capture(executorCompiler.runTool).beforeLast();
-            expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", "/workdir/build/file1.o", "/file1.s"]);
+            expect(args[0]).to.be.eql(["-m68000", "-Fhunk", "-linedebug", "-o", buildPath + "file1.o", Path.sep + "file1.s"]);
 
             args = capture(executorLinker.runTool).last();
-            expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", "/workdir/build/a.out", "/workdir/build/file1.o", "/workdir/build/file2.o"]);
+            expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", buildPath + "a.out", buildPath + "file1.o", buildPath + "file2.o"]);
         });
         it("Should return an error if the build dir does not exists", function () {
             spiedCompiler = spy(compiler);

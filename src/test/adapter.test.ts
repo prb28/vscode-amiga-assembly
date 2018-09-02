@@ -524,7 +524,8 @@ describe('Node Debug Adapter', () => {
 			if (src) {
 				expect(src.name).to.be.equal("gencop.s");
 				if (src.path) {
-					expect(src.path.endsWith("test_files/debug/gencop.s")).to.be.equal(true);
+					let pathToTest = Path.join("test_files", "debug", "gencop.s");
+					expect(src.path.endsWith(pathToTest)).to.be.equal(true);
 				}
 			}
 			expect(stackFrames[1].id).to.be.equal(1);

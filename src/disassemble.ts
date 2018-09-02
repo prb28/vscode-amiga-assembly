@@ -41,7 +41,7 @@ export class Disassembler {
                         await window.showTextDocument(newFile).then((textEditor) => {
                             textEditor.edit(edit => {
                                 let text = "";
-                                let lines = data.split('\n');
+                                let lines = data.split(/\r\n|\r|\n/g);
                                 for (let l of lines) {
                                     let elms = l.split("  ");
                                     if (elms.length > 2) {

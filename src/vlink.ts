@@ -62,7 +62,7 @@ export class VLINKLinker {
 export class VLINKParser implements ExecutorParser {
     parse(text: string): ICheckResult[] {
         let errors: ICheckResult[] = [];
-        let lines = text.split('\n');
+        let lines = text.split(/\r\n|\r|\n/g);
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
             let line = lines[lineIndex];
             if ((line.length > 1) && !line.startsWith('>')) {

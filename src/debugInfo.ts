@@ -1,5 +1,6 @@
 import { Hunk, HunkParser, SourceLine, Symbol, HunkType } from './amigaHunkParser';
 import * as fs from 'fs';
+import * as path from 'path';
 
 export class DebugInfo {
     public hunks = new Array<Hunk>();
@@ -34,17 +35,21 @@ export class DebugInfo {
 
     public getSymbols(filename: string | undefined): Symbol[] {
         let symbols = Array<Symbol>();
+        let normFilename = filename;
+        if (normFilename) {
+            normFilename = this.normalize(normFilename);
+        }
         for (let i = 0; i < this.hunks.length; i++) {
             let hunk = this.hunks[i];
             if (hunk.symbols) {
-                if (filename) {
+                if (normFilename) {
                     let sourceFiles = hunk.lineDebugInfo;
                     if (sourceFiles) {
                         for (let j = 0; j < sourceFiles.length; j++) {
                             let srcFile = sourceFiles[j];
                             // Is there a path replacement
                             let name = this.resolveReplacedPathName(srcFile.name);
-                            if (name === filename) {
+                            if (name === normFilename) {
                                 for (let s of hunk.symbols) {
                                     symbols.push(s);
                                 }
@@ -91,7 +96,7 @@ export class DebugInfo {
         let contents = this.sourceFilesCacheMap.get(filename);
         if (contents === undefined) {
             // Load source file
-            contents = fs.readFileSync(filename).toString().split('\n');
+            contents = fs.readFileSync(filename).toString().split(/\r\n|\r|\n/g);
             this.sourceFilesCacheMap.set(filename, contents);
         }
         if (line < contents.length) {
@@ -127,7 +132,7 @@ export class DebugInfo {
                                 break;
                             }
                         }
-                        data[0] = name;
+                        data[0] = this.normalize(name);
                     }
                     if (data[1] > 0) {
                         sourceLineText = this.getSourceLineText(data[0], data[1] - 1);
@@ -152,10 +157,11 @@ export class DebugInfo {
                 }
             }
         }
-        return name;
+        return this.normalize(name);
     }
 
     public getAddressSeg(filename: string, fileLine: number): ([number, number] | null) {
+        let normFilename = this.normalize(filename);
         for (let i = 0; i < this.hunks.length; i++) {
             let hunk = this.hunks[i];
             let sourceFiles = hunk.lineDebugInfo;
@@ -164,7 +170,7 @@ export class DebugInfo {
                     let srcFile = sourceFiles[j];
                     // Is there a path replacement
                     let name = this.resolveReplacedPathName(srcFile.name);
-                    if (name === filename) {
+                    if (name === normFilename) {
                         for (let k = 0; k < srcFile.lines.length; k++) {
                             let line = srcFile.lines[k];
                             if (line.line === fileLine) {
@@ -180,6 +186,7 @@ export class DebugInfo {
 
     public getAllSegmentIds(filename: string): number[] {
         let segIds: number[] = [];
+        let normFilename = this.normalize(filename);
         for (let i = 0; i < this.hunks.length; i++) {
             let hunk = this.hunks[i];
             let sourceFiles = hunk.lineDebugInfo;
@@ -188,12 +195,20 @@ export class DebugInfo {
                     let srcFile = sourceFiles[j];
                     // Is there a path replacement
                     let name = this.resolveReplacedPathName(srcFile.name);
-                    if (name === filename) {
+                    if (name === normFilename) {
                         segIds.push(i);
                     }
                 }
             }
         }
         return segIds;
+    }
+
+    public normalize(dirName: string): string {
+        if (path.sep === '/') {
+            return dirName.replace(/\\+/g, path.sep);
+        } else {
+            return dirName.replace(/\/+/g, path.sep);
+        }
     }
 }

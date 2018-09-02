@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as fs from "fs";
+import * as Path from 'path';
 import { capture, reset, spy, verify, anyString, when, anything } from 'ts-mockito/lib/ts-mockito';
 import { VLINKParser, VLINKLinker } from '../vlink';
 import { Executor } from '../executor';
@@ -29,7 +30,8 @@ describe("VLINK Tests", function () {
             await linker.linkFiles(filesUri, "myprog", vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build"));
             verify(executor.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
             let args = capture(executor.runTool).last();
-            expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", "/workdir/build/myprog", "/workdir/build/file1.o", "/workdir/build/file2.o"]);
+            let buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
+            expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", buildPath + "myprog", buildPath + "file1.o", buildPath + "file2.o"]);
             reset(spiedfs);
         });
         it("Should reject if the linker is disable", async function () {

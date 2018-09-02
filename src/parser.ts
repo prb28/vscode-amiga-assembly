@@ -163,7 +163,7 @@ export class HoverInstructionsManager {
         // Read the instructions file
         // Creating the relative path to find the test file
         const filePath = path.join(__dirname, "..", "docs", "intructionsset.csv");
-        var lines = fs.readFileSync(filePath, 'utf8').split('\n');
+        var lines = fs.readFileSync(filePath, 'utf8').split(/\r\n|\r|\n/g);
         var lineIndex = 0;
         for (let line of lines) {
             if (line.length > 0) {

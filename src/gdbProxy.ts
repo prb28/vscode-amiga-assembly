@@ -251,7 +251,7 @@ export class GdbProxy extends EventEmitter {
      * @param data Data to parse
      */
     private onData(proxy: GdbProxy, data: any): Promise<void> {
-        console.log("--->" + data.toString());
+        //console.log("--->" + data.toString());
         return new Promise(async (resolve, reject) => {
             for (let packet of GdbProxy.parseData(data)) {
                 switch (packet.type) {
@@ -373,7 +373,7 @@ export class GdbProxy extends EventEmitter {
             data.write(GdbProxy.calculateChecksum(text), offset);
             offset += 2;
             data.writeInt8(0, offset);
-            console.log(" <---" + data.toString());
+            //console.log(" <---" + data.toString());
             const unlock = await this.mutex.capture('sendPacketString');
             this.socket.write(data);
             this.socket.once('data', (data) => {

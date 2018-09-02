@@ -430,7 +430,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 								});
 								if (memory) {
 									let disassembled = await this.capstone.disassemble(memory);
-									let selectedLine = disassembled.split('\n')[0];
+									let selectedLine = disassembled.split(/\r\n|\r|\n/g)[0];
 									let elms = selectedLine.split("  ");
 									if (elms.length > 2) {
 										selectedLine = elms[2];
@@ -754,7 +754,7 @@ export class FsUAEDebugSession extends LoggingDebugSession {
 								const ckey = key;
 								// disassemble the code 
 								this.capstone.disassemble(memory).then((code) => {
-									let lines = code.split('\n');
+									let lines = code.split(/\r\n|\r|\n/g);
 									let i = 0;
 									for (let l of lines) {
 										let elms = l.split("  ");

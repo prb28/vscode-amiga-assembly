@@ -58,7 +58,7 @@ describe("Global Extension Tests", function () {
     });
     describe("Calc comand", function () {
         before(() => {
-            const newFile = vscode.Uri.parse("untitled://" + path.join(__dirname, "..", "..", "out", "myfile.s"));
+            const newFile = vscode.Uri.parse("untitled:myfile.s");
             return vscode.workspace.openTextDocument(newFile).then(document => {
                 const edit = new vscode.WorkspaceEdit();
                 edit.insert(newFile, new vscode.Position(0, 0), "3+2");

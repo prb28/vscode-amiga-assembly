@@ -27,7 +27,7 @@ describe("Debug Info", function () {
         pathReplacements.set("/Users/papa/developpements/amiga/projects/helloworld", sourceRootPath);
         let di = new DebugInfo(pathReplacements);
         expect(di.loadInfo(programFilename)).to.be.equal(true);
-        expect(di.resolveFileLine(0, 4)).to.be.eql([sourceRootPath + "/gencop.s", 33, "              clr.l      d0                      ; les registres sont des long - il faut les nettoyer avec un .l"]);
+        expect(di.resolveFileLine(0, 4)).to.be.eql([sourceRootPath + Path.sep + "gencop.s", 33, "              clr.l      d0                      ; les registres sont des long - il faut les nettoyer avec un .l"]);
     });
     it("Should return all segments from a file", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
@@ -43,5 +43,13 @@ describe("Debug Info", function () {
     it("Should raise an error if the file is not found", function () {
         let di = new DebugInfo();
         expect(di.loadInfo("nothere")).to.be.equal(false);
+    });
+    it("Should normalize paths", function () {
+        let di = new DebugInfo();
+        if (Path.sep === '\\') {
+            expect(di.normalize("\\\\a//b//c/d")).to.be.equal("\\\\a\\b\\c\\d");
+        } else {
+            expect(di.normalize("\\\\a//b\\c/d")).to.be.equal("/a/b/c/d");
+        }
     });
 });
