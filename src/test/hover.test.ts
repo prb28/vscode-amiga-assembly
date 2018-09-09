@@ -50,7 +50,7 @@ describe("Hover Tests", function () {
                 let elm = result.contents[0];
                 expect(elm instanceof MarkdownString).to.be.true;
                 if (elm instanceof MarkdownString) {
-                    expect(elm.value).to.be.equal("#`32` - $`20` - %`100000`");
+                    expect(elm.value).to.be.equal("#`32` - $`20` - %`100000` - @`40`");
                 }
             }
         });
@@ -104,25 +104,46 @@ describe("Hover Tests", function () {
         let mdStr = hp.renderNumberForWord("#10");
         expect(mdStr).to.not.be.null;
         if (mdStr) {
-            expect(mdStr.value).to.be.equal("#`10` - $`a` - %`1010`");
+            expect(mdStr.value).to.be.equal("#`10` - $`a` - %`1010` - @`12`");
         }
         mdStr = hp.renderNumberForWord("$10");
         expect(mdStr).to.not.be.null;
         if (mdStr) {
-            expect(mdStr.value).to.be.equal("#`16` - $`10` - %`10000`");
+            expect(mdStr.value).to.be.equal("#`16` - $`10` - %`10000` - @`20`");
         }
         mdStr = hp.renderNumberForWord("%10");
         expect(mdStr).to.not.be.null;
         if (mdStr) {
-            expect(mdStr.value).to.be.equal("#`2` - $`2` - %`10`");
+            expect(mdStr.value).to.be.equal("#`2` - $`2` - %`10` - @`2`");
+        }
+        mdStr = hp.renderNumberForWord("@10");
+        expect(mdStr).to.not.be.null;
+        if (mdStr) {
+            expect(mdStr.value).to.be.equal("#`8` - $`8` - %`1000` - @`10`");
         }
     });
     it("Should render a register value", function () {
         let hp = new M68kHoverProvider();
+        let expected = "|Bits | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0|\n|---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ----|\n|  | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0|\n\n";
         let mdStr = hp.renderRegisterValue("$1010");
         expect(mdStr).to.not.be.null;
         if (mdStr) {
-            expect(mdStr.value).to.be.equal("|Bits | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0|\n|---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ----|\n|  | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0|\n\n");
+            expect(mdStr.value).to.be.equal(expected);
+        }
+        mdStr = hp.renderRegisterValue("@10020");
+        expect(mdStr).to.not.be.null;
+        if (mdStr) {
+            expect(mdStr.value).to.be.equal(expected);
+        }
+        mdStr = hp.renderRegisterValue("#4112");
+        expect(mdStr).to.not.be.null;
+        if (mdStr) {
+            expect(mdStr.value).to.be.equal(expected);
+        }
+        mdStr = hp.renderRegisterValue("%1000000010000");
+        expect(mdStr).to.not.be.null;
+        if (mdStr) {
+            expect(mdStr.value).to.be.equal(expected);
         }
     });
 });

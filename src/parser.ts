@@ -278,11 +278,17 @@ export class NumberParser {
     public parse(word: string): number | null {
         let hexValueRegExp = /\$([\da-z]+)/i;
         let decValueRegExp = /[#]?([-]?[\d]+)/;
+        let octValueRegExp = /@(\d+)/;
         let binValueRegExp = /%([01]*)/;
         // look for an hex value
         let match = hexValueRegExp.exec(word);
         if (match) {
             return parseInt(match[1], 16);
+        }
+        // look for an octal value
+        match = octValueRegExp.exec(word);
+        if (match) {
+            return parseInt(match[1], 8);
         }
         // look for a binary value
         match = binValueRegExp.exec(word);
@@ -299,6 +305,7 @@ export class NumberParser {
 
     public tranformToDecimal(text: string): string {
         let hexValueRegExp = /\$([\da-z]+)/gi;
+        let octValueRegExp = /@(\d+)/g;
         let binValueRegExp = /%([01]*)/g;
         let transformed = text;
         // look for an hex value
@@ -308,6 +315,14 @@ export class NumberParser {
                 let s = match[i];
                 let v = parseInt(s, 16);
                 transformed = transformed.replace("$" + s, v.toString());
+            }
+        }
+        // look for an octal value
+        while (match = octValueRegExp.exec(transformed)) {
+            for (let i = 1; i < match.length; i++) {
+                let s = match[i];
+                let v = parseInt(s, 8);
+                transformed = transformed.replace("@" + s, v.toString());
             }
         }
         // look for a binary value
@@ -356,6 +371,20 @@ export class NumberParser {
             return this.chunk(bin, 8).join('.');
         } else {
             return bin;
+        }
+    }
+
+    public octalToString(num: number, chunk: boolean): string {
+        let oct;
+        if (num < 0) {
+            oct = (num >>> 0).toString(8);
+        } else {
+            oct = num.toString(8);
+        }
+        if (chunk) {
+            return this.chunk(oct, 4).join('.');
+        } else {
+            return oct;
         }
     }
 

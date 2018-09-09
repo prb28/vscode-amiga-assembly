@@ -48,7 +48,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     // Is there a value next to the register ?
                     let elms = asmLine.data.split(",");
                     for (let elm of elms) {
-                        if (elm.match(/[$#%]([\dA-F]+)/i)) {
+                        if (elm.match(/[$#%@]([\dA-F]+)/i)) {
                             renderedLine2 = this.renderRegisterValue(elm);
                             if (renderedLine2) {
                                 break;
@@ -115,7 +115,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             let hex = this.numberParser.hexToString(value, true);
             // Transform to bin
             let bin = this.numberParser.binaryToString(value, true);
-            return new vscode.MarkdownString("#`" + dec + "` - $`" + hex + "` - %`" + bin + "`");
+            // Transform to octal
+            let oct = this.numberParser.octalToString(value, true);
+            return new vscode.MarkdownString("#`" + dec + "` - $`" + hex + "` - %`" + bin + "` - @`" + oct + "`");
         }
         return null;
     }
