@@ -15,7 +15,7 @@ patterns:
   match: ";[^\n]*\n"
 
 - name: comment.block.asterisk
-  match: "(^|[ \t])\\*(?![+-])[^\n]*\n"
+  match: "(^|[ \t]+)\\*(?![+-,])[^\n]*\n"
 
 - name: comment.block.documentation
   match: ";\*[^\n]*\n"
