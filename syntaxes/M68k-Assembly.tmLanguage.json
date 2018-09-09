@@ -156,19 +156,47 @@
     },
     {
       "name": "keyword.other.opcode.mem.m68k",
-      "match": "(?i)\\b(dc|dcb|ds)(\\.[bwl])?\\b"
+      "match": "(?i)\\b(blk|dc|dcb|ds)(\\.[bdlqswx])?\\b"
+    },
+    {
+      "name": "keyword.other.opcode.pc.m68k",
+      "match": "(?i)\\b(dr)(\\.[bwl])?\\b"
     },
     {
       "name": "keyword.control.import.m68k",
       "match": "(?i)\\b(include|incdir|incbin)\\b"
     },
     {
+      "name": "keyword.control.section.m68k",
+      "match": "(?i)\\b(section|bss(_[cf])?|cseg|code(_[cf])?|data(_[cf])?|dseg)\\b"
+    },
+    {
+      "name": "keyword.control.condition.m68k",
+      "match": "(?i)\\b(if(eq|ne|gt|ge|lt|le|b|nb|c|nc|d|nd|macrod|macrond)|else|end|endif)\\b"
+    },
+    {
       "name": "keyword.control.other.m68k",
-      "match": "(?i)\\b(section|org|load|even|jumpptr)\\b"
+      "match": "(?i)\\b(align|cargs|clrfo|clrso|cnop|comm|comment|echo|einline|end[mfpr]?|erem|even|fail|fpu|idnt|inline|jumpptr|list|llen|load|machine|mexit|mmu|nolist|nopage|nref|odd|offset|opword|org|output|page|plen|print[tv]|public|record|rem|rept|rorg|rsreset|rsset|set|setfo|setso|spc|text|ttl|weak|xdef|xref)\\b"
     },
     {
       "name": "keyword.operator.assignment.m68k",
-      "match": "(?i)\\bequ\\b"
+      "match": "(?i)\\b(equ(\\.[sdxp])|set)\\b"
+    },
+    {
+      "name": "keyword.operator.assignment.float.m68k",
+      "match": "(?i)\\b((fequ|=)(\\.[sdxp]))\\b"
+    },
+    {
+      "name": "keyword.operator.assignment.stack.fo.m68k",
+      "match": "(?i)\\b(fo(\\.[bwlqsdxp]))\\b"
+    },
+    {
+      "name": "keyword.operator.assignment.stack.so.m68k",
+      "match": "(?i)\\b(so(\\.[bwlqsdxp]))\\b"
+    },
+    {
+      "name": "keyword.operator.assignment.stack.rs.m68k",
+      "match": "(?i)\\b(rs(\\.[bwlqsdxp]))\\b"
     },
     {
       "name": "invalid.illegal.opcode.m68k",
