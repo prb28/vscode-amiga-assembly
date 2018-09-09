@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [0.8.0]
+- [Issue #19](https://github.com/prb28/vscode-amiga-assembly/issues/19) * represents the current pc in a operand symbol
+- [Feat #18](https://github.com/prb28/vscode-amiga-assembly/issues/18) Accept octal numbers 
+- [Feat #16](https://github.com/prb28/vscode-amiga-assembly/issues/16) Add VASM directives to documentation
+
 ### [0.7.0] - 2018-09-03
 - Run and Debug with FS-UAE
 - Disassemble a file
