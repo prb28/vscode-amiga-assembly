@@ -123,7 +123,7 @@ patterns:
   match: (?i)\b(if(eq|ne|gt|ge|lt|le|b|nb|c|nc|d|nd|macrod|macrond)|else|end|endif)\b
 
 - name: keyword.control.other.m68k
-  match: (?i)\b(align|cargs|clrfo|clrso|cnop|comm|comment|echo|einline|end[mfpr]?|erem|even|fail|fpu|idnt|inline|jumpptr|list|llen|load|machine|mexit|mmu|nolist|nopage|nref|odd|offset|opword|org|output|page|plen|print[tv]|public|record|rem|rept|rorg|rsreset|rsset|set|setfo|setso|spc|text|ttl|weak|xdef|xref)\b
+  match: (?i)\b(align|cargs|clrfo|clrso|cnop|comm|comment|echo|einline|end[cmfpr]?|erem|even|fail|fpu|idnt|inline|jumpptr|list|llen|load|machine|mexit|mmu|nolist|nopage|nref|odd|offset|opword|org|output|page|plen|print[tv]|public|record|rem|rept|rorg|rsreset|rsset|set|setfo|setso|spc|text|ttl|weak|xdef|xref)\b
 
 - name: keyword.operator.assignment.m68k
   match: (?i)\b(equ(\.[sdxp])|set)\b
