@@ -56,6 +56,9 @@
                 "path": "./syntaxes/M68k-Assembly.tmLanguage.json"
             }
         ],
+        "capabilities": {
+            "definitionProvider": "true"
+        },
         "configuration": {
             "type": "object",
             "title": "Amiga Assembly",

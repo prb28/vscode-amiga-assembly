@@ -152,6 +152,24 @@ export class ASMLine {
         }
         return null;
     }
+
+    /**
+     * Returns the symbol retrieved from a label.
+     * 
+     * @return the symbol string and the range, otherwise undefined
+     */
+    public getSymbolFromLabel(): [string | undefined, Range | undefined] {
+        if (this.label.length > 0) {
+            let elements = this.label.split(/(\s)*(\=|[a-z]?equ(.[a-z])?|:)(\s)*/gi);
+            let symbol = elements[0].trim();
+            let sPos = this.label.indexOf(symbol);
+            if (sPos !== undefined) {
+                let range = new Range(new Position(this.labelRange.start.line, sPos), new Position(this.labelRange.end.line, sPos + symbol.length));
+                return [symbol, range];
+            }
+        }
+        return [undefined, undefined];
+    }
 }
 
 /**

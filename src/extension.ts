@@ -11,6 +11,7 @@ import { FsUAEDebugSession } from './fsUAEDebug';
 import * as Net from 'net';
 import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
 import { Disassembler } from './disassemble';
+import { M68kDefinitionProvider } from './definitionProvider';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -89,6 +90,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Color provider
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_ASM_MODE, new M86kColorProvider()));
+
+    // Definition provider
+    context.subscriptions.push(vscode.languages.registerDefinitionProvider(AMIGA_ASM_MODE, new M68kDefinitionProvider()));
 
     // Diagnostics 
     errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');

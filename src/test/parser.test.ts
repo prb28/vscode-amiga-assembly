@@ -29,6 +29,28 @@ describe("Parser Tests", function () {
             expect(asmLine.data).to.be.empty;
             expect(asmLine.instruction).to.be.empty;
         });
+        it("Should retrieve the symbol from a label line", function () {
+            let asmLine = new ASMLine("mylabel");
+            let [symbol, range] = asmLine.getSymbolFromLabel();
+            expect(symbol).to.be.equal("mylabel");
+            expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
+            asmLine = new ASMLine("mylabel = 123");
+            [symbol, range] = asmLine.getSymbolFromLabel();
+            expect(symbol).to.be.equal("mylabel");
+            expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
+            asmLine = new ASMLine("mylabel \tequ.l 123");
+            [symbol, range] = asmLine.getSymbolFromLabel();
+            expect(symbol).to.be.equal("mylabel");
+            expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
+            asmLine = new ASMLine("mylabel:");
+            [symbol, range] = asmLine.getSymbolFromLabel();
+            expect(symbol).to.be.equal("mylabel");
+            expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
+            asmLine = new ASMLine(" rts");
+            [symbol, range] = asmLine.getSymbolFromLabel();
+            expect(symbol).to.be.eql(undefined);
+            expect(range).to.be.eql(undefined);
+        });
         it("Should parse a single line instruction", function () {
             let asmLine = new ASMLine(" rts");
             expect(asmLine.instruction).to.be.equal("rts");
