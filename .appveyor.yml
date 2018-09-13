@@ -10,9 +10,10 @@ install:
 
 build_script:
   - npm run vscode:prepublish
+  - vsce package
   
 test_script:
   - npm run test --silent
 
-post_build:
-  - vsce package
+after_build:
+  - ps: Push-AppveyorArtifact "*.vsix"
