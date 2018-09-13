@@ -13,7 +13,8 @@ build_script:
   - vsce package
   
 test_script:
-  - npm run test --silent
+  - npm run test:coverage
 
 after_build:
   - ps: Push-AppveyorArtifact "*.vsix"
+
