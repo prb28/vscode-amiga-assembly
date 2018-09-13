@@ -5,10 +5,14 @@ environment:
 install:
   - ps: Install-Product node 10.0.0 x64
   - npm install -g npm@4 --silent
+  - npm install
+  - npm install -g vsce
 
 build_script:
-  - npm install
   - npm run vscode:prepublish
-
+  
 test_script:
-  - npm test
+  - npm run test --silent
+
+post_build:
+  - vsce package
