@@ -10,7 +10,7 @@ install:
 
 build_script:
   - npm run vscode:prepublish
-  - gulp cover:disable
+  - npm run coverage:disable
   - ./node_modules/typescript/bin/tsc -p ./
   - vsce package
   
