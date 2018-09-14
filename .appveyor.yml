@@ -7,6 +7,7 @@ install:
   - npm install -g npm@4 --silent
   - npm install
   - npm install -g vsce
+  - npm install -g gulp
 
 build_script:
   - npm run vscode:prepublish
