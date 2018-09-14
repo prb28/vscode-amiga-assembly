@@ -10,14 +10,15 @@ install:
 
 build_script:
   - npm run vscode:prepublish
-  - npm run build
+  - gulp cover:disable
+  - tsc -p ./
+  - vsce package
   
 test_script:
-  - ps: node ./node_modules/vscode/bin/test
+  - node ./node_modules/vscode/bin/test
 
 artifacts:
   - path: "*.vsix"
 
 on_finish:
-  - vsce package
   - ps: build-scripts\upload.ps1
