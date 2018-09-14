@@ -13,8 +13,10 @@ build_script:
   - vsce package
   
 test_script:
-  - cmd: npm run test:coverage
+  - npm run test
 
 artifacts:
   - path: "*.vsix"
 
+on_finish:
+  - ps: build-scripts\upload.ps1
