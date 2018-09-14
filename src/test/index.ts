@@ -29,14 +29,14 @@ let mocha = new Mocha({
     useColors: true,
     reporter: 'mocha-junit-reporter',
     reporterOptions: {
-        mochaFile: 'test-reports/test-extension.xml'
+        mochaFile: 'test-report.xml'
     }
 });
 
 function configure(mochaOpts: any): void {
     mocha = new Mocha(mochaOpts);
     mocha.reporter('mocha-junit-reporter');
-    mocha.reporterOptions({ mochaFile: 'test-reports/test-extension.xml' });
+    mocha.reporterOptions({ mochaFile: 'test-report.xml' });
 }
 exports.configure = configure;
 
