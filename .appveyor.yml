@@ -10,6 +10,7 @@ install:
 
 build_script:
   - npm run vscode:prepublish
+  - npm run build
   - vsce package
   
 test_script:
