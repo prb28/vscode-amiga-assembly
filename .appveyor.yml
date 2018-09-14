@@ -13,7 +13,7 @@ build_script:
   - vsce package
   
 test_script:
-  - npm run test
+  - node ./node_modules/vscode/bin/test
 
 artifacts:
   - path: "*.vsix"
