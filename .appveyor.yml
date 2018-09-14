@@ -9,13 +9,12 @@ install:
   - npm install
 
 build_script:
-  - npm run vscode:prepublish
   - npm run coverage:disable
-  - npm run compile
+  - npm run vscode:prepublish
   - vsce package
   
 test_script:
-  - node ./node_modules/vscode/bin/test
+  - npm run testonly --loglevel verbose
 
 artifacts:
   - path: "*.vsix"
