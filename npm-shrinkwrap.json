@@ -597,12 +597,6 @@
                 }
             }
         },
-        "charenc": {
-            "version": "0.0.2",
-            "resolved": "https://registry.npmjs.org/charenc/-/charenc-0.0.2.tgz",
-            "integrity": "sha1-wKHS86cJLgN3S/qD8UwPxXkKhmc=",
-            "dev": true
-        },
         "check-error": {
             "version": "1.0.2",
             "resolved": "https://registry.npmjs.org/check-error/-/check-error-1.0.2.tgz",
@@ -810,12 +804,6 @@
                     "dev": true
                 }
             }
-        },
-        "crypt": {
-            "version": "0.0.2",
-            "resolved": "https://registry.npmjs.org/crypt/-/crypt-0.0.2.tgz",
-            "integrity": "sha1-iNf/fsDfuG9xPch7u0LQRNPmxBs=",
-            "dev": true
         },
         "cryptiles": {
             "version": "3.1.2",
@@ -3465,17 +3453,6 @@
             "integrity": "sha1-izqsWIuKZuSXXjzepn97sylgH6w=",
             "dev": true
         },
-        "md5": {
-            "version": "2.2.1",
-            "resolved": "https://registry.npmjs.org/md5/-/md5-2.2.1.tgz",
-            "integrity": "sha1-U6s41f48iJG6RlMp6iP6wFQBJvk=",
-            "dev": true,
-            "requires": {
-                "charenc": "~0.0.1",
-                "crypt": "~0.0.1",
-                "is-buffer": "~1.1.1"
-            }
-        },
         "merge-stream": {
             "version": "1.0.1",
             "resolved": "https://registry.npmjs.org/merge-stream/-/merge-stream-1.0.1.tgz",
@@ -3651,45 +3628,6 @@
                     "dev": true,
                     "requires": {
                         "has-flag": "^3.0.0"
-                    }
-                }
-            }
-        },
-        "mocha-junit-reporter": {
-            "version": "1.18.0",
-            "resolved": "https://registry.npmjs.org/mocha-junit-reporter/-/mocha-junit-reporter-1.18.0.tgz",
-            "integrity": "sha512-y3XuqKa2+HRYtg0wYyhW/XsLm2Ps+pqf9HaTAt7+MVUAKFJaNAHOrNseTZo9KCxjfIbxUWwckP5qCDDPUmjSWA==",
-            "dev": true,
-            "requires": {
-                "debug": "^2.2.0",
-                "md5": "^2.1.0",
-                "mkdirp": "~0.5.1",
-                "strip-ansi": "^4.0.0",
-                "xml": "^1.0.0"
-            },
-            "dependencies": {
-                "ansi-regex": {
-                    "version": "3.0.0",
-                    "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-3.0.0.tgz",
-                    "integrity": "sha1-7QMXwyIGT3lGbAKWa922Bas32Zg=",
-                    "dev": true
-                },
-                "debug": {
-                    "version": "2.6.9",
-                    "resolved": "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz",
-                    "integrity": "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==",
-                    "dev": true,
-                    "requires": {
-                        "ms": "2.0.0"
-                    }
-                },
-                "strip-ansi": {
-                    "version": "4.0.0",
-                    "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-4.0.0.tgz",
-                    "integrity": "sha1-qEeQIusaw2iocTibY1JixQXuNo8=",
-                    "dev": true,
-                    "requires": {
-                        "ansi-regex": "^3.0.0"
                     }
                 }
             }
@@ -5622,12 +5560,6 @@
             "version": "1.0.2",
             "resolved": "https://registry.npmjs.org/wrappy/-/wrappy-1.0.2.tgz",
             "integrity": "sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=",
-            "dev": true
-        },
-        "xml": {
-            "version": "1.0.1",
-            "resolved": "https://registry.npmjs.org/xml/-/xml-1.0.1.tgz",
-            "integrity": "sha1-eLpyAgApxbyHuKgaPPzXS0ovweU=",
             "dev": true
         },
         "xtend": {

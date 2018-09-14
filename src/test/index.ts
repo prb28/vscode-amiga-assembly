@@ -27,16 +27,10 @@ if (!tty.getWindowSize) {
 let mocha = new Mocha({
     ui: "bdd",
     useColors: true,
-    reporter: 'mocha-junit-reporter',
-    reporterOptions: {
-        mochaFile: 'test-report.xml'
-    }
 });
 
 function configure(mochaOpts: any): void {
     mocha = new Mocha(mochaOpts);
-    mocha.reporter('mocha-junit-reporter');
-    mocha.reporterOptions({ mochaFile: 'test-report.xml' });
 }
 exports.configure = configure;
 
