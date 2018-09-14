@@ -11,7 +11,7 @@ install:
 build_script:
   - npm run vscode:prepublish
   - npm run coverage:disable
-  - ./node_modules/typescript/bin/tsc -p ./
+  - npm run compile
   - vsce package
   
 test_script:
