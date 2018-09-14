@@ -10,7 +10,7 @@ install:
 
 build_script:
   - npm run coverage:disable
-  - npm run vscode:prepublish
+  - npm run vscode:prepublish --loglevel verbose
   - vsce package
   
 test_script:
