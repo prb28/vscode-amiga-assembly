@@ -13,7 +13,7 @@ build_script:
   - vsce package
   
 test_script:
-  - npm run test:coverage --reporter mocha-appveyor-reporter
+  - cmd: npm run test:coverage
 
 artifacts:
   - path: "*.vsix"

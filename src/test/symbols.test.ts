@@ -8,7 +8,7 @@ import { Uri } from 'vscode';
 import * as Path from 'path';
 
 
-describe("Symbols reader Tests", function () {
+describe.only("Symbols reader Tests", function () {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..');
     const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
     const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
