@@ -18,4 +18,7 @@ describe("Symbols reader Tests", function () {
         let definedSymbols = symbolFile.getDefinedSymbols();
         expect(definedSymbols.length).to.be.equal(56);
     });
+    it("Should failt to test appveyor", async function () {
+        expect(true).to.be.equal(false);
+    });
 });

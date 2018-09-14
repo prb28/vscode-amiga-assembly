@@ -991,6 +991,12 @@
             "integrity": "sha1-3zrhmayt+31ECqrgsp4icrJOxhk=",
             "dev": true
         },
+        "depd": {
+            "version": "1.1.2",
+            "resolved": "https://registry.npmjs.org/depd/-/depd-1.1.2.tgz",
+            "integrity": "sha1-m81S4UwJd2PnSbJ0xDRu0uVgtak=",
+            "dev": true
+        },
         "deprecated": {
             "version": "0.0.1",
             "resolved": "https://registry.npmjs.org/deprecated/-/deprecated-0.0.1.tgz",
@@ -3632,6 +3638,15 @@
                 }
             }
         },
+        "mocha-appveyor-reporter": {
+            "version": "0.4.1",
+            "resolved": "https://registry.npmjs.org/mocha-appveyor-reporter/-/mocha-appveyor-reporter-0.4.1.tgz",
+            "integrity": "sha512-3FOlmBP3DemyvmboFK2vMoPRAJ/7Co8gyvcdxctYMynofouRQAVFwpgO/f/mRCLCMn7GLEq7/sOyuj2HXave/g==",
+            "dev": true,
+            "requires": {
+                "request-json": "^0.6.3"
+            }
+        },
         "ms": {
             "version": "2.0.0",
             "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
@@ -4418,6 +4433,48 @@
                 "tough-cookie": "~2.3.3",
                 "tunnel-agent": "^0.6.0",
                 "uuid": "^3.1.0"
+            }
+        },
+        "request-json": {
+            "version": "0.6.3",
+            "resolved": "https://registry.npmjs.org/request-json/-/request-json-0.6.3.tgz",
+            "integrity": "sha512-5TVnMD3LaeK0GRCyFlsNgJf5Fjg8J8j7VEfsoJESSWZlWRgPIf7IojsBLbTHcg2798JrrRkJ6L3k1+wj4sglgw==",
+            "dev": true,
+            "requires": {
+                "depd": "1.1.2",
+                "request": "2.83.0"
+            },
+            "dependencies": {
+                "request": {
+                    "version": "2.83.0",
+                    "resolved": "https://registry.npmjs.org/request/-/request-2.83.0.tgz",
+                    "integrity": "sha512-lR3gD69osqm6EYLk9wB/G1W/laGWjzH90t1vEa2xuxHD5KUrSzp9pUSfTm+YC5Nxt2T8nMPEvKlhbQayU7bgFw==",
+                    "dev": true,
+                    "requires": {
+                        "aws-sign2": "~0.7.0",
+                        "aws4": "^1.6.0",
+                        "caseless": "~0.12.0",
+                        "combined-stream": "~1.0.5",
+                        "extend": "~3.0.1",
+                        "forever-agent": "~0.6.1",
+                        "form-data": "~2.3.1",
+                        "har-validator": "~5.0.3",
+                        "hawk": "~6.0.2",
+                        "http-signature": "~1.2.0",
+                        "is-typedarray": "~1.0.0",
+                        "isstream": "~0.1.2",
+                        "json-stringify-safe": "~5.0.1",
+                        "mime-types": "~2.1.17",
+                        "oauth-sign": "~0.8.2",
+                        "performance-now": "^2.1.0",
+                        "qs": "~6.5.1",
+                        "safe-buffer": "^5.1.1",
+                        "stringstream": "~0.0.5",
+                        "tough-cookie": "~2.3.3",
+                        "tunnel-agent": "^0.6.0",
+                        "uuid": "^3.1.0"
+                    }
+                }
             }
         },
         "requires-port": {

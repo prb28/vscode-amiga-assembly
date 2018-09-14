@@ -13,8 +13,8 @@ build_script:
   - vsce package
   
 test_script:
-  - npm run test:coverage
+  - npm run test:coverage --reporter mocha-appveyor-reporter
 
-after_build:
-  - ps: Push-AppveyorArtifact "*.vsix"
+artifacts:
+  - path: "*.vsix"
 
