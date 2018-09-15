@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
-import { capture, spy, verify, anyString, instance, when, anything, mock, resetCalls } from 'ts-mockito/lib/ts-mockito';
+import { reset, capture, spy, verify, anyString, instance, when, anything, mock, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { ExecutorHelper, ExecutorParser, ICheckResult } from '../execHelper';
 import { ExtensionState } from '../extensionState';
 import { DummyTextDocument } from './dummy';
@@ -35,6 +35,7 @@ describe("Executor Tests", function () {
         expect(capture(mockedDummy.parse).last()[0]).to.be.equal(stdoutText);
         // The error is in the outputChannel
         verify(spiedOutputChannel.appendLine(anyString())).atLeast(1);
+        reset(spiedCp);
     });
     it("Should execute a command and parse stdr", async () => {
         resetCalls(spiedOutputChannel);

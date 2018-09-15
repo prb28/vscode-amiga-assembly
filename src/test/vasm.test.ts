@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as Path from 'path';
-import { capture, spy, verify, anyString, when, anything, resetCalls } from 'ts-mockito/lib/ts-mockito';
+import { capture, spy, verify, anyString, when, anything, resetCalls, reset } from 'ts-mockito/lib/ts-mockito';
 import { VASMCompiler, VASMParser, VASMController } from '../vasm';
 import { ExecutorHelper, ICheckResult } from '../execHelper';
 import { DummyTextDocument } from './dummy';
@@ -38,6 +38,12 @@ describe("VASM Tests", function () {
             when(spiedCompiler.mkdirSync(anything())).thenCall(() => { return Promise.resolve(); });
             when(spiedCompiler.mayCompile(anything())).thenReturn(true);
             when(spiedCompiler.getWorkspaceRootDir()).thenReturn(vscode.Uri.parse("file:///workdir"));
+        });
+        after(function () {
+            reset(executorCompiler);
+            reset(executorLinker);
+            reset(spiedLinker);
+            reset(spiedCompiler);
         });
         it("Should call the compiler command", async function () {
             let fileUri = vscode.Uri.file("file1.s");

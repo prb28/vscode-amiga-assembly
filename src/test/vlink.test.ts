@@ -21,6 +21,9 @@ describe("VLINK Tests", function () {
             executor = spy(linker.executor);
             when(executor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenResolve([]);
         });
+        after(function () {
+            reset(executor);
+        });
         it("Should call the link command", async function () {
             let spiedLinker = spy(linker);
             let spiedfs = spy(fs);
@@ -33,6 +36,7 @@ describe("VLINK Tests", function () {
             let buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
             expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", buildPath + "myprog", buildPath + "file1.o", buildPath + "file2.o"]);
             reset(spiedfs);
+            reset(spiedLinker);
         });
         it("Should reject if the linker is disable", async function () {
             let spiedLinker = spy(linker);
