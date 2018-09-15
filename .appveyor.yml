@@ -1,5 +1,5 @@
 install:
-  - ps: Install-Product node 10.0.0 x64
+  - ps: Install-Product node Current x64
   - npm install -g npm@4 --silent
   - npm install -g vsce
   - npm install

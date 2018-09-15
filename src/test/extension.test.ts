@@ -56,7 +56,7 @@ describe("Global Extension Tests", function () {
             }
         });
     });
-    describe("Calc comand", function () {
+    describe("Commands", function () {
         before(async () => {
             this.timeout(60000);
             // activate the extension
