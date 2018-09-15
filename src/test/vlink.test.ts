@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as Path from 'path';
 import { capture, reset, spy, verify, anyString, when, anything } from 'ts-mockito/lib/ts-mockito';
 import { VLINKParser, VLINKLinker } from '../vlink';
-import { Executor } from '../executor';
+import { ExecutorHelper } from '../execHelper';
 
 describe("VLINK Tests", function () {
     before(function () {
@@ -14,7 +14,7 @@ describe("VLINK Tests", function () {
     });
     context("VLINKLinker", function () {
         let linker: VLINKLinker;
-        let executor: Executor;
+        let executor: ExecutorHelper;
         before(function () {
             linker = new VLINKLinker();
             // installing a spy

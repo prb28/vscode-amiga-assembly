@@ -1,5 +1,5 @@
 import { window, workspace, Disposable, DiagnosticSeverity, TextDocument, Uri } from "vscode";
-import { ExecutorParser, ICheckResult, Executor } from "./executor";
+import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import { statusManager, errorDiagnosticCollection, warningDiagnosticCollection } from './extension';
 import { VLINKLinker } from './vlink';
 import * as fs from "fs";
@@ -9,12 +9,12 @@ import * as path from "path";
  * Class to manage the VASM compiler
  */
 export class VASMCompiler {
-    executor: Executor;
+    executor: ExecutorHelper;
     parser: VASMParser;
     linker: VLINKLinker;
 
     constructor() {
-        this.executor = new Executor();
+        this.executor = new ExecutorHelper();
         this.parser = new VASMParser();
         this.linker = new VLINKLinker();
     }

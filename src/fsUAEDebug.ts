@@ -7,7 +7,7 @@ import {
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
 import { GdbProxy, GdbRegister, GdbBreakpoint, Segment, GdbHaltStatus } from './gdbProxy';
-import { Executor } from './executor';
+import { ExecutorHelper } from './execHelper';
 import { CancellationTokenSource, workspace } from 'vscode';
 import { DebugInfo } from './debugInfo';
 import { Capstone } from './capstone';
@@ -74,7 +74,7 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
 	private testMode = false;
 
 	/** Executor to run fs-uae */
-	private executor: Executor;
+	private executor: ExecutorHelper;
 
 	/** Token to cancel the emulator */
 	private cancellationTokenSource?: CancellationTokenSource;
@@ -102,7 +102,7 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
 		this.setDebuggerColumnsStartAt1(false);
 		this.gdbProxy = new GdbProxy(undefined);
 		this.initProxy();
-		this.executor = new Executor();
+		this.executor = new ExecutorHelper();
 	}
 
 	/**
@@ -111,7 +111,7 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
 	 * @param executor mocked executor
 	 * @param capstone mocked capstone
 	 */
-	public setTestContext(gdbProxy: GdbProxy, executor: Executor, capstone: Capstone) {
+	public setTestContext(gdbProxy: GdbProxy, executor: ExecutorHelper, capstone: Capstone) {
 		this.executor = executor;
 		this.gdbProxy = gdbProxy;
 		this.initProxy();

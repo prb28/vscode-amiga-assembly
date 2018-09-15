@@ -5,7 +5,7 @@ import { LaunchRequestArguments, RunFsUAENoDebugSession } from '../runFsUAENoDeb
 import * as Net from 'net';
 import * as vscode from 'vscode';
 import { spy, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
-import { Executor } from '../executor';
+import { ExecutorHelper } from '../execHelper';
 
 describe('Node Debug Adapter', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
@@ -33,7 +33,7 @@ describe('Node Debug Adapter', () => {
 	});
 
 	beforeEach(function () {
-		this.mockedExecutor = mock(Executor);
+		this.mockedExecutor = mock(ExecutorHelper);
 		this.executor = instance(this.mockedExecutor);
 		when(this.mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
 		this.timeout(this.defaultTimeout);

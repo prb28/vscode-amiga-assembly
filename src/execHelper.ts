@@ -15,7 +15,7 @@ export interface ExecutorParser {
     parse(text: string): ICheckResult[];
 }
 
-export class Executor {
+export class ExecutorHelper {
     /**
      * Runs the given tool and returns errors/warnings that can be fed to the Problems Matcher
      * @param args Arguments to be passed while running given tool

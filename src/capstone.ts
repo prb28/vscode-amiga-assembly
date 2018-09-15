@@ -1,5 +1,5 @@
 import { CancellationToken, Uri, workspace } from "vscode";
-import { Executor } from "./executor";
+import { ExecutorHelper } from "./execHelper";
 import { DebugInfo } from "./debugInfo";
 
 /**
@@ -9,7 +9,7 @@ export class Capstone {
     /** Path to the capstone executable */
     private cstoolPath: string;
     /** Executor to run fs-uae */
-    private executor: Executor;
+    private executor: ExecutorHelper;
 
     /**
      * Constructor
@@ -17,7 +17,7 @@ export class Capstone {
      */
     public constructor(cstoolPath: string) {
         this.cstoolPath = cstoolPath;
-        this.executor = new Executor();
+        this.executor = new ExecutorHelper();
     }
 
     /**
@@ -66,7 +66,7 @@ export class Capstone {
      * Setting the context to run the tests.
      * @param executor mocked executor
      */
-    public setTestContext(executor: Executor) {
+    public setTestContext(executor: ExecutorHelper) {
         this.executor = executor;
     }
 

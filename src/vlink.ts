@@ -1,16 +1,16 @@
 import { workspace, Uri } from "vscode";
-import { ExecutorParser, ICheckResult, Executor } from "./executor";
+import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import * as path from "path";
 
 /**
  * Class to manage the VLINK linker
  */
 export class VLINKLinker {
-    executor: Executor;
+    executor: ExecutorHelper;
     parser: VLINKParser;
 
     constructor() {
-        this.executor = new Executor();
+        this.executor = new ExecutorHelper();
         this.parser = new VLINKParser();
     }
 

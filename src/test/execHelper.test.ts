@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import { capture, spy, verify, anyString, instance, when, anything, mock, resetCalls } from 'ts-mockito/lib/ts-mockito';
-import { Executor, ExecutorParser, ICheckResult } from '../executor';
+import { ExecutorHelper, ExecutorParser, ICheckResult } from '../execHelper';
 import { statusManager, errorDiagnosticCollection, warningDiagnosticCollection } from '../extension';
 import { DummyTextDocument } from './dummy';
 
@@ -20,7 +20,7 @@ describe("Executor Tests", function () {
         when(spiedCp.execFile(anything(), anything(), anything(), anything())).thenCall((cmd: string, args: string[], opptions: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)) => {
             callback(new Error('notgood'), stdoutText, null);
         });
-        let ex = new Executor();
+        let ex = new ExecutorHelper();
         let mockedDummy = mock(DummyParser);
         let error: ICheckResult = new ICheckResult();
         error.file = "file";
@@ -44,7 +44,7 @@ describe("Executor Tests", function () {
         when(spiedCp.execFile(anything(), anything(), anything(), anything())).thenCall((cmd: string, args: string[], opptions: any, callback: ((error: Error, stdout: string, stderr: string) => void)) => {
             callback(new Error('notgood'), stdoutText, stderrText);
         });
-        let ex = new Executor();
+        let ex = new ExecutorHelper();
         let mockedDummy = mock(DummyParser);
         let error: ICheckResult = new ICheckResult();
         error.file = "file";
@@ -61,7 +61,7 @@ describe("Executor Tests", function () {
         verify(spiedOutputChannel.appendLine(anyString())).atLeast(1);
     });
     describe("Diagnostics handle", () => {
-        let ex: Executor;
+        let ex: ExecutorHelper;
         let spiedErrorDiagnosticCollection: vscode.DiagnosticCollection;
         let spiedWarningDiagnosticCollection: vscode.DiagnosticCollection;
         let error: ICheckResult;
@@ -71,7 +71,7 @@ describe("Executor Tests", function () {
         beforeEach(() => {
             errorDiagnosticCollection.clear();
             warningDiagnosticCollection.clear();
-            ex = new Executor();
+            ex = new ExecutorHelper();
             error = new ICheckResult();
             warning = new ICheckResult();
             errors = [error, warning];

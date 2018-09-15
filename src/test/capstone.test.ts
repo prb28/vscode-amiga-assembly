@@ -6,15 +6,15 @@ import * as chai from 'chai';
 import { Capstone } from '../capstone';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as Path from 'path';
-import { Executor } from '../executor';
+import { ExecutorHelper } from '../execHelper';
 import { instance, when, anything, mock, capture, reset } from 'ts-mockito/lib/ts-mockito';
 
 chai.use(chaiAsPromised);
 describe("Capstone test", function () {
-    let mockedExecutor: Executor;
-    let executor: Executor;
+    let mockedExecutor: ExecutorHelper;
+    let executor: ExecutorHelper;
     beforeEach(function () {
-        mockedExecutor = mock(Executor);
+        mockedExecutor = mock(ExecutorHelper);
         executor = instance(mockedExecutor);
     });
     afterEach(function () {

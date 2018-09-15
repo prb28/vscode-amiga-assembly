@@ -8,7 +8,7 @@ import * as Net from 'net';
 import * as vscode from 'vscode';
 import { GdbProxy, GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister, Segment, GdbHaltStatus } from '../gdbProxy';
 import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls, capture } from 'ts-mockito/lib/ts-mockito';
-import { Executor } from '../executor';
+import { ExecutorHelper } from '../execHelper';
 import { Capstone } from '../capstone';
 
 describe('Node Debug Adapter', () => {
@@ -46,7 +46,7 @@ describe('Node Debug Adapter', () => {
 	});
 
 	beforeEach(function () {
-		this.mockedExecutor = mock(Executor);
+		this.mockedExecutor = mock(ExecutorHelper);
 		this.executor = instance(this.mockedExecutor);
 		this.mockedGdbProxy = mock(GdbProxy);
 		this.mockedCapstone = mock(Capstone);

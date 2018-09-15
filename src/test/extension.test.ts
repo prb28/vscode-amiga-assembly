@@ -56,7 +56,7 @@ describe("Global Extension Tests", function () {
             }
         });
     });
-    describe.only("Calc comand", function () {
+    describe("Calc comand", function () {
         before(async () => {
             // activate the extension
             let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
@@ -90,7 +90,7 @@ describe("Global Extension Tests", function () {
                 expect.fail("Editor not available");
             }
         });
-        it.only("Should evaluate the selection in the status bar", () => {
+        it("Should evaluate the selection in the status bar", () => {
             // Get the satus value
             // tslint:disable-next-line:no-unused-expression
             expect(extension.calc).to.not.be.undefined;

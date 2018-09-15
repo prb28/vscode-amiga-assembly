@@ -9,7 +9,7 @@ import {
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { CancellationTokenSource } from 'vscode';
-import { Executor } from './executor';
+import { ExecutorHelper } from './execHelper';
 const { Subject } = require('await-notify');
 
 
@@ -35,7 +35,7 @@ export class RunFsUAENoDebugSession extends LoggingDebugSession {
 	private configurationDone = new Subject();
 
 	/** Executor to run fs-uae */
-	private executor: Executor;
+	private executor: ExecutorHelper;
 
 	/** Token to cancle the emulator */
 	private cancellationTokenSource?: CancellationTokenSource;
@@ -46,7 +46,7 @@ export class RunFsUAENoDebugSession extends LoggingDebugSession {
 	 */
 	public constructor() {
 		super("RunFsUAENoDebugSession.txt");
-		this.executor = new Executor();
+		this.executor = new ExecutorHelper();
 		// this debugger uses zero-based lines and columns
 		this.setDebuggerLinesStartAt1(false);
 		this.setDebuggerColumnsStartAt1(false);
@@ -56,7 +56,7 @@ export class RunFsUAENoDebugSession extends LoggingDebugSession {
 	 * Setting the context to run the tests.
 	 * @param executor mocked executor
 	 */
-	public setTestContext(executor: Executor) {
+	public setTestContext(executor: ExecutorHelper) {
 		this.executor = executor;
 	}
 

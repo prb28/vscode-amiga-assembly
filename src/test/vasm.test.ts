@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as Path from 'path';
 import { capture, spy, verify, anyString, when, anything, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { VASMCompiler, VASMParser, VASMController } from '../vasm';
-import { Executor, ICheckResult } from '../executor';
+import { ExecutorHelper, ICheckResult } from '../execHelper';
 import { DummyTextDocument } from './dummy';
 import { statusManager } from '../extension';
 import { VLINKLinker } from '../vlink';
@@ -17,8 +17,8 @@ describe("VASM Tests", function () {
     context("VASMCompiler", function () {
         let compiler: VASMCompiler;
         let spiedCompiler: VASMCompiler;
-        let executorCompiler: Executor;
-        let executorLinker: Executor;
+        let executorCompiler: ExecutorHelper;
+        let executorLinker: ExecutorHelper;
         let spiedLinker: VLINKLinker;
         before(function () {
             compiler = new VASMCompiler();
