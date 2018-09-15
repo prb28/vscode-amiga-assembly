@@ -1,6 +1,6 @@
 import { window, workspace, Disposable, DiagnosticSeverity, TextDocument, Uri } from "vscode";
 import { ExecutorParser, ICheckResult, Executor } from "./executor";
-import { statusManager, errorDiagnosticCollection, warningDiagnosticCollection } from './extension';
+import { ExtensionState } from './extensionState';
 import { VLINKLinker } from './vlink';
 import * as fs from "fs";
 import * as path from "path";
@@ -87,6 +87,9 @@ export class VASMCompiler {
 
     public buildWorkspace(): Promise<void> {
         return new Promise((resolve, reject) => {
+            let state = ExtensionState.getInstance();
+            let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
+            let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
             errorDiagnosticCollection.clear();
             warningDiagnosticCollection.clear();
             let configuration = workspace.getConfiguration('amiga-assembly');
@@ -112,6 +115,10 @@ export class VASMCompiler {
      */
     public cleanWorkspace(): Promise<void> {
         return new Promise((resolve, reject) => {
+            let state = ExtensionState.getInstance();
+            let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
+            let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
+            let statusManager = state.getStatusManager();
             statusManager.outputChannel.appendLine('Cleaning workspace');
             errorDiagnosticCollection.clear();
             warningDiagnosticCollection.clear();
@@ -173,7 +180,7 @@ export class VASMCompiler {
                         } else {
                             // The linker is not mandatory
                             // show a warning in the output
-                            statusManager.outputChannel.append("Warning : the linker vlink is not configured");
+                            ExtensionState.getInstance().getStatusManager().outputChannel.append("Warning : the linker vlink is not configured");
                             return resolve();
                         }
                     }).catch(err => { return reject(new Error(err)); });
@@ -198,6 +205,9 @@ export class VASMCompiler {
             let conf: any = configuration.get('vasm');
             if (this.mayCompile(conf)) {
                 return this.mkdirSync(buildDir.fsPath).then(() => {
+                    let state = ExtensionState.getInstance();
+                    let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
+                    let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
                     let vasmExecutableName: string = conf.file;
                     let extSep = filename.indexOf(".");
                     let objFilename;
@@ -299,6 +309,8 @@ export class VASMController {
     }
 
     onSaveDocument(document: TextDocument) {
+        let state = ExtensionState.getInstance();
+        let statusManager = state.getStatusManager();
         if (document.languageId !== 'm68k') {
             return;
         }

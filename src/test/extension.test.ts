@@ -9,7 +9,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { spy, verify, anyString, capture, when, anything, resetCalls, mock, instance } from 'ts-mockito/lib/ts-mockito';
-import * as extension from '../extension';
+import { ExtensionState } from '../extensionState';
 import { Capstone } from '../capstone';
 
 // Defines a Mocha test suite to group tests of similar kind together
@@ -58,16 +58,17 @@ describe("Global Extension Tests", function () {
     });
     describe.only("Calc comand", function () {
         before(async () => {
+            this.timeout(60000);
             // activate the extension
             let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
             if (ext) {
                 await ext.activate();
             }
             const newFile = vscode.Uri.parse("untitled:myfile.s");
-            return vscode.workspace.openTextDocument(newFile).then(document => {
+            await vscode.workspace.openTextDocument(newFile).then(async document => {
                 const edit = new vscode.WorkspaceEdit();
                 edit.insert(newFile, new vscode.Position(0, 0), "3+2");
-                return vscode.workspace.applyEdit(edit).then(async (success) => {
+                await vscode.workspace.applyEdit(edit).then(async (success) => {
                     if (success) {
                         await vscode.window.showTextDocument(document);
                         await vscode.commands.executeCommand("cursorMove", { to: 'right', by: 'character', value: 3, select: true });
@@ -78,6 +79,7 @@ describe("Global Extension Tests", function () {
             });
         });
         beforeEach(async () => {
+            this.timeout(60000);
             // Set the editor contents
             const editor = vscode.window.activeTextEditor;
             if (editor) {
@@ -91,10 +93,12 @@ describe("Global Extension Tests", function () {
             }
         });
         it.only("Should evaluate the selection in the status bar", () => {
+            this.timeout(60000);
+            let calc = ExtensionState.getInstance().getCalc();
             // Get the satus value
             // tslint:disable-next-line:no-unused-expression
-            expect(extension.calc).to.not.be.undefined;
-            let sb = extension.calc.getStatusBar();
+            expect(calc).to.not.be.undefined;
+            let sb = calc.getStatusBar();
             // tslint:disable-next-line:no-unused-expression
             expect(sb).to.not.be.undefined;
             if (sb) {
@@ -102,7 +106,8 @@ describe("Global Extension Tests", function () {
             }
         });
         it("Should hide the status bar if it it not evaluable", async () => {
-            let sb = extension.calc.getStatusBar();
+            let calc = ExtensionState.getInstance().getCalc();
+            let sb = calc.getStatusBar();
             // tslint:disable-next-line:no-unused-expression
             expect(sb).to.not.be.undefined;
             if (sb) {
@@ -153,8 +158,9 @@ describe("Global Extension Tests", function () {
             verify(spiedWindow.showInputBox(anything())).once();
         });
         it("Should build the workspace on command", async () => {
-            let spiedCompiler = spy(extension.compiler);
-            let spiedStatus = spy(extension.statusManager);
+            let state = ExtensionState.getInstance();
+            let spiedCompiler = spy(state.getCompiler());
+            let spiedStatus = spy(state.getStatusManager());
             when(spiedCompiler.buildWorkspace()).thenCall(() => { return Promise.resolve(); });
             await vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace");
             verify(spiedCompiler.buildWorkspace()).once();
@@ -171,8 +177,9 @@ describe("Global Extension Tests", function () {
             verify(spiedStatus.onError("nope")).once();
         });
         it("Should build the current document on command", async () => {
-            let spiedCompiler = spy(extension.compiler);
-            let spiedStatus = spy(extension.statusManager);
+            let state = ExtensionState.getInstance();
+            let spiedCompiler = spy(state.getCompiler());
+            let spiedStatus = spy(state.getStatusManager());
             when(spiedCompiler.buildCurrentEditorFile()).thenCall(() => { return Promise.resolve(); });
             await vscode.commands.executeCommand("amiga-assembly.build-vasm");
             verify(spiedCompiler.buildCurrentEditorFile()).once();
@@ -188,8 +195,9 @@ describe("Global Extension Tests", function () {
             verify(spiedStatus.onError("nope")).once();
         });
         it("Should clean the current workspace on command", async () => {
-            let spiedCompiler = spy(extension.compiler);
-            let spiedStatus = spy(extension.statusManager);
+            let state = ExtensionState.getInstance();
+            let spiedCompiler = spy(state.getCompiler());
+            let spiedStatus = spy(state.getStatusManager());
             when(spiedCompiler.cleanWorkspace()).thenCall(() => { return Promise.resolve(); });
             await vscode.commands.executeCommand("amiga-assembly.clean-vasm-workspace");
             verify(spiedCompiler.cleanWorkspace()).once();
@@ -206,7 +214,8 @@ describe("Global Extension Tests", function () {
         });
         describe("Disassemble comand", function () {
             it("Should disassemble a file", async () => {
-                let spiedDisassembler = spy(extension.disassembler);
+                let state = ExtensionState.getInstance();
+                let spiedDisassembler = spy(state.getDisassembler());
                 let mockedCapstone = mock(Capstone);
                 let capstone = instance(mockedCapstone);
                 when(spiedDisassembler.getCapstone()).thenCall(() => { return capstone; });

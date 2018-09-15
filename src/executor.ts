@@ -1,7 +1,7 @@
 import * as cp from 'child_process';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { statusManager, errorDiagnosticCollection, warningDiagnosticCollection } from './extension';
+import { ExtensionState } from './extensionState';
 
 export class ICheckResult {
     file: string = "";
@@ -27,7 +27,7 @@ export class Executor {
      * @param parser Parser for the output
      */
     runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken): Promise<ICheckResult[]> {
-        let outputChannel = statusManager.outputChannel;
+        let outputChannel = ExtensionState.getInstance().getStatusManager().outputChannel;
         let p: cp.ChildProcess;
         if (token) {
             token.onCancellationRequested(() => {
@@ -160,6 +160,8 @@ export class Executor {
 
         diagnosticMap.forEach((diagMap, file) => {
             const fileUri = vscode.Uri.parse(file);
+            let warningDiagnosticCollection = ExtensionState.getInstance().getWarningDiagnosticCollection();
+            let errorDiagnosticCollection = ExtensionState.getInstance().getErrorDiagnosticCollection();
             if (diagnosticSeverity === undefined || diagnosticSeverity === vscode.DiagnosticSeverity.Error) {
                 const newErrors = diagMap.get(vscode.DiagnosticSeverity.Error);
                 let existingWarnings = warningDiagnosticCollection.get(fileUri);

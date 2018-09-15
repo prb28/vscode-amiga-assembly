@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import { capture, spy, verify, anyString, instance, when, anything, mock, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { Executor, ExecutorParser, ICheckResult } from '../executor';
-import { statusManager, errorDiagnosticCollection, warningDiagnosticCollection } from '../extension';
+import { ExtensionState } from '../extensionState';
 import { DummyTextDocument } from './dummy';
 
 describe("Executor Tests", function () {
@@ -11,7 +11,7 @@ describe("Executor Tests", function () {
     before(() => {
         // Opening file to activate the extension
         const newFile = vscode.Uri.parse("untitled://./exe.s");
-        return vscode.window.showTextDocument(newFile).then(() => { spiedOutputChannel = spy(statusManager.outputChannel); });
+        return vscode.window.showTextDocument(newFile).then(() => { spiedOutputChannel = spy(ExtensionState.getInstance().getStatusManager().outputChannel); });
     });
     it("Should execute a command and parse stdout", async () => {
         resetCalls(spiedOutputChannel);
@@ -62,6 +62,8 @@ describe("Executor Tests", function () {
     });
     describe("Diagnostics handle", () => {
         let ex: Executor;
+        let errorDiagnosticCollection = ExtensionState.getInstance().getErrorDiagnosticCollection();
+        let warningDiagnosticCollection = ExtensionState.getInstance().getWarningDiagnosticCollection();
         let spiedErrorDiagnosticCollection: vscode.DiagnosticCollection;
         let spiedWarningDiagnosticCollection: vscode.DiagnosticCollection;
         let error: ICheckResult;

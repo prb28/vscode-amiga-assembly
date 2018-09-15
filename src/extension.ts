@@ -1,26 +1,20 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { ExtensionState } from './extensionState';
 import { M68kFormatter } from './formatter';
 import { M68kHoverProvider } from './hover';
 import { M86kColorProvider } from './color';
-import { Calc, CalcController } from './calc';
-import { VASMCompiler, VASMController } from './vasm';
-import { StatusManager } from "./status";
+import { CalcController } from './calc';
+import { VASMController } from './vasm';
 import { FsUAEDebugSession } from './fsUAEDebug';
 import * as Net from 'net';
 import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
-import { Disassembler } from './disassemble';
+
 import { M68kDefinitionProvider } from './definitionProvider';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
-export let errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');
-export let warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-warning');
-export let statusManager = new StatusManager();
-export let calc = new Calc();
-export let compiler: VASMCompiler;
-export let disassembler = new Disassembler();
 
 /*
  * Set the following compile time flag to true if the
@@ -32,7 +26,9 @@ const EMBED_DEBUG_ADAPTER = true;
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    let state = ExtensionState.getInstance();
     // Preparing the status manager
+    let statusManager = state.getStatusManager();
     statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', "Build Workspace");
     vscode.window.onDidChangeActiveTextEditor(statusManager.showHideStatus, null, context.subscriptions);
     context.subscriptions.push(statusManager);
@@ -56,6 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     // create a new disassembler
+    let disassembler = state.getDisassembler();
     disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-file', () => {
         return disassembler.showInputPanel().catch(err => {
             vscode.window.showErrorMessage(err);
@@ -64,6 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     // create a new calculator
+    let calc = state.getCalc();
     let controller = new CalcController(calc);
 
     // Add to a list of disposables which are disposed when this extension is deactivated.
@@ -91,11 +89,13 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(AMIGA_ASM_MODE, new M68kDefinitionProvider()));
 
     // Diagnostics 
+    let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
+    let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
     context.subscriptions.push(errorDiagnosticCollection);
     context.subscriptions.push(warningDiagnosticCollection);
 
     // VASM Command
-    compiler = new VASMCompiler();
+    let compiler = state.getCompiler();
     // Build a file
     disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', () => {
         statusManager.onDefault();
