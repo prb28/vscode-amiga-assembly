@@ -92,13 +92,9 @@ describe("Global Extension Tests", function () {
                 expect.fail("Editor not available");
             }
         });
-<<<<<<< HEAD
         it("Should evaluate the selection in the status bar", () => {
-=======
-        it.only("Should evaluate the selection in the status bar", () => {
             this.timeout(60000);
             let calc = ExtensionState.getInstance().getCalc();
->>>>>>> 2d1f686ff3348ef70f9477ce97dbf57a2d9c74bd
             // Get the satus value
             // tslint:disable-next-line:no-unused-expression
             expect(calc).to.not.be.undefined;
