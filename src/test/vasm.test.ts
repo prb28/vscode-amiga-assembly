@@ -5,7 +5,6 @@ import { capture, spy, verify, anyString, when, anything, resetCalls } from 'ts-
 import { VASMCompiler, VASMParser, VASMController } from '../vasm';
 import { Executor, ICheckResult } from '../executor';
 import { DummyTextDocument } from './dummy';
-import { StatusManager } from '../status';
 import { statusManager } from '../extension';
 import { VLINKLinker } from '../vlink';
 
@@ -20,7 +19,6 @@ describe("VASM Tests", function () {
         let spiedCompiler: VASMCompiler;
         let executorCompiler: Executor;
         let executorLinker: Executor;
-        let spiedStatusManager: StatusManager;
         let spiedLinker: VLINKLinker;
         before(function () {
             compiler = new VASMCompiler();
@@ -29,14 +27,12 @@ describe("VASM Tests", function () {
             executorLinker = spy(compiler.linker.executor);
             when(executorCompiler.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenResolve([]);
             when(executorLinker.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenResolve([]);
-            spiedStatusManager = spy(statusManager);
             spiedLinker = spy(compiler.linker);
             when(spiedLinker.mayLink(anything())).thenReturn(true);
         });
         beforeEach(function () {
             resetCalls(executorCompiler);
             resetCalls(executorLinker);
-            resetCalls(spiedStatusManager);
             resetCalls(spiedLinker);
             spiedCompiler = spy(compiler);
             when(spiedCompiler.mkdirSync(anything())).thenCall(() => { return Promise.resolve(); });

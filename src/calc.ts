@@ -3,14 +3,21 @@ import { MathCalc } from './mathcalc.js';
 import { NumberParser } from './parser';
 
 export class Calc {
-    public statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
+    private statusBarItem: StatusBarItem | undefined;
     private numberParser = new NumberParser();
+    public getStatusBar(): StatusBarItem | undefined {
+        if ((this.statusBarItem === undefined) && (window)) {
+            this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
+        }
+        return this.statusBarItem;
+    }
     public updateCalc() {
-        if (window) {
+        let sBar = this.getStatusBar();
+        if (sBar) {
             // Get the current text editor
             let editor = window.activeTextEditor;
             if (!editor) {
-                this.statusBarItem.hide();
+                sBar.hide();
                 return;
             }
             let docContent = editor.document.getText(editor.selection);
@@ -19,10 +26,10 @@ export class Calc {
                 let result = this.calculate(docContent);
                 if (result) {
                     // Update the status bar
-                    this.statusBarItem.text = this.formatResult(docContent, result);
-                    this.statusBarItem.show();
+                    sBar.text = this.formatResult(docContent, result);
+                    sBar.show();
                 } else {
-                    this.statusBarItem.hide();
+                    sBar.hide();
                 }
             }
         }
@@ -135,7 +142,9 @@ export class Calc {
      * Disposes the resources
      */
     dispose() {
-        this.statusBarItem.dispose();
+        if (this.statusBarItem) {
+            this.statusBarItem.dispose();
+        }
     }
 }
 

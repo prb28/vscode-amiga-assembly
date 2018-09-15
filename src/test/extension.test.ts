@@ -56,8 +56,13 @@ describe("Global Extension Tests", function () {
             }
         });
     });
-    describe("Calc comand", function () {
-        before(() => {
+    describe.only("Calc comand", function () {
+        before(async () => {
+            // activate the extension
+            let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+            if (ext) {
+                await ext.activate();
+            }
             const newFile = vscode.Uri.parse("untitled:myfile.s");
             return vscode.workspace.openTextDocument(newFile).then(document => {
                 const edit = new vscode.WorkspaceEdit();
@@ -85,27 +90,39 @@ describe("Global Extension Tests", function () {
                 expect.fail("Editor not available");
             }
         });
-        it("Should evaluate the selection in the status bar", () => {
+        it.only("Should evaluate the selection in the status bar", () => {
             // Get the satus value
-            expect(extension.calc.statusBarItem.text).to.be.equal("3+2=#5/$5/%101");
+            // tslint:disable-next-line:no-unused-expression
+            expect(extension.calc).to.not.be.undefined;
+            let sb = extension.calc.getStatusBar();
+            // tslint:disable-next-line:no-unused-expression
+            expect(sb).to.not.be.undefined;
+            if (sb) {
+                expect(sb.text).to.be.equal("3+2=#5/$5/%101");
+            }
         });
         it("Should hide the status bar if it it not evaluable", async () => {
-            let spiedStatus = spy(extension.calc.statusBarItem);
-            // Deselected -- not hidden
-            await vscode.commands.executeCommand("cursorMove", { to: 'left', by: 'character', value: 1, select: false });
-            verify(spiedStatus.hide()).never();
-            // Insert text
-            const editor = vscode.window.activeTextEditor;
-            if (editor) {
-                await editor.edit(edit => {
-                    edit.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 3)));
-                    edit.insert(new vscode.Position(0, 0), "ABF");
-                });
-            } else {
-                expect.fail("Editor not available");
+            let sb = extension.calc.getStatusBar();
+            // tslint:disable-next-line:no-unused-expression
+            expect(sb).to.not.be.undefined;
+            if (sb) {
+                let spiedStatus = spy(sb);
+                // Deselected -- not hidden
+                await vscode.commands.executeCommand("cursorMove", { to: 'left', by: 'character', value: 1, select: false });
+                verify(spiedStatus.hide()).never();
+                // Insert text
+                const editor = vscode.window.activeTextEditor;
+                if (editor) {
+                    await editor.edit(edit => {
+                        edit.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 3)));
+                        edit.insert(new vscode.Position(0, 0), "ABF");
+                    });
+                } else {
+                    expect.fail("Editor not available");
+                }
+                await vscode.commands.executeCommand("cursorMove", { to: 'left', by: 'character', value: 1, select: true });
+                verify(spiedStatus.hide()).once();
             }
-            await vscode.commands.executeCommand("cursorMove", { to: 'left', by: 'character', value: 1, select: true });
-            verify(spiedStatus.hide()).once();
         });
         it("Should evaluate a selection", async () => {
             const spiedWindow = spy(vscode.window);

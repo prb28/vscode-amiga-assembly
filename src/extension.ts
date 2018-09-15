@@ -15,12 +15,12 @@ import { M68kDefinitionProvider } from './definitionProvider';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
-export let errorDiagnosticCollection: vscode.DiagnosticCollection;
-export let warningDiagnosticCollection: vscode.DiagnosticCollection;
-export let statusManager: StatusManager;
-export let calc: Calc;
+export let errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');
+export let warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-warning');
+export let statusManager = new StatusManager();
+export let calc = new Calc();
 export let compiler: VASMCompiler;
-export let disassembler: Disassembler;
+export let disassembler = new Disassembler();
 
 /*
  * Set the following compile time flag to true if the
@@ -33,7 +33,6 @@ const EMBED_DEBUG_ADAPTER = true;
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     // Preparing the status manager
-    statusManager = new StatusManager();
     statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', "Build Workspace");
     vscode.window.onDidChangeActiveTextEditor(statusManager.showHideStatus, null, context.subscriptions);
     context.subscriptions.push(statusManager);
@@ -57,7 +56,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     // create a new disassembler
-    disassembler = new Disassembler();
     disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-file', () => {
         return disassembler.showInputPanel().catch(err => {
             vscode.window.showErrorMessage(err);
@@ -65,9 +63,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
-
     // create a new calculator
-    calc = new Calc();
     let controller = new CalcController(calc);
 
     // Add to a list of disposables which are disposed when this extension is deactivated.
@@ -95,9 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(AMIGA_ASM_MODE, new M68kDefinitionProvider()));
 
     // Diagnostics 
-    errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');
     context.subscriptions.push(errorDiagnosticCollection);
-    warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-warning');
     context.subscriptions.push(warningDiagnosticCollection);
 
     // VASM Command
