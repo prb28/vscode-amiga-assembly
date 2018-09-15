@@ -8,7 +8,7 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { spy, verify, anyString, capture, when, anything, resetCalls, mock, instance } from 'ts-mockito/lib/ts-mockito';
+import { spy, verify, when, anything, resetCalls, mock, instance } from 'ts-mockito/lib/ts-mockito';
 import { ExtensionState } from '../extensionState';
 import { Capstone } from '../capstone';
 
