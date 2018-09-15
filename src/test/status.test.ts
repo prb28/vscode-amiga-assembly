@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { statusManager } from '../extension';
+import { ExtensionState } from '../extensionState';
 import { spy, verify, anyString, when } from 'ts-mockito/lib/ts-mockito';
 import * as vscode from 'vscode';
 
@@ -11,6 +11,8 @@ describe("Status Tests", function () {
         return vscode.window.showTextDocument(newFile);
     });
     it("Should status show on command", () => {
+        let state = ExtensionState.getInstance();
+        let statusManager = state.getStatusManager();
         statusManager.diagnosticsStatusBarItem.show();
         // status is shown
         expect(statusManager.statusBarEntry).not.to.be.null;
@@ -46,6 +48,8 @@ describe("Status Tests", function () {
     });
     it("Should show react to an error", () => {
         let spiedWindow = spy(vscode.window);
+        let state = ExtensionState.getInstance();
+        let statusManager = state.getStatusManager();
         expect(statusManager.statusBarEntry).not.to.be.null;
         if (statusManager.statusBarEntry) {
             // onError
@@ -56,6 +60,8 @@ describe("Status Tests", function () {
         }
     });
     it("Should show react to a success", () => {
+        let state = ExtensionState.getInstance();
+        let statusManager = state.getStatusManager();
         expect(statusManager.statusBarEntry).not.to.be.null;
         if (statusManager.statusBarEntry) {
             // onError

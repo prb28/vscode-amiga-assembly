@@ -5,6 +5,9 @@ import { NumberParser } from './parser';
 export class Calc {
     private statusBarItem: StatusBarItem | undefined;
     private numberParser = new NumberParser();
+    constructor() {
+        this.getStatusBar();
+    }
     public getStatusBar(): StatusBarItem | undefined {
         if ((this.statusBarItem === undefined) && (window)) {
             this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
