@@ -14,6 +14,13 @@ import { Capstone } from '../capstone';
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
+    before(async () => {
+        // activate the extension
+        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
+    });
     // Creating the relative path to find the test file
     const testFilesPath = path.join(__dirname, "..", "..", "test_files");
     context("Formatting comand", function () {
@@ -56,14 +63,8 @@ describe("Global Extension Tests", function () {
             }
         });
     });
-    describe("Commands", function () {
+    describe("Calc commands", function () {
         before(async () => {
-            this.timeout(60000);
-            // activate the extension
-            let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
-            if (ext) {
-                await ext.activate();
-            }
             const newFile = vscode.Uri.parse("untitled://./myfile.s");
             await vscode.workspace.openTextDocument(newFile).then(async document => {
                 const edit = new vscode.WorkspaceEdit();
@@ -79,7 +80,6 @@ describe("Global Extension Tests", function () {
             });
         });
         beforeEach(async () => {
-            this.timeout(60000);
             // Set the editor contents
             const editor = vscode.window.activeTextEditor;
             if (editor) {
@@ -157,6 +157,8 @@ describe("Global Extension Tests", function () {
             await vscode.commands.executeCommand("amiga-assembly.calculator");
             verify(spiedWindow.showInputBox(anything())).once();
         });
+    });
+    describe("Build commands", function () {
         it("Should build the workspace on command", async () => {
             let state = ExtensionState.getInstance();
             let spiedCompiler = spy(state.getCompiler());
@@ -212,32 +214,32 @@ describe("Global Extension Tests", function () {
             verify(spiedStatus.onSuccess()).never();
             verify(spiedStatus.onError("nope")).once();
         });
-        describe("Disassemble comand", function () {
-            it("Should disassemble a file", async () => {
-                let state = ExtensionState.getInstance();
-                let spiedDisassembler = spy(state.getDisassembler());
-                let mockedCapstone = mock(Capstone);
-                let capstone = instance(mockedCapstone);
-                when(spiedDisassembler.getCapstone()).thenCall(() => { return capstone; });
-                when(mockedCapstone.disassembleFile(anything())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0"));
-                const uri = vscode.Uri.file(path.join(testFilesPath, "debug", "fs-uae", "hd0", "gencop"));
-                const spiedWindow = spy(vscode.window);
-                let promise = new Promise<vscode.Uri[] | undefined>((resolve, reject) => { resolve([uri]); });
-                when(spiedWindow.showOpenDialog(anything())).thenReturn(promise);
-                await vscode.commands.executeCommand("amiga-assembly.disassemble-file");
-                verify(spiedWindow.showOpenDialog(anything())).once();
-                await vscode.commands.executeCommand("cursorMove", { to: 'left', by: 'character', value: 3, select: true });
+    });
+    describe("Disassemble command", function () {
+        it("Should disassemble a file", async () => {
+            let state = ExtensionState.getInstance();
+            let spiedDisassembler = spy(state.getDisassembler());
+            let mockedCapstone = mock(Capstone);
+            let capstone = instance(mockedCapstone);
+            when(spiedDisassembler.getCapstone()).thenCall(() => { return capstone; });
+            when(mockedCapstone.disassembleFile(anything())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0"));
+            const uri = vscode.Uri.file(path.join(testFilesPath, "debug", "fs-uae", "hd0", "gencop"));
+            const spiedWindow = spy(vscode.window);
+            let promise = new Promise<vscode.Uri[] | undefined>((resolve, reject) => { resolve([uri]); });
+            when(spiedWindow.showOpenDialog(anything())).thenReturn(promise);
+            await vscode.commands.executeCommand("amiga-assembly.disassemble-file");
+            verify(spiedWindow.showOpenDialog(anything())).once();
+            await vscode.commands.executeCommand("cursorMove", { to: 'left', by: 'character', value: 3, select: true });
 
-                // Read the expected file
-                let expectedFileContents = fs.readFileSync(path.join(testFilesPath, "disassemble-exp.s"), 'utf8');
-                let editor = vscode.window.activeTextEditor;
-                // tslint:disable-next-line:no-unused-expression
-                expect(editor).to.not.be.undefined;
-                if (editor) {
-                    // Editor openned
-                    expect(editor.document.getText()).to.be.equal(expectedFileContents);
-                }
-            });
+            // Read the expected file
+            let expectedFileContents = fs.readFileSync(path.join(testFilesPath, "disassemble-exp.s"), 'utf8');
+            let editor = vscode.window.activeTextEditor;
+            // tslint:disable-next-line:no-unused-expression
+            expect(editor).to.not.be.undefined;
+            if (editor) {
+                // Editor openned
+                expect(editor.document.getText()).to.be.equal(expectedFileContents);
+            }
         });
     });
 });
