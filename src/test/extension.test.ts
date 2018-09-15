@@ -64,7 +64,7 @@ describe("Global Extension Tests", function () {
             if (ext) {
                 await ext.activate();
             }
-            const newFile = vscode.Uri.parse("untitled:myfile.s");
+            const newFile = vscode.Uri.parse("untitled://./myfile.s");
             await vscode.workspace.openTextDocument(newFile).then(async document => {
                 const edit = new vscode.WorkspaceEdit();
                 edit.insert(newFile, new vscode.Position(0, 0), "3+2");
