@@ -5,22 +5,23 @@ import { NumberParser } from './parser';
 export class Calc {
     private statusBarItem: StatusBarItem | undefined;
     private numberParser = new NumberParser();
-    constructor() {
-        this.getStatusBar();
-    }
     public getStatusBar(): StatusBarItem | undefined {
+        return this.statusBarItem;
+    }
+    public activate() {
         if ((this.statusBarItem === undefined) && (window)) {
             this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
         }
-        return this.statusBarItem;
     }
     public updateCalc() {
-        let sBar = this.getStatusBar();
-        if (sBar) {
+        if (!this.statusBarItem) {
+            this.activate();
+        }
+        if (this.statusBarItem) {
             // Get the current text editor
             let editor = window.activeTextEditor;
             if (!editor) {
-                sBar.hide();
+                this.statusBarItem.hide();
                 return;
             }
             let docContent = editor.document.getText(editor.selection);
@@ -29,10 +30,10 @@ export class Calc {
                 let result = this.calculate(docContent);
                 if (result) {
                     // Update the status bar
-                    sBar.text = this.formatResult(docContent, result);
-                    sBar.show();
+                    this.statusBarItem.text = this.formatResult(docContent, result);
+                    this.statusBarItem.show();
                 } else {
-                    sBar.hide();
+                    this.statusBarItem.hide();
                 }
             }
         }
