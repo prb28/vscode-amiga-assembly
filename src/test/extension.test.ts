@@ -143,7 +143,7 @@ describe("Global Extension Tests", function () {
             expect(editor).to.not.be.undefined;
             if (editor) {
                 // Editor openned
-                expect(editor.document.getText()).to.be.equal(expectedFileContents);
+                expect(editor.document.getText().replace('\r', '')).to.be.equal(expectedFileContents.replace('\r', ''));
             }
         });
     });
