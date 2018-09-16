@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import { reset, capture, spy, verify, anyString, instance, when, anything, mock, resetCalls } from 'ts-mockito/lib/ts-mockito';
 import { ExecutorHelper, ExecutorParser, ICheckResult } from '../execHelper';
-import { ExtensionState } from '../extensionState';
+import { ExtensionState } from '../extension';
 import { DummyTextDocument } from './dummy';
 
 describe("Executor Tests", function () {
@@ -11,7 +11,7 @@ describe("Executor Tests", function () {
     before(() => {
         // Opening file to activate the extension
         const newFile = vscode.Uri.parse("untitled://./exe.s");
-        return vscode.window.showTextDocument(newFile).then(() => { spiedOutputChannel = spy(ExtensionState.getInstance().getStatusManager().outputChannel); });
+        return vscode.window.showTextDocument(newFile).then(() => { spiedOutputChannel = spy(ExtensionState.getCurrent().getStatusManager().outputChannel); });
     });
     it("Should execute a command and parse stdout", async () => {
         resetCalls(spiedOutputChannel);
@@ -63,8 +63,8 @@ describe("Executor Tests", function () {
     });
     describe("Diagnostics handle", () => {
         let ex: ExecutorHelper;
-        let errorDiagnosticCollection = ExtensionState.getInstance().getErrorDiagnosticCollection();
-        let warningDiagnosticCollection = ExtensionState.getInstance().getWarningDiagnosticCollection();
+        let errorDiagnosticCollection: vscode.DiagnosticCollection;
+        let warningDiagnosticCollection: vscode.DiagnosticCollection;
         let spiedErrorDiagnosticCollection: vscode.DiagnosticCollection;
         let spiedWarningDiagnosticCollection: vscode.DiagnosticCollection;
         let error: ICheckResult;
@@ -72,6 +72,8 @@ describe("Executor Tests", function () {
         let errors: Array<ICheckResult>;
         let document: DummyTextDocument;
         beforeEach(() => {
+            errorDiagnosticCollection = ExtensionState.getCurrent().getErrorDiagnosticCollection();
+            warningDiagnosticCollection = ExtensionState.getCurrent().getWarningDiagnosticCollection();
             errorDiagnosticCollection.clear();
             warningDiagnosticCollection.clear();
             ex = new ExecutorHelper();

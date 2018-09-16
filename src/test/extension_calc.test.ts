@@ -7,11 +7,12 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import { spy, verify, anyString, capture, when, anything } from 'ts-mockito/lib/ts-mockito';
-import { ExtensionState } from '../extensionState';
+import { ExtensionState } from '../extension';
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
-    describe("Calc commands", function () {
+    context("Calc commands", function () {
+        let state: ExtensionState | undefined;
         before(async () => {
             const newFile = vscode.Uri.parse("untitled://./myfile.s");
             await vscode.workspace.openTextDocument(newFile).then(async document => {
@@ -39,22 +40,25 @@ describe("Global Extension Tests", function () {
             } else {
                 expect.fail("Editor not available");
             }
+            state = ExtensionState.getCurrent();
         });
-        it("Should evaluate the selection in the status bar", () => {
+        it("Should evaluate the selection in the status bar", async () => {
             this.timeout(60000);
-            let calc = ExtensionState.getInstance().getCalc();
-            // Get the satus value
-            // tslint:disable-next-line:no-unused-expression
-            expect(calc).to.not.be.undefined;
-            let sb = calc.getStatusBar();
-            // tslint:disable-next-line:no-unused-expression
-            expect(sb).to.not.be.undefined;
-            if (sb) {
-                expect(sb.text).to.be.equal("3+2=#5/$5/%101");
+            if (state) {
+                let calc = state.getCalc();
+                // Get the satus value
+                // tslint:disable-next-line:no-unused-expression
+                expect(calc).to.not.be.undefined;
+                let sb = calc.getStatusBar();
+                // tslint:disable-next-line:no-unused-expression
+                expect(sb).to.not.be.undefined;
+                if (sb) {
+                    expect(sb.text).to.be.equal("3+2=#5/$5/%101");
+                }
             }
         });
         it("Should hide the status bar if it it not evaluable", async () => {
-            let calc = ExtensionState.getInstance().getCalc();
+            let calc = ExtensionState.getCurrent().getCalc();
             let sb = calc.getStatusBar();
             // tslint:disable-next-line:no-unused-expression
             expect(sb).to.not.be.undefined;

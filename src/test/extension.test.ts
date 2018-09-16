@@ -9,7 +9,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { spy, verify, when, anything, resetCalls, mock, instance } from 'ts-mockito/lib/ts-mockito';
-import { ExtensionState } from '../extensionState';
+import { ExtensionState } from '../extension';
 import { Capstone } from '../capstone';
 
 // Defines a Mocha test suite to group tests of similar kind together
@@ -65,7 +65,7 @@ describe("Global Extension Tests", function () {
     });
     describe("Build commands", function () {
         it("Should build the workspace on command", async () => {
-            let state = ExtensionState.getInstance();
+            let state = ExtensionState.getCurrent();
             let spiedCompiler = spy(state.getCompiler());
             let spiedStatus = spy(state.getStatusManager());
             when(spiedCompiler.buildWorkspace()).thenCall(() => { return Promise.resolve(); });
@@ -84,7 +84,7 @@ describe("Global Extension Tests", function () {
             verify(spiedStatus.onError("nope")).once();
         });
         it("Should build the current document on command", async () => {
-            let state = ExtensionState.getInstance();
+            let state = ExtensionState.getCurrent();
             let spiedCompiler = spy(state.getCompiler());
             let spiedStatus = spy(state.getStatusManager());
             when(spiedCompiler.buildCurrentEditorFile()).thenCall(() => { return Promise.resolve(); });
@@ -102,7 +102,7 @@ describe("Global Extension Tests", function () {
             verify(spiedStatus.onError("nope")).once();
         });
         it("Should clean the current workspace on command", async () => {
-            let state = ExtensionState.getInstance();
+            let state = ExtensionState.getCurrent();
             let spiedCompiler = spy(state.getCompiler());
             let spiedStatus = spy(state.getStatusManager());
             when(spiedCompiler.cleanWorkspace()).thenCall(() => { return Promise.resolve(); });
@@ -122,7 +122,7 @@ describe("Global Extension Tests", function () {
     });
     describe("Disassemble command", function () {
         it("Should disassemble a file", async () => {
-            let state = ExtensionState.getInstance();
+            let state = ExtensionState.getCurrent();
             let spiedDisassembler = spy(state.getDisassembler());
             let mockedCapstone = mock(Capstone);
             let capstone = instance(mockedCapstone);

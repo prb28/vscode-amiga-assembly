@@ -1,7 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { ExtensionState } from './extensionState';
 import { M68kFormatter } from './formatter';
 import { M68kHoverProvider } from './hover';
 import { M86kColorProvider } from './color';
@@ -10,6 +9,10 @@ import { VASMController } from './vasm';
 import { FsUAEDebugSession } from './fsUAEDebug';
 import * as Net from 'net';
 import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
+import { Calc } from './calc';
+import { VASMCompiler } from './vasm';
+import { StatusManager } from "./status";
+import { Disassembler } from './disassemble';
 
 import { M68kDefinitionProvider } from './definitionProvider';
 
@@ -23,10 +26,65 @@ export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme:
  */
 const EMBED_DEBUG_ADAPTER = true;
 
+export class ExtensionState {
+    private compiler: VASMCompiler | undefined;
+    private errorDiagnosticCollection: vscode.DiagnosticCollection | undefined;
+    private warningDiagnosticCollection: vscode.DiagnosticCollection | undefined;
+    private statusManager: StatusManager | undefined;
+    private calc: Calc | undefined;
+    private disassembler: Disassembler | undefined;
+    public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
+        if (this.errorDiagnosticCollection === undefined) {
+            this.errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');
+        }
+        return this.errorDiagnosticCollection;
+    }
+    public getWarningDiagnosticCollection(): vscode.DiagnosticCollection {
+        if (this.warningDiagnosticCollection === undefined) {
+            this.warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-warning');
+        }
+        return this.warningDiagnosticCollection;
+    }
+    public getStatusManager(): StatusManager {
+        if (this.statusManager === undefined) {
+            this.statusManager = new StatusManager();
+        }
+        return this.statusManager;
+    }
+    public getCalc(): Calc {
+        if (this.calc === undefined) {
+            this.calc = new Calc();
+        }
+        return this.calc;
+    }
+    public getCompiler(): VASMCompiler {
+        if (this.compiler === undefined) {
+            this.compiler = new VASMCompiler();
+        }
+        return this.compiler;
+    }
+    public getDisassembler(): Disassembler {
+        if (this.disassembler === undefined) {
+            this.disassembler = new Disassembler();
+        }
+        return this.disassembler;
+    }
+    public static getCurrent(): ExtensionState {
+        // activate the extension
+        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            return ext.exports.getState();
+        }
+        return new ExtensionState();
+    }
+}
+
+const state = new ExtensionState();
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-    let state = ExtensionState.getInstance();
+    context.globalState.update('state', state);
     // Preparing the status manager
     let statusManager = state.getStatusManager();
     statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', "Build Workspace");
@@ -143,6 +201,13 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae-run', runProvider));
     context.subscriptions.push(runProvider);
     statusManager.outputChannel.appendLine("------> done");
+
+    let api = {
+        getState(): ExtensionState {
+            return state;
+        }
+    };
+    return api;
 }
 
 export function deactivate() {

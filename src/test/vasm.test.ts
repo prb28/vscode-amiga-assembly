@@ -5,7 +5,7 @@ import { capture, spy, verify, anyString, when, anything, resetCalls, reset } fr
 import { VASMCompiler, VASMParser, VASMController } from '../vasm';
 import { ExecutorHelper, ICheckResult } from '../execHelper';
 import { DummyTextDocument } from './dummy';
-import { ExtensionState } from '../extensionState';
+import { ExtensionState } from '../extension';
 import { VLINKLinker } from '../vlink';
 
 describe("VASM Tests", function () {
@@ -164,7 +164,7 @@ describe("VASM Tests", function () {
         });
         it("Should clean the workspace", async function () {
             let spiedWorkspace = spy(vscode.workspace);
-            let state = ExtensionState.getInstance();
+            let state = ExtensionState.getCurrent();
             let spiedOutputChannel = spy(state.getStatusManager().outputChannel);
             when(spiedCompiler.unlink(anything())).thenCall(() => { });
             let file1 = vscode.Uri.parse("file:///build/file1.o");
@@ -177,7 +177,7 @@ describe("VASM Tests", function () {
             });
         });
         it("Should get an error when cleaning the workspace", async function () {
-            let state = ExtensionState.getInstance();
+            let state = ExtensionState.getCurrent();
             let spiedOutputChannel = spy(state.getStatusManager().outputChannel);
             spiedCompiler = spy(compiler);
             when(spiedCompiler.getWorkspaceRootDir()).thenReturn(vscode.Uri.parse("file:///workdir"));
@@ -209,7 +209,7 @@ describe("VASM Tests", function () {
         it("Should build the current document on save", async () => {
             let compiler = new VASMCompiler();
             const spiedCompiler = spy(compiler);
-            let state = ExtensionState.getInstance();
+            let state = ExtensionState.getCurrent();
             const spiedStatus = spy(state.getStatusManager());
             let controller = new VASMController(compiler);
             let document = new DummyTextDocument();
