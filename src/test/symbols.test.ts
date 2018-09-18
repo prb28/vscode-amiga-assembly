@@ -17,5 +17,16 @@ describe("Symbols reader Tests", function () {
         let symbolFile = await sf.readFile();
         let definedSymbols = symbolFile.getDefinedSymbols();
         expect(definedSymbols.length).to.be.equal(56);
+        let referedSymbols = symbolFile.getReferedSymbols();
+        expect(referedSymbols.length).to.be.equal(439);
+        let firstDefined = definedSymbols[0];
+        expect(firstDefined.getLabel()).to.be.equal("COPPER_WAIT");
+        let count = 0;
+        for (let i = 0; i < referedSymbols.length; i++) {
+            if (referedSymbols[i].getLabel() === firstDefined.getLabel()) {
+                count++;
+            }
+        }
+        expect(count).to.be.equal(12);
     });
 });

@@ -57,7 +57,8 @@
             }
         ],
         "capabilities": {
-            "definitionProvider": "true"
+            "definitionProvider": "true",
+            "referencesProvider": "true"
         },
         "configuration": {
             "type": "object",

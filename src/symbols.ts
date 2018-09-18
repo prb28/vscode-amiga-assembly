@@ -4,6 +4,7 @@ import { ASMLine } from './parser';
 export class SymbolFile {
     private uri: Uri;
     private definedSymbols = new Array<Symbol>();
+    private referedSymbols = new Array<Symbol>();
     //private importedFiles = new Array<SymbolFile>();
 
     constructor(uri: Uri) {
@@ -30,6 +31,14 @@ export class SymbolFile {
             let [symbol, range] = asmLine.getSymbolFromLabel();
             if ((symbol !== undefined) && (range !== undefined)) {
                 this.definedSymbols.push(new Symbol(symbol, this, range));
+            } else {
+                let results = asmLine.getSymbolFromData();
+                for (let i = 0; i < results.length; i++) {
+                    [symbol, range] = results[i];
+                    if ((symbol !== undefined) && (range !== undefined)) {
+                        this.referedSymbols.push(new Symbol(symbol, this, range));
+                    }
+                }
             }
         }
     }
@@ -39,6 +48,9 @@ export class SymbolFile {
     }
     public getDefinedSymbols(): Array<Symbol> {
         return this.definedSymbols;
+    }
+    public getReferedSymbols(): Array<Symbol> {
+        return this.referedSymbols;
     }
 }
 

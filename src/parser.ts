@@ -170,6 +170,28 @@ export class ASMLine {
         }
         return [undefined, undefined];
     }
+
+    /**
+     * Returns the symbol retrieved from a data.
+     * 
+     * @return the symbol string and the range, otherwise undefined
+     */
+    public getSymbolFromData(): Array<[string, Range]> {
+        let symbols = new Array<[string, Range]>();
+        if (this.data.length > 0) {
+            let reg = /[a-zA-Z0-9_\-\.]+/g;
+            let match;
+            while (match = reg.exec(this.data)) {
+                let symbol = match[0];
+                let sPos = this.raw.indexOf(symbol);
+                if (sPos !== undefined) {
+                    let range = new Range(new Position(this.dataRange.start.line, sPos), new Position(this.dataRange.end.line, sPos + symbol.length));
+                    symbols.push([symbol, range]);
+                }
+            }
+        }
+        return symbols;
+    }
 }
 
 /**

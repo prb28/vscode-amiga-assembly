@@ -13,8 +13,7 @@ import { Calc } from './calc';
 import { VASMCompiler } from './vasm';
 import { StatusManager } from "./status";
 import { Disassembler } from './disassemble';
-
-import { M68kDefinitionProvider } from './definitionProvider';
+import { M68kDefinitionHandler } from './definitionHandler';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -144,7 +143,9 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_ASM_MODE, new M86kColorProvider()));
 
     // Definition provider
-    context.subscriptions.push(vscode.languages.registerDefinitionProvider(AMIGA_ASM_MODE, new M68kDefinitionProvider()));
+    let definitionHandler = new M68kDefinitionHandler();
+    context.subscriptions.push(vscode.languages.registerDefinitionProvider(AMIGA_ASM_MODE, definitionHandler));
+    context.subscriptions.push(vscode.languages.registerReferenceProvider(AMIGA_ASM_MODE, definitionHandler));
 
     // Diagnostics 
     let errorDiagnosticCollection = state.getErrorDiagnosticCollection();

@@ -51,6 +51,17 @@ describe("Parser Tests", function () {
             expect(symbol).to.be.eql(undefined);
             expect(range).to.be.eql(undefined);
         });
+        it("Should retrieve the symbol from a data line", function () {
+            let asmLine = new ASMLine("   move.l #mysymb,a0");
+            let results = asmLine.getSymbolFromData();
+            expect(results.length).to.be.equal(2);
+            let [symbol, range] = results[0];
+            expect(symbol).to.be.equal("mysymb");
+            expect(range).to.be.eql(new Range(new Position(0, 11), new Position(0, 17)));
+            [symbol, range] = results[1];
+            expect(symbol).to.be.equal("a0");
+            expect(range).to.be.eql(new Range(new Position(0, 18), new Position(0, 20)));
+        });
         it("Should parse a single line instruction", function () {
             let asmLine = new ASMLine(" rts");
             expect(asmLine.instruction).to.be.equal("rts");
