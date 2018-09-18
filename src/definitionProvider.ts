@@ -14,9 +14,10 @@ export class M68kDefinitionProvider implements DefinitionProvider {
         this.scanWorkspace();
     }
     public provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Thenable<Location> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             let rg = document.getWordRangeAtPosition(position);
             if (rg) {
+                await this.scanFile(document.uri, document);
                 let label = document.getText(rg);
                 let s = this.symbols.get(label);
                 if (s !== undefined) {
@@ -39,20 +40,27 @@ export class M68kDefinitionProvider implements DefinitionProvider {
         });
     }
 
-    public scanFile(uri: Uri): Promise<void> {
+    public scanFile(uri: Uri, document: TextDocument | undefined = undefined): Promise<void> {
         return new Promise(async (resolve, reject) => {
             let file = this.files.get(uri);
             if (file === undefined) {
                 file = new SymbolFile(uri);
+                this.files.set(uri, file);
             }
-            let sf = await file.readFile();
-            if (sf) {
-                let symb = sf.getDefinedSymbols();
-                for (let i = 0; i < symb.length; i++) {
-                    let s = symb[i];
-                    this.symbols.set(s.getLabel(), s);
-                }
+            if (document) {
+                file.readDocument(document);
+            } else {
+                file.readFile().catch(err => {
+                    reject(err);
+                    return;
+                });
             }
+            let symb = file.getDefinedSymbols();
+            for (let i = 0; i < symb.length; i++) {
+                let s = symb[i];
+                this.symbols.set(s.getLabel(), s);
+            }
+            resolve();
         });
     }
 }

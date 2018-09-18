@@ -1,4 +1,4 @@
-import { Range, Uri, workspace } from 'vscode';
+import { Range, Uri, workspace, TextDocument } from 'vscode';
 import { ASMLine } from './parser';
 
 export class SymbolFile {
@@ -15,20 +15,25 @@ export class SymbolFile {
             // Read the file
             let document = await workspace.openTextDocument(this.uri);
             if (document) {
-                for (let i = 0; i < document.lineCount; i++) {
-                    let line = document.lineAt(i);
-                    let asmLine = new ASMLine(line.text, line);
-                    let [symbol, range] = asmLine.getSymbolFromLabel();
-                    if ((symbol !== undefined) && (range !== undefined)) {
-                        this.definedSymbols.push(new Symbol(symbol, this, range));
-                    }
-                }
+                this.readDocument(document);
                 resolve(this);
             } else {
                 reject(new Error("Error opening document: '" + this.uri + "'"));
             }
         });
     }
+
+    public readDocument(document: TextDocument) {
+        for (let i = 0; i < document.lineCount; i++) {
+            let line = document.lineAt(i);
+            let asmLine = new ASMLine(line.text, line);
+            let [symbol, range] = asmLine.getSymbolFromLabel();
+            if ((symbol !== undefined) && (range !== undefined)) {
+                this.definedSymbols.push(new Symbol(symbol, this, range));
+            }
+        }
+    }
+
     public getUri(): Uri {
         return this.uri;
     }
