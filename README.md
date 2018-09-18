@@ -69,6 +69,11 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+### 0.8.0
+- Find the definition of a symbol and references
+- Accepts octal numbers
+- Bug fixes 
+
 ### 0.7.0
 - Run and Debug with FS-UAE
 - Disassemble a file

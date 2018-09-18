@@ -5,9 +5,9 @@ import { SymbolFile, Symbol } from './symbols';
 export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvider {
     static readonly SOURCE_FILES_GLOB = "**/*.{asm,s,i,ASM,S,I}";
     private watcher: FileSystemWatcher;
-    private files = new Map<Uri, SymbolFile>();
+    private files = new Map<string, SymbolFile>();
     private definedSymbols = new Map<String, Symbol>();
-    private referedSymbols = new Map<SymbolFile, Map<String, Array<Symbol>>>();
+    private referedSymbols = new Map<string, Map<String, Array<Symbol>>>();
 
     constructor() {
         this.watcher = vscode.workspace.createFileSystemWatcher(M68kDefinitionHandler.SOURCE_FILES_GLOB);
@@ -65,10 +65,10 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
 
     public scanFile(uri: Uri, document: TextDocument | undefined = undefined): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            let file = this.files.get(uri);
+            let file = this.files.get(uri.fsPath);
             if (file === undefined) {
                 file = new SymbolFile(uri);
-                this.files.set(uri, file);
+                this.files.set(uri.fsPath, file);
             }
             if (document) {
                 file.readDocument(document);
@@ -83,7 +83,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 let s = symb[i];
                 this.definedSymbols.set(s.getLabel(), s);
             }
-
+            this.referedSymbols.delete(uri.fsPath);
             let refs = new Map<String, Array<Symbol>>();
             symb = file.getReferedSymbols();
             for (let i = 0; i < symb.length; i++) {
@@ -96,7 +96,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 }
                 lst.push(s);
             }
-            this.referedSymbols.set(file, refs);
+            this.referedSymbols.set(uri.fsPath, refs);
             resolve();
         });
     }

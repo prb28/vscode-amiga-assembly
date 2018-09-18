@@ -25,6 +25,7 @@ export class SymbolFile {
     }
 
     public readDocument(document: TextDocument) {
+        this.clear();
         for (let i = 0; i < document.lineCount; i++) {
             let line = document.lineAt(i);
             let asmLine = new ASMLine(line.text, line);
@@ -41,6 +42,11 @@ export class SymbolFile {
                 }
             }
         }
+    }
+
+    public clear() {
+        this.definedSymbols = new Array<Symbol>();
+        this.referedSymbols = new Array<Symbol>();
     }
 
     public getUri(): Uri {
