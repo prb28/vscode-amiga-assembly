@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### [0.8.0]
+### [0.8.0] - 2018-09-19
 - [Issue #23](https://github.com/prb28/vscode-amiga-assembly/issues/23) Add a reference provider
 - [Issue #22](https://github.com/prb28/vscode-amiga-assembly/issues/22) Add a definition provider
 - [Issue #19](https://github.com/prb28/vscode-amiga-assembly/issues/19) * may represents the current pc in a operand symbol
