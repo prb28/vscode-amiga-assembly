@@ -65,7 +65,7 @@ describe("Global Extension Tests", function () {
                 expect(l[0].uri.fsPath).to.be.eql(uri.fsPath);
             }
         });
-        it.only("Should find all the symbol references for a strange label", async () => {
+        it("Should find all the symbol references for a strange label", async () => {
             let locations = await vscode.commands.executeCommand('vscode.executeReferenceProvider', uri, new Position(214, 5));
             // tslint:disable-next-line:no-unused-expression
             expect(locations).to.not.be.undefined;
