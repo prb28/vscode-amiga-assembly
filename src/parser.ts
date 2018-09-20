@@ -179,15 +179,13 @@ export class ASMLine {
     public getSymbolFromData(): Array<[string, Range]> {
         let symbols = new Array<[string, Range]>();
         if (this.data.length > 0) {
-            let reg = /[a-zA-Z0-9_\-\.]+/g;
+            let reg = /([a-z\.]+[a-z0-9_\.]*|[0-9]+[a-z]+[a-z0-9_\.]*)/gi;
             let match;
             while (match = reg.exec(this.data)) {
                 let symbol = match[0];
-                let sPos = this.raw.indexOf(symbol);
-                if (sPos !== undefined) {
-                    let range = new Range(new Position(this.dataRange.start.line, sPos), new Position(this.dataRange.end.line, sPos + symbol.length));
-                    symbols.push([symbol, range]);
-                }
+                let startPos = this.dataRange.start.character + match.index;
+                let range = new Range(new Position(this.dataRange.start.line, startPos), new Position(this.dataRange.end.line, startPos + symbol.length));
+                symbols.push([symbol, range]);
             }
         }
         return symbols;

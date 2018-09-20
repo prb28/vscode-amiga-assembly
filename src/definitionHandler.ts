@@ -1,4 +1,4 @@
-import { DefinitionProvider, TextDocument, Position, CancellationToken, Location, Uri, FileSystemWatcher, ReferenceProvider, ReferenceContext, ProviderResult } from 'vscode';
+import { DefinitionProvider, TextDocument, Position, CancellationToken, Location, Uri, FileSystemWatcher, ReferenceProvider, ReferenceContext, ProviderResult, Range } from 'vscode';
 import * as vscode from 'vscode';
 import { SymbolFile, Symbol } from './symbols';
 
@@ -19,7 +19,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             let rg = document.getWordRangeAtPosition(position);
             if (rg) {
                 await this.scanFile(document.uri, document);
-                let label = document.getText(rg);
+                let label = this.getLabel(document, rg);
                 let s = this.definedSymbols.get(label);
                 if (s !== undefined) {
                     return resolve(new Location(s.getFile().getUri(), s.getRange()));
@@ -34,7 +34,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             let rg = document.getWordRangeAtPosition(position);
             if (rg) {
                 await this.scanFile(document.uri, document);
-                let label = document.getText(rg);
+                let label = this.getLabel(document, rg);
                 let locations = new Array<Location>();
                 for (let refs of this.referedSymbols) {
                     let symbs = refs[1].get(label);
@@ -49,6 +49,21 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             }
             return reject();
         });
+    }
+
+    private getLabel(document: TextDocument, range: Range): string {
+        let pos = range.start;
+        let label;
+        if (pos.character > 0) {
+            pos = pos.translate(0, -1);
+            label = document.getText(range.with(pos));
+            if (!label.startsWith('\.')) {
+                label = document.getText(range);
+            }
+        } else {
+            label = document.getText(range);
+        }
+        return label;
     }
 
     public scanWorkspace(): Promise<void> {
@@ -71,9 +86,9 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 this.files.set(uri.fsPath, file);
             }
             if (document) {
-                file.readDocument(document);
+                await file.readDocument(document);
             } else {
-                file.readFile().catch(err => {
+                await file.readFile().catch(err => {
                     reject(err);
                     return;
                 });

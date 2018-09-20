@@ -43,5 +43,38 @@ describe("Global Extension Tests", function () {
                 expect(l[0].uri.fsPath).to.be.eql(uri.fsPath);
             }
         });
+        it("Should find all the symbol references for symbol in calculus", async () => {
+            let locations = await vscode.commands.executeCommand('vscode.executeReferenceProvider', uri, new Position(300, 41));
+            // tslint:disable-next-line:no-unused-expression
+            expect(locations).to.not.be.undefined;
+            if (locations) {
+                let l = locations as Array<Location>;
+                expect(l.length).to.be.equal(2);
+                expect(l[1].range).to.be.eql(new Range(new Position(300, 34), new Position(300, 44)));
+                expect(l[1].uri.fsPath).to.be.eql(uri.fsPath);
+            }
+        });
+        it("Should find all the symbol references for a dot label", async () => {
+            let locations = await vscode.commands.executeCommand('vscode.executeReferenceProvider', uri, new Position(117, 5));
+            // tslint:disable-next-line:no-unused-expression
+            expect(locations).to.not.be.undefined;
+            if (locations) {
+                let l = locations as Array<Location>;
+                expect(l.length).to.be.equal(1);
+                expect(l[0].range).to.be.eql(new Range(new Position(113, 27), new Position(113, 36)));
+                expect(l[0].uri.fsPath).to.be.eql(uri.fsPath);
+            }
+        });
+        it.only("Should find all the symbol references for a strange label", async () => {
+            let locations = await vscode.commands.executeCommand('vscode.executeReferenceProvider', uri, new Position(214, 5));
+            // tslint:disable-next-line:no-unused-expression
+            expect(locations).to.not.be.undefined;
+            if (locations) {
+                let l = locations as Array<Location>;
+                expect(l.length).to.be.equal(1);
+                expect(l[0].range).to.be.eql(new Range(new Position(154, 22), new Position(154, 30)));
+                expect(l[0].uri.fsPath).to.be.eql(uri.fsPath);
+            }
+        });
     });
 });

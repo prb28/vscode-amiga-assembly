@@ -50,6 +50,10 @@ describe("Parser Tests", function () {
             [symbol, range] = asmLine.getSymbolFromLabel();
             expect(symbol).to.be.eql(undefined);
             expect(range).to.be.eql(undefined);
+            asmLine = new ASMLine(".mylabel   move.l #mysymb,a0");
+            [symbol, range] = asmLine.getSymbolFromLabel();
+            expect(symbol).to.be.equal(".mylabel");
+            expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 8)));
         });
         it("Should retrieve the symbol from a data line", function () {
             let asmLine = new ASMLine("   move.l #mysymb,a0");
@@ -61,6 +65,46 @@ describe("Parser Tests", function () {
             [symbol, range] = results[1];
             expect(symbol).to.be.equal("a0");
             expect(range).to.be.eql(new Range(new Position(0, 18), new Position(0, 20)));
+
+            asmLine = new ASMLine("  move       (INTENARSave),INTENA(a6)  ");
+            results = asmLine.getSymbolFromData();
+            expect(results.length).to.be.equal(3);
+            [symbol, range] = results[0];
+            expect(symbol).to.be.equal("INTENARSave");
+            expect(range).to.be.eql(new Range(new Position(0, 14), new Position(0, 25)));
+            [symbol, range] = results[1];
+            expect(symbol).to.be.equal("INTENA");
+            expect(range).to.be.eql(new Range(new Position(0, 27), new Position(0, 33)));
+            [symbol, range] = results[2];
+            expect(symbol).to.be.equal("a6");
+            expect(range).to.be.eql(new Range(new Position(0, 34), new Position(0, 36)));
+
+            asmLine = new ASMLine(".OSOn       move.w     #$7fff,DMACON(a6)");
+            results = asmLine.getSymbolFromData();
+            expect(results.length).to.be.equal(3);
+            [symbol, range] = results[0];
+            expect(symbol).to.be.equal("7fff");
+            expect(range).to.be.eql(new Range(new Position(0, 25), new Position(0, 29)));
+            [symbol, range] = results[1];
+            expect(symbol).to.be.equal("DMACON");
+            expect(range).to.be.eql(new Range(new Position(0, 30), new Position(0, 36)));
+            [symbol, range] = results[2];
+            expect(symbol).to.be.equal("a6");
+            expect(range).to.be.eql(new Range(new Position(0, 37), new Position(0, 39)));
+
+            asmLine = new ASMLine("   dc.w       DDFSTRT,$d0-LOGOMARGIN/2   ; Display ");
+            results = asmLine.getSymbolFromData();
+            expect(results.length).to.be.equal(3);
+            [symbol, range] = results[0];
+            expect(symbol).to.be.equal("DDFSTRT");
+            expect(range).to.be.eql(new Range(new Position(0, 14), new Position(0, 21)));
+            [symbol, range] = results[1];
+            expect(symbol).to.be.equal("d0");
+            expect(range).to.be.eql(new Range(new Position(0, 23), new Position(0, 25)));
+            [symbol, range] = results[2];
+            expect(symbol).to.be.equal("LOGOMARGIN");
+            expect(range).to.be.eql(new Range(new Position(0, 26), new Position(0, 36)));
+
         });
         it("Should parse a single line instruction", function () {
             let asmLine = new ASMLine(" rts");
