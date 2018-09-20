@@ -61,7 +61,7 @@ describe("Global Extension Tests", function () {
             if (locations) {
                 let l = locations as Array<Location>;
                 expect(l.length).to.be.equal(1);
-                expect(l[0].range).to.be.eql(new Range(new Position(113, 27), new Position(113, 36)));
+                expect(l[0].range).to.be.eql(new Range(new Position(113, 25), new Position(113, 34)));
                 expect(l[0].uri.fsPath).to.be.eql(uri.fsPath);
             }
         });
