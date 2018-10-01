@@ -12,7 +12,7 @@
         "type": "git",
         "url": "https://github.com/prb28/vscode-amiga-assembly"
     },
-    "version": "0.8.0",
+    "version": "0.9.0",
     "publisher": "prb28",
     "engines": {
         "vscode": "^1.23.0"
@@ -47,6 +47,15 @@
                     ".asm"
                 ],
                 "configuration": "./language-configuration.json"
+            },
+            {
+                "id": "amiga-assembly-debug.disassembly",
+                "aliases": [
+                    "Amiga Assembly Debug Disassembly"
+                ],
+                "extensions": [
+                    ".dbgasm"
+                ]
             }
         ],
         "grammars": [
@@ -54,6 +63,11 @@
                 "language": "m68k",
                 "scopeName": "source.asm.m68k",
                 "path": "./syntaxes/M68k-Assembly.tmLanguage.json"
+            },
+            {
+                "language": "amiga-assembly-debug.disassembly",
+                "scopeName": "source.asm.dbgasm",
+                "path": "./syntaxes/Dbg-Assembly.tmLanguage.json"
             }
         ],
         "capabilities": {
@@ -204,6 +218,9 @@
         "breakpoints": [
             {
                 "language": "m68k"
+            },
+            {
+                "language": "amiga-assembly-debug.disassembly"
             }
         ],
         "debuggers": [

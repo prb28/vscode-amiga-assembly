@@ -14,6 +14,7 @@ import { VASMCompiler } from './vasm';
 import { StatusManager } from "./status";
 import { Disassembler } from './disassemble';
 import { M68kDefinitionHandler } from './definitionHandler';
+import { DisassemblyContentProvider } from './disassemblyContentProvider';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -202,6 +203,8 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae-run', runProvider));
     context.subscriptions.push(runProvider);
     statusManager.outputChannel.appendLine("------> done");
+
+    context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('disassembly', new DisassemblyContentProvider()));
 
     let api = {
         getState(): ExtensionState {
