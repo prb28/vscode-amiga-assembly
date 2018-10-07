@@ -20,7 +20,7 @@
     },
     {
       "name": "comment.block.memory",
-      "match": "([0-9A-Fa-f]{2}\\s){1,6}[\\s]{4,}"
+      "match": "([0-9A-Fa-f]{2}\\s){1,8}[\\s]{2,}"
     },
     {
       "name": "comment.block.asterisk",
