@@ -28,11 +28,21 @@ export class Capstone {
     public disassemble(buffer: string, cancellationToken?: CancellationToken): Promise<string> {
         let args = ["m68k", buffer];
         const workspaceRootDir = this.getWorkspaceRootDir();
-        let rootPath = null;
+        let rootPath: string | null = null;
         if (workspaceRootDir) {
             rootPath = workspaceRootDir.fsPath;
         }
-        return this.executor.runToolRetrieveStdout(args, rootPath, this.cstoolPath, null, cancellationToken);
+        return new Promise((resolve, reject) => {
+            this.executor.runToolRetrieveStdout(args, rootPath, this.cstoolPath, null, cancellationToken).then((code) => {
+                if (code.indexOf("ERROR") >= 0) {
+                    reject(new Error(code));
+                } else {
+                    resolve(code);
+                }
+            }).catch((err) => {
+                reject(err);
+            });
+        });
     }
 
     /**

@@ -483,6 +483,7 @@ describe('Node Debug Adapter', () => {
 					value: 10
 				}]));
 				when(this.mockedGdbProxy.getSegments()).thenReturn([<Segment>{ address: 10, size: 10 }]);
+				when(this.mockedGdbProxy.toRelativeOffset(anyNumber())).thenReturn([-1, 40]);
 			}
 		});
 		it('should retrieve a complex stack', async function () {

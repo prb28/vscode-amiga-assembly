@@ -133,6 +133,8 @@ export class GdbProxy extends EventEmitter {
         autoUnlockTimeoutMs: 1200,
         intervalMs: 100,
     });
+    /** Trace protocol */
+    private traceProtocol = false;
 
     /**
      * Constructor 
@@ -251,7 +253,9 @@ export class GdbProxy extends EventEmitter {
      * @param data Data to parse
      */
     private onData(proxy: GdbProxy, data: any): Promise<void> {
-        //console.log("--->" + data.toString());
+        if (this.traceProtocol) {
+            console.log("--->" + data.toString());
+        }
         return new Promise(async (resolve, reject) => {
             for (let packet of GdbProxy.parseData(data)) {
                 switch (packet.type) {
@@ -373,7 +377,9 @@ export class GdbProxy extends EventEmitter {
             data.write(GdbProxy.calculateChecksum(text), offset);
             offset += 2;
             data.writeInt8(0, offset);
-            //console.log(" <---" + data.toString());
+            if (this.traceProtocol) {
+                console.log(" <---" + data.toString());
+            }
             const unlock = await this.mutex.capture('sendPacketString');
             this.socket.write(data);
             this.socket.once('data', (data) => {
@@ -398,6 +404,21 @@ export class GdbProxy extends EventEmitter {
                 reject(err);
             });
         });
+    }
+
+
+    /**
+     * Ask for a new breakpoint
+     * @param address Address for the breakpoint
+     * @return Promise with a breakpoint
+     */
+    public setBreakPointFromAddress(address: number): Promise<GdbBreakpoint> {
+        let [segmentId, offset] = this.toRelativeOffset(address);
+        if (segmentId >= 0) {
+            return this.setBreakPoint(segmentId, offset);
+        } else {
+            return this.setBreakPoint(-1, address);
+        }
     }
 
     /**
@@ -685,6 +706,24 @@ export class GdbProxy extends EventEmitter {
                 reject(err);
             });
         });
+    }
+
+    /**
+     * Reads all the memory from a segment
+     * @param segmentId Segment ID
+     * @return String returned by the server = bytes in hexa
+     */
+    public getSegmentMemory(segmentId: number): Promise<string> {
+        if (this.segments) {
+            if (segmentId < this.segments.length) {
+                const segment = this.segments[segmentId];
+                return this.getMemory(segment.address, segment.size);
+            } else {
+                return Promise.reject(new Error(`Segment Id #${segmentId} not found`));
+            }
+        } else {
+            return Promise.reject(new Error("No segments stored in debugger"));
+        }
     }
 
     /**

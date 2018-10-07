@@ -13,6 +13,7 @@ import { DebugInfo } from './debugInfo';
 import { Capstone } from './capstone';
 import { DebugVariableResolver } from './debugVariableResolver';
 import { DebugExpressionHelper } from './debugExpressionHelper';
+import { DebugDisassembledMananger, DebugDisassembledFile } from './debugDisassembled';
 const { Subject } = require('await-notify');
 
 
@@ -91,6 +92,9 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
     /** Helper class to deal with the debug expressions */
     private debugExpressionHelper = new DebugExpressionHelper();
 
+    /** Manager of disassembled code */
+    private debugDisassembledMananger: DebugDisassembledMananger;
+
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
@@ -103,6 +107,7 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
         this.gdbProxy = new GdbProxy(undefined);
         this.initProxy();
         this.executor = new ExecutorHelper();
+        this.debugDisassembledMananger = new DebugDisassembledMananger(this.gdbProxy, undefined);
     }
 
 	/**
@@ -117,6 +122,7 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
         this.initProxy();
         this.testMode = true;
         this.capstone = capstone;
+        this.debugDisassembledMananger = new DebugDisassembledMananger(gdbProxy, capstone);
     }
 
 	/**
@@ -205,6 +211,8 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
         if (!this.capstone && conf && (conf.length > 5)) {
             this.capstone = new Capstone(conf);
         }
+
+        this.debugDisassembledMananger = new DebugDisassembledMananger(this.gdbProxy, this.capstone);
 
         this.sendResponse(response);
 
@@ -347,44 +355,16 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
     }
 
     protected async disassembleRequest(response: DebugProtocol.Response, args: any): Promise<void> {
-        if (this.capstone) {
-            const localCapstone = this.capstone;
-            if (args.startAddress) {
-                // replace the address if it is a variable
-                this.debugExpressionHelper.getAddressFromExpression(args.startAddress, args.frameId, this).then((address) => {
-                    // ask for memory dump
-                    this.gdbProxy.getMemory(address, args.length).then((memory) => {
-                        let startAddress = address;
-                        // disassemble the code 
-                        localCapstone.disassemble(memory).then((code) => {
-                            let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
-                            response.body = {
-                                variables: variables,
-                            };
-                            this.sendResponse(response);
-                        }).catch((err) => {
-                            response.success = false;
-                            response.message = err.toString();
-                            this.sendResponse(response);
-                        });
-                    }).catch((err) => {
-                        response.success = false;
-                        response.message = err.toString();
-                        this.sendResponse(response);
-                    });
-                }).catch((err) => {
-                    response.success = false;
-                    response.message = err.toString();
-                    this.sendResponse(response);
-                });
-            } else {
-                this.sendErrorResponse(response, 1, 'Unable to disassemble; invalid parameters.');
-            }
-        } else {
-            response.success = false;
-            response.message = "Capstone cstool must be configured in the settings";
+        await this.debugDisassembledMananger.disassembleRequest(args).then(variables => {
+            response.body = {
+                variables: variables,
+            };
             this.sendResponse(response);
-        }
+        }).catch((err) => {
+            response.success = false;
+            response.message = err.toString();
+            this.sendResponse(response);
+        });
     }
 
     protected terminateEmulator() {
@@ -393,62 +373,81 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
         }
     }
 
-    protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
-        new Promise(async (resolve) => {
-            const path = <string>args.source.path;
-            const clientLines = args.lines || [];
+    protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
+        let debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
+        const path = <string>args.source.path;
+        const clientLines = args.lines || [];
 
-            // clear all breakpoints for this file
-            if (this.debugInfo) {
-                let values = this.debugInfo.getAllSegmentIds(path);
-                for (let segmentId of values) {
-                    await this.gdbProxy.clearBreakpoints(segmentId);
-                }
+        // clear all breakpoints for this file
+        if (this.debugInfo) {
+            let values = this.debugInfo.getAllSegmentIds(path);
+            for (let segmentId of values) {
+                await this.gdbProxy.clearBreakpoints(segmentId);
             }
+        }
 
-            // set and verify breakpoint locations
-            let breakPoints: GdbBreakpoint[] = [];
-            for (let l of clientLines) {
+        // set and verify breakpoint locations
+        let breakPoints: GdbBreakpoint[] = [];
+        for (let l of clientLines) {
+            if (!DebugDisassembledFile.isDebugAsmFile(path)) {
                 if (this.debugInfo) {
+                    const dbInfo = this.debugInfo;
                     let values = this.debugInfo.getAddressSeg(path, l);
                     if (values) {
                         await this.gdbProxy.setBreakPoint(values[0], values[1]).then(bp => {
                             breakPoints.push(bp);
+                            let values = dbInfo.resolveFileLine(bp.segmentId, bp.offset);
+                            if (values) {
+                                debugBreakPoints.push(<DebugProtocol.Breakpoint>{
+                                    id: bp.id,
+                                    line: values[1],
+                                    source: path, // The path is the local path and not the stored in binary file
+                                    verified: true // We assume that if the line is in the binary, it is verified
+                                });
+                            }
+                        }).catch((err) => {
+                            response.success = false;
+                            response.message = err.toString();
+                            this.sendResponse(response);
+                            return;
                         });
                     }
                 } else {
-                    // TODO : keep the breakpoint to do it later
+                    response.success = false;
+                    response.message = 'Breakpoint information cannot be retrieved';
+                    this.sendResponse(response);
+                    return;
                 }
-            }
-            if (this.debugInfo) {
-                let debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
-                for (let i = 0; i < breakPoints.length; i++) {
-                    let breakpt = breakPoints[i];
-                    let values = this.debugInfo.resolveFileLine(breakpt.segmentId, breakpt.offset);
-                    if (values) {
+            } else {
+                let address = await this.debugDisassembledMananger.getAddressForFileEditorLine(path, l).catch((err) => {
+                    response.success = false;
+                    response.message = err.toString();
+                    this.sendResponse(response);
+                    return;
+                });
+                if (address) {
+                    await this.gdbProxy.setBreakPointFromAddress(address).then(bp => {
+                        breakPoints.push(bp);
                         debugBreakPoints.push(<DebugProtocol.Breakpoint>{
-                            id: breakpt.id,
-                            line: values[1],
+                            id: bp.id,
+                            line: l,
                             source: path, // The path is the local path and not the stored in binary file
                             verified: true // We assume that if the line is in the binary, it is verified
                         });
-                    }
+                    }).catch((err) => {
+                        response.success = false;
+                        response.message = err.toString();
+                        this.sendResponse(response);
+                        return;
+                    });
                 }
-                // send back the actual breakpoint positions
-                response.body = {
-                    breakpoints: debugBreakPoints
-                };
-            } else {
-                // TODO : keep the breakpoint to do it later
             }
-            resolve();
-        }).then(() => {
-            this.sendResponse(response);
-        }).catch((err) => {
-            response.success = false;
-            response.message = err.toString();
-            this.sendResponse(response);
-        });
+        }
+        // send back the actual breakpoint positions
+        response.body = {
+            breakpoints: debugBreakPoints
+        };
+        this.sendResponse(response);
     }
 
     protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
@@ -510,11 +509,11 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
                             }
                             this.disassembledCache.set(f.pc, line);
                         }
-                        let fname: string;
-                        let url: string;
-                        fname = `${f.index}_${pc}.dbgasm`;
-                        url = `disassembly:///${f.index}_\$${pc}.dbgasm`;
-                        stackFrames.push(new StackFrame(f.index, line, new Source(fname, url), 1, 1));
+                        // The the stack frame from the manager
+                        let stackFrame = await this.debugDisassembledMananger.getStackFrame(f.index, f.pc, line);
+                        if (stackFrame) {
+                            stackFrames.push(stackFrame);
+                        }
                     }
                 }
                 response.body = {
