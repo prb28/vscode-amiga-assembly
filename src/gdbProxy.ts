@@ -224,7 +224,7 @@ export class GdbProxy extends EventEmitter {
      * Parses the data recieved.
      * @param data DAta to parse
      */
-    protected static parseData(data: any): GdbPacket[] {
+    public static parseData(data: any): GdbPacket[] {
         let s = data.toString();
         let parsedData = new Array<GdbPacket>();
         if (s === '+') {
@@ -233,7 +233,7 @@ export class GdbProxy extends EventEmitter {
                 message: s
             });
         } else {
-            let messageRegexp = /\$(.+)\#[\da-f]{2}/gi;
+            let messageRegexp = /\$([^$]+)\#[\da-f]{2}/gi;
             let match;
             while (match = messageRegexp.exec(s)) {
                 let message = GdbProxy.extractPacket(match[1]);
@@ -243,7 +243,7 @@ export class GdbProxy extends EventEmitter {
                 });
             }
         }
-        // TODO: check the checksum and and to resend the message if it is not verified
+        // TODO: check the checksum and ask to repeat the message if it is not verified
         return parsedData;
     }
 
@@ -427,48 +427,61 @@ export class GdbProxy extends EventEmitter {
      * @param offset Offset in segment coordinated
      * @return Promise with a breakpoint
      */
-    public setBreakPoint(segmentId: number, offset: number, exceptionMask?: number): Promise<GdbBreakpoint> {
-        let self = this;
-        if (((this.segments) || ((segmentId === 0) && (offset === 0))) && (this.socket.writable)) {
-            if (this.segments && (segmentId >= this.segments.length)) {
-                return Promise.reject(new Error("Invalid breakpoint segment id: " + segmentId));
-            } else {
-                let message: string;
-                if (exceptionMask) {
-                    let expMskHex = GdbProxy.formatNumber(exceptionMask);
-                    let expMskHexSz = GdbProxy.formatNumber(expMskHex.length);
-                    message = 'Z1,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId) + ";X" + expMskHexSz + "," + expMskHex;
+    public setBreakPoint(segmentId: number | undefined, offset: number, exceptionMask?: number): Promise<GdbBreakpoint> {
+        return new Promise(async (resolve, reject) => {
+            let self = this;
+            if (((this.segments) || (offset >= 0)) && (this.socket.writable)) {
+                if (this.segments && (segmentId !== undefined) && (segmentId >= this.segments.length)) {
+                    reject(new Error("Invalid breakpoint segment id: " + segmentId));
+                    return;
                 } else {
-                    message = 'Z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId);
+                    let message: string;
+                    if (exceptionMask) {
+                        let expMskHex = GdbProxy.formatNumber(exceptionMask);
+                        let expMskHexSz = GdbProxy.formatNumber(expMskHex.length);
+                        let segStr = "";
+                        if (segmentId !== undefined) {
+                            segStr = ',' + GdbProxy.formatNumber(segmentId);
+                        }
+                        message = 'Z1,' + GdbProxy.formatNumber(offset) + segStr + ";X" + expMskHexSz + "," + expMskHex;
+                    } else {
+                        let segStr = "";
+                        if (segmentId !== undefined) {
+                            segStr = ',' + GdbProxy.formatNumber(segmentId);
+                        }
+                        message = 'Z0,' + GdbProxy.formatNumber(offset) + segStr;
+                    }
+                    await this.sendPacketString(message).then(function (data) {
+                        let bp = <GdbBreakpoint>{
+                            verified: true,
+                            segmentId: segmentId,
+                            offset: offset,
+                            id: self.nextBreakPointId++,
+                            exceptionMask: exceptionMask
+                        };
+                        self.breakPoints.push(bp);
+                        self.sendEvent("breakpointValidated", bp);
+                        resolve(bp);
+                    }).catch((err) => {
+                        reject(err);
+                    });
                 }
-                return this.sendPacketString(message).then(function (data) {
-                    let bp = <GdbBreakpoint>{
-                        verified: true,
-                        segmentId: segmentId,
-                        offset: offset,
-                        id: self.nextBreakPointId++,
-                        exceptionMask: exceptionMask
-                    };
-                    self.breakPoints.push(bp);
-                    self.sendEvent("breakpointValidated", bp);
-                    return bp;
-                });
+            } else {
+                let bp = <GdbBreakpoint>{
+                    verified: false,
+                    segmentId: segmentId,
+                    offset: offset,
+                    id: self.nextBreakPointId++,
+                    exceptionMask: exceptionMask
+                };
+                if (!this.pendingBreakpoints) {
+                    this.pendingBreakpoints = new Array<GdbBreakpoint>();
+                }
+                this.pendingBreakpoints.push(bp);
+                //console.log("Breakpoint added to pending: " + segmentId + "," + offset);
+                resolve(bp);
             }
-        } else {
-            let bp = <GdbBreakpoint>{
-                verified: false,
-                segmentId: segmentId,
-                offset: offset,
-                id: self.nextBreakPointId++,
-                exceptionMask: exceptionMask
-            };
-            if (!this.pendingBreakpoints) {
-                this.pendingBreakpoints = new Array<GdbBreakpoint>();
-            }
-            this.pendingBreakpoints.push(bp);
-            //console.log("Breakpoint added to pending: " + segmentId + "," + offset);
-            return Promise.resolve(bp);
-        }
+        });
     }
 
     /**

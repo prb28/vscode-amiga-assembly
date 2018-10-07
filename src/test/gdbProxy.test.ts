@@ -4,7 +4,7 @@
 
 import { expect } from 'chai';
 import * as chai from 'chai';
-import { GdbProxy, GdbBreakpoint, GdbRegister, GdbStackPosition, GdbStackFrame } from '../gdbProxy';
+import { GdbProxy, GdbBreakpoint, GdbRegister, GdbStackPosition, GdbStackFrame, GdbPacket, GdbPacketType } from '../gdbProxy';
 import { Socket } from 'net';
 import { spy, verify, anyString, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
@@ -392,5 +392,31 @@ describe("GdbProxy Tests", function () {
             expect(GdbProxy.calculateChecksum("n")).to.be.equal("6e");
             expect(GdbProxy.calculateChecksum("")).to.be.equal("00");
         });
+        it.only("Should parse the reponse", function () {
+            let expected = [<GdbPacket>{
+                message: "OK",
+                type: GdbPacketType.OK
+            }];
+            expect(GdbProxy.parseData("$OK#9a")).to.be.eql(expected);
+            expected = [<GdbPacket>{
+                message: "F00000013",
+                type: GdbPacketType.FRAME
+            }];
+            expect(GdbProxy.parseData("$F00000013#ca")).to.be.eql(expected);
+            expected = [<GdbPacket>{
+                message: "4ef900f8101c4ef900f8",
+                type: GdbPacketType.UNKNOWN
+            }];
+            expect(GdbProxy.parseData("$4ef900f8101c4ef900f8#61")).to.be.eql(expected);
+            // Two messages
+            expected = [<GdbPacket>{
+                message: "OK",
+                type: GdbPacketType.OK
+            }, <GdbPacket>{
+                message: "S05",
+                type: GdbPacketType.STOP
+            }];
+            expect(GdbProxy.parseData("$OK#9a$S05#b8")).to.be.eql(expected);
+        });
     });
-});    
+});
