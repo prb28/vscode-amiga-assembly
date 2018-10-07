@@ -1,5 +1,5 @@
 //
-// Tests fot the debug expression helper
+// Tests for the debug expression helper
 //
 
 import { expect } from 'chai';
