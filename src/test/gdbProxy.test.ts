@@ -392,7 +392,7 @@ describe("GdbProxy Tests", function () {
             expect(GdbProxy.calculateChecksum("n")).to.be.equal("6e");
             expect(GdbProxy.calculateChecksum("")).to.be.equal("00");
         });
-        it.only("Should parse the reponse", function () {
+        it("Should parse the reponse", function () {
             let expected = [<GdbPacket>{
                 message: "OK",
                 type: GdbPacketType.OK

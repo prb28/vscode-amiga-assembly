@@ -430,7 +430,7 @@ export class GdbProxy extends EventEmitter {
     public setBreakPoint(segmentId: number | undefined, offset: number, exceptionMask?: number): Promise<GdbBreakpoint> {
         return new Promise(async (resolve, reject) => {
             let self = this;
-            if (((this.segments) || (offset >= 0)) && (this.socket.writable)) {
+            if ((((this.segments) && (segmentId !== undefined)) || ((segmentId === undefined) && (offset >= 0)) || ((segmentId === 0) && (offset === 0))) && (this.socket.writable)) {
                 if (this.segments && (segmentId !== undefined) && (segmentId >= this.segments.length)) {
                     reject(new Error("Invalid breakpoint segment id: " + segmentId));
                     return;
