@@ -7,12 +7,12 @@ import { DebugProtocol } from "vscode-debugprotocol";
 export class DebugDisassembledFile {
     public static readonly DGBFILE_SEG_SEPARATOR = "seg_";
     public static readonly DGBFILE_EXTENSION = "dbgasm";
-    public static readonly DGBFILE_EXTENSION_SIZE = 7; // 6+1 = '.dbgasm'
 
     private segmentId: number | undefined;
     private stackFrameIndex: number | undefined;
     private address: number | undefined;
     private length: number | undefined;
+    private path = "";
 
     public setSegmentId(segmentId: number): DebugDisassembledFile {
         this.segmentId = segmentId;
@@ -56,23 +56,33 @@ export class DebugDisassembledFile {
 
     public toString(): string {
         if (this.isSegment()) {
-            return `${DebugDisassembledFile.DGBFILE_SEG_SEPARATOR}${this.segmentId}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
+            return `${this.path}${DebugDisassembledFile.DGBFILE_SEG_SEPARATOR}${this.segmentId}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
         }
         let addressHex = "0";
         if (this.address) {
             addressHex = this.address.toString(16);
         }
-        return `${this.stackFrameIndex}_\$${addressHex}_${this.length}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
+        return `${this.path}${this.stackFrameIndex}_\$${addressHex}_${this.length}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
     }
 
     public static fromPath(path: string): DebugDisassembledFile {
-        let pathElements = new DebugDisassembledFile();
-        const segLabelPos = path.indexOf(DebugDisassembledFile.DGBFILE_SEG_SEPARATOR);
+        let localPath = path;
+        let dAsmFile = new DebugDisassembledFile();
+        let lastSepPos = localPath.lastIndexOf('/');
+        if (lastSepPos >= 0) {
+            localPath = localPath.substring(lastSepPos + 1);
+            dAsmFile.path = path.substring(0, lastSepPos + 1);
+        }
+        let indexOfExt = localPath.lastIndexOf(DebugDisassembledFile.DGBFILE_EXTENSION);
+        if (indexOfExt > 0) {
+            localPath = localPath.substring(0, indexOfExt - 1);
+        }
+        const segLabelPos = localPath.indexOf(DebugDisassembledFile.DGBFILE_SEG_SEPARATOR);
         if (segLabelPos >= 0) {
-            const segId = parseInt(path.substring(segLabelPos + 4, path.length - DebugDisassembledFile.DGBFILE_EXTENSION_SIZE));
-            pathElements.setSegmentId(segId);
+            const segId = parseInt(localPath.substring(segLabelPos + 4));
+            dAsmFile.setSegmentId(segId);
         } else {
-            const pathParts = path.substring(1, path.length - DebugDisassembledFile.DGBFILE_EXTENSION_SIZE).split('_');
+            const pathParts = localPath.split('_');
             let stackFrameIndex = -1;
             let address = 0;
             let length = 100;
@@ -80,10 +90,10 @@ export class DebugDisassembledFile {
                 stackFrameIndex = parseInt(pathParts[0]);
                 address = parseInt(pathParts[1].substring(1), 16);
                 length = parseInt(pathParts[2]);
-                pathElements.setStackFrameIndex(stackFrameIndex).setAddress(address).setLength(length);
+                dAsmFile.setStackFrameIndex(stackFrameIndex).setAddress(address).setLength(length);
             }
         }
-        return pathElements;
+        return dAsmFile;
     }
 
     public static isDebugAsmFile(path: string): boolean {
@@ -120,7 +130,7 @@ export class DebugDisassembledMananger {
                 dAsmFile.setSegmentId(segmentId);
                 let returnedLineNumber = await this.getLineNumberInDisassembledSegent(segmentId, offset).catch((err) => {
                     // Nothing to do
-                    console.error(err);
+                    lineNumber = -1;
                 });
                 if (returnedLineNumber !== undefined) {
                     lineNumber = returnedLineNumber;
@@ -129,7 +139,11 @@ export class DebugDisassembledMananger {
                 dAsmFile.setStackFrameIndex(stackFrameIndex).setAddress(address).setLength(length);
             }
             url = `disassembly:///${dAsmFile}`;
-            resolve(new StackFrame(stackFrameIndex, stackframeLabel, new Source(dAsmFile.toString(), url), lineNumber, 1));
+            if (lineNumber >= 0) {
+                resolve(new StackFrame(stackFrameIndex, stackframeLabel, new Source(dAsmFile.toString(), url), lineNumber, 1));
+            } else {
+                resolve(new StackFrame(stackFrameIndex, stackframeLabel));
+            }
         });
     }
 
@@ -142,7 +156,7 @@ export class DebugDisassembledMananger {
                 });
                 if (memory) {
                     // disassemble the code 
-                    this.capstone.disassemble(memory).then((code) => {
+                    await this.capstone.disassemble(memory).then((code) => {
                         let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, 0);
                         let offsetString = offset.toString(16);
                         let line = 1;
@@ -275,5 +289,4 @@ export class DebugDisassembledMananger {
             }
         });
     }
-
 }
