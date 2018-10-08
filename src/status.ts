@@ -11,18 +11,20 @@ export class StatusManager {
     diagnosticsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     statusBarEntry: vscode.StatusBarItem | null = null;
     public showHideStatus() {
-        if (this.statusBarEntry === null) {
-            return;
-        }
-        if (!vscode.window.activeTextEditor) {
+        if (this) {
+            if (this.statusBarEntry === null) {
+                return;
+            }
+            if (!vscode.window.activeTextEditor) {
+                this.statusBarEntry.hide();
+                return;
+            }
+            if (vscode.languages.match(AMIGA_ASM_MODE, vscode.window.activeTextEditor.document)) {
+                this.statusBarEntry.show();
+                return;
+            }
             this.statusBarEntry.hide();
-            return;
         }
-        if (vscode.languages.match(AMIGA_ASM_MODE, vscode.window.activeTextEditor.document)) {
-            this.statusBarEntry.show();
-            return;
-        }
-        this.statusBarEntry.hide();
     }
     public dispose() {
         if (this.statusBarEntry !== null) {

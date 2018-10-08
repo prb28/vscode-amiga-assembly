@@ -381,28 +381,32 @@ export class GdbProxy extends EventEmitter {
                 console.log(" <---" + data.toString());
             }
             const unlock = await this.mutex.capture('sendPacketString');
-            this.socket.write(data);
-            this.socket.once('data', (data) => {
-                unlock();
-                let packets = GdbProxy.parseData(data);
-                let firstMessage = null;
-                for (let packet of packets) {
-                    if (packet.type === GdbPacketType.ERROR) {
-                        reject(new Error(packet.message));
-                    } else if (!firstMessage) {
-                        firstMessage = packet.message;
+            if (this.socket.writable) {
+                this.socket.write(data);
+                this.socket.once('data', (data) => {
+                    unlock();
+                    let packets = GdbProxy.parseData(data);
+                    let firstMessage = null;
+                    for (let packet of packets) {
+                        if (packet.type === GdbPacketType.ERROR) {
+                            reject(new Error(packet.message));
+                        } else if (!firstMessage) {
+                            firstMessage = packet.message;
+                        }
                     }
-                }
-                if (firstMessage) {
-                    resolve(firstMessage);
-                } else {
-                    reject(new Error("Invalid message : '" + data.toString() + "'"));
-                }
-            });
-            this.socket.once('error', (err) => {
-                unlock();
-                reject(err);
-            });
+                    if (firstMessage) {
+                        resolve(firstMessage);
+                    } else {
+                        reject(new Error("Invalid message : '" + data.toString() + "'"));
+                    }
+                });
+                this.socket.once('error', (err) => {
+                    unlock();
+                    reject(err);
+                });
+            } else {
+                reject(new Error("Socket can't be written"));
+            }
         });
     }
 

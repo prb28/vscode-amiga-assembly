@@ -4,8 +4,7 @@
 
 import {
 	Logger, logger,
-	LoggingDebugSession,
-	InitializedEvent, Scope, TerminatedEvent
+	InitializedEvent, Scope, TerminatedEvent, DebugSession
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { CancellationTokenSource } from 'vscode';
@@ -31,7 +30,7 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	/** Emulator options */
 	options: Array<string>;
 }
-export class RunFsUAENoDebugSession extends LoggingDebugSession {
+export class RunFsUAENoDebugSession extends DebugSession {
 	private configurationDone = new Subject();
 
 	/** Executor to run fs-uae */
@@ -45,7 +44,7 @@ export class RunFsUAENoDebugSession extends LoggingDebugSession {
 	 * We configure the default implementation of a debug adapter here.
 	 */
 	public constructor() {
-		super("RunFsUAENoDebugSession.txt");
+		super();
 		this.executor = new ExecutorHelper();
 		// this debugger uses zero-based lines and columns
 		this.setDebuggerLinesStartAt1(false);

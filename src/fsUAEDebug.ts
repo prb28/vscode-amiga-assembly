@@ -1,8 +1,7 @@
 import {
     Logger, logger,
-    LoggingDebugSession,
     InitializedEvent, TerminatedEvent, StoppedEvent, BreakpointEvent,
-    Thread, StackFrame, Scope, Source, Handles
+    Thread, StackFrame, Scope, Source, Handles, DebugSession
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
@@ -46,7 +45,7 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     buildWorkspace?: boolean;
 }
 
-export class FsUAEDebugSession extends LoggingDebugSession implements DebugVariableResolver {
+export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
     // Default selection mask for exception : each bit is a exception code
     static readonly DEFAULT_EXCEPTION_MASK = 0b1111111000000010000011110000000000000000011111111111100;
 
@@ -100,7 +99,7 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
 	 * We configure the default implementation of a debug adapter here.
 	 */
     public constructor() {
-        super("fsuae-debug.txt");
+        super();
         // this debugger uses zero-based lines and columns
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
@@ -411,6 +410,12 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
                             this.sendResponse(response);
                             return;
                         });
+                    } else {
+                        debugBreakPoints.push(<DebugProtocol.Breakpoint>{
+                            line: l,
+                            source: path,
+                            verified: false
+                        });
                     }
                 } else {
                     response.success = false;
@@ -439,6 +444,12 @@ export class FsUAEDebugSession extends LoggingDebugSession implements DebugVaria
                         response.message = err.toString();
                         this.sendResponse(response);
                         return;
+                    });
+                } else {
+                    debugBreakPoints.push(<DebugProtocol.Breakpoint>{
+                        line: l,
+                        source: path,
+                        verified: false
                     });
                 }
             }
