@@ -76,7 +76,7 @@ describe("Global Extension Tests", function () {
             // Generating a build error
             resetCalls(spiedCompiler);
             resetCalls(spiedStatus);
-            when(spiedCompiler.buildWorkspace()).thenReject("nope");
+            when(spiedCompiler.buildWorkspace()).thenReject(new Error("nope"));
             await vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace");
             verify(spiedCompiler.buildWorkspace()).once();
             verify(spiedStatus.onDefault()).once();
@@ -95,7 +95,7 @@ describe("Global Extension Tests", function () {
             // Generating a build error
             resetCalls(spiedCompiler);
             resetCalls(spiedStatus);
-            when(spiedCompiler.buildCurrentEditorFile()).thenCall(() => { return Promise.reject("nope"); });
+            when(spiedCompiler.buildCurrentEditorFile()).thenCall(() => { return Promise.reject(new Error("nope")); });
             await vscode.commands.executeCommand("amiga-assembly.build-vasm");
             verify(spiedCompiler.buildCurrentEditorFile()).once();
             verify(spiedStatus.onDefault()).once();
@@ -112,7 +112,7 @@ describe("Global Extension Tests", function () {
             // Generating a build error
             resetCalls(spiedCompiler);
             resetCalls(spiedStatus);
-            when(spiedCompiler.cleanWorkspace()).thenReject("nope");
+            when(spiedCompiler.cleanWorkspace()).thenReject(new Error("nope"));
             await vscode.commands.executeCommand("amiga-assembly.clean-vasm-workspace");
             verify(spiedCompiler.cleanWorkspace()).once();
             verify(spiedStatus.onDefault()).never();

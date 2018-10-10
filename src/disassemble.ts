@@ -4,8 +4,7 @@ import * as path from 'path';
 
 export class Disassembler {
     public getCapstone(): (Capstone | null) {
-        let configuration = workspace.getConfiguration('amiga-assembly');
-        let conf: any = configuration.get('cstool');
+        let conf: any = workspace.getConfiguration('amiga-assembly').get('cstool');
         if (conf && (conf.length > 5)) {
             return new Capstone(conf);
         }

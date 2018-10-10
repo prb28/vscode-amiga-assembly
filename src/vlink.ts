@@ -1,6 +1,7 @@
-import { workspace, Uri } from "vscode";
+import { workspace, Uri, window } from "vscode";
 import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import * as path from "path";
+import * as fs from "fs";
 
 /**
  * Class to manage the VLINK linker
@@ -22,28 +23,34 @@ export class VLINKLinker {
      * @param buildDir Build directory
      */
     public linkFiles(filesURI: Uri[], exeFilepathname: string, workspaceRootDir: Uri, buildDir: Uri): Promise<ICheckResult[]> {
-        let configuration = workspace.getConfiguration('amiga-assembly');
-        let conf: any = configuration.get('vlink');
-        if (this.mayLink(conf)) {
-            let vlinkExecutableName: string = conf.file;
-            let confArgs = conf.options;
-            let objectPathnames: string[] = [];
-            for (let i = 0; i < filesURI.length; i += 1) {
-                let filename = path.basename(filesURI[i].fsPath);
-                let objFilename;
-                let extSep = filename.indexOf(".");
-                if (extSep > 0) {
-                    objFilename = path.join(buildDir.fsPath, filename.substr(0, filename.lastIndexOf(".")) + ".o");
-                } else {
-                    objFilename = path.join(buildDir.fsPath, filename + ".o");
+        return new Promise(async (resolve, reject) => {
+            let configuration = workspace.getConfiguration('amiga-assembly');
+            let conf: any = configuration.get('vlink');
+            if (this.mayLink(conf)) {
+                let vlinkExecutableName: string = conf.file;
+                let confArgs = conf.options;
+                let objectPathnames: string[] = [];
+                for (let i = 0; i < filesURI.length; i += 1) {
+                    let filename = path.basename(filesURI[i].fsPath);
+                    let objFilename;
+                    let extSep = filename.indexOf(".");
+                    if (extSep > 0) {
+                        objFilename = path.join(buildDir.fsPath, filename.substr(0, filename.lastIndexOf(".")) + ".o");
+                    } else {
+                        objFilename = path.join(buildDir.fsPath, filename + ".o");
+                    }
+                    objectPathnames.push(objFilename);
                 }
-                objectPathnames.push(objFilename);
+                let args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathnames);
+                await this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, null, true, this.parser).then(results => {
+                    resolve(results);
+                }).catch(err => {
+                    reject(err);
+                });
+            } else {
+                reject(new Error("Please configure VLINK linker"));
             }
-            let args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathnames);
-            return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, null, true, this.parser);
-        } else {
-            return Promise.reject("Please configure VLINK linker");
-        }
+        });
     }
 
     /**
@@ -66,7 +73,7 @@ export class VLINKParser implements ExecutorParser {
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
             let line = lines[lineIndex];
             if ((line.length > 1) && !line.startsWith('>')) {
-                let match = /(error|warning|message)\s([\d]+)\sin\sline\s([\d]+)\sof\s[\"](.+)[\"]:\s*(.*)/.exec(line);
+                let match = /(error|warning|message)\s([\d]+)\sin\sline\s([\d]+)\sof\s[\"](.+)[\"]:\s*(.*)/i.exec(line);
                 if (match) {
                     let error: ICheckResult = new ICheckResult();
                     error.file = match[4];
@@ -75,7 +82,7 @@ export class VLINKParser implements ExecutorParser {
                     error.severity = match[1];
                     errors.push(error);
                 } else {
-                    match = /.*error\s([\d]+)\s*:\s*(.*)/.exec(line);
+                    match = /.*error\s([\d]+)\s*:\s*(.*)/i.exec(line);
                     if (match) {
                         let error: ICheckResult = new ICheckResult();
                         error.severity = 'error';
@@ -86,5 +93,25 @@ export class VLINKParser implements ExecutorParser {
             }
         }
         return errors;
+    }
+
+    /**
+     * Creates a directory
+     * @param dirPath path to create
+     */
+    mkdirSync(dirPath: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            try {
+                if (!fs.existsSync(dirPath)) {
+                    fs.mkdirSync(dirPath);
+                }
+            } catch (err) {
+                if (err.code !== 'EEXIST') {
+                    window.showErrorMessage(`Error creating build dir: "${dirPath}"`);
+                    reject(err);
+                }
+            }
+            resolve();
+        });
     }
 }

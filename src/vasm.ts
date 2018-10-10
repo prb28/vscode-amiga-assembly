@@ -23,18 +23,23 @@ export class VASMCompiler {
      * Builds the file in the current editor
      */
     public buildCurrentEditorFile(): Promise<void> {
-        let configuration = workspace.getConfiguration('amiga-assembly');
-        let conf: any = configuration.get('vasm');
-        if (this.mayCompile(conf)) {
+        return new Promise(async (resolve, reject) => {
             const editor = window.activeTextEditor;
             if (editor) {
-                return this.buildDocument(editor.document).then(() => { return; });
+                let conf = workspace.getConfiguration('amiga-assembly.vasm');
+                if (this.mayCompile(conf)) {
+                    await this.buildDocument(editor.document).then(() => {
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    });
+                } else {
+                    reject(new Error("VASM compilation is disabled in the configuration"));
+                }
             } else {
-                return Promise.reject("Current editor not selected");
+                reject(new Error("There is no active editor"));
             }
-        } else {
-            return Promise.reject("VASM compilation is disabled in the configuration");
-        }
+        });
     }
 
     /**
@@ -86,7 +91,7 @@ export class VASMCompiler {
     }
 
     public buildWorkspace(): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             let state = ExtensionState.getCurrent();
             let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
             let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
@@ -100,12 +105,16 @@ export class VASMCompiler {
                     let includes = confVLINK.includes;
                     let excludes = confVLINK.excludes;
                     let exefilename = confVLINK.exefilename;
-                    resolve(this.buildWorkspaceInner(includes, excludes, exefilename));
+                    await this.buildWorkspaceInner(includes, excludes, exefilename).then(() => {
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    });
                 } else {
-                    reject("Please configure VLINK compiler files selection");
+                    reject(new Error("Please configure VLINK compiler files selection"));
                 }
             } else {
-                reject("Please configure VASM compiler");
+                reject(new Error("Please configure VASM compiler in the workspace"));
             }
         });
     }
@@ -114,7 +123,7 @@ export class VASMCompiler {
      * CLeans the workspace
      */
     public cleanWorkspace(): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             let state = ExtensionState.getCurrent();
             let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
             let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
@@ -127,66 +136,68 @@ export class VASMCompiler {
             if (this.mayCompile(conf)) {
                 const workspaceRootDir = this.getWorkspaceRootDir();
                 if (workspaceRootDir) {
-                    return workspace.findFiles('build/**/*.o').then(filesURI => {
+                    await workspace.findFiles('build/**/*.o').then(filesURI => {
                         for (let i = 0; i < filesURI.length; i++) {
                             const fileUri = filesURI[i];
-                            statusManager.outputChannel.appendLine('Deleting ' + fileUri.fsPath);
+                            statusManager.outputChannel.appendLine(`Deleting ${fileUri.fsPath}`);
                             this.unlink(fileUri);
                         }
-                        return resolve();
+                        resolve();
                     });
                 } else {
-                    return reject("Root workspace not found");
+                    reject(new Error("Root workspace not found"));
                 }
             } else {
-                reject("Please configure VASM compiler");
+                reject(new Error("Please configure VASM compiler in the Workspace"));
             }
         });
     }
 
     private buildWorkspaceInner(includes: string, excludes: string, exefilename: string): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const workspaceRootDir = this.getWorkspaceRootDir();
             const buildDir = this.getBuildDir();
             const configuration = workspace.getConfiguration('amiga-assembly');
             const confVLINK: any = configuration.get('vlink');
             if (workspaceRootDir && buildDir) {
-                return workspace.findFiles(includes, excludes, undefined).then(filesURI => {
+                await workspace.findFiles(includes, excludes, undefined).then(async filesURI => {
                     let promises: Thenable<ICheckResult[]>[] = [];
                     for (let i = 0; i < filesURI.length; i++) {
                         const fileUri = filesURI[i];
-                        promises.push(workspace.openTextDocument(fileUri).then(document => {
+                        promises.push(workspace.openTextDocument(fileUri).then((document) => {
                             return this.buildDocument(document);
                         }));
                     }
-                    Promise.all(promises).then((errosArray) => {
-                        for (let i = 0; i < errosArray.length; i += 1) {
-                            let errors: ICheckResult[] = errosArray[i];
+                    await Promise.all(promises).then(async (errorsArray) => {
+                        for (let i = 0; i < errorsArray.length; i += 1) {
+                            let errors: ICheckResult[] = errorsArray[i];
                             if (errors && (errors.length > 0)) {
-                                return reject("Build aborted: there are compile errors");
+                                reject(new Error("Build aborted: there are compile errors"));
                             }
                         }
                         // Call the linker
                         if (this.linker.mayLink(confVLINK)) {
-                            return this.linker.linkFiles(filesURI, exefilename, workspaceRootDir, buildDir).then(errors => {
+                            await this.linker.linkFiles(filesURI, exefilename, workspaceRootDir, buildDir).then(errors => {
                                 if (errors && errors.length > 0) {
-                                    return reject('Linker errors : ' + errors[0]);
+                                    reject(new Error(`Linker error: ${errors[0].msg}`));
                                 } else {
-                                    return resolve();
+                                    resolve();
                                 }
                             }).catch(err => {
-                                return reject(new Error(err));
+                                reject(err);
                             });
                         } else {
                             // The linker is not mandatory
                             // show a warning in the output
                             ExtensionState.getCurrent().getStatusManager().outputChannel.append("Warning : the linker vlink is not configured");
-                            return resolve();
+                            resolve();
                         }
-                    }).catch(err => { return reject(new Error(err)); });
+                    }).catch(err => {
+                        reject(err);
+                    });
                 });
             } else {
-                return reject("Root workspace or build path not found");
+                reject(new Error("Root workspace or build path not found"));
             }
         });
     }
@@ -197,14 +208,18 @@ export class VASMCompiler {
      * @param debug If true debug symbols are added
      */
     public buildFile(fileUri: Uri, debug: boolean): Promise<ICheckResult[]> {
-        const workspaceRootDir = this.getWorkspaceRootDir();
-        const buildDir = this.getBuildDir();
-        if (workspaceRootDir && buildDir) {
-            let filename = path.basename(fileUri.fsPath);
-            let configuration = workspace.getConfiguration('amiga-assembly');
-            let conf: any = configuration.get('vasm');
-            if (this.mayCompile(conf)) {
-                return this.mkdirSync(buildDir.fsPath).then(() => {
+        return new Promise(async (resolve, reject) => {
+            const workspaceRootDir = this.getWorkspaceRootDir();
+            const buildDir = this.getBuildDir();
+            if (workspaceRootDir && buildDir) {
+                let filename = path.basename(fileUri.fsPath);
+                let configuration = workspace.getConfiguration('amiga-assembly');
+                let conf: any = configuration.get('vasm');
+                if (this.mayCompile(conf)) {
+                    await this.mkdirSync(buildDir.fsPath).catch(err => {
+                        reject(new Error(`Error creating the  build dir "${buildDir}: ` + err.toString()));
+                        return;
+                    });
                     let state = ExtensionState.getCurrent();
                     let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
                     let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
@@ -223,14 +238,20 @@ export class VASMCompiler {
                     let args: Array<string> = confArgs.concat(['-o', objFilename, fileUri.fsPath]);
                     errorDiagnosticCollection.delete(fileUri);
                     warningDiagnosticCollection.delete(fileUri);
-                    return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vasmExecutableName, null, true, this.parser);
-                });
+                    await this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vasmExecutableName, null, true, this.parser).then(results => {
+                        resolve(results);
+                    }).catch(err => {
+                        reject(err);
+                        return;
+                    });
+                } else {
+                    reject(new Error("Please configure VASM compiler in the workspace"));
+                }
             } else {
-                return Promise.reject("Please configure VASM compiler");
+                reject(new Error("Root workspace path not found"));
             }
-        } else {
-            return Promise.reject("Root workspace path not found");
-        }
+        });
+
     }
 
     /**
@@ -308,16 +329,15 @@ export class VASMController {
         this.disposable = Disposable.from(...subscriptions);
     }
 
-    onSaveDocument(document: TextDocument) {
+    public async onSaveDocument(document: TextDocument) {
         let state = ExtensionState.getCurrent();
         let statusManager = state.getStatusManager();
-        if (document.languageId !== 'm68k') {
-            return;
+        if (document.languageId === 'm68k') {
+            statusManager.onDefault();
+            await this.compiler.buildDocument(document).catch(error => {
+                statusManager.onError(error.message);
+            });
         }
-        statusManager.onDefault();
-        this.compiler.buildDocument(document).catch(error => {
-            statusManager.onError(error);
-        });
     }
 
     dispose() {

@@ -109,13 +109,14 @@ describe("VASM Tests", function () {
         it("Should return an error if the build dir does not exists", function () {
             spiedCompiler = spy(compiler);
             when(spiedCompiler.getWorkspaceRootDir()).thenReturn(vscode.Uri.parse("file:///workdir"));
-            when(spiedCompiler.mkdirSync(anything())).thenCall(() => { return Promise.reject('Not possible'); });
+            const error = new Error('Not possible');
+            when(spiedCompiler.mkdirSync(anything())).thenCall(() => { return Promise.reject(error); });
             when(spiedCompiler.mayCompile(anything())).thenReturn(true);
             let fileUri = vscode.Uri.file("file1.s");
             return compiler.buildFile(fileUri, false).then(() => {
                 expect.fail("Should reject");
             }).catch(error => {
-                expect(error).to.be.equal("Not possible");
+                expect(error).to.be.equal(error);
             });
         });
         it("Should return an error on build document if the compiler is not enabled", function () {
@@ -127,7 +128,7 @@ describe("VASM Tests", function () {
             return compiler.buildFile(fileUri, false).then(() => {
                 expect.fail("Should reject");
             }).catch(error => {
-                expect(error).to.be.equal("Please configure VASM compiler");
+                expect(error.message).to.be.equal("Please configure VASM compiler in the workspace");
             });
         });
         it("Should return an error on build workspace if the compiler is not enabled", function () {
@@ -138,7 +139,7 @@ describe("VASM Tests", function () {
             return compiler.buildWorkspace().then(() => {
                 expect.fail("Should reject");
             }).catch(error => {
-                expect(error).to.be.equal("Please configure VASM compiler");
+                expect(error.message).to.be.equal("Please configure VASM compiler in the workspace");
             });
         });
         it("Should build even if the linker is disable", function () {
@@ -187,7 +188,7 @@ describe("VASM Tests", function () {
             await compiler.cleanWorkspace().then(() => {
                 expect.fail("Should reject");
             }).catch(error => {
-                expect(error).to.be.equal("Please configure VASM compiler");
+                expect(error.message).to.be.equal("Please configure VASM compiler in the Workspace");
             });
             verify(spiedCompiler.unlink(anything())).never();
             verify(spiedOutputChannel.appendLine(anyString())).once();
@@ -201,7 +202,7 @@ describe("VASM Tests", function () {
             return compiler.cleanWorkspace().then(() => {
                 expect.fail("Should reject");
             }).catch(error => {
-                expect(error).to.be.equal("Root workspace not found");
+                expect(error.message).to.be.equal("Root workspace not found");
             });
         });
     });
@@ -222,7 +223,8 @@ describe("VASM Tests", function () {
             // Generating a build error
             resetCalls(spiedCompiler);
             resetCalls(spiedStatus);
-            when(spiedCompiler.buildDocument(anything())).thenCall(() => { return Promise.reject("nope"); });
+            const error = new Error("nope");
+            when(spiedCompiler.buildDocument(anything())).thenCall(() => { return Promise.reject(error); });
             await controller.onSaveDocument(document);
             verify(spiedCompiler.buildDocument(anything())).once();
             verify(spiedStatus.onDefault()).once();

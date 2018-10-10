@@ -80,26 +80,31 @@
             "properties": {
                 "amiga-assembly.format.labelToInstructionDistance": {
                     "type": "integer",
+                    "scope": "resource",
                     "default": 2,
                     "description": "Specifies the distance between a label and an instruction."
                 },
                 "amiga-assembly.format.instructionToDataDistance": {
                     "type": "integer",
+                    "scope": "resource",
                     "default": 4,
                     "description": "Specifies the distance between an instruction and the data."
                 },
                 "amiga-assembly.format.dataToCommentsDistance": {
                     "type": "integer",
+                    "scope": "resource",
                     "default": 4,
                     "description": "Specifies the distance between the data and the comment."
                 },
                 "amiga-assembly.cstool": {
                     "type": "string",
+                    "scope": "window",
                     "default": "cstool",
                     "description": "Specifies the path to the Capstone cstool binary."
                 },
                 "amiga-assembly.vasm": {
                     "type": "object",
+                    "scope": "window",
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -132,6 +137,7 @@
                 },
                 "amiga-assembly.vlink": {
                     "type": "object",
+                    "scope": "window",
                     "properties": {
                         "enabled": {
                             "type": "boolean",

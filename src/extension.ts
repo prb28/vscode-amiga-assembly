@@ -157,10 +157,10 @@ export function activate(context: vscode.ExtensionContext) {
     // VASM Command
     let compiler = state.getCompiler();
     // Build a file
-    disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', () => {
+    disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', async () => {
         statusManager.onDefault();
-        return compiler.buildCurrentEditorFile().catch(error => {
-            statusManager.onError(error);
+        await compiler.buildCurrentEditorFile().catch(error => {
+            statusManager.onError(error.message);
         });
     });
     context.subscriptions.push(disposable);
@@ -168,21 +168,20 @@ export function activate(context: vscode.ExtensionContext) {
     let vController = new VASMController(compiler);
     context.subscriptions.push(vController);
     // Build the workspace
-    disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', () => {
-
+    disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', async () => {
         statusManager.onDefault();
-        return compiler.buildWorkspace().then(() => {
+        await compiler.buildWorkspace().then(() => {
             statusManager.onSuccess();
         }).catch(error => {
-            statusManager.onError(error);
+            statusManager.onError(error.message);
         });
     });
     // Clean the workspace
-    disposable = vscode.commands.registerCommand('amiga-assembly.clean-vasm-workspace', () => {
-        return compiler.cleanWorkspace().then(() => {
+    disposable = vscode.commands.registerCommand('amiga-assembly.clean-vasm-workspace', async () => {
+        await compiler.cleanWorkspace().then(() => {
             statusManager.onDefault();
         }).catch(error => {
-            statusManager.onError(error);
+            statusManager.onError(error.message);
         });
     });
     context.subscriptions.push(disposable);
@@ -205,7 +204,6 @@ export function activate(context: vscode.ExtensionContext) {
     statusManager.outputChannel.appendLine("------> done");
 
     context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('disassembly', new DisassemblyContentProvider()));
-
     let api = {
         getState(): ExtensionState {
             return state;

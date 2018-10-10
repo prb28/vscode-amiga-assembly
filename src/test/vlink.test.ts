@@ -49,7 +49,7 @@ describe("VLINK Tests", function () {
                 reset(spiedfs);
                 reset(spiedLinker);
             }).catch(error => {
-                expect(error).to.be.equal("Please configure VLINK linker");
+                expect(error.message).to.be.equal("Please configure VLINK linker");
                 reset(spiedfs);
                 reset(spiedLinker);
             });

@@ -205,8 +205,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         response.body.supportsSetVariable = true;
 
         // Sets the capstone path
-        let configuration = workspace.getConfiguration('amiga-assembly');
-        let conf: any = configuration.get('cstool');
+        let conf: any = workspace.getConfiguration('amiga-assembly').get('cstool');
         if (!this.capstone && conf && (conf.length > 5)) {
             this.capstone = new Capstone(conf);
         }

@@ -58,7 +58,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
         let maxLabelSize = 0;
         let maxInstructionSize = 0;
         let maxDataSize = 0;
-        let configuration = vscode.workspace.getConfiguration('amiga-assembly');
+        let configuration = vscode.workspace.getConfiguration('amiga-assembly', document.uri);
         let labelToInstructionDistance = this.retrieveProperty(configuration, 'format.labelToInstructionDistance', 2);
         let instructionToDataDistance = this.retrieveProperty(configuration, 'format.instructionToDataDistance', 4);
         let dataToCommentsDistance = this.retrieveProperty(configuration, 'format.dataToCommentsDistance', 4);
