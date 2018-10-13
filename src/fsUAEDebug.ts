@@ -324,7 +324,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }, timeoutValue);
     }
 
-    private checkEmulator(emulatorPath: string): boolean {
+    public checkEmulator(emulatorPath: string): boolean {
         // Function usefull for testing - mocking
         return fs.existsSync(emulatorPath);
     }
