@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [0.9.0] - 2018-10-13
+- [Feat #21](https://github.com/prb28/vscode-amiga-assembly/issues/21) Show disassembled code in editor for stack trace selection without source, breakpoints on disassebled code
+- [Issue #24](https://github.com/prb28/vscode-amiga-assembly/issues/24) Better error messages on bad settings and launch parameters
+
 ### [0.8.0] - 2018-09-20
 - [Issue #23](https://github.com/prb28/vscode-amiga-assembly/issues/23) Add a reference provider
 - [Issue #22](https://github.com/prb28/vscode-amiga-assembly/issues/22) Add a definition provider

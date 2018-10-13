@@ -6,11 +6,9 @@ Amiga Assembly for Visual Studio Code is a extension to support assembly languag
 
 Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to discover all the features and get the documentation.
 
-## New in 0.8
-- Find the definition of a symbol and references
-- Accepts octal numbers
-### Other
-- Bug fixes 
+## New in 0.9
+- Show disassembled code in editor for stack trace selection without source, breakpoints on disassebled code
+- Better error messages on bad settings and launch parameters
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -69,6 +67,11 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## New in 0.9
+- Show disassembled code in editor for stack trace selection without source, breakpoints on disassebled code
+- Better error messages on bad settings and launch parameters
+- Bug fixes
+
 ### 0.8.0
 - Find the definition of a symbol and references
 - Accepts octal numbers
