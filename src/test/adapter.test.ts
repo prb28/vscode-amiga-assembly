@@ -68,6 +68,7 @@ describe('Node Debug Adapter', () => {
 				this.session.setRunAsServer(true);
 				this.session.start(<NodeJS.ReadableStream>socket, socket);
 				this.spiedSession = spy(this.session);
+				when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
 			}).listen(0);
 		}
 		// make VS Code connect to debug server instead of launching debug adapter
@@ -143,7 +144,6 @@ describe('Node Debug Adapter', () => {
 
 		it('should run program to the end', function () {
 			if (!testWithRealEmulator) {
-				when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					let cb = callbacks.get('end');
 					if (cb) {
