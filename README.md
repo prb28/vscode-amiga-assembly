@@ -69,7 +69,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
-## New in 0.9
+### 0.9.0
 - Show disassembled code in editor for stack trace selection without source, breakpoints on disassebled code
 - Better error messages on bad settings and launch parameters
 - Bug fixes
