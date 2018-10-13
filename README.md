@@ -9,7 +9,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 **For an easy startup try the** [example workspace](https://github.com/prb28/vscode-amiga-wks-example). 
 
 ## New in 0.9
-- Show disassembled code in editor for stack trace selection without source, breakpoints on disassebled code
+- Show disassembled code in editor for stack trace selection without source, breakpoints on disassembled code
 - Better error messages on bad settings and launch parameters
 
 ### Other features
@@ -70,7 +70,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 ## Release Notes
 ### 0.9.0
-- Show disassembled code in editor for stack trace selection without source, breakpoints on disassebled code
+- Show disassembled code in editor for stack trace selection without source, breakpoints on disassembled code
 - Better error messages on bad settings and launch parameters
 - Bug fixes
 
