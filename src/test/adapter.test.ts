@@ -136,17 +136,22 @@ describe('Node Debug Adapter', () => {
 
 	describe('launch', () => {
 		beforeEach(function () {
-			when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+			if (!testWithRealEmulator) {
+				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+			}
 		});
 
 		it('should run program to the end', function () {
-			when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
-				let cb = callbacks.get('end');
-				if (cb) {
-					cb();
-				}
-				return Promise.resolve();
-			});
+			if (!testWithRealEmulator) {
+				when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
+				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+					let cb = callbacks.get('end');
+					if (cb) {
+						cb();
+					}
+					return Promise.resolve();
+				});
+			}
 			this.timeout(defaultTimeout);
 			return Promise.all([
 				dc.configurationSequence(),
@@ -158,7 +163,7 @@ describe('Node Debug Adapter', () => {
 		it('should stop on entry', function () {
 			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
-				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
@@ -193,7 +198,7 @@ describe('Node Debug Adapter', () => {
 		it('should stop on entry', function () {
 			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
-				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
@@ -229,7 +234,7 @@ describe('Node Debug Adapter', () => {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 			}
 		});
 		it('should stop on a breakpoint', function () {
@@ -325,7 +330,7 @@ describe('Node Debug Adapter', () => {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
@@ -458,7 +463,7 @@ describe('Node Debug Adapter', () => {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 				when(this.mockedCapstone.disassemble(anyString())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0\n"));
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
@@ -558,7 +563,7 @@ describe('Node Debug Adapter', () => {
 		beforeEach(async function () {
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
@@ -678,7 +683,7 @@ describe('Node Debug Adapter', () => {
 		beforeEach(async function () {
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnEntry');
@@ -734,7 +739,7 @@ describe('Node Debug Adapter', () => {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-				when(this.spiedSession.startEmulator(anything())).thenCall(() => { }); // Do nothing
+				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 			}
 		});
 		it('should stop on an exception', async function () {

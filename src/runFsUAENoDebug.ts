@@ -7,8 +7,9 @@ import {
 	InitializedEvent, Scope, TerminatedEvent, DebugSession
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
-import { CancellationTokenSource } from 'vscode';
+import { CancellationTokenSource, window } from 'vscode';
 import { ExecutorHelper } from './execHelper';
+import * as fs from 'fs';
 const { Subject } = require('await-notify');
 
 
@@ -99,23 +100,50 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Log, false);
 
 		// Launch the emulator
-		this.startEmulator(args);
+		try {
+			this.startEmulator(args).catch(err => {
+				window.showErrorMessage(err.message);
+				this.sendEvent(new TerminatedEvent());
+			});
+		} catch (error) {
+			response.success = false;
+			response.message = error.message;
+			this.sendResponse(response);
+			return;
+		}
 
 		// wait until configuration has finished (and configurationDoneRequest has been called)
 		await this.configurationDone.wait(1000);
 		this.sendResponse(response);
 	}
 
-	public startEmulator(args: LaunchRequestArguments) {
+	private checkEmulator(emulatorPath: string): boolean {
+		// Function usefull for testing - mocking
+		return fs.existsSync(emulatorPath);
+	}
+
+	public startEmulator(args: LaunchRequestArguments): Promise<void> {
 		logger.warn("Starting emulator: " + args.emulator);
-		this.cancellationTokenSource = new CancellationTokenSource();
-		if (args.emulator) {
-			this.executor.runTool(args.options, null, "warning", true, args.emulator, null, true, null, this.cancellationTokenSource.token).then(() => {
-				this.sendEvent(new TerminatedEvent());
-			}).catch(err => {
-				this.sendEvent(new TerminatedEvent());
-			});
+		const emulatorExe = args.emulator;
+		if (emulatorExe) {
+			// Is the emeulator exe present in the filesystem ?
+			if (this.checkEmulator(emulatorExe)) {
+				return new Promise(async (resolve, reject) => {
+					this.cancellationTokenSource = new CancellationTokenSource();
+					this.executor.runTool(args.options, null, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
+						this.sendEvent(new TerminatedEvent());
+						resolve();
+					}).catch((err) => {
+						reject(new Error(`Error raised by the emulator run: ${err.message}`));
+					});
+				});
+			} else {
+				throw (new Error(`The emulator executable '${emulatorExe}' cannot be found`));
+			}
+		} else {
+			throw (new Error("The emulator executable file path must be defined in the launch settings"));
 		}
+		return Promise.resolve();
 	}
 
 	protected terminateEmulator() {

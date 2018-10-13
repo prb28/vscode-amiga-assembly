@@ -7,12 +7,13 @@ import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
 import { GdbProxy, GdbRegister, GdbBreakpoint, Segment, GdbHaltStatus } from './gdbProxy';
 import { ExecutorHelper } from './execHelper';
-import { CancellationTokenSource, workspace } from 'vscode';
+import { CancellationTokenSource, workspace, window } from 'vscode';
 import { DebugInfo } from './debugInfo';
 import { Capstone } from './capstone';
 import { DebugVariableResolver } from './debugVariableResolver';
 import { DebugExpressionHelper } from './debugExpressionHelper';
 import { DebugDisassembledMananger, DebugDisassembledFile } from './debugDisassembled';
+import * as fs from 'fs';
 const { Subject } = require('await-notify');
 
 
@@ -258,6 +259,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             response.success = false;
             response.message = "Invalid program to debug - review launch settings";
             this.sendResponse(response);
+            return;
         }
 
         // Showing the help text
@@ -280,7 +282,17 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
 
         // Launch the emulator
-        this.startEmulator(args);
+        try {
+            this.startEmulator(args).catch(err => {
+                window.showErrorMessage(err.message);
+                this.sendEvent(new TerminatedEvent());
+            });
+        } catch (error) {
+            response.success = false;
+            response.message = error.message;
+            this.sendResponse(response);
+            return;
+        }
 
         // wait until configuration has finished (and configurationDoneRequest has been called)
         await this.configurationDone.wait(1000);
@@ -294,10 +306,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
         setTimeout(function () {
             // connects to FS-UAE
-            debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(() => {
+            debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(async () => {
                 // Loads the program
                 logger.warn("Starting program: " + args.program);
-                debAdapter.gdbProxy.load(args.program, args.stopOnEntry).then(() => {
+                await debAdapter.gdbProxy.load(args.program, args.stopOnEntry).then(() => {
                     debAdapter.sendResponse(response);
                 }).catch(err => {
                     response.success = false;
@@ -312,19 +324,36 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }, timeoutValue);
     }
 
-    public startEmulator(args: LaunchRequestArguments) {
+    private checkEmulator(emulatorPath: string): boolean {
+        // Function usefull for testing - mocking
+        return fs.existsSync(emulatorPath);
+    }
+
+    public startEmulator(args: LaunchRequestArguments): Promise<void> {
         if (args.startEmulator) {
             logger.warn("Starting emulator: " + args.emulator);
-            this.cancellationTokenSource = new CancellationTokenSource();
-            if (args.emulator) {
-                this.executor.runTool(args.options, null, "warning", true, args.emulator, null, true, null, this.cancellationTokenSource.token).then(() => {
-                    this.sendEvent(new TerminatedEvent());
-                }).catch(() => {
-                    this.sendEvent(new TerminatedEvent());
-                });
+            const emulatorExe = args.emulator;
+            if (emulatorExe) {
+                // Is the emeulator exe present in the filesystem ?
+                if (this.checkEmulator(emulatorExe)) {
+                    return new Promise(async (resolve, reject) => {
+                        this.cancellationTokenSource = new CancellationTokenSource();
+                        this.executor.runTool(args.options, null, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
+                            this.sendEvent(new TerminatedEvent());
+                            resolve();
+                        }).catch((err) => {
+                            reject(new Error(`Error raised by the emulator run: ${err.message}`));
+                        });
+                    });
+                } else {
+                    throw (new Error(`The emulator executable '${emulatorExe}' cannot be found`));
+                }
+            } else {
+                throw (new Error("The emulator executable file path must be defined in the launch settings"));
             }
         } else {
             logger.warn("Emulator starting skipped by settings");
+            return Promise.resolve();
         }
     }
 

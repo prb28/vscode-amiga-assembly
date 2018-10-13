@@ -48,6 +48,7 @@ describe('Node Debug Adapter', () => {
 				this.session.setRunAsServer(true);
 				this.session.start(<NodeJS.ReadableStream>socket, socket);
 				this.spiedSession = spy(this.session);
+				when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
 			}).listen(0);
 		}
 		// make VS Code connect to debug server instead of launching debug adapter
