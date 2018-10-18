@@ -256,6 +256,11 @@
                                 "description": "Path to the fs-uae emulator.",
                                 "default": "Path to fs-uae executable"
                             },
+                            "emulatorWorkingDir": {
+                                "type": "string",
+                                "description": "Path to the working directory of the emulator.",
+                                "default": "."
+                            },
                             "buildWorkspace": {
                                 "type": "boolean",
                                 "description": "Build workspace before launch.",
@@ -311,6 +316,7 @@
                         "serverPort": 6860,
                         "startEmulator": true,
                         "emulator": "fs-uae",
+                        "emulatorWorkingDir": "${workspaceFolder}",
                         "program": "${workspaceFolder}/${command:AskForProgramName}",
                         "options": [
                             "--chip_memory=1024",
@@ -338,6 +344,7 @@
                             "serverPort": 6860,
                             "startEmulator": true,
                             "emulator": "Path to fs-uae executable file",
+                            "emulatorWorkingDir": "${workspaceFolder}",
                             "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
                             "options": [
                                 "--chip_memory=1024",
@@ -372,6 +379,11 @@
                                 "description": "Path to the fs-uae emulator.",
                                 "default": "Path to fs-uae executable"
                             },
+                            "emulatorWorkingDir": {
+                                "type": "string",
+                                "description": "Path to the working directory of the emulator.",
+                                "default": "."
+                            },
                             "buildWorkspace": {
                                 "type": "boolean",
                                 "description": "Build workspace before launch.",
@@ -401,6 +413,7 @@
                         "name": "Run",
                         "buildWorkspace": true,
                         "emulator": "Path to fs-uae executable file",
+                        "emulatorWorkingDir": "${workspaceFolder}",
                         "options": [
                             "--chip_memory=1024",
                             "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
@@ -420,6 +433,7 @@
                             "name": "Run",
                             "buildWorkspace": true,
                             "emulator": "Path to fs-uae executable file",
+                            "emulatorWorkingDir": "${workspaceFolder}",
                             "options": [
                                 "--chip_memory=1024",
                                 "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",

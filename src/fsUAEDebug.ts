@@ -38,6 +38,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     startEmulator: boolean;
     /** emulator program */
     emulator?: string;
+    /** emulator working directory */
+    emulatorWorkingDir?: string;
     /** Emulator options */
     options: Array<string>;
     /** path replacements for source files */
@@ -338,7 +340,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 if (this.checkEmulator(emulatorExe)) {
                     return new Promise(async (resolve, reject) => {
                         this.cancellationTokenSource = new CancellationTokenSource();
-                        this.executor.runTool(args.options, null, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
+                        const emulatorWorkingDir = args.emulatorWorkingDir || null;
+                        this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
                             this.sendEvent(new TerminatedEvent());
                             resolve();
                         }).catch((err) => {
