@@ -28,6 +28,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	buildWorkspace?: boolean;
 	/** emulator program */
 	emulator?: string;
+	/** emulator working directory */
+	emulatorWorkingDir?: string;
 	/** Emulator options */
 	options: Array<string>;
 }
@@ -125,12 +127,13 @@ export class RunFsUAENoDebugSession extends DebugSession {
 	public startEmulator(args: LaunchRequestArguments): Promise<void> {
 		logger.warn("Starting emulator: " + args.emulator);
 		const emulatorExe = args.emulator;
+		const emulatorWorkingDir = args.emulatorWorkingDir || null;
 		if (emulatorExe) {
 			// Is the emeulator exe present in the filesystem ?
 			if (this.checkEmulator(emulatorExe)) {
 				return new Promise(async (resolve, reject) => {
 					this.cancellationTokenSource = new CancellationTokenSource();
-					this.executor.runTool(args.options, null, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
+					this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
 						this.sendEvent(new TerminatedEvent());
 						resolve();
 					}).catch((err) => {
