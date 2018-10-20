@@ -28,8 +28,16 @@
         "theme": "dark"
     },
     "activationEvents": [
+        "onDebug",
         "onLanguage:m68k",
-        "onDebug"
+        "onLanguage:amiga-assembly-debug.disassembly",
+        "onCommand:amiga-assembly.calculator",
+        "onCommand:amiga-assembly.evaluate-selection",
+        "onCommand:amiga-assembly.evaluate-selection-replace",
+        "onCommand:amiga-assembly.build-vasm",
+        "onCommand:amiga-assembly.build-vasm-workspace",
+        "onCommand:amiga-assembly.clean-vasm-workspace",
+        "onCommand:amiga-assembly.disassemble-file"
     ],
     "main": "./out/extension",
     "contributes": {
