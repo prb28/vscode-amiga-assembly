@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { CopperInstruction, CopperIntructionType, CopperWait, CopperSkip, CopperMove, CopperDisassembler } from '../copperDisassembler';
 
-describe.only("Copper Disassembler Tests", function () {
+describe("Copper Disassembler Tests", function () {
     // tslint:disable:no-unused-expression
     it("Should disassemble a move instruction", function () {
         let i = CopperInstruction.parse("f1800502"); // the first f is just for tests -> not real
