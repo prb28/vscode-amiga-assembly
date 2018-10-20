@@ -36,6 +36,14 @@ export class CopperInstruction {
             return new CopperMove(first, second);
         }
     }
+    public getAsmInstruction(): string {
+        return `dc.w \$${this.first.toString(16)},\$${this.second.toString(16)}`;
+    }
+    protected getPaddedAsmInstruction(): string {
+        let inst = this.getAsmInstruction();
+        let pad = " ".repeat(20 - inst.length);
+        return inst + pad;
+    }
 }
 
 export class CopperMove extends CopperInstruction {
@@ -63,8 +71,9 @@ export class CopperMove extends CopperInstruction {
         } else {
             l = `\$${this.DA.toString(16)}`;
         }
+        let inst = this.getPaddedAsmInstruction();
         let value = `\$${this.RD.toString(16)}`;
-        return `dc.w ${l},${value}    ; ${l} <- ${value}`;
+        return `${inst}; ${l} := ${value}`;
     }
 }
 export class CopperCondition extends CopperInstruction {
@@ -97,10 +106,18 @@ export class CopperWait extends CopperCondition {
     constructor(first: number, second: number) {
         super(CopperIntructionType.WAIT, first, second);
     }
+    public toString(): string {
+        let inst = this.getPaddedAsmInstruction();
+        return `${inst}; Wait for vpos >= 0x${this.vertical.toString(16)} and hpos >= 0x${this.horizontal.toString(16)}`;
+    }
 }
 export class CopperSkip extends CopperCondition {
     constructor(first: number, second: number) {
         super(CopperIntructionType.SKIP, first, second);
+    }
+    public toString(): string {
+        let inst = this.getPaddedAsmInstruction();
+        return `${inst}; Skip if vpos >= 0x${this.vertical.toString(16)} and hpos >= 0x${this.horizontal.toString(16)}`;
     }
 }
 
@@ -116,18 +133,17 @@ export class CopperDisassembler {
     private parse(memory: string) {
         if (memory.length >= 8) {
             // Split the string in blocs of 8 characters
-            for (let i = 8; i < memory.length; i += 8) {
+            for (let i = 8; i <= memory.length; i += 8) {
                 this.copperList.push(CopperInstruction.parse(memory.substring(i - 8, i)));
             }
         } else {
             throw new Error("Memory bloc too short to parse (8 characters minimum)");
         }
     }
-
     public disassemble(): Array<CopperInstruction> {
         return this.copperList;
     }
     public toString(): string {
-        return "";
+        return this.copperList.join('\n');
     }
 }
