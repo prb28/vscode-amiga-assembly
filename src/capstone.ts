@@ -53,21 +53,25 @@ export class Capstone {
     public disassembleFile(filename: string, cancellationToken?: CancellationToken): Promise<string> {
         return new Promise(async (resolve, reject) => {
             let di = new DebugInfo();
-            if (di.loadInfo(filename)) {
-                let codeDataArray = di.getCodeData();
-                let allCode = "";
-                for (let codeData of codeDataArray) {
-                    let s = "";
-                    for (let b of codeData) {
-                        s += this.padStartWith0(b.toString(16), 8);
+            try {
+                if (di.loadInfo(filename)) {
+                    let codeDataArray = di.getCodeData();
+                    let allCode = "";
+                    for (let codeData of codeDataArray) {
+                        let s = "";
+                        for (let b of codeData) {
+                            s += this.padStartWith0(b.toString(16), 8);
+                        }
+                        await this.disassemble(s, cancellationToken).then((data) => {
+                            allCode += data + "\n";
+                        });
                     }
-                    await this.disassemble(s, cancellationToken).then((data) => {
-                        allCode += data + "\n";
-                    });
+                    resolve(allCode);
+                } else {
+                    reject(new Error(`File '${filename}' could not be parsed`));
                 }
-                resolve(allCode);
-            } else {
-                reject(new Error(`File '${filename}' could not be parsed`));
+            } catch (err) {
+                reject(err);
             }
         });
     }

@@ -257,7 +257,16 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Log, false);
 
         // Does the program exists ? -> Loads the debug info
-        if ((!args.program) || (!this.loadDebugInfo(args))) {
+        let dInfoLoaded = false;
+        try {
+            dInfoLoaded = this.loadDebugInfo(args);
+        } catch (err) {
+            response.success = false;
+            response.message = "Invalid program to debug: " + err.message;
+            this.sendResponse(response);
+            return;
+        }
+        if ((!args.program) || (!dInfoLoaded)) {
             response.success = false;
             response.message = "Invalid program to debug - review launch settings";
             this.sendResponse(response);

@@ -54,13 +54,19 @@ export class Disassembler {
                             });
                         });
                     }).catch(err => {
+                        let message = err.message;
+                        window.showErrorMessage(message);
                         reject(err);
                     });
                 } else {
-                    reject(new Error("No selected File to disassemble"));
+                    let message = "No selected File to disassemble";
+                    window.showErrorMessage(message);
+                    reject(new Error(message));
                 }
             } else {
-                reject(new Error("To use this command: configure the capstone path in the settings"));
+                let message = "To use this command: configure the capstone path in the settings";
+                window.showErrorMessage(message);
+                reject(new Error(message));
             }
         });
     }

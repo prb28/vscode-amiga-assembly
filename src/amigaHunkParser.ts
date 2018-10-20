@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-const HUNK_HEADER: number = 1011;
+const HUNK_HEADER: number = 1011; // 0x3f3
 // hunk types
 const HUNK_UNIT: number = 999;
 const HUNK_NAME: number = 1000;
@@ -301,10 +301,10 @@ export class HunkParser {
         let fileOffset = 0;
         let fileData = new DataView(this.toArrayBuffer(buffer)); // Reading in Big Endian
 
-        let hunk_header = fileData.getUint32(fileOffset, true);
+        let hunk_header = fileData.getUint32(fileOffset, false);
         fileOffset += 4;
         if (hunk_header !== HUNK_HEADER) {
-            // TODO : Error"Unable to find correct HUNK_HEADER"));
+            throw new Error("Not a valid hunk file : Unable to find correct HUNK_HEADER");
         }
 
         // Skip header/string section
@@ -318,7 +318,7 @@ export class HunkParser {
         fileOffset += 4;
 
         if (table_size < 0 || first_hunk < 0 || last_hunk < 0) {
-            // TODO : raise error  "Invalid sizes for hunks"
+            throw new Error("Not a valid hunk file : Invalid sizes for hunks");
         }
 
         let hunk_count = last_hunk - first_hunk + 1;
