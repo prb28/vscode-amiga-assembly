@@ -1,6 +1,7 @@
-import { window, OpenDialogOptions, Uri, workspace, Position } from 'vscode';
+import { window, OpenDialogOptions, InputBoxOptions, Uri, workspace, Position } from 'vscode';
 import { Capstone } from './capstone';
 import * as path from 'path';
+import { DebugDisassembledFile } from './debugDisassembled';
 
 export class Disassembler {
     public getCapstone(): (Capstone | null) {
@@ -14,59 +15,79 @@ export class Disassembler {
     /**
      * Shows an input panel to calculate
      */
-    public showInputPanel(): Promise<void> {
+    public showInputPanel(isCopper: boolean): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            const capstone = this.getCapstone();
-            if (capstone) {
-                let selectedFiles = await window.showOpenDialog(<OpenDialogOptions>{
-                    prompt: "Select a file to disassemble",
-                    canSelectMany: false,
-                    canSelectFiles: true,
-                    canSelectFolders: false,
+            if (isCopper) {
+                let address = await window.showInputBox(<InputBoxOptions>{
+                    //value: "${COP1LC}",
+                    prompt: "Copper address: ${symbol} or $xxxxxxxx "
                 });
-                if (selectedFiles && (selectedFiles.length > 0)) {
-                    const selectedFile = selectedFiles[0];
-                    const filePath = selectedFile.fsPath;
-                    // Disassembles the file
-                    await capstone.disassembleFile(filePath).then(async data => {
-                        // opens a new editor document
-                        let folder = ".";
-                        let folders = workspace.workspaceFolders;
-                        if (folders && folders.length) {
-                            folder = folders[0].uri.fsPath;
-                        }
-                        let filename = path.basename(filePath) + "_" + Date.now() + "_dis.s";
-                        const newFile = Uri.parse("untitled:" + folder + "/" + filename);
-                        await window.showTextDocument(newFile).then((textEditor) => {
-                            textEditor.edit(edit => {
-                                let text = "";
-                                let lines = data.split(/\r\n|\r|\n/g);
-                                for (let l of lines) {
-                                    let elms = l.split("  ");
-                                    if (elms.length > 2) {
-                                        text += " " + elms[2].replace(", ", ",") + ";" + l + '\n';
-                                    } else {
-                                        text += l.replace(", ", ",") + ";" + l + '\n';
-                                    }
-                                }
-                                edit.insert(new Position(0, 0), text);
-                                resolve();
-                            });
-                        });
-                    }).catch(err => {
+                if (address !== undefined) {
+                    let filename = `${DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR}${address}__500.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
+                    const newFile = Uri.parse(`disassembly:${filename}`);
+                    await window.showTextDocument(newFile).then((_) => {
+                        resolve();
+                    }, err => {
                         let message = err.message;
                         window.showErrorMessage(message);
                         reject(err);
                     });
                 } else {
-                    let message = "No selected File to disassemble";
+                    reject(new Error("No input address expression"));
+                }
+            } else {
+                const capstone = this.getCapstone();
+                if (capstone) {
+                    let selectedFiles = await window.showOpenDialog(<OpenDialogOptions>{
+                        prompt: "Select a file to disassemble",
+                        canSelectMany: false,
+                        canSelectFiles: true,
+                        canSelectFolders: false,
+                    });
+                    if (selectedFiles && (selectedFiles.length > 0)) {
+                        const selectedFile = selectedFiles[0];
+                        const filePath = selectedFile.fsPath;
+                        // Disassembles the file
+                        await capstone.disassembleFile(filePath).then(async data => {
+                            // opens a new editor document
+                            let folder = ".";
+                            let folders = workspace.workspaceFolders;
+                            if (folders && folders.length) {
+                                folder = folders[0].uri.fsPath;
+                            }
+                            let filename = path.basename(filePath) + "_" + Date.now() + "_dis.s";
+                            const newFile = Uri.parse("untitled:" + folder + "/" + filename);
+                            await window.showTextDocument(newFile).then((textEditor) => {
+                                textEditor.edit(edit => {
+                                    let text = "";
+                                    let lines = data.split(/\r\n|\r|\n/g);
+                                    for (let l of lines) {
+                                        let elms = l.split("  ");
+                                        if (elms.length > 2) {
+                                            text += " " + elms[2].replace(", ", ",") + ";" + l + '\n';
+                                        } else {
+                                            text += l.replace(", ", ",") + ";" + l + '\n';
+                                        }
+                                    }
+                                    edit.insert(new Position(0, 0), text);
+                                    resolve();
+                                });
+                            });
+                        }).catch(err => {
+                            let message = err.message;
+                            window.showErrorMessage(message);
+                            reject(err);
+                        });
+                    } else {
+                        let message = "No selected File to disassemble";
+                        window.showErrorMessage(message);
+                        reject(new Error(message));
+                    }
+                } else {
+                    let message = "To use this command: configure the capstone path in the settings";
                     window.showErrorMessage(message);
                     reject(new Error(message));
                 }
-            } else {
-                let message = "To use this command: configure the capstone path in the settings";
-                window.showErrorMessage(message);
-                reject(new Error(message));
             }
         });
     }

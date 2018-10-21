@@ -1,4 +1,5 @@
 import { HoverRegister, HoverRegistersManager } from "./parser";
+import { StringUtils } from "./stringUtils";
 
 /** Type of copper instruction */
 export enum CopperIntructionType {
@@ -37,12 +38,15 @@ export class CopperInstruction {
         }
     }
     public getAsmInstruction(): string {
-        return `dc.w \$${this.first.toString(16)},\$${this.second.toString(16)}`;
+        return `dc.w \$${this.format(this.first)},\$${this.format(this.second)}`;
     }
     protected getPaddedAsmInstruction(): string {
         let inst = this.getAsmInstruction();
         let pad = " ".repeat(20 - inst.length);
         return inst + pad;
+    }
+    protected format(value: number): string {
+        return StringUtils.padStartWith0(value.toString(16), 4);
     }
 }
 
@@ -69,10 +73,10 @@ export class CopperMove extends CopperInstruction {
         if (this.label) {
             l = this.label;
         } else {
-            l = `\$${this.DA.toString(16)}`;
+            l = `\$${this.format(this.DA)}`;
         }
         let inst = this.getPaddedAsmInstruction();
-        let value = `\$${this.RD.toString(16)}`;
+        let value = `\$${this.format(this.RD)}`;
         return `${inst}; ${l} := ${value}`;
     }
 }
@@ -108,7 +112,14 @@ export class CopperWait extends CopperCondition {
     }
     public toString(): string {
         let inst = this.getPaddedAsmInstruction();
-        return `${inst}; Wait for vpos >= 0x${this.vertical.toString(16)} and hpos >= 0x${this.horizontal.toString(16)}`;
+        if (this.isEnd()) {
+            return `${inst}; End of Copperlist`;
+        } else {
+            return `${inst}; Wait for vpos >= 0x${this.vertical.toString(16)} and hpos >= 0x${this.horizontal.toString(16)}`;
+        }
+    }
+    public isEnd(): boolean {
+        return ((this.first === 0xffff) && (this.second === 0xfffe));
     }
 }
 export class CopperSkip extends CopperCondition {
@@ -134,7 +145,11 @@ export class CopperDisassembler {
         if (memory.length >= 8) {
             // Split the string in blocs of 8 characters
             for (let i = 8; i <= memory.length; i += 8) {
-                this.copperList.push(CopperInstruction.parse(memory.substring(i - 8, i)));
+                let instruction = CopperInstruction.parse(memory.substring(i - 8, i));
+                this.copperList.push(instruction);
+                if ((instruction instanceof CopperWait) && (instruction.isEnd())) {
+                    break;
+                }
             }
         } else {
             throw new Error("Memory bloc too short to parse (8 characters minimum)");

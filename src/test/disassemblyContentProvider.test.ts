@@ -57,13 +57,13 @@ describe("debug disassebly content provider", function () {
 
         // address file
         let dAsmFileAddress = new DebugDisassembledFile();
-        dAsmFileAddress.setStackFrameIndex(0).setAddress(10).setLength(500);
+        dAsmFileAddress.setStackFrameIndex(0).setAddressExpression("$a").setLength(500);
         uri = Uri.file(dAsmFileAddress.toString());
         tockenEmitter = new CancellationTokenSource();
         await expect(dcp.provideTextDocumentContent(uri, tockenEmitter.token)).to.eventually.be.equal("00000: move.l a0,a1\n00002: move.l a5,a6\n");
         const [, args2] = capture(mockedDebugSession.customRequest).last();
-        expect(args2.startAddress).to.be.equal(dAsmFileAddress.getAddress());
-        expect(args2.frameId).to.be.equal(dAsmFileAddress.getStackFrameIndex());
+        expect(args2.addressExpression).to.be.equal(dAsmFileAddress.getAddressExpression());
+        expect(args2.stackFrameIndex).to.be.equal(dAsmFileAddress.getStackFrameIndex());
         expect(args2.length).to.be.equal(dAsmFileAddress.getLength());
 
         // rejection

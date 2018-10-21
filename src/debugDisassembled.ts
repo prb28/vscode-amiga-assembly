@@ -3,15 +3,19 @@ import { GdbProxy } from "./gdbProxy";
 import { DebugExpressionHelper } from "./debugExpressionHelper";
 import { StackFrame, Source } from "vscode-debugadapter";
 import { DebugProtocol } from "vscode-debugprotocol";
+import { CopperDisassembler } from "./copperDisassembler";
+import { DebugVariableResolver } from "./debugVariableResolver";
 
 export class DebugDisassembledFile {
     public static readonly DGBFILE_SEG_SEPARATOR = "seg_";
+    public static readonly DGBFILE_COPPER_SEPARATOR = "copper_";
     public static readonly DGBFILE_EXTENSION = "dbgasm";
 
     private segmentId: number | undefined;
     private stackFrameIndex: number | undefined;
-    private address: number | undefined;
+    private addressExpression: string | undefined;
     private length: number | undefined;
+    private copper: boolean = false;
     private path = "";
 
     public setSegmentId(segmentId: number): DebugDisassembledFile {
@@ -32,13 +36,13 @@ export class DebugDisassembledFile {
         return this.stackFrameIndex;
     }
 
-    public setAddress(address: number): DebugDisassembledFile {
-        this.address = address;
+    public setAddressExpression(addressExpression: string): DebugDisassembledFile {
+        this.addressExpression = addressExpression;
         return this;
     }
 
-    public getAddress(): number | undefined {
-        return this.address;
+    public getAddressExpression(): string | undefined {
+        return this.addressExpression;
     }
 
     public setLength(length: number): DebugDisassembledFile {
@@ -50,19 +54,28 @@ export class DebugDisassembledFile {
         return this.length;
     }
 
-    public isSegment() {
+    public isSegment(): boolean {
         return this.segmentId !== undefined;
+    }
+
+    public setCopper(isCopper: boolean): DebugDisassembledFile {
+        this.copper = isCopper;
+        return this;
+    }
+
+    public isCopper(): boolean {
+        return this.copper;
     }
 
     public toString(): string {
         if (this.isSegment()) {
             return `${this.path}${DebugDisassembledFile.DGBFILE_SEG_SEPARATOR}${this.segmentId}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
         }
-        let addressHex = "0";
-        if (this.address) {
-            addressHex = this.address.toString(16);
+        if (this.isCopper()) {
+            return `${this.path}${DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR}${this.addressExpression}__${this.length}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
+        } else {
+            return `${this.path}${this.stackFrameIndex}__${this.addressExpression}__${this.length}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
         }
-        return `${this.path}${this.stackFrameIndex}_\$${addressHex}_${this.length}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
     }
 
     public static fromPath(path: string): DebugDisassembledFile {
@@ -78,19 +91,24 @@ export class DebugDisassembledFile {
             localPath = localPath.substring(0, indexOfExt - 1);
         }
         const segLabelPos = localPath.indexOf(DebugDisassembledFile.DGBFILE_SEG_SEPARATOR);
+        const copperLabelPos = localPath.indexOf(DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR);
         if (segLabelPos >= 0) {
             const segId = parseInt(localPath.substring(segLabelPos + 4));
             dAsmFile.setSegmentId(segId);
-        } else {
-            const pathParts = localPath.split('_');
-            let stackFrameIndex = -1;
-            let address = 0;
-            let length = 100;
+        } else if (copperLabelPos >= 0) {
+            const pathParts = localPath.substring(DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR.length).split('__');
             if (pathParts.length > 1) {
-                stackFrameIndex = parseInt(pathParts[0]);
-                address = parseInt(pathParts[1].substring(1), 16);
-                length = parseInt(pathParts[2]);
-                dAsmFile.setStackFrameIndex(stackFrameIndex).setAddress(address).setLength(length);
+                let address = pathParts[0];
+                let length = parseInt(pathParts[1]);
+                dAsmFile.setAddressExpression(address).setLength(length).setCopper(true);
+            }
+        } else {
+            const pathParts = localPath.split('__');
+            if (pathParts.length > 1) {
+                let stackFrameIndex = parseInt(pathParts[0]);
+                let address = pathParts[1];
+                let length = parseInt(pathParts[2]);
+                dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(address).setLength(length);
             }
         }
         return dAsmFile;
@@ -99,6 +117,14 @@ export class DebugDisassembledFile {
     public static isDebugAsmFile(path: string): boolean {
         return path.endsWith(DebugDisassembledFile.DGBFILE_EXTENSION);
     }
+}
+
+export interface DisassembleAddressArguments {
+    segmentId: number | undefined;
+    stackFrameIndex: number | undefined;
+    addressExpression: string | undefined;
+    length: number | undefined;
+    copper: boolean;
 }
 
 export class DebugDisassembledMananger {
@@ -111,10 +137,13 @@ export class DebugDisassembledMananger {
     /** Helper class to deal with the debug expressions */
     private debugExpressionHelper = new DebugExpressionHelper();
 
+    /** To evualate adresses and symbols */
+    private variableResolver: DebugVariableResolver;
 
-    public constructor(gdbProxy: GdbProxy, capstone: Capstone | undefined) {
+    public constructor(gdbProxy: GdbProxy, capstone: Capstone | undefined, variableResolver: DebugVariableResolver) {
         this.capstone = capstone;
         this.gdbProxy = gdbProxy;
+        this.variableResolver = variableResolver;
     }
 
     public getStackFrame(stackFrameIndex: number, address: number, stackframeLabel: string): Promise<StackFrame> {
@@ -136,7 +165,7 @@ export class DebugDisassembledMananger {
                     lineNumber = returnedLineNumber;
                 }
             } else {
-                dAsmFile.setStackFrameIndex(stackFrameIndex).setAddress(address).setLength(length);
+                dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(`\$${address.toString(16)}`).setLength(length);
             }
             url = `disassembly:///${dAsmFile}`;
             if (lineNumber >= 0) {
@@ -200,40 +229,77 @@ export class DebugDisassembledMananger {
         });
     }
 
-    public disassembleAddress(address: number, length: number): Promise<DebugProtocol.Variable[]> {
+    public disassembleAddress(addressExpression: string, length: number, isCopper: boolean): Promise<DebugProtocol.Variable[]> {
         return new Promise(async (resolve, reject) => {
-            if (this.capstone) {
-                const localCapstone = this.capstone;
-                // ask for memory dump
-                this.gdbProxy.getMemory(address, length).then((memory) => {
-                    let startAddress = address;
-                    // disassemble the code 
-                    localCapstone.disassemble(memory).then((code) => {
-                        let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+            const address = await this.debugExpressionHelper.getAddressFromExpression(addressExpression, undefined, this.variableResolver).catch((err) => {
+                reject(err);
+            });
+            if (address !== undefined) {
+                if (isCopper) {
+                    await this.gdbProxy.getMemory(address, length).then((memory) => {
+                        let startAddress = address;
+                        let copDis = new CopperDisassembler(memory);
+                        let instructions = copDis.disassemble();
+                        let variables = new Array<DebugProtocol.Variable>();
+                        let offset = 0;
+                        for (let i of instructions) {
+                            let addOffset = startAddress + offset;
+                            variables.push({
+                                value: i.toString(),
+                                name: addOffset.toString(16),
+                                variablesReference: 0
+                            });
+                            offset += 2;
+                        }
                         resolve(variables);
                     }).catch((err) => {
                         reject(err);
                     });
-                }).catch((err) => {
-                    reject(err);
-                });
+                } else if (this.capstone) {
+                    const localCapstone = this.capstone;
+                    // ask for memory dump
+                    await this.gdbProxy.getMemory(address, length).then(async (memory) => {
+                        let startAddress = address;
+                        // disassemble the code 
+                        await localCapstone.disassemble(memory).then((code) => {
+                            let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+                            resolve(variables);
+                        }).catch((err) => {
+                            reject(err);
+                        });
+                    }).catch((err) => {
+                        reject(err);
+                    });
+                } else {
+                    reject(new Error("Capstone has not been defined"));
+                }
             } else {
-                reject(new Error("Capstone has not been defined"));
+                reject(new Error("Unable to resolve adress expression void returned"));
             }
         });
     }
 
-    public disassembleRequest(args: any): Promise<DebugProtocol.Variable[]> {
+    public disassembleRequest(args: DisassembleAddressArguments): Promise<DebugProtocol.Variable[]> {
         return new Promise(async (resolve, reject) => {
-            if (this.capstone) {
+            if (args.copper) {
+                if (args.addressExpression && args.length) {
+                    await this.disassembleAddress(args.addressExpression, args.length, args.copper).then(code => {
+                        resolve(code);
+                    }).catch((err) => {
+                        reject(err);
+                    });
+                } else {
+                    reject(new Error(`Unable to disassemble; invalid parameters ${args}`));
+                }
+            } else if (this.capstone) {
                 if (args.segmentId !== undefined) {
                     await this.disassembleSegment(args.segmentId).then(code => {
                         resolve(code);
                     }).catch((err) => {
                         reject(err);
                     });
-                } else if (args.startAddress !== undefined) {
-                    await this.disassembleAddress(args.startAddress, args.length).then(code => {
+                } else if (args.addressExpression && args.length) {
+                    await this.disassembleAddress(args.addressExpression, args.length, args.copper).then(code => {
                         resolve(code);
                     }).catch((err) => {
                         reject(err);
@@ -269,10 +335,10 @@ export class DebugDisassembledMananger {
                     }
                 } else {
                     // Path from outside segments
-                    let address = dAsmFile.getAddress();
+                    let address = dAsmFile.getAddressExpression();
                     let length = dAsmFile.getLength();
                     if ((address !== undefined) && (length !== undefined)) {
-                        await this.disassembleAddress(address, length).then(variables => {
+                        await this.disassembleAddress(address, length, false).then(variables => {
                             let searchedLN = lineNumber - 1;
                             if (searchedLN < variables.length) {
                                 resolve(parseInt(variables[searchedLN].name, 16));

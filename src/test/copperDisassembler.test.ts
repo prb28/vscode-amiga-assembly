@@ -13,7 +13,7 @@ describe("Copper Disassembler Tests", function () {
             expect(i.DA).to.be.equal(0x180);
             expect(i.RD).to.be.equal(0x0502);
             expect(i.label).to.be.equal("COLOR00");
-            expect(i.toString()).to.be.equal("dc.w $f180,$502     ; COLOR00 := $502");
+            expect(i.toString()).to.be.equal("dc.w $f180,$0502    ; COLOR00 := $0502");
         }
     });
     it("Should disassemble a wait instruction", function () {
@@ -42,6 +42,18 @@ describe("Copper Disassembler Tests", function () {
             expect(i.vertical).to.be.equal(0x3f);
             expect(i.horizontal).to.be.equal(0xd2);
             expect(i.toString()).to.be.equal("dc.w $3fd3,$fffe    ; Wait for vpos >= 0x3f and hpos >= 0xd2");
+        }
+        i = CopperInstruction.parse("fffffffe");
+        expect(i instanceof CopperWait).to.be.true;
+        if (i instanceof CopperWait) {
+            expect(i.VP).to.be.equal(0xff);
+            expect(i.HP).to.be.equal(0xfe);
+            expect(i.BFD).to.be.equal(0x1);
+            expect(i.VE).to.be.equal(0xff);
+            expect(i.HE).to.be.equal(0xfe);
+            expect(i.vertical).to.be.equal(0xff);
+            expect(i.horizontal).to.be.equal(0xfe);
+            expect(i.toString()).to.be.equal("dc.w $ffff,$fffe    ; End of Copperlist");
         }
     });
     it("Should disassemble a skip instruction", function () {
@@ -74,5 +86,17 @@ describe("Copper Disassembler Tests", function () {
         expect(str[0]).to.be.equal(instructions[0].toString());
         expect(str[1]).to.be.equal(instructions[1].toString());
         expect(str[2]).to.be.equal(instructions[2].toString());
+    });
+    it("Should stop at end of the copper list", function () {
+        let buffer = "01800502fffffffe3fd3fffe6401ff01";
+        let cd = new CopperDisassembler(buffer);
+        let instructions = cd.disassemble();
+        expect(instructions.length).to.be.equal(2);
+        expect(instructions[0].first).to.be.equal(0x180);
+        expect(instructions[1].first).to.be.equal(0xffff);
+        let str = cd.toString().split('\n');
+        expect(instructions.length).to.be.equal(2);
+        expect(str[0]).to.be.equal(instructions[0].toString());
+        expect(str[1]).to.be.equal(instructions[1].toString());
     });
 });

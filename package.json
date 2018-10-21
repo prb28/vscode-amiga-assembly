@@ -37,7 +37,8 @@
         "onCommand:amiga-assembly.build-vasm",
         "onCommand:amiga-assembly.build-vasm-workspace",
         "onCommand:amiga-assembly.clean-vasm-workspace",
-        "onCommand:amiga-assembly.disassemble-file"
+        "onCommand:amiga-assembly.disassemble-file",
+        "onCommand:amiga-assembly.disassemble-copper"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -227,6 +228,11 @@
                 "command": "amiga-assembly.disassemble-file",
                 "title": "Amiga Assembly: Disassemble file",
                 "description": "Disassembles an Amiga executable file"
+            },
+            {
+                "command": "amiga-assembly.disassemble-copper",
+                "title": "Amiga Assembly: Disassemble copper memory",
+                "description": "Disassembles memory address with copper instructions"
             }
         ],
         "breakpoints": [

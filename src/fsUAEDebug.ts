@@ -12,8 +12,9 @@ import { DebugInfo } from './debugInfo';
 import { Capstone } from './capstone';
 import { DebugVariableResolver } from './debugVariableResolver';
 import { DebugExpressionHelper } from './debugExpressionHelper';
-import { DebugDisassembledMananger, DebugDisassembledFile } from './debugDisassembled';
+import { DebugDisassembledMananger, DebugDisassembledFile, DisassembleAddressArguments } from './debugDisassembled';
 import * as fs from 'fs';
+import { StringUtils } from './stringUtils';
 const { Subject } = require('await-notify');
 
 
@@ -109,7 +110,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.gdbProxy = new GdbProxy(undefined);
         this.initProxy();
         this.executor = new ExecutorHelper();
-        this.debugDisassembledMananger = new DebugDisassembledMananger(this.gdbProxy, undefined);
+        this.debugDisassembledMananger = new DebugDisassembledMananger(this.gdbProxy, undefined, this);
     }
 
 	/**
@@ -124,7 +125,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.initProxy();
         this.testMode = true;
         this.capstone = capstone;
-        this.debugDisassembledMananger = new DebugDisassembledMananger(gdbProxy, capstone);
+        this.debugDisassembledMananger = new DebugDisassembledMananger(gdbProxy, capstone, this);
     }
 
 	/**
@@ -213,7 +214,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.capstone = new Capstone(conf);
         }
 
-        this.debugDisassembledMananger = new DebugDisassembledMananger(this.gdbProxy, this.capstone);
+        this.debugDisassembledMananger = new DebugDisassembledMananger(this.gdbProxy, this.capstone, this);
 
         this.sendResponse(response);
 
@@ -371,17 +372,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected customRequest(command: string, response: DebugProtocol.Response, args: any): void {
         switch (command) {
-            case 'set-force-disassembly':
-                response.body = { success: true };
-                //this.forceDisassembly = args.force;
-                this.sendResponse(response);
-                break;
-            // case 'read-memory':
-            // 	this.readMemoryRequest(response, args['address'], args['length']);
-            // 	break;
-            // case 'write-memory':
-            // 	this.writeMemoryRequest(response, args['address'], args['data']);
-            // 	break;
             case 'disassemble':
                 this.disassembleRequest(response, args);
                 break;
@@ -390,10 +380,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 this.sendResponse(response);
                 break;
         }
-
     }
 
-    protected async disassembleRequest(response: DebugProtocol.Response, args: any): Promise<void> {
+    protected async disassembleRequest(response: DebugProtocol.Response, args: DisassembleAddressArguments): Promise<void> {
         await this.debugDisassembledMananger.disassembleRequest(args).then(variables => {
             response.body = {
                 variables: variables,
@@ -617,7 +606,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             variables.push({
                                 name: r.name,
                                 type: "register",
-                                value: this.debugExpressionHelper.padStartWith0(r.value.toString(16), 8),
+                                value: StringUtils.padStartWith0(r.value.toString(16), 8),
                                 variablesReference: 0
                             });
                         }

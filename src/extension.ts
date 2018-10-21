@@ -111,9 +111,17 @@ export function activate(context: vscode.ExtensionContext) {
 
     // create a new disassembler
     let disassembler = state.getDisassembler();
-    disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-file', () => {
-        return disassembler.showInputPanel().catch(err => {
-            vscode.window.showErrorMessage(err);
+    disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-file', async () => {
+        await disassembler.showInputPanel(false).catch(err => {
+            vscode.window.showErrorMessage(err.message);
+        });
+    });
+    context.subscriptions.push(disposable);
+
+    // create a new disassembler for copper address
+    disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-copper', async () => {
+        await disassembler.showInputPanel(true).catch(err => {
+            vscode.window.showErrorMessage(err.message);
         });
     });
     context.subscriptions.push(disposable);
