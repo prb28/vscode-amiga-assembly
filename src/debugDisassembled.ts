@@ -249,7 +249,8 @@ export class DebugDisassembledMananger {
                                 name: addOffset.toString(16),
                                 variablesReference: 0
                             });
-                            offset += 2;
+                            // 4 iadresses : 32b / address
+                            offset += 4;
                         }
                         resolve(variables);
                     }).catch((err) => {
