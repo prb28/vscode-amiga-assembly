@@ -10,15 +10,23 @@ export class DebugExpressionHelper {
             if (expression !== null) {
                 let newExpression = expression;
                 // Replace all variables
-                let variableRegexp = /\$\{([a-zA-Z0-9_\-\.]*)\}/g;
+                let variableRegexp = /([\$#]\{[a-zA-Z0-9_\-\.]*\})/g;
                 let match;
                 while (match = variableRegexp.exec(expression)) {
-                    let variableName = match[1];
-                    let value = await variableResolver.getVariableValue(variableName, frameIndex).catch(err => {
-                        return reject(err);
-                    });
+                    let variableExpression = match[1];
+                    let variableName = variableExpression.substring(2, variableExpression.length - 1);
+                    let value: string | void;
+                    if (variableExpression.startsWith('$')) {
+                        value = await variableResolver.getVariableValue(variableName, frameIndex).catch(err => {
+                            return reject(err);
+                        });
+                    } else {
+                        value = await variableResolver.getVariablePointedMemory(variableName, frameIndex).catch(err => {
+                            return reject(err);
+                        });
+                    }
                     if (value) {
-                        newExpression = newExpression.replace("${" + variableName + "}", "$" + value);
+                        newExpression = newExpression.replace("#{", "${").replace("${" + variableName + "}", "$" + value);
                     }
                 }
                 let result = this.calc.calculate(newExpression);

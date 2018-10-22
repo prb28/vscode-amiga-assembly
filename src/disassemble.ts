@@ -23,6 +23,8 @@ export class Disassembler {
                     prompt: "Copper address: ${symbol} or $xxxxxxxx "
                 });
                 if (address !== undefined) {
+                    // Code to replace #, it is not done by the Uri.parse
+                    address = address.replace('#', '%23');
                     let filename = `${DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR}${address}__3000.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
                     const newFile = Uri.parse(`disassembly:${filename}`);
                     await window.showTextDocument(newFile).then((_) => {

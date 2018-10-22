@@ -13,6 +13,9 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 chai.use(chaiAsPromised);
 
 class DummyVariableResolver implements DebugVariableResolver {
+    getVariablePointedMemory(variableName: string, frameIndex: number | undefined, size?: number | undefined): Promise<string> {
+        return Promise.resolve("");
+    }
     getVariableValue(variable: string, frameIndex: number | undefined): Promise<string> {
         return Promise.resolve("");
     }

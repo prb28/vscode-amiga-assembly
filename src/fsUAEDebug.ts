@@ -735,6 +735,26 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         });
     }
 
+    public getVariablePointedMemory(variableName: string, frameIndex: number | undefined, size?: number): Promise<string> {
+        return new Promise<(any | null)>(async (resolve, reject) => {
+            await this.getVariableValue(variableName, frameIndex).then(async (address) => {
+                let lSize = size;
+                if (lSize === undefined) {
+                    // By default me assume it is an address 32b
+                    lSize = 4;
+                }
+                // call to get the value in memory for this address
+                await this.gdbProxy.getMemory(parseInt(address, 16), lSize).then((memory) => {
+                    resolve(memory);
+                }).catch(err => {
+                    reject(err);
+                });
+            }).catch(err => {
+                reject(err);
+            });
+        });
+    }
+
     public getVariableValue(variableName: string, frameIndex: number | undefined): Promise<string> {
         return new Promise<(any | null)>(async (resolve, reject) => {
             // Is it a register?
@@ -752,12 +772,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 // Is it a symbol?
                 let address = this.symbolsMap.get(variableName);
                 if (address !== undefined) {
-                    // call to get the value in memory for this address
-                    this.gdbProxy.getMemory(address, 4).then((memory) => {
-                        resolve(memory);
-                    }).catch(err => {
-                        reject(err);
-                    });
+                    resolve(address.toString(16));
                 } else {
                     reject(new Error("Unknown symbol " + variableName));
                 }
@@ -766,7 +781,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     private evaluateRequestGetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-        const matches = /m\s*([\{\}\$0-9a-z\+\-\*\/\%\(\)]+)\s*,\s*([0-9]+)(,\s*([0-9]+),\s*([0-9]+))?(,([abd]+))?/i.exec(args.expression);
+        const matches = /m\s*([\{\}\$#0-9a-z\+\-\*\/\%\(\)]+)\s*,\s*([0-9]+)(,\s*([0-9]+),\s*([0-9]+))?(,([abd]+))?/i.exec(args.expression);
         if (matches) {
             let rowLength = 4;
             let wordLength = 4;
@@ -847,7 +862,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     private evaluateRequestSetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-        const matches = /M\s*([\{\}\$0-9a-z]+)\s*=\s*([0-9a-z]+)/i.exec(args.expression);
+        const matches = /M\s*([\{\}\$#0-9a-z]+)\s*=\s*([0-9a-z]+)/i.exec(args.expression);
         if (matches) {
             let addrStr = matches[1];
             let data = matches[2];

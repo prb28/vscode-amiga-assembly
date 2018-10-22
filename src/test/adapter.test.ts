@@ -636,6 +636,10 @@ describe('Node Debug Adapter', () => {
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "m ${copperlist},10"
 			});
+			expect(evaluateResponse.body.result).to.equal('0000000b                            | ....');
+			evaluateResponse = await dc.evaluateRequest({
+				expression: "m #{copperlist},10"
+			});
 			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
 		});
 		it('should evaluate a set memory command', async function () {
@@ -655,7 +659,7 @@ describe('Node Debug Adapter', () => {
 			resetCalls(this.mockedGdbProxy);
 			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª.........');
 			evaluateResponse = await dc.evaluateRequest({
-				expression: "M ${copperlist}=10"
+				expression: "M #{copperlist}=10"
 			});
 			verify(this.mockedGdbProxy.setMemory(11, anyString())).once();
 			resetCalls(this.mockedGdbProxy);
