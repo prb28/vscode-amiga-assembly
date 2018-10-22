@@ -133,7 +133,7 @@ export class GdbProxy extends EventEmitter {
         autoUnlockTimeoutMs: 1200,
         intervalMs: 100,
     });
-    /** Trace protocol */
+    /** Trace protocol for tests */
     private traceProtocol = false;
 
     /**
@@ -254,7 +254,7 @@ export class GdbProxy extends EventEmitter {
      */
     private onData(proxy: GdbProxy, data: any): Promise<void> {
         if (this.traceProtocol) {
-            console.log("--->" + data.toString());
+            proxy.sendEvent("output", `---> ${data}`);
         }
         return new Promise(async (resolve, reject) => {
             for (let packet of GdbProxy.parseData(data)) {
@@ -378,7 +378,7 @@ export class GdbProxy extends EventEmitter {
             offset += 2;
             data.writeInt8(0, offset);
             if (this.traceProtocol) {
-                console.log(" <---" + data.toString());
+                this.sendEvent("output", ` <--- ${data}`);
             }
             const unlock = await this.mutex.capture('sendPacketString');
             if (this.socket.writable) {

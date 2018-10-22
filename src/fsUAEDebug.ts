@@ -1,7 +1,6 @@
 import {
-    Logger, logger,
     InitializedEvent, TerminatedEvent, StoppedEvent, BreakpointEvent,
-    Thread, StackFrame, Scope, Source, Handles, DebugSession
+    Thread, StackFrame, Scope, Source, Handles, DebugSession, OutputEvent
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
@@ -143,7 +142,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.sendEvent(new StoppedEvent('breakpoint', FsUAEDebugSession.THREAD_ID));
         });
         this.gdbProxy.on('stopOnException', (status: GdbHaltStatus) => {
-            logger.error("Exception raised: " + status.details);
+            this.sendEvent(new OutputEvent(`Exception raised: ${status.details}\n`));
             this.sendEvent(new StoppedEvent('exception', FsUAEDebugSession.THREAD_ID));
         });
         this.gdbProxy.on('segmentsUpdated', (segments: Array<Segment>) => {
@@ -156,13 +155,19 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             };
             this.sendEvent(new BreakpointEvent('changed', debugBp));
         });
-        // this.gdbProxy.on('output', (text: string, filePath: string, line: number, column: number) => {
-        // 	const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
-        // 	e.body.source = this.createSource(filePath);
-        // 	e.body.line = this.convertDebuggerLineToClient(line);
-        // 	e.body.column = this.convertDebuggerColumnToClient(column);
-        // 	this.sendEvent(e);
-        // });
+        this.gdbProxy.on('output', (text: string, filePath?: string, line?: number, column?: number) => {
+            const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
+            if (filePath !== undefined) {
+                e.body.source = this.createSource(filePath);
+            }
+            if (line !== undefined) {
+                e.body.line = this.convertDebuggerLineToClient(line);
+            }
+            if (column !== undefined) {
+                e.body.column = this.convertDebuggerColumnToClient(column);
+            }
+            this.sendEvent(e);
+        });
         this.gdbProxy.on('end', () => {
             this.terminate();
         });
@@ -254,9 +259,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
-        // make sure to set the buffered logging to warn if 'trace' is not set
-        logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Log, false);
-
         // Does the program exists ? -> Loads the debug info
         let dInfoLoaded = false;
         try {
@@ -276,21 +278,25 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
         // Showing the help text
         if (!this.testMode) {
-            logger.warn("Commands:");
-            logger.warn("    Memory dump:");
-            logger.warn("        m address, size[, wordSizeInBytes, rowSizeInWords,ab]");
-            logger.warn("        			a: show ascii output, b: show bytes output");
-            logger.warn("            example: m 5c50,10,2,4");
-            logger.warn("        m ${register|symbol}, size[, wordSizeInBytes, rowSizeInWords]");
-            logger.warn("            example: m ${mycopperlabel},10,2,4");
-            logger.warn("    Disassembled Memory dump:");
-            logger.warn("        m address|${register|symbol},size,d");
-            logger.warn("            example: m ${pc},10,d");
-            logger.warn("    Memory set:");
-            logger.warn("        M address=bytes");
-            logger.warn("            example: M 5c50=0ff534");
-            logger.warn("        M ${register|symbol}=bytes");
-            logger.warn("            example: M ${mycopperlabel}=0ff534");
+            let text = "Commands:\n" +
+                "    Memory dump:\n" +
+                "        m address, size[, wordSizeInBytes, rowSizeInWords,ab]\n" +
+                "        			a: show ascii output, b: show bytes output\n" +
+                "            example: m 5c50,10,2,4\n" +
+                "        m ${register|symbol}, #{symbol}, size[, wordSizeInBytes, rowSizeInWords]\n" +
+                "            example: m ${mycopperlabel},10,2,4\n" +
+                "    Disassembled Memory dump:\n" +
+                "        m address|${register|symbol}|#{symbol},size,d\n" +
+                "            example: m ${pc},10,d\n" +
+                "    Memory set:\n" +
+                "        M address=bytes\n" +
+                "            example: M 5c50=0ff534\n" +
+                "        M ${register|symbol}=bytes\n" +
+                "        M #{register|symbol}=bytes\n" +
+                "            example: M ${mycopperlabel}=0ff534\n" +
+                "      ${symbol} gives the adress of symbol," +
+                "      #{symbol} gives the pointed value from the symbol\n";
+            this.sendEvent(new OutputEvent(text));
         }
 
         // Launch the emulator
@@ -320,7 +326,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             // connects to FS-UAE
             debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(async () => {
                 // Loads the program
-                logger.warn("Starting program: " + args.program);
+                debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
                 await debAdapter.gdbProxy.load(args.program, args.stopOnEntry).then(() => {
                     debAdapter.sendResponse(response);
                 }).catch(err => {
@@ -343,7 +349,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     public startEmulator(args: LaunchRequestArguments): Promise<void> {
         if (args.startEmulator) {
-            logger.warn("Starting emulator: " + args.emulator);
+            this.sendEvent(new OutputEvent(`Starting emulator: ${args.emulator}`));
             const emulatorExe = args.emulator;
             if (emulatorExe) {
                 // Is the emeulator exe present in the filesystem ?
@@ -365,7 +371,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 throw (new Error("The emulator executable file path must be defined in the launch settings"));
             }
         } else {
-            logger.warn("Emulator starting skipped by settings");
+            this.sendEvent(new OutputEvent("Emulator starting skipped by settings"));
             return Promise.resolve();
         }
     }
