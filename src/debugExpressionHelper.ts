@@ -40,11 +40,14 @@ export class DebugExpressionHelper {
         let i = 0;
         let rowCount = 0;
         let row = "";
+        let nextAddress = startAddress;
+        let lineAddress = startAddress;
         while (i < chunks.length) {
             if (rowCount > 0) {
                 row += " ";
             }
             row += chunks[i];
+            nextAddress += chunks[i].length / 2;
             if ((rowCount >= rowLength - 1) || (i === chunks.length - 1)) {
                 if (mode.indexOf('a') >= 0) {
                     let asciiText = StringUtils.convertToASCII(row.replace(/\s+/g, ''));
@@ -64,14 +67,14 @@ export class DebugExpressionHelper {
                 }
                 variables.push({
                     value: row,
-                    name: StringUtils.padStartWith0(startAddress.toString(16), 8),
+                    name: StringUtils.padStartWith0(lineAddress.toString(16), 8),
                     variablesReference: 0
                 });
                 if (firstRow.length <= 0) {
                     firstRow = row;
                 }
-                startAddress += rowCount * wordLength;
                 rowCount = 0;
+                lineAddress = nextAddress;
                 row = "";
             } else {
                 rowCount++;
