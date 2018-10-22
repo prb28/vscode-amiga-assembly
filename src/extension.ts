@@ -18,6 +18,7 @@ import { DisassemblyContentProvider } from './disassemblyContentProvider';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
+export const AMIGA_DEBUG_ASM_MODE: vscode.DocumentFilter = { language: 'amiga-assembly-debug.disassembly', scheme: 'disassembly' };
 
 /*
  * Set the following compile time flag to true if the
@@ -150,6 +151,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Color provider
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_ASM_MODE, new M86kColorProvider()));
+    context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_DEBUG_ASM_MODE, new M86kColorProvider()));
 
     // Definition provider
     let definitionHandler = new M68kDefinitionHandler();
