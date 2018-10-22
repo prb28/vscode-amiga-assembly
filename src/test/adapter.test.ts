@@ -611,6 +611,7 @@ describe('Node Debug Adapter', () => {
 				when(this.mockedGdbProxy.getMemory(10, anyNumber())).thenReturn(Promise.resolve("aa00000000c00b0000f8"));
 				when(this.mockedGdbProxy.getMemory(422, anyNumber())).thenReturn(Promise.resolve("0000000b")); // 422 = 19c + 10
 				when(this.mockedGdbProxy.getMemory(11, anyNumber())).thenReturn(Promise.resolve("bb00000000c00b0000f8"));
+				when(this.mockedGdbProxy.getMemory(0xdff180, anyNumber())).thenReturn(Promise.resolve("1234"));
 			}
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
@@ -641,6 +642,10 @@ describe('Node Debug Adapter', () => {
 				expression: "m #{copperlist},10"
 			});
 			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
+			evaluateResponse = await dc.evaluateRequest({
+				expression: "m ${color00},1"
+			});
+			expect(evaluateResponse.body.result).to.equal('1234                            | .4');
 		});
 		it('should evaluate a set memory command', async function () {
 			this.timeout(defaultTimeout);

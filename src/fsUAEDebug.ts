@@ -14,6 +14,7 @@ import { DebugExpressionHelper } from './debugExpressionHelper';
 import { DebugDisassembledMananger, DebugDisassembledFile, DisassembleAddressArguments } from './debugDisassembled';
 import * as fs from 'fs';
 import { StringUtils } from './stringUtils';
+import { MemoryLabelsRegistry } from './customMemoryAdresses';
 const { Subject } = require('await-notify');
 
 
@@ -741,16 +742,20 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         });
     }
 
-    public getVariablePointedMemory(variableName: string, frameIndex: number | undefined, size?: number): Promise<string> {
-        return new Promise<(any | null)>(async (resolve, reject) => {
-            await this.getVariableValue(variableName, frameIndex).then(async (address) => {
+    public getMemory(address: number, size: number): Promise<string> {
+        return this.gdbProxy.getMemory(address, size);
+    }
+
+    public getVariablePointedMemory(variableName: string, frameIndex?: number, size?: number): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+            await this.getVariableValueAsNumber(variableName, frameIndex).then(async (address) => {
                 let lSize = size;
                 if (lSize === undefined) {
                     // By default me assume it is an address 32b
                     lSize = 4;
                 }
                 // call to get the value in memory for this address
-                await this.gdbProxy.getMemory(parseInt(address, 16), lSize).then((memory) => {
+                await this.gdbProxy.getMemory(address, lSize).then((memory) => {
                     resolve(memory);
                 }).catch(err => {
                     reject(err);
@@ -760,9 +765,18 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             });
         });
     }
+    public getVariableValue(variableName: string, frameIndex?: number): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+            await this.getVariableValueAsNumber(variableName, frameIndex).then((value) => {
+                resolve(value.toString(16));
+            }).catch(err => {
+                reject(err);
+            });
+        });
+    }
 
-    public getVariableValue(variableName: string, frameIndex: number | undefined): Promise<string> {
-        return new Promise<(any | null)>(async (resolve, reject) => {
+    public getVariableValueAsNumber(variableName: string, frameIndex?: number): Promise<number> {
+        return new Promise(async (resolve, reject) => {
             // Is it a register?
             let matches = /^([ad][0-7]|pc|sr)$/i.exec(variableName);
             if (matches) {
@@ -770,7 +784,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     reject(err);
                 });
                 if (values) {
-                    resolve(values[0]);
+                    resolve(parseInt(values[0], 16));
                 } else {
                     reject(new Error("No value for register " + variableName));
                 }
@@ -778,9 +792,15 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 // Is it a symbol?
                 let address = this.symbolsMap.get(variableName);
                 if (address !== undefined) {
-                    resolve(address.toString(16));
+                    resolve(address);
                 } else {
-                    reject(new Error("Unknown symbol " + variableName));
+                    // Is it a standard register
+                    address = MemoryLabelsRegistry.getCustomAddress(variableName.toUpperCase());
+                    if (address !== undefined) {
+                        resolve(address);
+                    } else {
+                        reject(new Error("Unknown symbol " + variableName));
+                    }
                 }
             }
         });

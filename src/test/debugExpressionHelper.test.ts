@@ -4,22 +4,13 @@
 
 import { expect } from 'chai';
 import { DebugExpressionHelper } from '../debugExpressionHelper';
-import { DebugVariableResolver } from '../debugVariableResolver';
 import { mock, instance, when } from 'ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
 
 import * as chai from 'chai';
 import { DebugProtocol } from 'vscode-debugprotocol';
+import { DummyVariableResolver } from './dummyVariableResolver';
 chai.use(chaiAsPromised);
-
-class DummyVariableResolver implements DebugVariableResolver {
-    getVariablePointedMemory(variableName: string, frameIndex: number | undefined, size?: number | undefined): Promise<string> {
-        return Promise.resolve("");
-    }
-    getVariableValue(variable: string, frameIndex: number | undefined): Promise<string> {
-        return Promise.resolve("");
-    }
-}
 
 // tslint:disable:no-unused-expression
 describe("debug expression helper Tests", function () {

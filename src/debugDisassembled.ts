@@ -5,6 +5,7 @@ import { StackFrame, Source } from "vscode-debugadapter";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { CopperDisassembler } from "./copperDisassembler";
 import { DebugVariableResolver } from "./debugVariableResolver";
+import { MemoryLabelsRegistry } from "./customMemoryAdresses";
 
 export class DebugDisassembledFile {
     public static readonly DGBFILE_SEG_SEPARATOR = "seg_";
@@ -231,10 +232,17 @@ export class DebugDisassembledMananger {
 
     public disassembleAddress(addressExpression: string, length: number, isCopper: boolean): Promise<DebugProtocol.Variable[]> {
         return new Promise(async (resolve, reject) => {
-            const address = await this.debugExpressionHelper.getAddressFromExpression(addressExpression, undefined, this.variableResolver).catch((err) => {
-                reject(err);
-            });
-            if (address !== undefined) {
+            let searchedAddress: number | void;
+            if ((isCopper) && ((addressExpression === '1') || (addressExpression === '2'))) {
+                // Retrieve the copper address
+                searchedAddress = await MemoryLabelsRegistry.getCopperAddress(parseInt(addressExpression), this.variableResolver);
+            } else {
+                searchedAddress = await this.debugExpressionHelper.getAddressFromExpression(addressExpression, undefined, this.variableResolver).catch((err) => {
+                    reject(err);
+                });
+            }
+            if (searchedAddress !== undefined) {
+                const address = searchedAddress;
                 if (isCopper) {
                     await this.gdbProxy.getMemory(address, length).then((memory) => {
                         let startAddress = address;

@@ -12,21 +12,8 @@ import { Capstone } from '../capstone';
 import { GdbProxy } from '../gdbProxy';
 import { StackFrame, Source } from 'vscode-debugadapter';
 import { DebugVariableResolver } from '../debugVariableResolver';
+import { DummyVariableResolver } from './dummyVariableResolver';
 chai.use(chaiAsPromised);
-
-
-class DummyVariableResolver implements DebugVariableResolver {
-    getVariablePointedMemory(variableName: string, frameIndex: number | undefined, size?: number | undefined): Promise<string> {
-        return new Promise((resolve, reject) => {
-            resolve("a");
-        });
-    }
-    getVariableValue(variable: string, frameIndex: number | undefined): Promise<string> {
-        return new Promise((resolve, reject) => {
-            resolve("a");
-        });
-    }
-}
 
 describe("debug disassebled Tests", function () {
     context("DebugDisassembledFile Tests", function () {

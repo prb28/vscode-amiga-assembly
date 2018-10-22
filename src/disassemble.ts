@@ -20,7 +20,7 @@ export class Disassembler {
             if (isCopper) {
                 let address = await window.showInputBox(<InputBoxOptions>{
                     //value: "${COP1LC}",
-                    prompt: "Copper address: ${symbol} or $xxxxxxxx "
+                    prompt: "Copper address: 1 or 2 or $xxxxxxxx or #{symbol} or ${symbol} "
                 });
                 if (address !== undefined) {
                     // Code to replace #, it is not done by the Uri.parse
