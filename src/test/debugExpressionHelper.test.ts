@@ -37,7 +37,7 @@ describe("debug expression helper Tests", function () {
             expect(helper.getAddressFromExpression("${testfail} + $a", 1, variableResolver)).to.be.rejectedWith(Error, "No"),
         ]);
     });
-    it.only("Should process a memory dump", function () {
+    it("Should process a memory dump", function () {
         let helper = new DebugExpressionHelper();
         let memory = "aa0000";
         let mode = "ab";

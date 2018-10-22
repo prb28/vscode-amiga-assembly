@@ -226,9 +226,9 @@ describe("debug disassebled Tests", function () {
             expect(variables.length).to.be.equal(3);
             expect(variables[0].name).to.be.equal('0');
             expect(variables[0].value).to.contain('COLOR');
-            expect(variables[1].name).to.be.equal('2');
+            expect(variables[1].name).to.be.equal('4');
             expect(variables[1].value).to.contain('Wait');
-            expect(variables[2].name).to.be.equal('4');
+            expect(variables[2].name).to.be.equal('8');
             expect(variables[2].value).to.contain('Skip');
             // Reject get memory
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReject(new Error("no no"));
