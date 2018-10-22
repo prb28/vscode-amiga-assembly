@@ -942,20 +942,27 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 	 *@param segment The list of returned segments from the debugger 
 	 */
     public updateSegments(segments: Array<Segment>) {
-        let posSegment = 0;
         if (this.debugInfo) {
-            let address = segments[posSegment].address;
-            for (let hunk of this.debugInfo.hunks) {
-                if (posSegment >= this.debugInfo.hunks.length) {
-                    break;
+            for (let posSegment = 0; posSegment < segments.length; posSegment++) {
+                let segment = segments[posSegment];
+                let address = segment.address;
+                for (let hunk of this.debugInfo.hunks) {
+                    if (posSegment >= this.debugInfo.hunks.length) {
+                        break;
+                    }
+                    // Really not a good way to match ...
+                    if (segment.size === hunk.allocSize) {
+                        hunk.segmentsId = posSegment;
+                        hunk.segmentsAddress = address;
+                        // Retrieve the symbols
+                        if (hunk.symbols) {
+                            for (let s of hunk.symbols) {
+                                this.symbolsMap.set(s.name, s.offset + address);
+                            }
+                        }
+                        break;
+                    }
                 }
-                hunk.segmentsId = posSegment;
-                hunk.segmentsAddress = address;
-            }
-            // Retrieve the symbols
-            const symbols = this.debugInfo.getSymbols(undefined);
-            for (let s of symbols) {
-                this.symbolsMap.set(s.name, s.offset + address);
             }
         }
     }

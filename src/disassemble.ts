@@ -23,7 +23,7 @@ export class Disassembler {
                     prompt: "Copper address: ${symbol} or $xxxxxxxx "
                 });
                 if (address !== undefined) {
-                    let filename = `${DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR}${address}__500.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
+                    let filename = `${DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR}${address}__3000.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
                     const newFile = Uri.parse(`disassembly:${filename}`);
                     await window.showTextDocument(newFile).then((_) => {
                         resolve();

@@ -33,8 +33,8 @@ export class DebugInfo {
         return codeDataArray;
     }
 
-    public getSymbols(filename: string | undefined): Symbol[] {
-        let symbols = Array<Symbol>();
+    public getSymbols(filename: string | undefined): Array<[Symbol, number | undefined]> {
+        let symbols = Array<[Symbol, number | undefined]>();
         let normFilename = filename;
         if (normFilename) {
             normFilename = this.normalize(normFilename);
@@ -51,7 +51,7 @@ export class DebugInfo {
                             let name = this.resolveReplacedPathName(srcFile.name);
                             if (name === normFilename) {
                                 for (let s of hunk.symbols) {
-                                    symbols.push(s);
+                                    symbols.push([s, hunk.segmentsId]);
                                 }
                                 break;
                             }
@@ -59,7 +59,7 @@ export class DebugInfo {
                     }
                 } else {
                     for (let s of hunk.symbols) {
-                        symbols.push(s);
+                        symbols.push([s, hunk.segmentsId]);
                     }
                 }
             }

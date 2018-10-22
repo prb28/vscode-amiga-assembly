@@ -102,21 +102,21 @@ export class HunkParser {
     }
 
     public parse_bss(hunk: Hunk, fileData: DataView, fileOffset: number): number {
-        let [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
+        let size = fileData.getUint32(fileOffset, false);
+        // BSS contains the The number of longwords of zeroed memory to allocate
         hunk.hunkType = HunkType.Bss;
-        //hunk.dataSize = size;
-        //hunk.memType = memType;
-        return fileOffset + size + 4;
+        hunk.dataSize = size;
+        return fileOffset + 4;
     }
 
     public parse_code_or_data(hunkType: HunkType, hunk: Hunk, fileData: DataView, fileOffset: number): number {
-        let [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
+        let [size, memType] = this.get_size_type(fileData.getUint32(fileOffset, false));
         let codeData = new Uint32Array(size / 4);
         let pos = fileOffset + 4;
 
-        //hunk.dataSize = size;
+        hunk.dataSize = size;
         hunk.hunkType = hunkType;
-        //hunk.memType = memType;
+        hunk.memType = memType;
 
         for (let i = 0; i < (size / 4); i += 1) {
             codeData[i] = fileData.getInt32(pos, false);
@@ -252,7 +252,7 @@ export class HunkParser {
         return pos;
     }
 
-    public fill_hunk(hunk: Hunk, fileData: DataView, fileOffset: number) {
+    public fill_hunk(hunk: Hunk, fileData: DataView, fileOffset: number): number {
         let pos = fileOffset;
         let hunkType = fileData.getUint32(pos, false);
         pos += 4;
@@ -287,9 +287,14 @@ export class HunkParser {
                     // thrown error : unknown "Unknown hunk type {:x}", hunkType
                     break;
             }
-            hunkType = fileData.getUint32(pos, false);
-            pos += 4;
+            if (pos > (fileData.byteLength - 2)) {
+                break;
+            } else {
+                hunkType = fileData.getUint32(pos, false);
+                pos += 4;
+            }
         }
+        return pos;
     }
 
     public parse_file(filename: string): Array<Hunk> {
@@ -339,12 +344,9 @@ export class HunkParser {
         for (let i = 0; i < hunk_count; i++) {
             let hunk = <Hunk>{
                 memType: hunk_table[i].memType,
-                //hunkType: HunkType.Bss,
                 allocSize: hunk_table[i].size,
-                //dataSize: 0
             };
-            this.fill_hunk(hunk, fileData, fileOffset);
-            fileOffset += hunk_table[i].size;
+            fileOffset = this.fill_hunk(hunk, fileData, fileOffset);
             hunks.push(hunk);
         }
         return hunks;

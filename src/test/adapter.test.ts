@@ -473,7 +473,7 @@ describe('Node Debug Adapter', () => {
 						}
 						cb = callbacks.get('segmentsUpdated');
 						if (cb) {
-							cb([<Segment>{ address: 10, size: 10 }]);
+							cb([<Segment>{ address: 10, size: 416 }]);
 						}
 					}, 1);
 					return Promise.resolve();
@@ -573,7 +573,7 @@ describe('Node Debug Adapter', () => {
 					}, 1);
 					this.session.updateSegments([<Segment>{
 						address: 10,
-						size: 20
+						size: 416
 					}]);
 					return Promise.resolve();
 				});
@@ -693,7 +693,7 @@ describe('Node Debug Adapter', () => {
 					}, 1);
 					this.session.updateSegments([<Segment>{
 						address: 10,
-						size: 20
+						size: 416
 					}]);
 					return Promise.resolve();
 				});
