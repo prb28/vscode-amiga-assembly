@@ -528,10 +528,14 @@ describe('Node Debug Adapter', () => {
 			expect(stackFrames[0].name).to.be.equal("0: move.l 4.w,a6");
 			let src = stackFrames[0].source;
 			if (src) {
-				expect(src.name).to.be.equal("gencop.s");
+				// tslint:disable-next-line:no-unused-expression
+				expect(src.name).not.to.be.undefined;
+				if (src.name) {
+					expect(src.name.toUpperCase()).to.be.equal("GENCOP.S");
+				}
 				if (src.path) {
 					let pathToTest = Path.join("test_files", "debug", "gencop.s");
-					expect(src.path.endsWith(pathToTest)).to.be.equal(true);
+					expect(src.path.toUpperCase().endsWith(pathToTest.toUpperCase())).to.be.equal(true);
 				}
 			}
 			expect(stackFrames[1].id).to.be.equal(1);
