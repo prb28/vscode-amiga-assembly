@@ -63,6 +63,53 @@ export enum GdbPacketType {
     MINUS
 }
 
+export class GdbError extends Error {
+    public errorType: string;
+    constructor(errorType: string) {
+        super();
+        this.errorType = errorType.toUpperCase();
+        this.name = "GdbError";
+        this.createMessage();
+    }
+    private createMessage() {
+        switch (this.errorType) {
+            case 'E0F':
+                this.message = "Error during the packet parse for command send memory";
+                break;
+            case 'E10':
+                this.message = "Unknown register";
+                break;
+            case 'E11':
+                this.message = "Invalid Frame Id";
+                break;
+            case 'E12':
+                this.message = "Invalid memory location";
+                break;
+            case 'E20':
+                this.message = "Error during the packet parse for command set memory";
+                break;
+            case 'E21':
+                this.message = "Missing end packet for a set memory message";
+                break;
+            case 'E22':
+                this.message = "Address not safe for a set memory command";
+                break;
+            case 'E25':
+                this.message = "Error during the packet parse for command set register";
+                break;
+            case 'E26':
+                this.message = "Error during set registed - not supported register name";
+                break;
+            case 'E30':
+                this.message = "Error during the packet parse for command get register";
+                break;
+            default:
+                this.message = "Error code recieved: '" + this.errorType + "'";
+                break;
+        }
+    }
+}
+
 /** Packet sent by the debugging server */
 export interface GdbPacket {
     type: GdbPacketType;
@@ -86,7 +133,6 @@ export enum GdbSignal {
     GDB_SIGNAL_BUS = 10,
     // Segmentation fault
     GDB_SIGNAL_SEGV = 11
-
 }
 
 /** Status for the current halt */
@@ -259,9 +305,6 @@ export class GdbProxy extends EventEmitter {
         return new Promise(async (resolve, reject) => {
             for (let packet of GdbProxy.parseData(data)) {
                 switch (packet.type) {
-                    case GdbPacketType.ERROR:
-                        await this.parseError(packet.message);
-                        break;
                     case GdbPacketType.STOP:
                         this.parseStop(packet.message);
                         break;
@@ -389,7 +432,7 @@ export class GdbProxy extends EventEmitter {
                     let firstMessage = null;
                     for (let packet of packets) {
                         if (packet.type === GdbPacketType.ERROR) {
-                            reject(new Error(packet.message));
+                            reject(this.parseError(packet.message));
                         } else if (!firstMessage) {
                             firstMessage = packet.message;
                         }
@@ -1053,8 +1096,10 @@ export class GdbProxy extends EventEmitter {
      * Parsing an error message
      * @param message Error message
      */
-    protected parseError(message: string) {
-        this.sendEvent('error', new Error(message));
+    protected parseError(message: string): GdbError {
+        let error = new GdbError(message);
+        this.sendEvent('error', error);
+        return error;
     }
 
     /**

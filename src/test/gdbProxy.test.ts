@@ -4,7 +4,7 @@
 
 import { expect } from 'chai';
 import * as chai from 'chai';
-import { GdbProxy, GdbBreakpoint, GdbRegister, GdbStackPosition, GdbStackFrame, GdbPacket, GdbPacketType } from '../gdbProxy';
+import { GdbProxy, GdbBreakpoint, GdbRegister, GdbStackPosition, GdbStackFrame, GdbPacket, GdbPacketType, GdbError } from '../gdbProxy';
 import { Socket } from 'net';
 import { spy, verify, anyString, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
@@ -52,7 +52,7 @@ describe("GdbProxy Tests", function () {
         let proxy: GdbProxy;
         let spiedProxy: GdbProxy;
         let mockedSocket: Socket;
-        let error = new Error(RESPONSE_ERROR);
+        let error = new GdbError(RESPONSE_ERROR);
         let mockedOnData: (data: Buffer) => void;
 
         beforeEach(function () {
@@ -417,6 +417,18 @@ describe("GdbProxy Tests", function () {
                 type: GdbPacketType.STOP
             }];
             expect(GdbProxy.parseData("$OK#9a$S05#b8")).to.be.eql(expected);
+        });
+    });
+    context('GdbError', function () {
+        it("Should parse a GDBerror", function () {
+            let error = new GdbError("E0f");
+            expect(error.errorType).to.be.equal("E0F");
+            expect(error.message).to.be.equal("Error during the packet parse for command send memory");
+            expect(error.name).to.be.equal("GdbError");
+            error = new GdbError("X1");
+            expect(error.errorType).to.be.equal("X1");
+            expect(error.message).to.be.equal("Error code recieved: 'X1'");
+            expect(error.name).to.be.equal("GdbError");
         });
     });
 });
