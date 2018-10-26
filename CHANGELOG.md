@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [0.10.0] - 
+- [Feat #32](https://github.com/prb28/vscode-amiga-assembly/issues/32) Print memory adresses in custom registries (dffxxx)
+- [Issue #31](https://github.com/prb28/vscode-amiga-assembly/issues/31) Bad symbol address if it is in a different segment/sections from code
+- [Issue #30](https://github.com/prb28/vscode-amiga-assembly/issues/30) Bad adresses in memory dump
+- [Issue #28](https://github.com/prb28/vscode-amiga-assembly/issues/28) Working directory for emulator is invalid
+- [Feat #26](https://github.com/prb28/vscode-amiga-assembly/issues/26) Copper disassembly 
+- [Issue #25](https://github.com/prb28/vscode-amiga-assembly/issues/25) command 'amiga-assembly.disassemble-file' not found after update
+
 ### [0.9.0] - 2018-10-14
 - [Feat #21](https://github.com/prb28/vscode-amiga-assembly/issues/21) Show disassembled code in editor for stack trace selection without source, breakpoints on disassembled code
 - [Issue #24](https://github.com/prb28/vscode-amiga-assembly/issues/24) Better error messages on bad settings and launch parameters

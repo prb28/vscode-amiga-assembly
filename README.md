@@ -8,9 +8,12 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 **For an easy startup try the** [example workspace](https://github.com/prb28/vscode-amiga-wks-example). 
 
-## New in 0.9
-- Show disassembled code in editor for stack trace selection without source, breakpoints on disassembled code
-- Better error messages on bad settings and launch parameters
+## 0.10.0
+- Copper disassembly
+
+![Disassemble a copper list](images/copperdisassembly.gif)
+
+- Print memory adresses in custom registries (dffxxx) (-> new FS-UAE binary)
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -18,6 +21,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 - Run a program in [FS-UAE](https://fs-uae.net/)
 - Disassemble a file with capstone
+- Show disassembled code in editor for stack trace selection without source, breakpoints on disassembled code
 
 ## Features
 ### VASM and VLINK integration
@@ -69,6 +73,11 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+### 0.10.0
+- Copper disassembly
+- Print memory adresses in custom registries (dffxxx)
+- Bug fixes
+
 ### 0.9.0
 - Show disassembled code in editor for stack trace selection without source, breakpoints on disassembled code
 - Better error messages on bad settings and launch parameters
