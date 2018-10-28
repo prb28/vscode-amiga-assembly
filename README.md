@@ -6,14 +6,15 @@ Amiga Assembly for Visual Studio Code is a extension to support assembly languag
 
 Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to discover all the features and get the documentation.
 
-**For an easy startup try the** [example workspace](https://github.com/prb28/vscode-amiga-wks-example). 
+**For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases). 
+
 
 ## 0.10.0
 - Copper disassembly
 
 ![Disassemble a copper list](images/copperdisassembly.gif)
 
-- Print memory adresses in custom registries (dffxxx) (-> new FS-UAE binary)
+- Print memory adresses in custom registries (dffxxx) (**new FS-UAE binary needed**)
 
 ### Other features
 ### Run and Debug with FS-UAE
