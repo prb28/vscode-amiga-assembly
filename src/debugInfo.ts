@@ -208,7 +208,7 @@ export class DebugInfo {
         if (path.sep === '/') {
             return dirName.replace(/\\+/g, path.sep);
         } else {
-            return dirName.replace(/\/+/g, path.sep);
+            return dirName.replace(/\/+/g, path.sep).toUpperCase();
         }
     }
 }
