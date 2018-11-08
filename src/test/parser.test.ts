@@ -165,6 +165,13 @@ describe("Parser Tests", function () {
             expect(asmLine.data).to.be.equal("#mempos,d1");
             expect(asmLine.comment).to.be.empty;
         });
+        it("Should parse macros as instruction", function () {
+            let asmLine = new ASMLine("\t\t    WAIT_BLITTER2 $FFF    ; mycomment");
+            expect(asmLine.label).to.be.empty;
+            expect(asmLine.instruction).to.be.equal("WAIT_BLITTER2");
+            expect(asmLine.data).to.be.equal("$FFF");
+            expect(asmLine.comment).to.be.equal("; mycomment");
+        });
     });
     context("Hover instruction file parsing", function () {
         it("Should read the file correctly", function () {
