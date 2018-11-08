@@ -121,10 +121,9 @@ export class ASMLine {
                 if (this.comment.length > 0) {
                     this.spacesDataToCommentRange = new Range(current, this.commentRange.start);
                 }
-            }
-            else {
-                // no keyword	
-                // Consider it is a label                
+            } else {
+                // no keyword
+                // Consider it is a label
                 this.label = l;
                 this.labelRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + this.label.length));
             }
