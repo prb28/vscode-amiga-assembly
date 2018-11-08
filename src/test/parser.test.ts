@@ -165,6 +165,13 @@ describe("Parser Tests", function () {
             expect(asmLine.data).to.be.equal("#mempos,d1");
             expect(asmLine.comment).to.be.empty;
         });
+        it("Should parse compiler optios as instruction", function () {
+            let asmLine = new ASMLine("\t\tOPT O+,OW-,OW1+,OW6+,P=68000    ; mycomment");
+            expect(asmLine.label).to.be.empty;
+            expect(asmLine.instruction).to.be.equal("OPT");
+            expect(asmLine.data).to.be.equal("O+,OW-,OW1+,OW6+,P=68000");
+            expect(asmLine.comment).to.be.equal("; mycomment");
+        });
     });
     context("Hover instruction file parsing", function () {
         it("Should read the file correctly", function () {
