@@ -1,5 +1,9 @@
+# Test against the latest version of this Node.js version
+environment:
+  nodejs_version: "10"
+
 install:
-  - ps: Install-Product node Current x64
+  - ps: Install-Product node $env:nodejs_version x64
   - npm install -g npm@4 --silent
   - npm install -g vsce
   - npm install
