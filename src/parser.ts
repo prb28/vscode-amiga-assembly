@@ -10,6 +10,7 @@ export class ASMLine {
     static m68kLang = new M68kLanguage();
     static commentLineRegExps = ASMLine.m68kLang.getAllRegExps(/.*comment\.line.*/g);
     static keywordsRegExps = ASMLine.m68kLang.getAllRegExps(/keyword.*/g);
+    static macrosRegExps = ASMLine.m68kLang.getAllRegExps(/macro.*/g);
     label: string = "";
     instruction: string = "";
     data: string = "";
@@ -82,6 +83,13 @@ export class ASMLine {
             }
             // find a keywork
             let keyword = this.search(ASMLine.keywordsRegExps, l);
+            if (!keyword && leadingSpacesCount !== 0) {
+                // it's not a keyword - this could be a macro iif there are leading spaces
+                // Consider it is a label iif there are no leading spaces
+                if (leadingSpacesCount !== 0) {
+                    keyword = this.search(ASMLine.macrosRegExps, l);
+                }
+            }
             if (keyword) {
                 // A keyword has been found
                 // set the keyword

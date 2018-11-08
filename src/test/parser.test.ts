@@ -165,6 +165,12 @@ describe("Parser Tests", function () {
             expect(asmLine.data).to.be.equal("#mempos,d1");
             expect(asmLine.comment).to.be.empty;
         });
+        it("Should parse macros as instruction", function () {
+            let asmLine = new ASMLine("\t\t    WAIT_BLITTER2 $FFF    ; mycomment");
+            expect(asmLine.label).to.be.empty;
+            expect(asmLine.instruction).to.be.equal("WAIT_BLITTER2");
+            expect(asmLine.data).to.be.equal("$FFF");
+        });
         it("Should parse compiler option as instruction", function () {
             let asmLine = new ASMLine("\t\tOPT O+,OW-,OW1+,OW6+,P=68000    ; mycomment");
             expect(asmLine.label).to.be.empty;

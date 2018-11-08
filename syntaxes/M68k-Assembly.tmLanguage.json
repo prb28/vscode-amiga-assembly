@@ -201,6 +201,10 @@
     {
       "name": "invalid.illegal.opcode.m68k",
       "match": "(?i)\\billegal\\b"
+    },
+    {
+      "name": "macro.m68k",
+      "match": "(?i)^([a-zA-Z0-9_][a-zA-Z0-9_\\.]*)"
     }
   ]
 }
