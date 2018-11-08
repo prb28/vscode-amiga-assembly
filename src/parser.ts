@@ -83,14 +83,10 @@ export class ASMLine {
             }
             // find a keywork
             let keyword = this.search(ASMLine.keywordsRegExps, l);
-            if (!keyword) {
-                // no keyword
+            if (!keyword && leadingSpacesCount !== 0) {
+                // it's not a keyword - this could be a macro iif there are leading spaces
                 // Consider it is a label iif there are no leading spaces
-                if (leadingSpacesCount === 0) {
-                    this.label = l;
-                    this.labelRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + this.label.length));
-                }
-                else {
+                if (leadingSpacesCount !== 0) {
                     keyword = this.search(ASMLine.macrosRegExps, l);
                 }
             }
@@ -125,6 +121,12 @@ export class ASMLine {
                 if (this.comment.length > 0) {
                     this.spacesDataToCommentRange = new Range(current, this.commentRange.start);
                 }
+            }
+            else {
+                // no keyword	
+                // Consider it is a label                
+                this.label = l;
+                this.labelRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + this.label.length));
             }
         }
     }
