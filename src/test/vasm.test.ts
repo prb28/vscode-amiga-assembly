@@ -254,5 +254,26 @@ describe("VASM Tests", function () {
             expect(error.line).to.be.equal(2);
             expect(error.file).to.be.equal("myfile");
         });
+        it("Should parse a multiline error", async function () {
+            let errStr = "error 9 in line 1 of \"STAT_SVZC\": instruction not supported on selected architecture\n" +
+                "called from line 798 of \"/myfolder/src/mysource.s\"\n" +
+                ">	move.w	ccr,StatusSZ				[06]\n" +
+                "\n" +
+                "error 2 in line 646 of \"/myfolder/src/mysource.s\": unknown mnemonic <CALLEXEC>\n" +
+                ">	CALLEXEC AllocSignal			;Get signal for Stop/Resume control.";
+            let errors = parser.parse(errStr);
+            expect(errors.length).to.be.equal(2);
+            let i = 0;
+            let error = errors[i++];
+            expect(error.msg).to.be.equal("error 9 in line 1 of \"STAT_SVZC\": instruction not supported on selected architecture");
+            expect(error.severity).to.be.equal("error");
+            expect(error.file).to.be.equal("/myfolder/src/mysource.s");
+            expect(error.line).to.be.equal(798);
+            error = errors[i++];
+            expect(error.msg).to.be.equal("error 2: unknown mnemonic <CALLEXEC>");
+            expect(error.severity).to.be.equal("error");
+            expect(error.file).to.be.equal("/myfolder/src/mysource.s");
+            expect(error.line).to.be.equal(646);
+        });
     });
 });

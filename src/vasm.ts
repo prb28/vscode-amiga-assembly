@@ -349,27 +349,49 @@ export class VASMParser implements ExecutorParser {
     parse(text: string): ICheckResult[] {
         let errors: ICheckResult[] = [];
         let lines = text.split(/\r\n|\r|\n/g);
+        let error: ICheckResult | undefined = undefined;
+        let lastHeaderLine = "";
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
             let line = lines[lineIndex];
-            if ((line.length > 1) && !line.startsWith('>')) {
-                let match = /(error|warning|message)\s([\d]+)\sin\sline\s([\d]+)\sof\s[\"](.+)[\"]:\s*(.*)/.exec(line);
-                if (match) {
-                    let error: ICheckResult = new ICheckResult();
-                    error.file = match[4];
-                    error.line = parseInt(match[3]);
-                    error.msg = match[1] + " " + match[2] + ": " + match[5];
-                    error.severity = match[1];
-                    errors.push(error);
-                } else {
-                    match = /.*error\s([\d]+)\s*:\s*(.*)/.exec(line);
+            if (line.length > 1) {
+                if (!line.startsWith('>')) {
+                    let match = /(error|warning|message)\s([\d]+)\sin\sline\s([\d]+)\sof\s[\"](.+)[\"]:\s*(.*)/.exec(line);
                     if (match) {
-                        let error: ICheckResult = new ICheckResult();
-                        error.severity = 'error';
-                        error.msg = line;
-                        errors.push(error);
+                        if (error !== undefined) {
+                            errors.push(error);
+                        }
+                        error = new ICheckResult();
+                        lastHeaderLine = line;
+                        error.file = match[4];
+                        error.line = parseInt(match[3]);
+                        error.msg = match[1] + " " + match[2] + ": " + match[5];
+                        error.severity = match[1];
+                    } else {
+                        match = /.*error\s([\d]+)\s*:\s*(.*)/.exec(line);
+                        if (match) {
+                            if (error !== undefined) {
+                                errors.push(error);
+                            }
+                            error = new ICheckResult();
+                            lastHeaderLine = line;
+                            error.severity = 'error';
+                            error.msg = line;
+                        } else if (error !== undefined) {
+                            // Errors details parse
+                            let match = /\s*called from line\s([\d]+)\sof\s[\"](.+)[\"]/.exec(line);
+                            if (match) {
+                                error.file = match[2];
+                                error.line = parseInt(match[1]);
+                                error.msg = lastHeaderLine;
+                            }
+                        }
                     }
                 }
             }
+        }
+        // Pushes the last error
+        if (error !== undefined) {
+            errors.push(error);
         }
         return errors;
     }
