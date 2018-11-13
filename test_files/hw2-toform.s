@@ -21,7 +21,7 @@ start
                 move.l  #Message,d2
  moveq   #MessageEnd-Message,d3 ; comment 1
               jsr     _LVOWrite(a6)
-move.l  a6,a1
+ move.l  a6,a1
                 move.l  4,a6
                 jsr     _LVOCloseLibrary(a6)
              moveq   #0,d0

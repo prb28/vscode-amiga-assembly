@@ -150,6 +150,25 @@ describe("Parser Tests", function () {
             expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 35), new Position(0, 46)));
             asmLine = new ASMLine("mylabel");
             expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
+            asmLine = new ASMLine("Pdl0Wait	dc.l\t0	\t;# of cycles until paddle timer is done");
+            expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 8)));
+            expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 9), new Position(0, 13)));
+            expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 14), new Position(0, 15)));
+            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 17), new Position(0, 56)));
+            asmLine = new ASMLine("\t\taddq.l	#6,Cycles");
+            expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 2), new Position(0, 8)));
+            expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 9), new Position(0, 18)));
+            asmLine = new ASMLine(".Save12Msg\tdc.b	\"Save disk from\",10,\"drive 1  or           2 ? \",0");
+            expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 10)));
+            expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 11), new Position(0, 15)));
+            expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 16), new Position(0, 66)));
+            asmLine = new ASMLine("	beq.b\t.rts	\t\t;mem is same so video is same; don't change anything");
+            expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 1), new Position(0, 6)));
+            expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 7), new Position(0, 11)));
+            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 14), new Position(0, 66)));
+            asmLine = new ASMLine(".rts	rts");
+            expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 4)));
+            expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 5), new Position(0, 8)));
         });
         it("Should parse a line without label", function () {
             let asmLine = new ASMLine("\t\tmove.l #mempos,d1     ; mycomment");

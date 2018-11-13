@@ -82,23 +82,41 @@ export class ASMLine {
                 this.commentRange = new Range(new Position(lineNumber, commentPosInInputLine), new Position(lineNumber, commentPosInInputLine + this.comment.length));
             }
             // find a keywork
-            let keyword = this.search(ASMLine.keywordsRegExps, l);
-            if (!keyword && leadingSpacesCount !== 0) {
-                // it's not a keyword - this could be a macro iif there are leading spaces
-                // Consider it is a label iif there are no leading spaces
-                if (leadingSpacesCount !== 0) {
-                    keyword = this.search(ASMLine.macrosRegExps, l);
+            // remove quotes
+            let searchInstructionString = l;
+            let keywordIndex = 0;
+            if (leadingSpacesCount === 0) {
+                // Fist word must be a label
+                let sPos = line.search(/\s/);
+                if (sPos > 0) {
+                    searchInstructionString = searchInstructionString.substring(sPos);
+                    keywordIndex = sPos;
                 }
+            }
+            let qPos = searchInstructionString.indexOf("\"");
+            if (qPos > 0) {
+                searchInstructionString = searchInstructionString.substring(0, qPos);
+            }
+            qPos = searchInstructionString.indexOf("'");
+            if (qPos > 0) {
+                searchInstructionString = searchInstructionString.substring(0, qPos);
+            }
+            let keyword = this.search(ASMLine.keywordsRegExps, searchInstructionString);
+            if (!keyword && leadingSpacesCount !== 0) {
+                // it's not a keyword - this could be a macro if there are leading spaces
+                // Consider it is a label if there are no leading spaces
+                keyword = this.search(ASMLine.macrosRegExps, searchInstructionString);
             }
             if (keyword) {
                 // A keyword has been found
                 // set the keyword
                 this.instruction = keyword[0];
-                let startInInputLine = leadingSpacesCount + keyword.index;
+                keywordIndex += keyword.index;
+                let startInInputLine = leadingSpacesCount + keywordIndex;
                 let endInInputLine = startInInputLine + this.instruction.length;
                 this.instructionRange = new Range(new Position(lineNumber, startInInputLine), new Position(lineNumber, endInInputLine));
-                if (keyword.index > 0) {
-                    this.label = l.substring(0, keyword.index).trim();
+                if (keywordIndex > 0) {
+                    this.label = l.substring(0, keywordIndex).trim();
                     next = new Position(lineNumber, leadingSpacesCount + this.label.length);
                     this.labelRange = new Range(current, next);
                     current = next;
@@ -107,10 +125,11 @@ export class ASMLine {
                     current = next;
                 }
                 current = this.instructionRange.end;
-                let endInTrimLine = keyword.index + keyword[0].length;
-                this.data = l.substring(endInTrimLine).trim();
+                let endInTrimLine = keywordIndex + keyword[0].length;
+                let dataStr = l.substring(endInTrimLine);
+                this.data = dataStr.trim();
                 if (this.data.length > 0) {
-                    startInInputLine = line.indexOf(this.data);
+                    startInInputLine = this.instructionRange.end.character + dataStr.indexOf(this.data);
                     next = new Position(lineNumber, startInInputLine);
                     this.spacesInstructionToDataRange = new Range(current, next);
                     current = next;
@@ -152,13 +171,21 @@ export class ASMLine {
      * @return RegExpExecArray if found or null
      */
     search(regexps: Array<RegExp>, value: string): any {
+        let firstMatch: any | null = null;
         for (let regexp of regexps) {
             let r = regexp.exec(value);
             if (r) {
-                return r;
+                if (firstMatch !== null) {
+                    // Which one is the first in the line
+                    if (r.index < firstMatch.index) {
+                        firstMatch = r;
+                    }
+                } else {
+                    firstMatch = r;
+                }
             }
         }
-        return null;
+        return firstMatch;
     }
 
     /**
