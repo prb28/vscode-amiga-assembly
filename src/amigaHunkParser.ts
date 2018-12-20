@@ -138,7 +138,7 @@ export class HunkParser {
     }
     protected read_name_size(fileData: DataView, fileOffset: number, num_ui32: number): string {
         let lenBytes = num_ui32 * 4;
-        let temp_buffer = new Uint8Array(512);
+        let temp_buffer = new Array<number>(512);
         let pos = fileOffset;
         let idx = 0;
         let v = fileData.getUint8(pos);
