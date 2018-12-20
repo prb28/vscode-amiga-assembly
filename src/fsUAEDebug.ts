@@ -49,6 +49,12 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     buildWorkspace?: boolean;
 }
 
+/** Reprensent a pending setbreakpoints request data  */
+export interface PendingBreakPointsRequestData {
+    response: DebugProtocol.SetBreakpointsResponse;
+    args: DebugProtocol.SetBreakpointsArguments;
+}
+
 export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
     // Default selection mask for exception : each bit is a exception code
     static readonly DEFAULT_EXCEPTION_MASK = 0b1111111000000010000011110000000000000000011111111111100;
@@ -97,6 +103,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     /** Manager of disassembled code */
     private debugDisassembledMananger: DebugDisassembledMananger;
+
+    /** Pending breakpoint to send to the server */
+    private pendingBreakPoints = new Array<PendingBreakPointsRequestData>();
+
 
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
@@ -323,6 +333,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         if (this.testMode) {
             timeoutValue = 1;
         }
+        if (this.pendingBreakPoints !== null) {
+            for (let data of this.pendingBreakPoints) {
+                this.setBreakPointsRequest(data.response, data.args);
+            }
+        }
         setTimeout(function () {
             // connects to FS-UAE
             debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(async () => {
@@ -454,10 +469,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         });
                     }
                 } else {
-                    response.success = false;
-                    response.message = 'Breakpoint information cannot be retrieved';
-                    this.sendResponse(response);
-                    return;
+                    this.pendingBreakPoints.push(<PendingBreakPointsRequestData>{
+                        response: response,
+                        args: args
+                    });
                 }
             } else {
                 let address = await this.debugDisassembledMananger.getAddressForFileEditorLine(path, l).catch((err) => {
