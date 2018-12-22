@@ -76,6 +76,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 ## Release Notes
 ### 0.10.2
+- Variable asignment text format
 - Bug fixes
 
 ### 0.10.1
