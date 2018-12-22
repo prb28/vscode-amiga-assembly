@@ -8,6 +8,14 @@
          include    "libraries/dos.i"
 
          section    _code,code
+
+a           = 32
+myvar       = 28
+myvar2    equ 28
+foo         = 43
+; test comment
+b           = 32
+myvarlong equ 12345                          ; my coment
 start    move.l     #dos.library,a1          ;open the dos library
          moveq      #0,d0
          move.l     4,a6

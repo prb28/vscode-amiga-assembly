@@ -31,29 +31,37 @@ describe("Parser Tests", function () {
         });
         it("Should retrieve the symbol from a label line", function () {
             let asmLine = new ASMLine("mylabel");
-            let [symbol, range] = asmLine.getSymbolFromLabel();
+            let [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
             expect(symbol).to.be.equal("mylabel");
             expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
             asmLine = new ASMLine("mylabel = 123");
-            [symbol, range] = asmLine.getSymbolFromLabel();
+            [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
             expect(symbol).to.be.equal("mylabel");
             expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
             asmLine = new ASMLine("mylabel \tequ.l 123");
-            [symbol, range] = asmLine.getSymbolFromLabel();
+            [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
             expect(symbol).to.be.equal("mylabel");
             expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
             asmLine = new ASMLine("mylabel:");
-            [symbol, range] = asmLine.getSymbolFromLabel();
+            [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
             expect(symbol).to.be.equal("mylabel");
             expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
             asmLine = new ASMLine(" rts");
-            [symbol, range] = asmLine.getSymbolFromLabel();
+            [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
             expect(symbol).to.be.eql(undefined);
             expect(range).to.be.eql(undefined);
             asmLine = new ASMLine(".mylabel   move.l #mysymb,a0");
-            [symbol, range] = asmLine.getSymbolFromLabel();
+            [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
             expect(symbol).to.be.equal(".mylabel");
             expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 8)));
+            asmLine = new ASMLine("LOGOW        equ        192                                                        ; padding à 1 word 12*16 = 192 / 11*16 = 172 < 178");
+            [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
+            expect(symbol).to.be.equal("LOGOW");
+            expect(range).to.be.eql(new Range(new Position(0, 0), new Position(0, 5)));
+            asmLine = new ASMLine("    bsr.w      WaitRaster                                                 ; Appel de la routine wait raster - bsr");
+            [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
+            expect(symbol).to.be.eql(undefined);
+            expect(range).to.be.eql(undefined);
         });
         it("Should retrieve the symbol from a data line", function () {
             let asmLine = new ASMLine("   move.l #mysymb,a0");
@@ -169,6 +177,33 @@ describe("Parser Tests", function () {
             asmLine = new ASMLine(".rts	rts");
             expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 4)));
             expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 5), new Position(0, 8)));
+        });
+        it("Should parse an asignement", function () {
+            let asmLine = new ASMLine("mylabel =    123");
+            expect(asmLine.variable).to.be.equal("mylabel");
+            expect(asmLine.variableRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
+            expect(asmLine.operator).to.be.equal("=");
+            expect(asmLine.operatorRange).to.be.eql(new Range(new Position(0, 8), new Position(0, 9)));
+            expect(asmLine.value).to.be.equal("123");
+            expect(asmLine.valueRange).to.be.eql(new Range(new Position(0, 13), new Position(0, 16)));
+            asmLine = new ASMLine("mylabel \tequ.l 123");
+            expect(asmLine.variable).to.be.equal("mylabel");
+            expect(asmLine.variableRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
+            expect(asmLine.operator).to.be.equal("equ.l");
+            expect(asmLine.operatorRange).to.be.eql(new Range(new Position(0, 9), new Position(0, 14)));
+            expect(asmLine.value).to.be.equal("123");
+            expect(asmLine.valueRange).to.be.eql(new Range(new Position(0, 15), new Position(0, 18)));
+            // Should not parse in the comments
+            asmLine = new ASMLine("LOGOW        equ        192                                                        ; padding à 1 word 12*16 = 192 / 11*16 = 172 < 178");
+            expect(asmLine.variable).to.be.equal("LOGOW");
+            expect(asmLine.variableRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 5)));
+            expect(asmLine.operator).to.be.equal("equ");
+            expect(asmLine.operatorRange).to.be.eql(new Range(new Position(0, 13), new Position(0, 16)));
+            expect(asmLine.value).to.be.equal("192");
+            expect(asmLine.valueRange).to.be.eql(new Range(new Position(0, 24), new Position(0, 27)));
+            // Should not parse in the comments
+            asmLine = new ASMLine("bsr.w      WaitRaster                                                 ; foo = 43");
+            expect(asmLine.variable).to.be.equal("");
         });
         it("Should parse a line without label", function () {
             let asmLine = new ASMLine("\t\tmove.l #mempos,d1     ; mycomment");

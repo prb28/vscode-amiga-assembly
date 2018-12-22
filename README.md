@@ -9,7 +9,8 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases). 
 
 
-## 0.10.1
+## 0.10.2
+- Variable asignment text format
 - Copper disassembly
 
 ![Disassemble a copper list](images/copperdisassembly.gif)
@@ -74,6 +75,9 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+### 0.10.2
+- Bug fixes
+
 ### 0.10.1
 - Formatter fixes (macros)
 - Vasm error parsing fixes

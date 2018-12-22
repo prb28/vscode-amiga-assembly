@@ -29,7 +29,7 @@ export class SymbolFile {
         for (let i = 0; i < document.lineCount; i++) {
             let line = document.lineAt(i);
             let asmLine = new ASMLine(line.text, line);
-            let [symbol, range] = asmLine.getSymbolFromLabel();
+            let [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
             if ((symbol !== undefined) && (range !== undefined)) {
                 this.definedSymbols.push(new Symbol(symbol, this, range));
             } else {

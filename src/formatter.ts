@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ASMLine } from './parser';
+import { ASMLine, ASMDocument } from './parser';
 
 
 /**
@@ -54,139 +54,95 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @return edits
      */
     format(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken, range?: vscode.Range, position?: vscode.Position): vscode.ProviderResult<vscode.TextEdit[]> {
-        let asmLinesArray = new Array<ASMLine>();
-        let maxLabelSize = 0;
-        let maxInstructionSize = 0;
-        let maxDataSize = 0;
-        let configuration = vscode.workspace.getConfiguration('amiga-assembly', document.uri);
-        let labelToInstructionDistance = this.retrieveProperty(configuration, 'format.labelToInstructionDistance', 2);
-        let instructionToDataDistance = this.retrieveProperty(configuration, 'format.instructionToDataDistance', 4);
-        let dataToCommentsDistance = this.retrieveProperty(configuration, 'format.dataToCommentsDistance', 4);
-        let localRange = range;
-        if (document.lineCount <= 0) {
-            return null;
-        }
-        if (!localRange) {
-            localRange = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(document.lineCount - 1, 0));
-        }
-        let onTypeAsmLine: any;
-        // Parse all the lines
-        for (var i = localRange.start.line; i <= localRange.end.line; i++) {
-            if (token.isCancellationRequested) {
-                return [];
-            }
-            const line = document.lineAt(i);
-            let asmLine = new ASMLine(line.text, line);
-            if (position && (i === position.line)) {
-                onTypeAsmLine = asmLine;
-            } else {
-                asmLinesArray.push(asmLine);
-            }
-            if (asmLine.instruction.length > 0) {
-                if (maxLabelSize < asmLine.label.length) {
-                    maxLabelSize = asmLine.label.length;
-                }
-                if (maxInstructionSize < asmLine.instruction.length) {
-                    maxInstructionSize = asmLine.instruction.length;
-                }
-                if (maxDataSize < asmLine.data.length) {
-                    maxDataSize = asmLine.data.length;
-                }
-            }
-        }
+        let configuration = DocumentFormatterConfiguration.create(document.uri);
+        let asmDocument = new ASMDocument();
+        asmDocument.parse(document, token, range, position);
         // Compute the edits
-        if (onTypeAsmLine && position) {
-            return this.computeEditsForLineOnType(onTypeAsmLine, maxLabelSize, labelToInstructionDistance, maxInstructionSize, instructionToDataDistance, maxDataSize, dataToCommentsDistance, position);
+        if (asmDocument.onTypeAsmLine && position) {
+            return this.computeEditsForLineOnType(asmDocument, asmDocument.onTypeAsmLine, configuration, position);
         } else {
-            return this.computeEdits(asmLinesArray, maxLabelSize, labelToInstructionDistance, maxInstructionSize, instructionToDataDistance, maxDataSize, dataToCommentsDistance, token);
+            return this.computeEdits(asmDocument, configuration, token);
         }
-    }
-
-    /**
-     * Retrieve a configuration value
-     * @param configuration Configuration
-     * @param key Keyword for property
-     * @param defaultValue Default value to be affected
-     * @return New value
-     */
-    public retrieveProperty(configuration: vscode.WorkspaceConfiguration, key: string, defaultValue: number): number {
-        let value = defaultValue;
-        let confValue = configuration.get(key);
-        if (confValue) {
-            value = Number(confValue);
-            if (value < 1) {
-                value = 1;
-            }
-        }
-        return value;
     }
 
     /**
      * Compute the edits to format the document
-     * @param asmLinesArray Array of lines
-     * @param token Cancellation tocken
-     * @param maxLabelSize Max label size
-     * @param labelToInstructionDistance Distance between a label and an instruction
-     * @param maxInstructionSize Max instruction size
-     * @param instructionToDataDistance Distance between an instruction and the data
-     * @param maxDataSize Max data size
-     * @param dataToCommentsDistance Distance between the data a comment
+     * @param asmDocument Parsed Document
+     * @param configuration Configuration for the formatter
      * @param token Cacellation tocken
      * @return List of edits
      */
-    public computeEdits(asmLinesArray: Array<ASMLine>, maxLabelSize: number, labelToInstructionDistance: number, maxInstructionSize: number, instructionToDataDistance: number, maxDataSize: number, dataToCommentsDistance: number, token: vscode.CancellationToken): vscode.TextEdit[] {
+    public computeEdits(asmDocument: ASMDocument, configuration: DocumentFormatterConfiguration, token: vscode.CancellationToken): vscode.TextEdit[] {
         let edits = new Array<vscode.TextEdit>();
-        for (let asmLine of asmLinesArray) {
+        for (let asmLine of asmDocument.asmLinesArray) {
             if (token.isCancellationRequested) {
                 return [];
             }
-            edits = edits.concat(this.computeEditsForLine(asmLine, maxLabelSize, labelToInstructionDistance, maxInstructionSize, instructionToDataDistance, maxDataSize, dataToCommentsDistance));
+            edits = edits.concat(this.computeEditsForLine(asmDocument, asmLine, configuration));
         }
         return edits;
     }
 
     /**
      * Compute the edits to format the document
-     * @param asmLinesArray Array of lines
-     * @param token Cancellation tocken
-     * @param maxLabelSize Max label size
-     * @param labelToInstructionDistance Distance between a label and an instruction
-     * @param maxInstructionSize Max instruction size
-     * @param instructionToDataDistance Distance between an instruction and the data
-     * @param maxDataSize Max data size
-     * @param dataToCommentsDistance Distance between the data a comment
+     * @param asmDocument Parsed Document
+     * @param asmLine Line to process
+     * @param configuration Configuration for the formatter
      * @return List of edits
      */
-    public computeEditsForLine(asmLine: ASMLine, maxLabelSize: number, labelToInstructionDistance: number, maxInstructionSize: number, instructionToDataDistance: number, maxDataSize: number, dataToCommentsDistance: number): vscode.TextEdit[] {
+    public computeEditsForLine(asmDocument: ASMDocument, asmLine: ASMLine, configuration: DocumentFormatterConfiguration): vscode.TextEdit[] {
         let edits = new Array<vscode.TextEdit>();
         let range: vscode.Range;
         let s: string;
+        let endOfLineCommentPositionInst = asmDocument.maxLabelSize + asmDocument.maxInstructionSize + asmDocument.maxDataSize + configuration.labelToInstructionDistance + configuration.instructionToDataDistance + configuration.dataToCommentsDistance;
+        let endOfLineCommentPositionAsgn = asmDocument.maxVariableSize + asmDocument.maxOperatorSize + asmDocument.maxValueSize + configuration.variableToOperatorDistance + configuration.operatorToValueDistance + configuration.dataToCommentsDistance;
         if (asmLine.instruction.length > 0) {
-            // Remove all the lines
             if (asmLine.data.length > 0) {
                 if (asmLine.comment.length > 0) {
-                    s = this.getEndPad(asmLine.data, maxDataSize + dataToCommentsDistance);
+                    let commentSpaceSize = asmDocument.maxDataSize + configuration.dataToCommentsDistance;
+                    let additionToComments = endOfLineCommentPositionAsgn - endOfLineCommentPositionInst;
+                    if (additionToComments > 0) {
+                        commentSpaceSize += additionToComments;
+                    }
+                    s = this.getEndPad(asmLine.data, commentSpaceSize);
                     range = new vscode.Range(asmLine.dataRange.end, asmLine.commentRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 }
-                s = this.getEndPad(asmLine.instruction, maxInstructionSize + instructionToDataDistance);
+                s = this.getEndPad(asmLine.instruction, asmDocument.maxInstructionSize + configuration.instructionToDataDistance);
                 range = new vscode.Range(asmLine.instructionRange.end, asmLine.dataRange.start);
                 edits.push(vscode.TextEdit.replace(range, s));
             } else if (asmLine.comment.length > 0) {
-                s = this.getEndPad(asmLine.instruction, maxInstructionSize + instructionToDataDistance + maxDataSize + dataToCommentsDistance);
+                s = this.getEndPad(asmLine.instruction, asmDocument.maxInstructionSize + configuration.instructionToDataDistance + asmDocument.maxDataSize + configuration.dataToCommentsDistance);
                 range = new vscode.Range(asmLine.instructionRange.end, asmLine.commentRange.start);
                 edits.push(vscode.TextEdit.replace(range, s));
             }
             if (asmLine.label.length > 0) {
-                s = this.getEndPad(asmLine.label, maxLabelSize + labelToInstructionDistance);
+                s = this.getEndPad(asmLine.label, asmDocument.maxLabelSize + configuration.labelToInstructionDistance);
                 range = new vscode.Range(asmLine.labelRange.end, asmLine.instructionRange.start);
                 edits.push(vscode.TextEdit.replace(range, s));
                 edits.push(vscode.TextEdit.delete(asmLine.spacesBeforeLabelRange));
             } else {
-                s = this.getEndPad("", maxLabelSize + labelToInstructionDistance);
+                s = this.getEndPad("", asmDocument.maxLabelSize + configuration.labelToInstructionDistance);
                 range = new vscode.Range(asmLine.start, asmLine.instructionRange.start);
                 edits.push(vscode.TextEdit.replace(range, s));
             }
+        } else if (asmLine.variable.length > 0) {
+            let additionToComments = endOfLineCommentPositionInst - endOfLineCommentPositionAsgn;
+            if (asmLine.comment.length > 0) {
+                let commentSpaceSize = asmDocument.maxValueSize + configuration.dataToCommentsDistance;
+                if (additionToComments > 0) {
+                    commentSpaceSize += additionToComments;
+                }
+                s = this.getEndPad(asmLine.value, commentSpaceSize);
+                range = new vscode.Range(asmLine.valueRange.end, asmLine.commentRange.start);
+                edits.push(vscode.TextEdit.replace(range, s));
+            }
+            s = this.getEndPad(asmLine.operator, asmLine.operator.length + configuration.operatorToValueDistance);
+            range = new vscode.Range(asmLine.operatorRange.end, asmLine.valueRange.start);
+            edits.push(vscode.TextEdit.replace(range, s));
+            s = this.getEndPad(asmLine.variable, asmDocument.maxVariableSize + configuration.variableToOperatorDistance + (asmDocument.maxOperatorSize - asmLine.operator.length));
+            range = new vscode.Range(asmLine.variableRange.end, asmLine.operatorRange.start);
+            edits.push(vscode.TextEdit.replace(range, s));
         }
         return edits;
     }
@@ -214,31 +170,85 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
 
     /**
      * Compute the edits to format the document
+     * @param asmDocument Parsed Document
      * @param asmLinesArray Array of lines
-     * @param token Cancellation tocken
-     * @param maxLabelSize Max label size
-     * @param labelToInstructionDistance Distance between a label and an instruction
-     * @param maxInstructionSize Max instruction size
-     * @param instructionToDataDistance Distance between an instruction and the data
-     * @param maxDataSize Max data size
-     * @param dataToCommentsDistance Distance between the data a comment
+     * @param configuration Configuration for the formatter
      * @param position Editing position
      * @return List of edits
      */
-    public computeEditsForLineOnType(asmLine: ASMLine, maxLabelSize: number, labelToInstructionDistance: number, maxInstructionSize: number, instructionToDataDistance: number, maxDataSize: number, dataToCommentsDistance: number, position: vscode.Position): vscode.TextEdit[] {
+    public computeEditsForLineOnType(asmDocument: ASMDocument, asmLine: ASMLine, configuration: DocumentFormatterConfiguration, position: vscode.Position): vscode.TextEdit[] {
         let edits = new Array<vscode.TextEdit>();
         if (asmLine.instruction.length > 0) {
             let s: string;
             if (position.isAfter(asmLine.instructionRange.end)) {
                 if (asmLine.data.length <= 0) {
-                    s = this.getEndPad(asmLine.instruction, maxInstructionSize + instructionToDataDistance - 1);
+                    s = this.getEndPad(asmLine.instruction, asmDocument.maxInstructionSize + configuration.instructionToDataDistance - 1);
                     edits.push(vscode.TextEdit.insert(asmLine.instructionRange.end, s));
                     return edits;
                 }
             }
             // Call standard format
-            edits = this.computeEditsForLine(asmLine, maxLabelSize, labelToInstructionDistance, maxInstructionSize, instructionToDataDistance, maxDataSize, dataToCommentsDistance);
+            edits = this.computeEditsForLine(asmDocument, asmLine, configuration);
         }
         return edits;
+    }
+}
+
+export class DocumentFormatterConfiguration {
+    /** Distance between a label and an instruction*/
+    labelToInstructionDistance: number;
+    /** Distance between an instruction and the data*/
+    instructionToDataDistance: number;
+    /** Distance between the data a comment*/
+    dataToCommentsDistance: number;
+    /** Distance between a variable and an operator */
+    variableToOperatorDistance: number;
+    /** Distance between the operator and the value */
+    operatorToValueDistance: number;
+
+    /**
+     * Constructor
+     */
+    public constructor(labelToInstructionDistance: number, instructionToDataDistance: number, dataToCommentsDistance: number, variableToOperatorDistance: number, operatorToValueDistance: number) {
+        this.labelToInstructionDistance = labelToInstructionDistance;
+        this.instructionToDataDistance = instructionToDataDistance;
+        this.dataToCommentsDistance = dataToCommentsDistance;
+        this.variableToOperatorDistance = variableToOperatorDistance;
+        this.operatorToValueDistance = operatorToValueDistance;
+        this.dataToCommentsDistance = dataToCommentsDistance;
+    }
+
+    /**
+     * Creates a configuration from the vscode settings
+     * @param documentUri Uri of the document to select the vscode settings
+     * @return new configuration
+     */
+    public static create(documentUri: vscode.Uri): DocumentFormatterConfiguration {
+        let configuration = vscode.workspace.getConfiguration('amiga-assembly', documentUri);
+        let labelToInstructionDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.labelToInstructionDistance', 2);
+        let instructionToDataDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.instructionToDataDistance', 4);
+        let dataToCommentsDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.dataToCommentsDistance', 4);
+        let variableToOperatorDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.variableToOperatorDistance', 1);
+        let operatorToValueDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.operatorToValueDistance', 1);
+        return new DocumentFormatterConfiguration(labelToInstructionDistance, instructionToDataDistance, dataToCommentsDistance, variableToOperatorDistance, operatorToValueDistance);
+    }
+
+    /**
+     * Retrieve a configuration value
+     * @param configuration Configuration
+     * @param key Keyword for property
+     * @param defaultValue Default value to be affected
+     * @return New value
+     */
+    public static retrieveProperty(configuration: vscode.WorkspaceConfiguration, key: string, defaultValue: number): number {
+        let value = defaultValue;
+        let confValue = configuration.get(key);
+        if (confValue) {
+            value = Number(confValue);
+            if (value < 1) {
+                value = 1;
+            }
+        }
+        return value;
     }
 }

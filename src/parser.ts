@@ -1,7 +1,7 @@
-import { M68kLanguage } from './language';
-import { Position, Range, TextLine } from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Position, Range, TextLine, TextDocument, CancellationToken } from 'vscode';
+import { M68kLanguage } from './language';
 
 /**
  * Formatter class for le assemble language
@@ -18,6 +18,9 @@ export class ASMLine {
     raw: string = "";
     start: Position;
     end: Position;
+    variable: string = "";
+    operator: string = "";
+    value: string = "";
     spacesBeforeLabelRange: Range;
     labelRange: Range;
     spacesLabelToInstructionRange: Range;
@@ -26,6 +29,10 @@ export class ASMLine {
     dataRange: Range;
     spacesDataToCommentRange: Range;
     commentRange: Range;
+    variableRange: Range;
+    operatorRange: Range;
+    valueRange: Range;
+
     vscodeTextLine?: TextLine;
     /**
      * Constructor
@@ -49,6 +56,9 @@ export class ASMLine {
         this.dataRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
         this.spacesDataToCommentRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
         this.commentRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
+        this.variableRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
+        this.operatorRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
+        this.valueRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, 0));
         this.parse(line, lineNumber);
     }
 
@@ -75,11 +85,17 @@ export class ASMLine {
             this.commentRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + l.length));
         } else {
             // Extract comments
+            let searchAsignmentString = line;
             let commentPosInInputLine = line.indexOf(";");
             if (commentPosInInputLine >= 0) {
                 this.comment = line.substring(commentPosInInputLine).trim();
-                l = line.substring(0, commentPosInInputLine).trim();
+                searchAsignmentString = line.substring(0, commentPosInInputLine);
+                l = searchAsignmentString.trim();
                 this.commentRange = new Range(new Position(lineNumber, commentPosInInputLine), new Position(lineNumber, commentPosInInputLine + this.comment.length));
+            }
+            // Find if it is an asignment
+            if (this.parseAsignment(searchAsignmentString, lineNumber)) {
+                return;
             }
             // find a keywork
             // remove quotes
@@ -189,12 +205,37 @@ export class ASMLine {
     }
 
     /**
+     * Check if it is ans asignment and parses it
+     * @return true if it is an asignment
+     */
+    public parseAsignment(line: string, lineNumber: number): boolean {
+        let regexp = /^([a-z0-9\-_]*)[\s]*(\=|[a-z]?equ(\.[a-z])?)[\s]*(.*)/gi;
+        let match = regexp.exec(line);
+        if (match !== null) {
+            this.variable = match[1].trim();
+            this.operator = match[2].trim();
+            this.value = match[4].trim();
+            this.variableRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, this.variable.length));
+            let startPosOperator = line.indexOf(this.operator);
+            let endPosOperator = startPosOperator + this.operator.length;
+            this.operatorRange = new Range(new Position(lineNumber, startPosOperator), new Position(lineNumber, endPosOperator));
+            let startPosValue = line.indexOf(this.value);
+            let endPosValue = startPosValue + this.value.length;
+            this.valueRange = new Range(new Position(lineNumber, startPosValue), new Position(lineNumber, endPosValue));
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Returns the symbol retrieved from a label.
      * 
      * @return the symbol string and the range, otherwise undefined
      */
-    public getSymbolFromLabel(): [string | undefined, Range | undefined] {
-        if (this.label.length > 0) {
+    public getSymbolFromLabelOrVariable(): [string | undefined, Range | undefined] {
+        if (this.variable.length > 0) {
+            return [this.variable, this.variableRange];
+        } else if (this.label.length > 0) {
             let elements = this.label.split(/(\s)*(\=|[a-z]?equ(.[a-z])?|:)(\s)*/gi);
             let symbol = elements[0].trim();
             let sPos = this.label.indexOf(symbol);
@@ -472,6 +513,68 @@ export class NumberParser {
             return this.chunk(hex, 4).join('.');
         } else {
             return hex;
+        }
+    }
+}
+
+export class ASMDocument {
+    public asmLinesArray = new Array<ASMLine>();
+    public maxLabelSize = 0;
+    public maxInstructionSize = 0;
+    public maxDataSize = 0;
+    public maxVariableSize = 0;
+    public maxOperatorSize = 0;
+    public maxValueSize = 0;
+    public onTypeAsmLine?: ASMLine;
+
+    /**
+     * Main range parse function
+     * @param document Document to format
+     * @param token token to cancel
+     * @param range Range to format or undefined
+     * @param position in case of on type format
+     */
+    public parse(document: TextDocument, token?: CancellationToken, range?: Range, position?: Position) {
+        let localRange = range;
+        if (document.lineCount <= 0) {
+            return null;
+        }
+        if (!localRange) {
+            localRange = new Range(new Position(0, 0), new Position(document.lineCount - 1, 0));
+        }
+        // Parse all the lines
+        for (var i = localRange.start.line; i <= localRange.end.line; i++) {
+            if (token && token.isCancellationRequested) {
+                return [];
+            }
+            const line = document.lineAt(i);
+            let asmLine = new ASMLine(line.text, line);
+            if (position && (i === position.line)) {
+                this.onTypeAsmLine = asmLine;
+            } else {
+                this.asmLinesArray.push(asmLine);
+            }
+            if (asmLine.instruction.length > 0) {
+                if (this.maxLabelSize < asmLine.label.length) {
+                    this.maxLabelSize = asmLine.label.length;
+                }
+                if (this.maxInstructionSize < asmLine.instruction.length) {
+                    this.maxInstructionSize = asmLine.instruction.length;
+                }
+                if (this.maxDataSize < asmLine.data.length) {
+                    this.maxDataSize = asmLine.data.length;
+                }
+            } else if (asmLine.variable.length > 0) {
+                if (this.maxVariableSize < asmLine.variable.length) {
+                    this.maxVariableSize = asmLine.variable.length;
+                }
+                if (this.maxValueSize < asmLine.value.length) {
+                    this.maxValueSize = asmLine.value.length;
+                }
+                if (this.maxOperatorSize < asmLine.operator.length) {
+                    this.maxOperatorSize = asmLine.operator.length;
+                }
+            }
         }
     }
 }
