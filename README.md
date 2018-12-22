@@ -10,7 +10,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 
 ## 0.10.2
-- Variable asignment text format
+- Variable assignment text format
 - Copper disassembly
 
 ![Disassemble a copper list](images/copperdisassembly.gif)
@@ -76,7 +76,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 ## Release Notes
 ### 0.10.2
-- Variable asignment text format
+- Variable assignment text format
 - Bug fixes
 
 ### 0.10.1
