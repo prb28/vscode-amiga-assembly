@@ -8,7 +8,7 @@ import { DebugInfo } from "./debugInfo";
 export class Capstone {
     /** Path to the capstone executable */
     private cstoolPath: string;
-    /** Executor to run fs-uae */
+    /** Executor to run cstools */
     private executor: ExecutorHelper;
 
     /**
@@ -22,7 +22,7 @@ export class Capstone {
 
     /**
      * Disassemble a buffer
-     * @param filename File to disassemble
+     * @param buffer Buffer to disassemble
      * @param cancellationToken Token to cancel the process
      */
     public disassemble(buffer: string, cancellationToken?: CancellationToken): Promise<string> {
