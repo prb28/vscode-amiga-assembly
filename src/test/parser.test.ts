@@ -204,6 +204,14 @@ describe("Parser Tests", function () {
             // Should not parse in the comments
             asmLine = new ASMLine("bsr.w      WaitRaster                                                 ; foo = 43");
             expect(asmLine.variable).to.be.equal("");
+            // Should parse with same value
+            asmLine = new ASMLine("SC_W_P      = W");
+            expect(asmLine.variable).to.be.equal("SC_W_P");
+            expect(asmLine.variableRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 6)));
+            expect(asmLine.operator).to.be.equal("=");
+            expect(asmLine.operatorRange).to.be.eql(new Range(new Position(0, 12), new Position(0, 13)));
+            expect(asmLine.value).to.be.equal("W");
+            expect(asmLine.valueRange).to.be.eql(new Range(new Position(0, 14), new Position(0, 15)));
         });
         it("Should parse a line without label", function () {
             let asmLine = new ASMLine("\t\tmove.l #mempos,d1     ; mycomment");

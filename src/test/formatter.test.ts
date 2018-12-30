@@ -144,9 +144,11 @@ describe("Formatter Tests", function () {
         let document = new DummyTextDocument();
         document.addLine("myvar2  equ 28  ;comment");
         document.addLine("foo = 43");
+        document.addLine("SC_W_P      = W");
         // expected
         //myvar2 equ 28  ;comment
         //foo      = 43
+        //SC_W_P   = W
         let asmDocument = new ASMDocument();
         asmDocument.parse(document);
         let conf = new DocumentFormatterConfiguration(1, 1, 4, 1, 1);
@@ -161,6 +163,11 @@ describe("Formatter Tests", function () {
         expect(edits.length).to.be.equal(2);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 5), new Position(0, 6)), " ".repeat(1)));
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 3), new Position(0, 4)), " ".repeat(6)));
+        edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[2], conf);
+        i = 0;
+        expect(edits.length).to.be.equal(2);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 13), new Position(0, 14)), " ".repeat(1)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 6), new Position(0, 12)), " ".repeat(3)));
     });
 
 });

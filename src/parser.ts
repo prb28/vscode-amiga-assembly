@@ -209,7 +209,7 @@ export class ASMLine {
      * @return true if it is an asignment
      */
     public parseAsignment(line: string, lineNumber: number): boolean {
-        let regexp = /^([a-z0-9\-_]*)[\s]*(\=|[a-z]?equ(\.[a-z])?)[\s]*(.*)/gi;
+        let regexp = /^([a-z0-9\-_]*)[\s]*(\=|[\s][a-z]?equ(\.[a-z])?[\s])[\s]*(.*)/gi;
         let match = regexp.exec(line);
         if (match !== null) {
             this.variable = match[1].trim();
@@ -219,7 +219,7 @@ export class ASMLine {
             let startPosOperator = line.indexOf(this.operator);
             let endPosOperator = startPosOperator + this.operator.length;
             this.operatorRange = new Range(new Position(lineNumber, startPosOperator), new Position(lineNumber, endPosOperator));
-            let startPosValue = line.indexOf(this.value);
+            let startPosValue = endPosOperator + line.substring(endPosOperator).indexOf(this.value);
             let endPosValue = startPosValue + this.value.length;
             this.valueRange = new Range(new Position(lineNumber, startPosValue), new Position(lineNumber, endPosValue));
             return true;
