@@ -38,7 +38,8 @@
         "onCommand:amiga-assembly.build-vasm-workspace",
         "onCommand:amiga-assembly.clean-vasm-workspace",
         "onCommand:amiga-assembly.disassemble-file",
-        "onCommand:amiga-assembly.disassemble-copper"
+        "onCommand:amiga-assembly.disassemble-copper",
+        "onCommand:amiga-assembly.create-adffile"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -110,6 +111,40 @@
                     "scope": "window",
                     "default": "cstool",
                     "description": "Specifies the path to the Capstone cstool binary."
+                },
+                "amiga-assembly.adfgenerator": {
+                    "type": "object",
+                    "scope": "window",
+                    "properties": {
+                        "ADFToolsParentDir": {
+                            "type": "string",
+                            "description": "Path to the parent dir of the adftools binaries"
+                        },
+                        "outputADFFile": {
+                            "type": "string",
+                            "description": "File with absolute path to new ADF disk file"
+                        },
+                        "sourceRootDir": {
+                            "type": "string",
+                            "description": "Path to the root dir of the files to copy"
+                        },
+                        "includes": {
+                            "type": "string",
+                            "description": "GlobPattern to select the files to include in the ADF disk"
+                        },
+                        "excludes": {
+                            "type": "string",
+                            "description": "GlobPattern to select the files to exclude in the ADF disk"
+                        }
+                    },
+                    "default": {
+                        "ADFToolsParentDir": "my/path/to/adftoolsbinaries",
+                        "sourceRootDir": "my/path/to/rootdiskdir",
+                        "outputADFFile": "./build/disk.adf",
+                        "includes": "**/*",
+                        "excludes": "**/.*"
+                    },
+                    "description": "ADFFile generation from the destination build dir"
                 },
                 "amiga-assembly.vasm": {
                     "type": "object",
@@ -233,6 +268,11 @@
                 "command": "amiga-assembly.disassemble-copper",
                 "title": "Amiga Assembly: Disassemble copper memory",
                 "description": "Disassembles memory address with copper instructions"
+            },
+            {
+                "command": "amiga-assembly.create-adffile",
+                "title": "Amiga Assembly: Create ADF file",
+                "description": "Craetes a bootable ADF file from the build destination directory"
             }
         ],
         "breakpoints": [

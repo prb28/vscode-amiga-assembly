@@ -104,12 +104,18 @@ export class ExecutorHelper {
             }
             p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
-                    if (err && (<any>err).code === 'ENOENT') {
-                        return reject(new Error(`Cannot find ${cmd} : ${err.message}`));
+                    let bufferOut = "";
+                    if (err) {
+                        if ((<any>err).code === 'ENOENT') {
+                            return reject(new Error(`Cannot find ${cmd} : ${err.message}`));
+                        } else {
+                            bufferOut += err.message;
+                        }
                     }
                     if (stdout) {
-                        resolve(stdout.toString());
+                        bufferOut += "\n" + stdout.toString();
                     }
+                    resolve(bufferOut);
                 } catch (e) {
                     reject(e);
                 }

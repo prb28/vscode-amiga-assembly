@@ -15,6 +15,7 @@ import { StatusManager } from "./status";
 import { Disassembler } from './disassemble';
 import { M68kDefinitionHandler } from './definitionHandler';
 import { DisassemblyContentProvider } from './disassemblyContentProvider';
+import { ADFTools } from './adf';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -34,6 +35,7 @@ export class ExtensionState {
     private statusManager: StatusManager | undefined;
     private calc: Calc | undefined;
     private disassembler: Disassembler | undefined;
+    private adfTools: ADFTools | undefined;
     public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
         if (this.errorDiagnosticCollection === undefined) {
             this.errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');
@@ -69,6 +71,12 @@ export class ExtensionState {
             this.disassembler = new Disassembler();
         }
         return this.disassembler;
+    }
+    public getADFTools(): ADFTools {
+        if (this.adfTools === undefined) {
+            this.adfTools = ADFTools.create();
+        }
+        return this.adfTools;
     }
     public static getCurrent(): ExtensionState {
         // activate the extension
@@ -122,6 +130,14 @@ export function activate(context: vscode.ExtensionContext) {
     // create a new disassembler for copper address
     disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-copper', async () => {
         await disassembler.showInputPanel(true).catch(err => {
+            vscode.window.showErrorMessage(err.message);
+        });
+    });
+    context.subscriptions.push(disposable);
+
+    // create ADF file creator command
+    disposable = vscode.commands.registerCommand('amiga-assembly.create-adffile', async () => {
+        state.getADFTools().createBootableADFDisk().catch(err => {
             vscode.window.showErrorMessage(err.message);
         });
     });
