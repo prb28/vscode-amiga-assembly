@@ -155,6 +155,13 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		}
 	}
 
+	public terminate() {
+		this.terminateEmulator();
+	}
+
+	public shutdown() {
+		this.terminate();
+	}
 
 	protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
 		// send back the actual breakpoint positions
