@@ -106,6 +106,18 @@
                     "default": 4,
                     "description": "Specifies the distance between the data and the comment."
                 },
+                "amiga-assembly.format.variableToOperatorDistance": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 1,
+                    "description": "Specifies the distance between the variable and the asignment operator."
+                },
+                "amiga-assembly.format.operatorToValueDistance": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 1,
+                    "description": "Specifies the distance between the asignment operator and the value."
+                },
                 "amiga-assembly.cstool": {
                     "type": "string",
                     "scope": "window",
