@@ -21,7 +21,7 @@ describe("ADFTools test", function () {
         reset(mockedExecutor);
     });
     it("Should create a bootable disk", async function () {
-        let rootToolsDir = "rootDir";
+        let rootToolsDir = __dirname;
         let adfDiskName = "mydisk.adf";
         let adfRootDir = path.join(__dirname, "..", "..", "test_files", "debug", "fs-uae", "hd0");
         when(mockedExecutor.runToolRetrieveStdout(anything(), anything(), anything(), anything(), anything())).thenResolve("Done.\n");

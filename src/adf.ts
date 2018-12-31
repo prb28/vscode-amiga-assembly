@@ -120,7 +120,7 @@ export class ADFTools {
                         }
                     }
                 } catch (e) {
-                    return reject(new Error("ADFTools dir not found"));
+                    return reject(new Error("ADFTools dir not found in '" + rootSourceDir + "' and '" + newRootSourceDir + "'"));
                 }
                 let createdDirs = new Array<string>();
                 createdDirs.push("/");
