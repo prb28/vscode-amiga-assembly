@@ -538,7 +538,6 @@
         "coveralls": "^3.0.2",
         "decache": "^4.5.0",
         "del": "^3.0.0",
-        "glob": "^7.1.3",
         "gulp": "^3.9.1",
         "gulp-json-editor": "^2.4.4",
         "istanbul": "^0.4.5",
@@ -551,6 +550,7 @@
         "vscode-debugadapter-testsupport": "^1.33.0"
     },
     "dependencies": {
+        "glob": "^7.1.3",
         "await-notify": "^1.0.1",
         "ts-simple-mutex": "0.0.4",
         "vscode-debugadapter": "^1.33.0",
