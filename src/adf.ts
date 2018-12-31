@@ -56,7 +56,7 @@ export class ADFTools {
                     if (confVLINK && confVLINK.exefilename) {
                         rootSourceDir = path.parse(confVLINK.exefilename).dir;
                     } else {
-                        reject("Configuration of the ADF file generator not set");
+                        reject(new Error("Configuration of the ADF file generator not set"));
                     }
                 }
                 let includes = conf.includes;
@@ -67,7 +67,7 @@ export class ADFTools {
                     reject(err);
                 });
             } else {
-                reject("Configuration of the ADF file generator not set");
+                reject(new Error("Configuration of the ADF file generator not set"));
             }
         });
 
@@ -83,45 +83,78 @@ export class ADFTools {
      */
     public createBootableADFDiskFromDir(filename: string, rootSourceDir: string, includes: string, excludes: string, cancellationToken?: CancellationToken): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            // Create a disk
-            await this.createADFDisk(filename, cancellationToken).catch((err) => {
-                return reject(err);
-            });
-            // Install the disk
-            await this.installADFDisk(filename, cancellationToken).catch((err) => {
-                return reject(err);
-            });
-            // List the source dir
-            let files = glob.sync(includes, {
-                cwd: rootSourceDir,
-                ignore: excludes
-            });
-            let createdDirs = new Array<string>();
-            createdDirs.push("/");
-            for (let file of files) {
-                let fullpath = path.join(rootSourceDir, file);
-                let stat = fs.lstatSync(fullpath);
-                if (stat.isDirectory()) {
-                    // For each file copy to disk
-                    await this.mkdirs(filename, file, createdDirs, cancellationToken).catch((err) => {
-                        return reject(err);
-                    });
-                } else {
-                    // For each file copy to disk
-                    let fileParentDir = path.parse(file).dir;
-                    if (fileParentDir === "") {
-                        fileParentDir = "/";
-                    } else {
-                        await this.mkdirs(filename, fileParentDir, createdDirs, cancellationToken).catch((err) => {
-                            return reject(err);
+            try {
+                // Create a disk
+                await this.createADFDisk(filename, cancellationToken).catch((err) => {
+                    return reject(err);
+                });
+                // Install the disk
+                await this.installADFDisk(filename, cancellationToken).catch((err) => {
+                    return reject(err);
+                });
+                let files = new Array<string>();
+                let newRootSourceDir = rootSourceDir;
+                try {
+                    let stat = fs.lstatSync(newRootSourceDir);
+                    if (stat.isDirectory()) {
+                        // List the source dir
+                        files = glob.sync(includes, {
+                            cwd: newRootSourceDir,
+                            ignore: excludes
                         });
                     }
-                    await this.copyToADFDisk(filename, fullpath, fileParentDir, cancellationToken).catch((err) => {
-                        return reject(err);
-                    });
+                } catch (e) {
+                    // Do nothing .. file not found
                 }
+                try {
+                    // try to add the workspace dir
+                    const workspaceRootDir = this.getWorkspaceRootDir();
+                    if (workspaceRootDir) {
+                        newRootSourceDir = path.join(workspaceRootDir.path, newRootSourceDir);
+                        let stat = fs.lstatSync(newRootSourceDir);
+                        if (stat.isDirectory()) {
+                            files = glob.sync(includes, {
+                                cwd: newRootSourceDir,
+                                ignore: excludes
+                            });
+                        }
+                    }
+                } catch (e) {
+                    return reject(new Error("ADFTools dir not found"));
+                }
+                let createdDirs = new Array<string>();
+                createdDirs.push("/");
+                for (let file of files) {
+                    let fullpath = path.join(newRootSourceDir, file);
+                    try {
+                        let stat = fs.lstatSync(fullpath);
+                        if (stat.isDirectory()) {
+                            // For each file copy to disk
+                            await this.mkdirs(filename, file, createdDirs, cancellationToken).catch((err) => {
+                                return reject(err);
+                            });
+                        } else {
+                            // For each file copy to disk
+                            let fileParentDir = path.parse(file).dir;
+                            if (fileParentDir === "") {
+                                fileParentDir = "/";
+                            } else {
+                                await this.mkdirs(filename, fileParentDir, createdDirs, cancellationToken).catch((err) => {
+                                    return reject(err);
+                                });
+                            }
+                            await this.copyToADFDisk(filename, fullpath, fileParentDir, cancellationToken).catch((err) => {
+                                return reject(err);
+                            });
+                        }
+                    } catch (e) {
+                        // Do nothing .. file not found - a bit weird..
+                    }
+                }
+                resolve();
+            } catch (e) {
+                reject(new Error(e));
             }
-            resolve();
         });
     }
 
