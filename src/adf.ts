@@ -106,21 +106,23 @@ export class ADFTools {
                 } catch (e) {
                     // Do nothing .. file not found
                 }
-                try {
-                    // try to add the workspace dir
-                    const workspaceRootDir = this.getWorkspaceRootDir();
-                    if (workspaceRootDir) {
-                        newRootSourceDir = path.join(workspaceRootDir.path, newRootSourceDir);
-                        let stat = fs.lstatSync(newRootSourceDir);
-                        if (stat.isDirectory()) {
-                            files = glob.sync(includes, {
-                                cwd: newRootSourceDir,
-                                ignore: excludes
-                            });
+                if (files.length <= 0) {
+                    try {
+                        // try to add the workspace dir
+                        const workspaceRootDir = this.getWorkspaceRootDir();
+                        if (workspaceRootDir) {
+                            newRootSourceDir = path.join(workspaceRootDir.path, newRootSourceDir);
+                            let stat = fs.lstatSync(newRootSourceDir);
+                            if (stat.isDirectory()) {
+                                files = glob.sync(includes, {
+                                    cwd: newRootSourceDir,
+                                    ignore: excludes
+                                });
+                            }
                         }
+                    } catch (e) {
+                        return reject(new Error("Sources for ADFDisk dir not found in '" + rootSourceDir + "' and '" + newRootSourceDir + "'"));
                     }
-                } catch (e) {
-                    return reject(new Error("ADFTools dir not found in '" + rootSourceDir + "' and '" + newRootSourceDir + "'"));
                 }
                 let createdDirs = new Array<string>();
                 createdDirs.push("/");
