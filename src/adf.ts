@@ -124,36 +124,40 @@ export class ADFTools {
                         return reject(new Error("Sources for ADFDisk dir not found in '" + rootSourceDir + "' and '" + newRootSourceDir + "'"));
                     }
                 }
-                let createdDirs = new Array<string>();
-                createdDirs.push("/");
-                for (let file of files) {
-                    let fullpath = path.join(newRootSourceDir, file);
-                    try {
-                        let stat = fs.lstatSync(fullpath);
-                        if (stat.isDirectory()) {
-                            // For each file copy to disk
-                            await this.mkdirs(filename, file, createdDirs, cancellationToken).catch((err) => {
-                                return reject(err);
-                            });
-                        } else {
-                            // For each file copy to disk
-                            let fileParentDir = path.parse(file).dir;
-                            if (fileParentDir === "") {
-                                fileParentDir = "/";
+                if (files.length <= 0) {
+                    return reject(new Error("No sources files found for ADFDisk in '" + rootSourceDir + "' and '" + newRootSourceDir + "'"));
+                } else {
+                    let createdDirs = new Array<string>();
+                    createdDirs.push("/");
+                    for (let file of files) {
+                        let fullpath = path.join(newRootSourceDir, file);
+                        try {
+                            let stat = fs.lstatSync(fullpath);
+                            if (stat.isDirectory()) {
+                                // For each file copy to disk
+                                await this.mkdirs(filename, file, createdDirs, cancellationToken).catch((err) => {
+                                    return reject(err);
+                                });
                             } else {
-                                await this.mkdirs(filename, fileParentDir, createdDirs, cancellationToken).catch((err) => {
+                                // For each file copy to disk
+                                let fileParentDir = path.parse(file).dir;
+                                if (fileParentDir === "") {
+                                    fileParentDir = "/";
+                                } else {
+                                    await this.mkdirs(filename, fileParentDir, createdDirs, cancellationToken).catch((err) => {
+                                        return reject(err);
+                                    });
+                                }
+                                await this.copyToADFDisk(filename, fullpath, fileParentDir, cancellationToken).catch((err) => {
                                     return reject(err);
                                 });
                             }
-                            await this.copyToADFDisk(filename, fullpath, fileParentDir, cancellationToken).catch((err) => {
-                                return reject(err);
-                            });
+                        } catch (e) {
+                            // Do nothing .. file not found - a bit weird..
                         }
-                    } catch (e) {
-                        // Do nothing .. file not found - a bit weird..
                     }
+                    resolve();
                 }
-                resolve();
             } catch (e) {
                 reject(new Error(e));
             }
