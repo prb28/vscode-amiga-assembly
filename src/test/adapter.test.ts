@@ -100,7 +100,7 @@ describe('Node Debug Adapter', () => {
 	describe('basic', function () {
 		it('unknown request should produce error', function () {
 			return dc.send('illegal_request').then(function () {
-				return Promise.reject("does not report error on unknown request");
+				return Promise.reject(new Error("does not report error on unknown request"));
 			}).catch(function () {
 				return Promise.resolve();
 			});

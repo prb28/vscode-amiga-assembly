@@ -82,7 +82,7 @@ export class Calc {
         // Get the current text editor
         let editor = window.activeTextEditor;
         if (!editor) {
-            return Promise.reject("Cannot access to editor");
+            return Promise.reject(new Error("Cannot access to editor"));
         }
         const document = editor.document;
         const selections = editor.selections;
