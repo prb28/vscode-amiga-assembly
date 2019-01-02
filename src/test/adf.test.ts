@@ -33,7 +33,7 @@ describe("ADFTools test", function () {
         expect(commandFilename).to.be.equal(path.join(rootToolsDir, "adfcreate"));
         expect(args[0]).to.be.equal(adfDiskName);
         [args, , commandFilename, ,] = capture(mockedExecutor.runToolRetrieveStdout).byCallIndex(i++);
-        expect(commandFilename).to.be.equal(path.join(rootToolsDir, "adfinstall"));
+        expect(commandFilename).to.be.equal(path.join(rootToolsDir, "adfinst"));
         expect(args[0]).to.be.equal("-i");
         expect(args[1]).to.be.equal(adfDiskName);
         [args, , commandFilename, ,] = capture(mockedExecutor.runToolRetrieveStdout).byCallIndex(i++);
