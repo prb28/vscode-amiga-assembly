@@ -74,7 +74,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 ## Release Notes
 ## 0.11.0
-- Create a ADF disk with the command *Amiga Assembly: Create ADF file*
+- Create an ADF disk with the command *Amiga Assembly: Create ADF file* (uses ADFTools and ADFlib : new binaries needed)
 - Bug fixes
 
 ### 0.10.2
