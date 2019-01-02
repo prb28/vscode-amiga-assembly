@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [0.11.0] - 2019-01-02
+- [Feat #37](https://github.com/prb28/vscode-amiga-assembly/issues/39) Generate adf file with the output (#39)
+- [Issue #43](https://github.com/prb28/vscode-amiga-assembly/issues/43) Bad assignment formatting
+- [Issue #41](https://github.com/prb28/vscode-amiga-assembly/issues/41) When runing the program, the stop button should kill FS-UAE
+
 ### [0.10.2] - 2018-12-23
 - [Feat #37](https://github.com/prb28/vscode-amiga-assembly/issues/37) Text format should alingn = or equ statements
 - [Issue #38](https://github.com/prb28/vscode-amiga-assembly/issues/38) Breakpoint set before debugging session start is not sent to fs-uae 

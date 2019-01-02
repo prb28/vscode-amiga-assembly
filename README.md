@@ -9,13 +9,8 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases). 
 
 
-## 0.10.2
-- Variable assignment text format
-- Copper disassembly
-
-![Disassemble a copper list](images/copperdisassembly.gif)
-
-- Print memory adresses in custom registries (dffxxx) (**new FS-UAE binary needed**)
+## 0.11.0
+- Create an ADF disk with the command *Amiga Assembly: Create ADF file* (uses ADFTools and ADFlib : new binaries needed)
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -73,8 +68,15 @@ The assembly language will be formatted with the standard shortcuts :
 
 ![Evaluation in realtime](images/coloredit.gif)
 
+### Copper disassembly
+
+![Disassemble a copper list](images/copperdisassembly.gif)
 
 ## Release Notes
+## 0.11.0
+- Create a ADF disk with the command *Amiga Assembly: Create ADF file*
+- Bug fixes
+
 ### 0.10.2
 - Variable assignment text format
 - Bug fixes
