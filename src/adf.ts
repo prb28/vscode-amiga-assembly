@@ -32,7 +32,7 @@ export class ADFTools {
     private setToolsRootPath(adfToolsRootPath: string) {
         this.adfCreateFilepath = path.join(adfToolsRootPath, 'adfcreate');
         this.adfCopyFilepath = path.join(adfToolsRootPath, 'adfcopy');
-        this.adfInstallFilepath = path.join(adfToolsRootPath, 'adfinstall');
+        this.adfInstallFilepath = path.join(adfToolsRootPath, 'adfinst');
         this.adfMkDirFilepath = path.join(adfToolsRootPath, 'adfmakedir');
     }
 
@@ -111,7 +111,7 @@ export class ADFTools {
                         // try to add the workspace dir
                         const workspaceRootDir = this.getWorkspaceRootDir();
                         if (workspaceRootDir) {
-                            newRootSourceDir = path.join(workspaceRootDir.path, newRootSourceDir);
+                            newRootSourceDir = path.join(workspaceRootDir.fsPath, newRootSourceDir);
                             let stat = fs.lstatSync(newRootSourceDir);
                             if (stat.isDirectory()) {
                                 files = glob.sync(includes, {
