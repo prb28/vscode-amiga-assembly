@@ -4,21 +4,22 @@
 //
 
 import { expect } from 'chai';
-import { M68kFormatter, DocumentFormatterConfiguration } from '../formatter';
+import { M68kFormatter } from '../formatter';
 import { ASMDocument } from '../parser';
 import { TextEdit, Range, Position, CancellationTokenSource } from 'vscode';
 import { DummyFormattingOptions, DummyTextDocument, DummyWorkspaceConfiguration } from './dummy';
+import { DocumentFormatterConfiguration } from '../formatterConfiguration';
 
 function getEditsForLine(line: string): TextEdit[] {
     let f = new M68kFormatter();
     let document = new DummyTextDocument();
     document.addLine(line);
+    let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 0, 0);
     let asmDocument = new ASMDocument();
-    asmDocument.parse(document);
+    asmDocument.parse(document, conf);
     asmDocument.maxLabelSize = 9;
     asmDocument.maxInstructionSize = 7;
     asmDocument.maxDataSize = 11;
-    let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1);
     return f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
 }
 
@@ -26,13 +27,13 @@ function getEditsForLineOnType(line: string): TextEdit[] {
     let f = new M68kFormatter();
     let document = new DummyTextDocument();
     document.addLine(line);
+    let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 0, 0);
     let asmDocument = new ASMDocument();
-    asmDocument.parse(document);
+    asmDocument.parse(document, conf);
     asmDocument.maxLabelSize = 9;
     asmDocument.maxInstructionSize = 7;
     asmDocument.maxDataSize = 11;
     let asmLine = asmDocument.asmLinesArray[0];
-    let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1);
     return f.computeEditsForLineOnType(asmDocument, asmLine, conf, asmLine.end);
 }
 
@@ -150,8 +151,8 @@ describe("Formatter Tests", function () {
         //foo      = 43
         //SC_W_P   = W
         let asmDocument = new ASMDocument();
-        asmDocument.parse(document);
-        let conf = new DocumentFormatterConfiguration(1, 1, 4, 1, 1);
+        let conf = new DocumentFormatterConfiguration(1, 1, 4, 1, 1, 0, 0);
+        asmDocument.parse(document, conf);
         let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
         let i = 0;
         expect(edits.length).to.be.equal(3);
@@ -169,6 +170,44 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 13), new Position(0, 14)), " ".repeat(1)));
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 6), new Position(0, 12)), " ".repeat(3)));
     });
-
+    it.only("Should format with prefered sizes", function () {
+        let f = new M68kFormatter();
+        let document = new DummyTextDocument();
+        document.addLine("label: move #1,a0 ;comment");
+        document.addLine("labelbiggerthanprefered dc.b #2,#3,#4,#5,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6 ;comment too far");
+        document.addLine(" rts ; my comment");
+        document.addLine("labelbiggert: dc.b #2 ; my comment");
+        // expected
+        //label:      move    #1,a0     ;comment
+        //labelbiggerthanprefered  dc.b    #2,#3,#4,#5,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6     ;comment too far
+        //            rts               ; my comment
+        //labelbiggert:  dc.b    #2  ; my comment
+        let asmDocument = new ASMDocument();
+        let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 12, 30);
+        asmDocument.parse(document, conf);
+        // let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
+        // let i = 0;
+        // expect(edits.length).to.be.equal(3);
+        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 17), new Position(0, 18)), " ".repeat(5)));
+        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 11), new Position(0, 12)), " ".repeat(4)));
+        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 6), new Position(0, 7)), " ".repeat(6)));
+        // edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[1], conf);
+        // i = 0;
+        // expect(edits.length).to.be.equal(3);
+        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 73), new Position(0, 74)), " ".repeat(4)));
+        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 28), new Position(0, 29)), " ".repeat(4)));
+        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 23), new Position(0, 24)), " ".repeat(2)));
+        // edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[2], conf);
+        // i = 0;
+        // expect(edits.length).to.be.equal(2);
+        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 4), new Position(0, 5)), " ".repeat(15)));
+        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 1)), " ".repeat(12)));
+        let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[3], conf);
+        let i = 0;
+        expect(edits.length).to.be.equal(3);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 21), new Position(0, 22)), " ".repeat(4)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 19), new Position(0, 20)), " ".repeat(4)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 14), new Position(0, 15)), " ".repeat(2)));
+    });
 });
 

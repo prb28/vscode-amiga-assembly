@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Position, Range, TextLine, TextDocument, CancellationToken } from 'vscode';
+import { Position, Range, TextLine, TextDocument, CancellationToken, ConfigurationTarget } from 'vscode';
 import { M68kLanguage } from './language';
+import { DocumentFormatterConfiguration } from './formatterConfiguration';
 
 /**
  * Formatter class for le assemble language
@@ -519,6 +520,7 @@ export class NumberParser {
 
 export class ASMDocument {
     public asmLinesArray = new Array<ASMLine>();
+    public ovesizedCommentLine = new Array<ASMLine>();
     public maxLabelSize = 0;
     public maxInstructionSize = 0;
     public maxDataSize = 0;
@@ -530,11 +532,12 @@ export class ASMDocument {
     /**
      * Main range parse function
      * @param document Document to format
+     * @param formatterConfiguration Formatter configuration
      * @param token token to cancel
      * @param range Range to format or undefined
      * @param position in case of on type format
      */
-    public parse(document: TextDocument, token?: CancellationToken, range?: Range, position?: Position) {
+    public parse(document: TextDocument, formatterConfiguration: DocumentFormatterConfiguration, token?: CancellationToken, range?: Range, position?: Position) {
         let localRange = range;
         if (document.lineCount <= 0) {
             return null;
@@ -544,6 +547,7 @@ export class ASMDocument {
         }
         // Parse all the lines
         for (var i = localRange.start.line; i <= localRange.end.line; i++) {
+            let isOversized = false;
             if (token && token.isCancellationRequested) {
                 return [];
             }
@@ -554,27 +558,42 @@ export class ASMDocument {
             } else {
                 this.asmLinesArray.push(asmLine);
             }
-            if (asmLine.instruction.length > 0) {
-                if (this.maxLabelSize < asmLine.label.length) {
-                    this.maxLabelSize = asmLine.label.length;
+            if ((formatterConfiguration.preferedCommentPosition > 0) || (formatterConfiguration.preferedIntructionPosition > 0)) {
+                // Check if it is a ovesized line
+                let endOfLineCommentPositionInst = asmLine.label.length + asmLine.instruction.length + asmLine.data.length +
+                    formatterConfiguration.labelToInstructionDistance + formatterConfiguration.instructionToDataDistance + formatterConfiguration.dataToCommentsDistance;
+                if (((formatterConfiguration.preferedCommentPosition > 0) && (endOfLineCommentPositionInst > formatterConfiguration.preferedCommentPosition)) ||
+                    ((formatterConfiguration.preferedIntructionPosition > 0) && (asmLine.label.length < formatterConfiguration.preferedIntructionPosition))) {
+                    this.ovesizedCommentLine.push(asmLine);
+                    isOversized = true;
                 }
-                if (this.maxInstructionSize < asmLine.instruction.length) {
-                    this.maxInstructionSize = asmLine.instruction.length;
-                }
-                if (this.maxDataSize < asmLine.data.length) {
-                    this.maxDataSize = asmLine.data.length;
-                }
-            } else if (asmLine.variable.length > 0) {
-                if (this.maxVariableSize < asmLine.variable.length) {
-                    this.maxVariableSize = asmLine.variable.length;
-                }
-                if (this.maxValueSize < asmLine.value.length) {
-                    this.maxValueSize = asmLine.value.length;
-                }
-                if (this.maxOperatorSize < asmLine.operator.length) {
-                    this.maxOperatorSize = asmLine.operator.length;
+            }
+            if (!isOversized) {
+                if (asmLine.instruction.length > 0) {
+                    if (this.maxLabelSize < asmLine.label.length) {
+                        this.maxLabelSize = asmLine.label.length;
+                    }
+                    if (this.maxInstructionSize < asmLine.instruction.length) {
+                        this.maxInstructionSize = asmLine.instruction.length;
+                    }
+                    if (this.maxDataSize < asmLine.data.length) {
+                        this.maxDataSize = asmLine.data.length;
+                    }
+                } else if (asmLine.variable.length > 0) {
+                    if (this.maxVariableSize < asmLine.variable.length) {
+                        this.maxVariableSize = asmLine.variable.length;
+                    }
+                    if (this.maxValueSize < asmLine.value.length) {
+                        this.maxValueSize = asmLine.value.length;
+                    }
+                    if (this.maxOperatorSize < asmLine.operator.length) {
+                        this.maxOperatorSize = asmLine.operator.length;
+                    }
                 }
             }
         }
+    }
+    isOversized(asmLine: ASMLine): boolean {
+        return this.ovesizedCommentLine.indexOf(asmLine) >= 0;
     }
 }

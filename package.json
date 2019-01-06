@@ -12,7 +12,7 @@
         "type": "git",
         "url": "https://github.com/prb28/vscode-amiga-assembly"
     },
-    "version": "0.11.0",
+    "version": "0.12.0",
     "publisher": "prb28",
     "engines": {
         "vscode": "^1.23.0"
@@ -117,6 +117,18 @@
                     "scope": "resource",
                     "default": 1,
                     "description": "Specifies the distance between the asignment operator and the value."
+                },
+                "amiga-assembly.format.preferedIntructionPosition": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 0,
+                    "description": "Specifies the prefered instruction position (if the label size is small enough)"
+                },
+                "amiga-assembly.format.preferedCommentPosition": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 0,
+                    "description": "Specifies the prefered comment position for a line with instruction (if the size is small enough)"
                 },
                 "amiga-assembly.cstool": {
                     "type": "string",
