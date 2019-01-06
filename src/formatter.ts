@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { ASMLine, ASMDocument } from './parser';
+import { DocumentFormatterConfiguration } from './formatterConfiguration';
 
 
 /**
@@ -56,7 +57,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
     format(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken, range?: vscode.Range, position?: vscode.Position): vscode.ProviderResult<vscode.TextEdit[]> {
         let configuration = DocumentFormatterConfiguration.create(document.uri);
         let asmDocument = new ASMDocument();
-        asmDocument.parse(document, token, range, position);
+        asmDocument.parse(document, configuration, token, range, position);
         // Compute the edits
         if (asmDocument.onTypeAsmLine && position) {
             return this.computeEditsForLineOnType(asmDocument, asmDocument.onTypeAsmLine, configuration, position);
@@ -99,10 +100,19 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
         if (asmLine.instruction.length > 0) {
             if (asmLine.data.length > 0) {
                 if (asmLine.comment.length > 0) {
-                    let commentSpaceSize = asmDocument.maxDataSize + configuration.dataToCommentsDistance;
-                    let additionToComments = endOfLineCommentPositionAsgn - endOfLineCommentPositionInst;
-                    if (additionToComments > 0) {
-                        commentSpaceSize += additionToComments;
+                    let commentSpaceSize: number;
+                    if (configuration.preferedCommentPosition > 0) {
+                        if (asmDocument.isOversized(asmLine)) {
+                            commentSpaceSize = asmLine.data.length + configuration.dataToCommentsDistance;
+                        } else {
+                            commentSpaceSize = asmDocument.maxDataSize + configuration.preferedCommentPosition - endOfLineCommentPositionInst;
+                        }
+                    } else {
+                        commentSpaceSize = asmDocument.maxDataSize + configuration.dataToCommentsDistance;
+                        let additionToComments = endOfLineCommentPositionAsgn - endOfLineCommentPositionInst;
+                        if (additionToComments > 0) {
+                            commentSpaceSize += additionToComments;
+                        }
                     }
                     s = this.getEndPad(asmLine.data, commentSpaceSize);
                     range = new vscode.Range(asmLine.dataRange.end, asmLine.commentRange.start);
@@ -112,17 +122,54 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                 range = new vscode.Range(asmLine.instructionRange.end, asmLine.dataRange.start);
                 edits.push(vscode.TextEdit.replace(range, s));
             } else if (asmLine.comment.length > 0) {
-                s = this.getEndPad(asmLine.instruction, asmDocument.maxInstructionSize + configuration.instructionToDataDistance + asmDocument.maxDataSize + configuration.dataToCommentsDistance);
+                let commentSpaceSize: number;
+                if (configuration.preferedCommentPosition > 0) {
+                    if (asmDocument.isOversized(asmLine)) {
+                        commentSpaceSize = asmLine.instruction.length + configuration.instructionToDataDistance + asmLine.data.length + configuration.dataToCommentsDistance;
+                    } else {
+                        commentSpaceSize = asmDocument.maxInstructionSize + configuration.instructionToDataDistance + asmDocument.maxDataSize + configuration.preferedCommentPosition - endOfLineCommentPositionInst;
+                    }
+                } else {
+                    commentSpaceSize = asmDocument.maxInstructionSize + configuration.instructionToDataDistance + asmDocument.maxDataSize + configuration.dataToCommentsDistance;
+                }
+                s = this.getEndPad(asmLine.instruction, commentSpaceSize);
                 range = new vscode.Range(asmLine.instructionRange.end, asmLine.commentRange.start);
                 edits.push(vscode.TextEdit.replace(range, s));
             }
             if (asmLine.label.length > 0) {
-                s = this.getEndPad(asmLine.label, asmDocument.maxLabelSize + configuration.labelToInstructionDistance);
-                range = new vscode.Range(asmLine.labelRange.end, asmLine.instructionRange.start);
-                edits.push(vscode.TextEdit.replace(range, s));
-                edits.push(vscode.TextEdit.delete(asmLine.spacesBeforeLabelRange));
+                if ((asmLine.labelRange.end.character - asmLine.instructionRange.start.character) > 0) {
+                    s = this.getEndPad(asmLine.label, asmDocument.maxLabelSize + configuration.labelToInstructionDistance);
+                    range = new vscode.Range(asmLine.labelRange.end, asmLine.instructionRange.start);
+                    edits.push(vscode.TextEdit.replace(range, s));
+                    if (!asmLine.spacesBeforeLabelRange.isEmpty) {
+                        edits.push(vscode.TextEdit.delete(asmLine.spacesBeforeLabelRange));
+                    }
+                } else {
+                    let labelSpacesSize: number;
+                    if (configuration.preferedIntructionPosition > 0) {
+                        if (asmLine.label.length > configuration.preferedIntructionPosition) {
+                            labelSpacesSize = asmLine.label.length + configuration.labelToInstructionDistance;
+                        } else {
+                            labelSpacesSize = configuration.preferedIntructionPosition;
+                        }
+                    } else {
+                        labelSpacesSize = asmDocument.maxLabelSize + configuration.labelToInstructionDistance;
+                    }
+                    s = this.getEndPad(asmLine.label, labelSpacesSize);
+                    range = new vscode.Range(asmLine.labelRange.end, asmLine.instructionRange.start);
+                    edits.push(vscode.TextEdit.replace(range, s));
+                    if (!asmLine.spacesBeforeLabelRange.isEmpty) {
+                        edits.push(vscode.TextEdit.delete(asmLine.spacesBeforeLabelRange));
+                    }
+                }
             } else {
-                s = this.getEndPad("", asmDocument.maxLabelSize + configuration.labelToInstructionDistance);
+                let labelSpacesSize: number;
+                if (configuration.preferedIntructionPosition > 0) {
+                    labelSpacesSize = configuration.preferedIntructionPosition;
+                } else {
+                    labelSpacesSize = asmDocument.maxLabelSize + configuration.labelToInstructionDistance;
+                }
+                s = this.getEndPad("", labelSpacesSize);
                 range = new vscode.Range(asmLine.start, asmLine.instructionRange.start);
                 edits.push(vscode.TextEdit.replace(range, s));
             }
@@ -191,64 +238,5 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
             edits = this.computeEditsForLine(asmDocument, asmLine, configuration);
         }
         return edits;
-    }
-}
-
-export class DocumentFormatterConfiguration {
-    /** Distance between a label and an instruction*/
-    labelToInstructionDistance: number;
-    /** Distance between an instruction and the data*/
-    instructionToDataDistance: number;
-    /** Distance between the data a comment*/
-    dataToCommentsDistance: number;
-    /** Distance between a variable and an operator */
-    variableToOperatorDistance: number;
-    /** Distance between the operator and the value */
-    operatorToValueDistance: number;
-
-    /**
-     * Constructor
-     */
-    public constructor(labelToInstructionDistance: number, instructionToDataDistance: number, dataToCommentsDistance: number, variableToOperatorDistance: number, operatorToValueDistance: number) {
-        this.labelToInstructionDistance = labelToInstructionDistance;
-        this.instructionToDataDistance = instructionToDataDistance;
-        this.dataToCommentsDistance = dataToCommentsDistance;
-        this.variableToOperatorDistance = variableToOperatorDistance;
-        this.operatorToValueDistance = operatorToValueDistance;
-        this.dataToCommentsDistance = dataToCommentsDistance;
-    }
-
-    /**
-     * Creates a configuration from the vscode settings
-     * @param documentUri Uri of the document to select the vscode settings
-     * @return new configuration
-     */
-    public static create(documentUri: vscode.Uri): DocumentFormatterConfiguration {
-        let configuration = vscode.workspace.getConfiguration('amiga-assembly', documentUri);
-        let labelToInstructionDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.labelToInstructionDistance', 2);
-        let instructionToDataDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.instructionToDataDistance', 4);
-        let dataToCommentsDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.dataToCommentsDistance', 4);
-        let variableToOperatorDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.variableToOperatorDistance', 1);
-        let operatorToValueDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.operatorToValueDistance', 1);
-        return new DocumentFormatterConfiguration(labelToInstructionDistance, instructionToDataDistance, dataToCommentsDistance, variableToOperatorDistance, operatorToValueDistance);
-    }
-
-    /**
-     * Retrieve a configuration value
-     * @param configuration Configuration
-     * @param key Keyword for property
-     * @param defaultValue Default value to be affected
-     * @return New value
-     */
-    public static retrieveProperty(configuration: vscode.WorkspaceConfiguration, key: string, defaultValue: number): number {
-        let value = defaultValue;
-        let confValue = configuration.get(key);
-        if (confValue) {
-            value = Number(confValue);
-            if (value < 1) {
-                value = 1;
-            }
-        }
-        return value;
     }
 }
