@@ -99,7 +99,7 @@ describe("Formatter Tests", function () {
     it("Should add pad to the end of a string", function () {
         let f = new M68kFormatter();
         expect(f.getEndPad("aa", 10)).to.be.equal("        ");
-        expect(f.getEndPad("aaaa", 3)).to.be.equal("");
+        expect(f.getEndPad("aaaa", 3)).to.be.equal(" ");
     });
     it("Should retrieve 1 for a negative property", function () {
         let conf = new DummyWorkspaceConfiguration();
@@ -155,59 +155,62 @@ describe("Formatter Tests", function () {
         asmDocument.parse(document, conf);
         let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
         let i = 0;
-        expect(edits.length).to.be.equal(3);
+        expect(edits.length).to.be.equal(2);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 14), new Position(0, 16)), " ".repeat(4)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 11), new Position(0, 12)), " ".repeat(1)));
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 6), new Position(0, 8)), " ".repeat(1)));
         edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[1], conf);
         i = 0;
-        expect(edits.length).to.be.equal(2);
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 5), new Position(0, 6)), " ".repeat(1)));
+        expect(edits.length).to.be.equal(1);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 3), new Position(0, 4)), " ".repeat(6)));
         edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[2], conf);
         i = 0;
-        expect(edits.length).to.be.equal(2);
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 13), new Position(0, 14)), " ".repeat(1)));
+        expect(edits.length).to.be.equal(1);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 6), new Position(0, 12)), " ".repeat(3)));
     });
-    it.only("Should format with prefered sizes", function () {
+    it("Should format with prefered sizes", function () {
         let f = new M68kFormatter();
         let document = new DummyTextDocument();
         document.addLine("label: move #1,a0 ;comment");
         document.addLine("labelbiggerthanprefered dc.b #2,#3,#4,#5,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6 ;comment too far");
         document.addLine(" rts ; my comment");
         document.addLine("labelbiggert: dc.b #2 ; my comment");
+        document.addLine("labelxxxxx: move #1,a0 ;comment");
+        document.addLine("labelxxxxxx: move #1,a0 ;comment");
+        document.addLine("V = 3 ;comment");
         // expected
-        //label:      move    #1,a0     ;comment
-        //labelbiggerthanprefered  dc.b    #2,#3,#4,#5,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6     ;comment too far
-        //            rts               ; my comment
-        //labelbiggert:  dc.b    #2  ; my comment
+        //label:     move    #1,a0     ;comment
+        //labelbiggerthanprefered dc.b #2,#3,#4,#5,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6 ;comment too far
+        //           rts               ; my comment
+        //labelbiggert: dc.b #2 ; my comment
+        //labelxxxxx: move #1,a0 ;comment
+        //labelxxxxxx: move #1,a0 ;comment
+        //V = 3                        ;comment
         let asmDocument = new ASMDocument();
         let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 12, 30);
         asmDocument.parse(document, conf);
-        // let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
-        // let i = 0;
-        // expect(edits.length).to.be.equal(3);
-        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 17), new Position(0, 18)), " ".repeat(5)));
-        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 11), new Position(0, 12)), " ".repeat(4)));
-        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 6), new Position(0, 7)), " ".repeat(6)));
-        // edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[1], conf);
-        // i = 0;
-        // expect(edits.length).to.be.equal(3);
-        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 73), new Position(0, 74)), " ".repeat(4)));
-        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 28), new Position(0, 29)), " ".repeat(4)));
-        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 23), new Position(0, 24)), " ".repeat(2)));
-        // edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[2], conf);
-        // i = 0;
-        // expect(edits.length).to.be.equal(2);
-        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 4), new Position(0, 5)), " ".repeat(15)));
-        // expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 1)), " ".repeat(12)));
-        let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[3], conf);
+        let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
         let i = 0;
         expect(edits.length).to.be.equal(3);
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 21), new Position(0, 22)), " ".repeat(4)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 19), new Position(0, 20)), " ".repeat(4)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 14), new Position(0, 15)), " ".repeat(2)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 17), new Position(0, 18)), " ".repeat(5)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 11), new Position(0, 12)), " ".repeat(4)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 6), new Position(0, 7)), " ".repeat(5)));
+        edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[1], conf);
+        expect(edits.length).to.be.equal(0);
+        edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[2], conf);
+        i = 0;
+        expect(edits.length).to.be.equal(2);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 4), new Position(0, 5)), " ".repeat(15)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 1)), " ".repeat(11)));
+        edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[3], conf);
+        expect(edits.length).to.be.equal(0);
+        edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[4], conf);
+        expect(edits.length).to.be.equal(0);
+        edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[5], conf);
+        expect(edits.length).to.be.equal(0);
+        edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[6], conf);
+        i = 0;
+        expect(edits.length).to.be.equal(1);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 5), new Position(0, 6)), " ".repeat(24)));
     });
 });
 

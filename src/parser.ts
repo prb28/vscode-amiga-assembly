@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Position, Range, TextLine, TextDocument, CancellationToken, ConfigurationTarget } from 'vscode';
+import { Position, Range, TextLine, TextDocument, CancellationToken } from 'vscode';
 import { M68kLanguage } from './language';
 import { DocumentFormatterConfiguration } from './formatterConfiguration';
 
@@ -563,7 +563,7 @@ export class ASMDocument {
                 let endOfLineCommentPositionInst = asmLine.label.length + asmLine.instruction.length + asmLine.data.length +
                     formatterConfiguration.labelToInstructionDistance + formatterConfiguration.instructionToDataDistance + formatterConfiguration.dataToCommentsDistance;
                 if (((formatterConfiguration.preferedCommentPosition > 0) && (endOfLineCommentPositionInst > formatterConfiguration.preferedCommentPosition)) ||
-                    ((formatterConfiguration.preferedIntructionPosition > 0) && (asmLine.label.length < formatterConfiguration.preferedIntructionPosition))) {
+                    ((formatterConfiguration.preferedIntructionPosition > 0) && (asmLine.label.length + formatterConfiguration.labelToInstructionDistance >= formatterConfiguration.preferedIntructionPosition))) {
                     this.ovesizedCommentLine.push(asmLine);
                     isOversized = true;
                 }
