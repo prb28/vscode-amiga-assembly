@@ -1,8 +1,8 @@
-import { DefinitionProvider, TextDocument, Position, CancellationToken, Location, Uri, FileSystemWatcher, ReferenceProvider, ReferenceContext, ProviderResult, Range } from 'vscode';
+import { Definition, SymbolInformation, DocumentSymbolProvider, DefinitionProvider, TextDocument, Position, CancellationToken, Location, Uri, FileSystemWatcher, ReferenceProvider, ReferenceContext, ProviderResult, Range } from 'vscode';
 import * as vscode from 'vscode';
 import { SymbolFile, Symbol } from './symbols';
 
-export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvider {
+export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvider, DocumentSymbolProvider {
     static readonly SOURCE_FILES_GLOB = "**/*.{asm,s,i,ASM,S,I}";
     private watcher: FileSystemWatcher;
     private files = new Map<string, SymbolFile>();
@@ -14,11 +14,38 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         this.watcher.onDidChange(this.scanFile);
         this.scanWorkspace();
     }
-    public provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Thenable<Location> {
+
+    public provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<SymbolInformation[]> {
+        return new Promise(async (resolve, reject) => {
+            let symbolFile: void | SymbolFile = await this.scanFile(document.uri, document).catch(err => {
+                reject(err);
+                return;
+            });
+            let results = new Array<SymbolInformation>();
+            if (symbolFile) {
+                let symbols = symbolFile.getVariables();
+                for (let i = 0; i < symbols.length; i++) {
+                    let symbol = symbols[i];
+                    results.push(new SymbolInformation(symbol.getLabel(), vscode.SymbolKind.Variable, "", new Location(symbol.getFile().getUri(), symbol.getRange())));
+                }
+                symbols = symbolFile.getLabels();
+                for (let i = 0; i < symbols.length; i++) {
+                    let symbol = symbols[i];
+                    results.push(new SymbolInformation(symbol.getLabel(), vscode.SymbolKind.Method, "", new Location(symbol.getFile().getUri(), symbol.getRange())));
+                }
+            }
+            resolve(results);
+        });
+    }
+
+    public provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Thenable<Definition> {
         return new Promise(async (resolve, reject) => {
             let rg = document.getWordRangeAtPosition(position);
             if (rg) {
-                await this.scanFile(document.uri, document);
+                await this.scanFile(document.uri, document).catch(err => {
+                    reject(err);
+                    return;
+                });
                 let label = this.getLabel(document, rg);
                 let s = this.definedSymbols.get(label);
                 if (s !== undefined) {
@@ -78,7 +105,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         });
     }
 
-    public scanFile(uri: Uri, document: TextDocument | undefined = undefined): Promise<void> {
+    public scanFile(uri: Uri, document: TextDocument | undefined = undefined): Promise<SymbolFile> {
         return new Promise(async (resolve, reject) => {
             let file = this.files.get(uri.fsPath);
             if (file === undefined) {
@@ -100,9 +127,9 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             }
             this.referedSymbols.delete(uri.fsPath);
             let refs = new Map<String, Array<Symbol>>();
-            symb = file.getReferedSymbols();
-            for (let i = 0; i < symb.length; i++) {
-                let s = symb[i];
+            let refSymb = file.getReferedSymbols();
+            for (let i = 0; i < refSymb.length; i++) {
+                let s = refSymb[i];
                 let label = s.getLabel();
                 let lst = refs.get(label);
                 if (lst === undefined) {
@@ -112,7 +139,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 lst.push(s);
             }
             this.referedSymbols.set(uri.fsPath, refs);
-            resolve();
+            resolve(file);
         });
     }
 }

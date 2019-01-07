@@ -8,7 +8,7 @@ import { Uri } from 'vscode';
 import * as Path from 'path';
 
 
-describe("Symbols reader Tests", function () {
+describe.only("Symbols reader Tests", function () {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..');
     const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
     const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
@@ -16,6 +16,8 @@ describe("Symbols reader Tests", function () {
         let sf = new SymbolFile(Uri.file(MAIN_SOURCE));
         let symbolFile = await sf.readFile();
         let definedSymbols = symbolFile.getDefinedSymbols();
+        let variables = symbolFile.getVariables();
+        let labels = symbolFile.getLabels();
         expect(definedSymbols.length).to.be.equal(56);
         let referedSymbols = symbolFile.getReferedSymbols();
         expect(referedSymbols.length).to.be.equal(313);
@@ -28,5 +30,7 @@ describe("Symbols reader Tests", function () {
             }
         }
         expect(count).to.be.equal(12);
+        expect(variables.length).to.be.equal(16);
+        expect(labels.length).to.be.equal(40);
     });
 });

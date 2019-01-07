@@ -5,6 +5,8 @@ export class SymbolFile {
     private uri: Uri;
     private definedSymbols = new Array<Symbol>();
     private referedSymbols = new Array<Symbol>();
+    private variables = new Array<Symbol>();
+    private labels = new Array<Symbol>();
     //private importedFiles = new Array<SymbolFile>();
 
     constructor(uri: Uri) {
@@ -41,6 +43,12 @@ export class SymbolFile {
                     }
                 }
             }
+            if (asmLine.label.length > 0) {
+                this.labels.push(new Symbol(asmLine.label, this, asmLine.labelRange));
+            }
+            if (asmLine.variable.length > 0) {
+                this.variables.push(new Symbol(asmLine.variable, this, asmLine.variableRange));
+            }
         }
     }
 
@@ -57,6 +65,12 @@ export class SymbolFile {
     }
     public getReferedSymbols(): Array<Symbol> {
         return this.referedSymbols;
+    }
+    public getVariables(): Array<Symbol> {
+        return this.variables;
+    }
+    public getLabels(): Array<Symbol> {
+        return this.labels;
     }
 }
 

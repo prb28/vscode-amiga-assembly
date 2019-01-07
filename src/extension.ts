@@ -173,6 +173,7 @@ export function activate(context: vscode.ExtensionContext) {
     let definitionHandler = new M68kDefinitionHandler();
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(AMIGA_ASM_MODE, definitionHandler));
     context.subscriptions.push(vscode.languages.registerReferenceProvider(AMIGA_ASM_MODE, definitionHandler));
+    context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(AMIGA_ASM_MODE, definitionHandler));
 
     // Diagnostics 
     let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
