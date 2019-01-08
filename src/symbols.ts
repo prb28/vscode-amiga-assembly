@@ -47,7 +47,7 @@ export class SymbolFile {
                 this.labels.push(new Symbol(asmLine.label, this, asmLine.labelRange));
             }
             if (asmLine.variable.length > 0) {
-                this.variables.push(new Symbol(asmLine.variable, this, asmLine.variableRange));
+                this.variables.push(new Symbol(asmLine.variable, this, asmLine.variableRange, asmLine.value));
             }
         }
     }
@@ -78,10 +78,12 @@ export class Symbol {
     private label: string;
     private file: SymbolFile;
     private range: Range;
-    constructor(label: string, file: SymbolFile, range: Range) {
+    private value?: string;
+    constructor(label: string, file: SymbolFile, range: Range, value?: string) {
         this.label = label;
         this.file = file;
         this.range = range;
+        this.value = value;
     }
     public getFile(): SymbolFile {
         return this.file;
@@ -91,5 +93,8 @@ export class Symbol {
     }
     public getLabel(): string {
         return this.label;
+    }
+    public getValue(): string | undefined {
+        return this.value;
     }
 }

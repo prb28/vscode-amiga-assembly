@@ -1,6 +1,7 @@
 import { Definition, SymbolInformation, DocumentSymbolProvider, DefinitionProvider, TextDocument, Position, CancellationToken, Location, Uri, FileSystemWatcher, ReferenceProvider, ReferenceContext, ProviderResult, Range } from 'vscode';
 import * as vscode from 'vscode';
 import { SymbolFile, Symbol } from './symbols';
+import { Calc } from './calc';
 
 export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvider, DocumentSymbolProvider {
     static readonly SOURCE_FILES_GLOB = "**/*.{asm,s,i,ASM,S,I}";
@@ -8,6 +9,8 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     private files = new Map<string, SymbolFile>();
     private definedSymbols = new Map<String, Symbol>();
     private referedSymbols = new Map<string, Map<String, Array<Symbol>>>();
+    private variables = new Map<String, Symbol>();
+    private labels = new Map<String, Symbol>();
 
     constructor() {
         this.watcher = vscode.workspace.createFileSystemWatcher(M68kDefinitionHandler.SOURCE_FILES_GLOB);
@@ -139,7 +142,67 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 lst.push(s);
             }
             this.referedSymbols.set(uri.fsPath, refs);
+            symb = file.getVariables();
+            for (let i = 0; i < symb.length; i++) {
+                let s = symb[i];
+                this.variables.set(s.getLabel(), s);
+            }
+            symb = file.getLabels();
+            for (let i = 0; i < symb.length; i++) {
+                let s = symb[i];
+                this.labels.set(s.getLabel(), s);
+            }
             resolve(file);
+        });
+    }
+
+    public getVariableValue(variable: string): string | undefined {
+        let v = this.variables.get(variable);
+        if (v !== undefined) {
+            return v.getValue();
+        }
+        return undefined;
+    }
+
+    private evaluateVariableFormula(variable: string, sortedVariables: Array<String>): string | undefined {
+        let v = this.variables.get(variable);
+        if (v !== undefined) {
+            let value = v.getValue();
+            if ((value !== undefined) && (value.length > 0)) {
+                if (value.match(/[A-Za-z_]*/)) {
+                    // Search variables
+                    for (let i = 0; i < sortedVariables.length; i++) {
+                        let vn = sortedVariables[i].toString();
+                        if (value.indexOf(vn) >= 0) {
+                            let formula = this.evaluateVariableFormula(vn, sortedVariables);
+                            if (formula !== undefined) {
+                                // replace all
+                                value = value.split(vn).join('(' + formula + ')');
+                            }
+                        }
+                    }
+                }
+            }
+            return value;
+        }
+        return undefined;
+    }
+
+    public evaluateVariable(variable: string): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            let variables = Array.from(this.variables.keys());
+            await variables.sort((a, b) => {
+                return b.length - a.length;
+            });
+            let calc = new Calc();
+            let formula = this.evaluateVariableFormula(variable, variables);
+            if (formula) {
+                let result = calc.calculate(formula);
+                if (result !== NaN) {
+                    resolve(result);
+                }
+            }
+            reject();
         });
     }
 }

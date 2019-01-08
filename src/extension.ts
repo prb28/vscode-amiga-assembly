@@ -36,6 +36,7 @@ export class ExtensionState {
     private calc: Calc | undefined;
     private disassembler: Disassembler | undefined;
     private adfTools: ADFTools | undefined;
+    private definitionHandler: M68kDefinitionHandler | undefined;
     public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
         if (this.errorDiagnosticCollection === undefined) {
             this.errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');
@@ -85,6 +86,12 @@ export class ExtensionState {
             return ext.exports.getState();
         }
         return new ExtensionState();
+    }
+    public getDefinitionHandler(): M68kDefinitionHandler {
+        if (this.definitionHandler === undefined) {
+            this.definitionHandler = new M68kDefinitionHandler();
+        }
+        return this.definitionHandler;
     }
 }
 
@@ -170,7 +177,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_DEBUG_ASM_MODE, new M86kColorProvider()));
 
     // Definition provider
-    let definitionHandler = new M68kDefinitionHandler();
+    let definitionHandler = state.getDefinitionHandler();
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(AMIGA_ASM_MODE, definitionHandler));
     context.subscriptions.push(vscode.languages.registerReferenceProvider(AMIGA_ASM_MODE, definitionHandler));
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(AMIGA_ASM_MODE, definitionHandler));

@@ -18,7 +18,7 @@ describe("Symbols reader Tests", function () {
         let definedSymbols = symbolFile.getDefinedSymbols();
         let variables = symbolFile.getVariables();
         let labels = symbolFile.getLabels();
-        expect(definedSymbols.length).to.be.equal(56);
+        expect(definedSymbols.length).to.be.equal(58);
         let referedSymbols = symbolFile.getReferedSymbols();
         expect(referedSymbols.length).to.be.equal(313);
         let firstDefined = definedSymbols[0];
@@ -30,7 +30,7 @@ describe("Symbols reader Tests", function () {
             }
         }
         expect(count).to.be.equal(12);
-        expect(variables.length).to.be.equal(16);
+        expect(variables.length).to.be.equal(18);
         expect(labels.length).to.be.equal(40);
     });
 });

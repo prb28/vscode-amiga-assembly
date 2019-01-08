@@ -8,7 +8,10 @@ import { M68kHoverProvider } from '../hover';
 import { HoverInstruction } from '../parser';
 import { Position, CancellationTokenSource, Hover, MarkdownString } from 'vscode';
 import { DummyTextDocument } from './dummy';
+import * as chaiAsPromised from 'chai-as-promised';
+import * as chai from 'chai';
 
+chai.use(chaiAsPromised);
 // tslint:disable:no-unused-expression
 describe("Hover Tests", function () {
     describe("HoverProvider api", function () {
@@ -18,15 +21,15 @@ describe("Hover Tests", function () {
             let position: Position = new Position(0, 1);
             let tockenEmitter = new CancellationTokenSource();
             let results = hp.provideHover(document, position, tockenEmitter.token);
-            expect(results).to.be.null;
+            expect(results).to.be.rejected;
         });
-        it("Should return a hover on an instruction", function () {
+        it("Should return a hover on an instruction", async function () {
             let hp = new M68kHoverProvider();
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 15);
             let tockenEmitter = new CancellationTokenSource();
             document.addLine("\t.mylabel\t   move.l #mempos,d1        ; mycomment   ");
-            let result = hp.provideHover(document, position, tockenEmitter.token);
+            let result = await hp.provideHover(document, position, tockenEmitter.token);
             expect(result).to.not.be.undefined;
             expect(result instanceof Hover).to.be.true;
             if (result instanceof Hover) {
@@ -37,13 +40,13 @@ describe("Hover Tests", function () {
                 }
             }
         });
-        it("Should return a hover on a data with a number", function () {
+        it("Should return a hover on a data with a number", async function () {
             let hp = new M68kHoverProvider();
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 23);
             let tockenEmitter = new CancellationTokenSource();
             document.addLine("\t.mylabel\t   move.l #$20,d1        ; mycomment   ");
-            let result = hp.provideHover(document, position, tockenEmitter.token);
+            let result = await hp.provideHover(document, position, tockenEmitter.token);
             expect(result).to.not.be.undefined;
             expect(result instanceof Hover).to.be.true;
             if (result instanceof Hover) {
@@ -55,13 +58,13 @@ describe("Hover Tests", function () {
             }
         });
     });
-    it("Should return a hover on a data with a number and a register", function () {
+    it("Should return a hover on a data with a number and a register", async function () {
         let hp = new M68kHoverProvider();
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 30);
         let tockenEmitter = new CancellationTokenSource();
         document.addLine("\t.mylabel\t   move.l #$ff5,$dff180        ; mycomment   ");
-        let result = hp.provideHover(document, position, tockenEmitter.token);
+        let result = await hp.provideHover(document, position, tockenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
