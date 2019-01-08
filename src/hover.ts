@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager, NumberParser } from './parser';
 import { ExtensionState } from './extension';
-import { resolve } from 'url';
 
 /**
  * Hover provider class for le assembly language
