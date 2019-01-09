@@ -55,6 +55,19 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                                 if (renderedLine2) {
                                     break;
                                 }
+                            } else if (elm.match(/[$#%@+-/*]([\dA-Z_]+)/i)) {
+                                // Try to evaluate a formula
+                                // Evaluate the formula value
+                                let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                                let value = await definitionHandler.evaluateFormula(elm).catch(err => {
+                                    // nothing to do
+                                });
+                                if (value !== undefined) {
+                                    renderedLine2 = this.renderRegisterValueNumber(value);
+                                    if (renderedLine2) {
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -69,10 +82,14 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             } else if (asmLine.variable && asmLine.variableRange.contains(position)) {
                 // Evaluate the variable value
                 let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
-                let value = await definitionHandler.evaluateVariable(asmLine.variable);
-                let rendered = this.renderNumber(value);
-                if (rendered) {
-                    resolve(new vscode.Hover(rendered));
+                let value = await definitionHandler.evaluateVariable(asmLine.variable).catch(err => {
+                    // nothing to do
+                });
+                if (value) {
+                    let rendered = this.renderNumber(value);
+                    if (rendered) {
+                        resolve(new vscode.Hover(rendered));
+                    }
                 }
             }
             reject();
@@ -86,32 +103,40 @@ export class M68kHoverProvider implements vscode.HoverProvider {
     public renderRegisterValue(text: string): vscode.MarkdownString | null {
         let value = this.numberParser.parse(text);
         if (value) {
-            // Transform to bin
-            let bin;
-            if (value > 0) {
-                bin = value.toString(2);
-            } else {
-                bin = (value >>> 0).toString(2);
-            }
-            let head = "|Bits";
-            let sep = "|----";
-            let row = "| ";
-            let strBit = bin.toString();
-            for (let i = 0; i < strBit.length; i++) {
-                head += " | ";
-                sep += " | ";
-                row += " | ";
-                head += strBit.length - i - 1;
-                sep += "----";
-                row += strBit.charAt(i);
-            }
-            head += "|\n";
-            sep += "|\n";
-            row += "|\n\n";
-            return new vscode.MarkdownString(head + sep + row);
+            return this.renderRegisterValueNumber(value);
         }
         return null;
     }
+    /**
+ * Renders a value of a register
+ * @param value Value of the register
+ */
+    public renderRegisterValueNumber(value: number): vscode.MarkdownString | null {
+        // Transform to bin
+        let bin;
+        if (value > 0) {
+            bin = value.toString(2);
+        } else {
+            bin = (value >>> 0).toString(2);
+        }
+        let head = "|Bits";
+        let sep = "|----";
+        let row = "| ";
+        let strBit = bin.toString();
+        for (let i = 0; i < strBit.length; i++) {
+            head += " | ";
+            sep += " | ";
+            row += " | ";
+            head += strBit.length - i - 1;
+            sep += "----";
+            row += strBit.charAt(i);
+        }
+        head += "|\n";
+        sep += "|\n";
+        row += "|\n\n";
+        return new vscode.MarkdownString(head + sep + row);
+    }
+
     /**
      * Render a number if it is present
      * @param text Text to be examined

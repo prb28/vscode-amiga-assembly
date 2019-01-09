@@ -6,14 +6,26 @@
 import { expect } from 'chai';
 import { M68kHoverProvider } from '../hover';
 import { HoverInstruction } from '../parser';
-import { Position, CancellationTokenSource, Hover, MarkdownString } from 'vscode';
+import { Position, CancellationTokenSource, Hover, MarkdownString, Uri } from 'vscode';
 import { DummyTextDocument } from './dummy';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
+import { ExtensionState } from '../extension';
+import * as Path from 'path';
+import { M68kDefinitionHandler } from '../definitionHandler';
 
 chai.use(chaiAsPromised);
 // tslint:disable:no-unused-expression
 describe("Hover Tests", function () {
+    const PROJECT_ROOT = Path.join(__dirname, '..', '..');
+    const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
+    const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
+    let dHnd: M68kDefinitionHandler;
+    before(async function () {
+        let state = ExtensionState.getCurrent();
+        dHnd = state.getDefinitionHandler();
+        await dHnd.scanFile(Uri.file(MAIN_SOURCE));
+    });
     describe("HoverProvider api", function () {
         it("Should return no hover on a empty document", function () {
             let hp = new M68kHoverProvider();
@@ -72,6 +84,40 @@ describe("Hover Tests", function () {
             expect(elm instanceof MarkdownString).to.be.true;
             if (elm instanceof MarkdownString) {
                 expect(elm.value.indexOf("Bits") > 0).to.be.true;
+            }
+        }
+    });
+    it("Should return a hover on a data with a formula and a register", async function () {
+        let hp = new M68kHoverProvider();
+        const document = new DummyTextDocument();
+        let position: Position = new Position(0, 51);
+        let tockenEmitter = new CancellationTokenSource();
+        document.addLine("\t.mylabel\t   move.l #(BPLSIZE+COPPER_WAIT)/2,$dff180        ; mycomment   ");
+        let result = await hp.provideHover(document, position, tockenEmitter.token);
+        expect(result).to.not.be.undefined;
+        expect(result instanceof Hover).to.be.true;
+        if (result instanceof Hover) {
+            let elm = result.contents[0];
+            expect(elm instanceof MarkdownString).to.be.true;
+            if (elm instanceof MarkdownString) {
+                expect(elm.value.indexOf("|  | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1|") > 0).to.be.true;
+            }
+        }
+    });
+    it("Should return a hover on variable", async function () {
+        let hp = new M68kHoverProvider();
+        const document = new DummyTextDocument();
+        let position: Position = new Position(0, 4);
+        let tockenEmitter = new CancellationTokenSource();
+        document.addLine("MY_H_VAR = xxx");
+        let result = await hp.provideHover(document, position, tockenEmitter.token);
+        expect(result).to.not.be.undefined;
+        expect(result instanceof Hover).to.be.true;
+        if (result instanceof Hover) {
+            let elm = result.contents[0];
+            expect(elm instanceof MarkdownString).to.be.true;
+            if (elm instanceof MarkdownString) {
+                expect(elm.value).to.be.equal("#`4096000` - $`3e.8000` - %`111110.10000000.00000000` - @`17500000.0000`");
             }
         }
     });

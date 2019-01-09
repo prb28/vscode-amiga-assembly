@@ -30,4 +30,7 @@ describe("Definition handler Tests", function () {
         await expect(dHnd.evaluateVariable("BPLSIZE")).to.be.eventually.equal(320 * 256 / 8);
         await expect(dHnd.evaluateVariable("MY_H_VAR")).to.be.eventually.equal(320 * 320 / 2 / 2 * (320 / 2));
     });
+    it("Should evaluate a formula", async function () {
+        await expect(dHnd.evaluateFormula("#(BPLSIZE+COPPER_WAIT)/2")).to.be.eventually.equal(((320 * 256 / 8) + 0xFFFE) / 2);
+    });
 });

@@ -11,6 +11,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     private referedSymbols = new Map<string, Map<String, Array<Symbol>>>();
     private variables = new Map<String, Symbol>();
     private labels = new Map<String, Symbol>();
+    private sortedVariablesNames = new Array<String>();
 
     constructor() {
         this.watcher = vscode.workspace.createFileSystemWatcher(M68kDefinitionHandler.SOURCE_FILES_GLOB);
@@ -147,6 +148,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 let s = symb[i];
                 this.variables.set(s.getLabel(), s);
             }
+            // sort variables
+            this.sortedVariablesNames = Array.from(this.variables.keys());
+            await this.sortedVariablesNames.sort((a, b) => {
+                return b.length - a.length;
+            });
+
             symb = file.getLabels();
             for (let i = 0; i < symb.length; i++) {
                 let s = symb[i];
@@ -164,23 +171,13 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return undefined;
     }
 
-    private evaluateVariableFormula(variable: string, sortedVariables: Array<String>): string | undefined {
+    private evaluateVariableFormula(variable: string): string | undefined {
         let v = this.variables.get(variable);
         if (v !== undefined) {
             let value = v.getValue();
             if ((value !== undefined) && (value.length > 0)) {
                 if (value.match(/[A-Za-z_]*/)) {
-                    // Search variables
-                    for (let i = 0; i < sortedVariables.length; i++) {
-                        let vn = sortedVariables[i].toString();
-                        if (value.indexOf(vn) >= 0) {
-                            let formula = this.evaluateVariableFormula(vn, sortedVariables);
-                            if (formula !== undefined) {
-                                // replace all
-                                value = value.split(vn).join('(' + formula + ')');
-                            }
-                        }
-                    }
+                    value = this.replaceVaraiblesInFormula(value);
                 }
             }
             return value;
@@ -188,22 +185,59 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return undefined;
     }
 
+    private replaceVaraiblesInFormula(formula: string): string {
+        let newFormula = formula;
+        let variables = this.findVariablesInFormula(newFormula);
+        for (let i = 0; i < variables.length; i++) {
+            let vn = variables[i];
+            let formula = this.evaluateVariableFormula(vn);
+            if (formula !== undefined) {
+                // replace all
+                newFormula = newFormula.split(vn).join('(' + formula + ')');
+            }
+        }
+        return newFormula;
+    }
+
+
+    public findVariablesInFormula(formula: string): Array<string> {
+        let variables = new Array<string>();
+        for (let i = 0; i < this.sortedVariablesNames.length; i++) {
+            let vn = this.sortedVariablesNames[i].toString();
+            if (formula.indexOf(vn) >= 0) {
+                variables.push(vn);
+            }
+        }
+        return variables;
+    }
+
     public evaluateVariable(variable: string): Promise<number> {
         return new Promise(async (resolve, reject) => {
-            let variables = Array.from(this.variables.keys());
-            await variables.sort((a, b) => {
-                return b.length - a.length;
-            });
             let calc = new Calc();
-            let formula = this.evaluateVariableFormula(variable, variables);
+            let formula = this.evaluateVariableFormula(variable);
             if (formula) {
                 let result = calc.calculate(formula);
                 if (result !== NaN) {
-                    resolve(result);
+                    return resolve(result);
                 }
             }
             reject();
         });
     }
+
+    public evaluateFormula(formula: string): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            let newFormula = this.replaceVaraiblesInFormula(formula);
+            if (newFormula) {
+                let calc = new Calc();
+                let result = calc.calculate(newFormula);
+                if (result !== NaN) {
+                    return resolve(result);
+                }
+            }
+            reject();
+        });
+    }
+
 }
 
