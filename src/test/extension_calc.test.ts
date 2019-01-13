@@ -53,7 +53,7 @@ describe("Global Extension Tests", function () {
                 // tslint:disable-next-line:no-unused-expression
                 expect(sb).to.not.be.undefined;
                 if (sb) {
-                    expect(sb.text).to.be.equal("3+2=#5/$5/%101");
+                    expect(sb.text).to.be.equal("#5/$5/%101");
                 }
             }
         });
@@ -88,7 +88,7 @@ describe("Global Extension Tests", function () {
                 await vscode.commands.executeCommand("amiga-assembly.evaluate-selection");
                 expect(editor.document.getText()).to.be.equal("3+2");
                 verify(spiedWindow.showInformationMessage(anyString())).once();
-                expect(capture(spiedWindow.showInformationMessage).last()[0]).to.be.equal("3+2=#5/$5/%101");
+                expect(capture(spiedWindow.showInformationMessage).last()[0]).to.be.equal("#5/$5/%101");
             } else {
                 expect.fail("Editor not available");
             }

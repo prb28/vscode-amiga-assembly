@@ -169,11 +169,11 @@ describe("debug disassebled Tests", function () {
             expect(stack.source).to.be.undefined;
         });
         it("Should generate an error if disassemble without capstone or arguments", async function () {
+            when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("00000");
             let manager = new DebugDisassembledMananger(gdbProxy, undefined, variableResolver);
-            expect(manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 })).to.be.rejected;
+            await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 })).to.be.rejected;
             manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
-            expect(manager.disassembleRequest(<DisassembleAddressArguments>{})).to.be.rejected;
-            expect(manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8 })).to.be.rejected;
+            await expect(manager.disassembleRequest(<DisassembleAddressArguments>{})).to.be.rejected;
         });
         it("Should disassemble a segmentID", async function () {
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
@@ -187,11 +187,11 @@ describe("debug disassebled Tests", function () {
             expect(variables[1].value).to.contain('move.l a2,a6');
             // Reject get memory
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenReject(new Error("no no"));
-            expect(manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 })).to.be.rejected;
+            await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 })).to.be.rejected;
             // reject disassemble
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenReject("no no");
-            expect(manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 })).to.be.rejected;
+            await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 })).to.be.rejected;
         });
         it("Should disassemble a memory address", async function () {
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("00000");
@@ -205,11 +205,11 @@ describe("debug disassebled Tests", function () {
             expect(variables[1].value).to.contain('move.l a2,a6');
             // Reject get memory
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReject(new Error("no no"));
-            expect(manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8 })).to.be.rejected;
+            await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8 })).to.be.rejected;
             // reject disassemble
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenReject("no no");
-            expect(manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8 })).to.be.rejected;
+            await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8 })).to.be.rejected;
         });
         it("Should disassemble a copper address", async function () {
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("018005023fd3fffe6401ff01");
@@ -224,7 +224,7 @@ describe("debug disassebled Tests", function () {
             expect(variables[2].value).to.contain('Skip');
             // Reject get memory
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReject(new Error("no no"));
-            expect(manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8, copper: true })).to.be.rejected;
+            await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8, copper: true })).to.be.rejected;
         });
         it("Should get an address for a line in an asmdebug editor", async function () {
             let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);

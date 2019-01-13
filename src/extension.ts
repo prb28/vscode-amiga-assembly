@@ -4,12 +4,12 @@ import * as vscode from 'vscode';
 import { M68kFormatter } from './formatter';
 import { M68kHoverProvider } from './hover';
 import { M86kColorProvider } from './color';
-import { CalcController } from './calc';
+import { CalcController } from './calcComponents';
 import { VASMController } from './vasm';
 import { FsUAEDebugSession } from './fsUAEDebug';
 import * as Net from 'net';
 import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
-import { Calc } from './calc';
+import { CalcComponent } from './calcComponents';
 import { VASMCompiler } from './vasm';
 import { StatusManager } from "./status";
 import { Disassembler } from './disassemble';
@@ -33,7 +33,7 @@ export class ExtensionState {
     private errorDiagnosticCollection: vscode.DiagnosticCollection | undefined;
     private warningDiagnosticCollection: vscode.DiagnosticCollection | undefined;
     private statusManager: StatusManager | undefined;
-    private calc: Calc | undefined;
+    private calc: CalcComponent | undefined;
     private disassembler: Disassembler | undefined;
     private adfTools: ADFTools | undefined;
     private definitionHandler: M68kDefinitionHandler | undefined;
@@ -55,9 +55,9 @@ export class ExtensionState {
         }
         return this.statusManager;
     }
-    public getCalc(): Calc {
+    public getCalc(): CalcComponent {
         if (this.calc === undefined) {
-            this.calc = new Calc();
+            this.calc = new CalcComponent();
         }
         return this.calc;
     }
