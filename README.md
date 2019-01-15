@@ -9,8 +9,10 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases). 
 
 
-## 0.11.0
-- Create an ADF disk with the command *Amiga Assembly: Create ADF file* (uses ADFTools and ADFlib : new binaries needed)
+## New in 0.12.0
+- Evaluate variables values in source development and debug
+- Set a prefered comment and/or instruction position while formatting a source
+- Provide outline information
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -73,6 +75,11 @@ The assembly language will be formatted with the standard shortcuts :
 ![Disassemble a copper list](images/copperdisassembly.gif)
 
 ## Release Notes
+## 0.12.0
+- Evaluate variables values
+- Set a prefered comment and/or instruction position while formatting a source
+- Provide outline information
+
 ## 0.11.0
 - Create an ADF disk with the command *Amiga Assembly: Create ADF file* (uses ADFTools and ADFlib : new binaries needed)
 - Bug fixes

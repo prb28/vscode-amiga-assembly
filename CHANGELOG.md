@@ -4,8 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [0.12.0] - 
+- [Feat #46](https://github.com/prb28/vscode-amiga-assembly/issues/46) Evaluate variables values
+- [Feat #45](https://github.com/prb28/vscode-amiga-assembly/issues/45) Set a prefered comment and/or instruction position while formatting a source
+- [Feat #44](https://github.com/prb28/vscode-amiga-assembly/issues/44) Provide outline information
+
 ### [0.11.0] - 2019-01-02
-- [Feat #37](https://github.com/prb28/vscode-amiga-assembly/issues/39) Generate adf file with the output (#39)
+- [Feat #37](https://github.com/prb28/vscode-amiga-assembly/issues/39) Generate adf file with the output
 - [Issue #43](https://github.com/prb28/vscode-amiga-assembly/issues/43) Bad assignment formatting
 - [Issue #41](https://github.com/prb28/vscode-amiga-assembly/issues/41) When runing the program, the stop button should kill FS-UAE
 
