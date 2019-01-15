@@ -94,16 +94,24 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                         }
                     }
                 }
-            } else if (asmLine.variable && asmLine.variableRange.contains(position)) {
+            } else if ((asmLine.variable && asmLine.variableRange.contains(position)) ||
+                (asmLine.value && asmLine.valueRange.contains(position))) {
                 // Evaluate the variable value
-                let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
-                let value = await definitionHandler.evaluateVariable(asmLine.variable).catch(err => {
-                    // nothing to do
-                });
-                if (value) {
-                    let rendered = this.renderNumber(value);
-                    if (rendered) {
-                        resolve(new vscode.Hover(rendered));
+                let word = document.getWordRangeAtPosition(position);
+                if (word) {
+                    let text = document.getText(word);
+                    let match = /\w+/.exec(text);
+                    if (match) {
+                        let variable = match[0];
+                        let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                        await definitionHandler.evaluateVariable(variable).then(value => {
+                            let rendered = this.renderNumber(value);
+                            if (rendered) {
+                                resolve(new vscode.Hover(rendered));
+                            }
+                        }).catch(err => {
+                            // nothing to do
+                        });
                     }
                 }
             }
