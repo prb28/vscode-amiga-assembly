@@ -1,6 +1,5 @@
 import { DebugVariableResolver } from './debugVariableResolver';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { Calc } from './calc';
 import { StringUtils } from './stringUtils';
 import { ExtensionState } from './extension';
 
