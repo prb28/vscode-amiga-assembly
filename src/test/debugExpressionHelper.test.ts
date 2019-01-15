@@ -10,10 +10,26 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DummyVariableResolver } from './dummyVariableResolver';
+import * as Path from 'path';
+import * as vscode from 'vscode';
+import { ExtensionState } from '../extension';
 chai.use(chaiAsPromised);
 
 // tslint:disable:no-unused-expression
 describe("debug expression helper Tests", function () {
+    before(async function () {
+        const PROJECT_ROOT = Path.join(__dirname, '..', '..');
+        const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
+        const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
+        // activate the extension
+        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
+        let state = ExtensionState.getCurrent();
+        let dHnd = state.getDefinitionHandler();
+        await dHnd.scanFile(vscode.Uri.file(MAIN_SOURCE));
+    });
     it("Should evaluate the memory expression", function () {
         let helper = new DebugExpressionHelper();
         let mockedVariableResolver = mock(DummyVariableResolver);
@@ -29,6 +45,7 @@ describe("debug expression helper Tests", function () {
             expect(helper.getAddressFromExpression("#10 + $a", 1, variableResolver)).to.eventually.be.equal(20),
             expect(helper.getAddressFromExpression("#10 +${pc}+ ${copper} + ($a/2)", 1, variableResolver)).to.eventually.be.equal(32),
             expect(helper.getAddressFromExpression("${testfail} + $a", 1, variableResolver)).to.be.rejectedWith(Error, "No"),
+            expect(helper.getAddressFromExpression("${pc} + $a + BPLSIZE", 1, variableResolver)).to.eventually.be.equal(0xf + 0xa + (256 * 320) / 8)
         ]);
     });
     it("Should process a memory dump", function () {

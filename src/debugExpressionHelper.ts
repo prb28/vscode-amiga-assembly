@@ -2,9 +2,9 @@ import { DebugVariableResolver } from './debugVariableResolver';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { Calc } from './calc';
 import { StringUtils } from './stringUtils';
+import { ExtensionState } from './extension';
 
 export class DebugExpressionHelper {
-    private calc = new Calc();
     public getAddressFromExpression(expression: string, frameIndex: number | undefined, variableResolver: DebugVariableResolver): Promise<number> {
         return new Promise<number>(async (resolve, reject) => {
             if (expression !== null) {
@@ -29,12 +29,13 @@ export class DebugExpressionHelper {
                         newExpression = newExpression.replace("#{", "${").replace("${" + variableName + "}", "$" + value);
                     }
                 }
-                let result = this.calc.calculate(newExpression);
-                if (result !== undefined) {
+                // call the function to calculate the expression
+                let dHnd = ExtensionState.getCurrent().getDefinitionHandler();
+                dHnd.evaluateFormula(newExpression).then(result => {
                     resolve(result);
-                } else {
-                    reject(new Error("Address expression cannot be evaluated"));
-                }
+                }).catch(err => {
+                    reject(err);
+                });
             } else {
                 reject(new Error("Invalid address"));
             }

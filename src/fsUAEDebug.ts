@@ -935,16 +935,34 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-        // Evaluate an expression
-        let matches = /^([ad][0-7]|pc|sr)$/i.exec(args.expression);
-        if (matches) {
-            return this.evaluateRequestRegister(response, args);
-        } else if (args.expression.startsWith('m')) {
-            return this.evaluateRequestGetMemory(response, args);
-        } else if (args.expression.startsWith('M')) {
-            return this.evaluateRequestSetMemory(response, args);
-        }
+    protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            // Evaluate an expression
+            let matches = /^([ad][0-7]|pc|sr)$/i.exec(args.expression);
+            if (matches) {
+                this.evaluateRequestRegister(response, args);
+            } else if (args.expression.startsWith('m')) {
+                this.evaluateRequestGetMemory(response, args);
+            } else if (args.expression.startsWith('M')) {
+                this.evaluateRequestSetMemory(response, args);
+            } else {
+                await this.debugExpressionHelper.getAddressFromExpression(args.expression, args.frameId, this).then((address) => {
+                    response.body = {
+                        result: '$' + address.toString(16),
+                        type: "string",
+                        variablesReference: 0,
+                    };
+                    this.sendResponse(response);
+                    resolve();
+                }).catch((err) => {
+                    response.success = false;
+                    response.message = err.toString();
+                    this.sendResponse(response);
+                    return reject(err);
+                });
+            }
+            resolve();
+        });
     }
 
     protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): void {
