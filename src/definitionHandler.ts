@@ -98,13 +98,17 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     public scanWorkspace(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            return vscode.workspace.findFiles(M68kDefinitionHandler.SOURCE_FILES_GLOB, null, undefined).then(filesURI => {
+        return new Promise(async (resolve, reject) => {
+            await vscode.workspace.findFiles(M68kDefinitionHandler.SOURCE_FILES_GLOB, null, undefined).then((filesURI) => {
                 let promises = [];
                 for (let i = 0; i < filesURI.length; i++) {
                     promises.push(this.scanFile(filesURI[i]));
                 }
-                return Promise.all(promises);
+                Promise.all(promises).then(() => {
+                    resolve();
+                }).catch(err => {
+                    reject(err);
+                });
             });
         });
     }
