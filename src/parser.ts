@@ -267,6 +267,23 @@ export class ASMLine {
         }
         return symbols;
     }
+
+    /**
+     * Returns the registers retrieved from a data.
+     * 
+     * @return a list of registers found
+     */
+    public getRegistersFromData(): Array<string> {
+        let registers = new Array<string>();
+        if (this.data.length > 0) {
+            let reg = /(^|[\(,\s])([ad][0-7])/gi;
+            let match;
+            while (match = reg.exec(this.data)) {
+                registers.push(match[2].toLowerCase());
+            }
+        }
+        return registers;
+    }
 }
 
 /**

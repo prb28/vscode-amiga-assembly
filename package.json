@@ -39,7 +39,8 @@
         "onCommand:amiga-assembly.clean-vasm-workspace",
         "onCommand:amiga-assembly.disassemble-file",
         "onCommand:amiga-assembly.disassemble-copper",
-        "onCommand:amiga-assembly.create-adffile"
+        "onCommand:amiga-assembly.create-adffile",
+        "onCommand:amiga-assembly.list-used-registers"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -296,7 +297,12 @@
             {
                 "command": "amiga-assembly.create-adffile",
                 "title": "Amiga Assembly: Create ADF file",
-                "description": "Craetes a bootable ADF file from the build destination directory"
+                "description": "Creates a bootable ADF file from the build destination directory"
+            },
+            {
+                "command": "amiga-assembly.list-used-registers",
+                "title": "Amiga Assembly: List used registers in selection",
+                "description": "Lists all the registers (a0-a7 / d0-d7) used in the selected code"
             }
         ],
         "breakpoints": [

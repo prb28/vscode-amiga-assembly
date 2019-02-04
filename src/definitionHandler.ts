@@ -1,7 +1,8 @@
-import { Definition, SymbolInformation, DocumentSymbolProvider, DefinitionProvider, TextDocument, Position, CancellationToken, Location, Uri, FileSystemWatcher, ReferenceProvider, ReferenceContext, ProviderResult, Range } from 'vscode';
+import { Definition, SymbolInformation, DocumentSymbolProvider, DefinitionProvider, TextDocument, Position, CancellationToken, Location, Uri, FileSystemWatcher, ReferenceProvider, ReferenceContext, ProviderResult, Range, window } from 'vscode';
 import * as vscode from 'vscode';
 import { SymbolFile, Symbol } from './symbols';
 import { Calc } from './calc';
+import { ASMLine } from './parser';
 
 export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvider, DocumentSymbolProvider {
     static readonly SOURCE_FILES_GLOB = "**/*.{asm,s,i,ASM,S,I}";
@@ -80,6 +81,102 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             }
             return reject();
         });
+    }
+
+    public provideUsedRegistersSymbols(): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+            // Get the current text editor
+            let editor = window.activeTextEditor;
+            if (editor === undefined) {
+                reject(new Error("Cannot access to editor"));
+            } else {
+                let foundRegisters = Array<string>();
+                const document = editor.document;
+                const selections = editor.selections;
+                for (const selection of selections) {
+                    if (!selection.isEmpty) {
+                        for (var i = selection.start.line; i <= selection.end.line; i++) {
+                            const line = document.lineAt(i);
+                            let asmLine = new ASMLine(line.text, line);
+                            // get the registers
+                            let registers = asmLine.getRegistersFromData();
+                            foundRegisters = foundRegisters.concat(registers);
+                        }
+                    }
+                }
+                let used = foundRegisters.sort().filter((x, i, a) => !i || x !== a[i - 1]);
+                let aused = Array<number>();
+                let dused = Array<number>();
+                let afree = Array<number>();
+                let dfree = Array<number>();
+                for (let i = 0; i < 8; i++) {
+                    let ar = "a" + i;
+                    let dr = "d" + i;
+                    if (used.indexOf(ar) < 0) {
+                        afree.push(i);
+                    } else {
+                        aused.push(i);
+                    }
+                    if (used.indexOf(dr) < 0) {
+                        dfree.push(i);
+                    } else {
+                        dused.push(i);
+                    }
+                }
+                let result = "Registers ";
+                let u = this.printRegisters(aused, dused);
+                if (u.length > 0) {
+                    result += "used: " + u;
+                } else {
+                    result += "used: none";
+                }
+                let f = this.printRegisters(afree, dfree);
+                if (f.length > 0) {
+                    result += " - free: " + f;
+                } else {
+                    result += " - free: none";
+                }
+                resolve(result);
+            }
+        });
+    }
+
+    public printRegisters(aregs: Array<number>, dregs: Array<number>): string {
+        // checking registers "a"
+        let results = this.printRegistersForRegType("d", dregs);
+        // checking registers "d"
+        let aResult = this.printRegistersForRegType("a", aregs);
+        if ((results.length > 0) && (aResult.length > 0)) {
+            results += "/" + aResult;
+        }
+        return results;
+    }
+
+    public printRegistersForRegType(regkey: string, regs: Array<number>): string {
+        let result = "";
+        let startRange = -1;
+        let endRange = -1;
+        for (let i = 0; i < 9; i++) {
+            if (regs.indexOf(i) < 0) {
+                if (startRange >= 0) {
+                    if (result.length > 0) {
+                        result += "/";
+                    }
+                    if (endRange <= startRange) {
+                        result += regkey + startRange;
+                    } else {
+                        result += regkey + startRange + "-" + regkey + endRange;
+                    }
+                    startRange = -1;
+                    endRange = -1;
+                }
+            } else if (startRange >= 0) {
+                endRange = i;
+            } else {
+                startRange = i;
+            }
+        }
+        return result;
     }
 
     private getLabel(document: TextDocument, range: Range): string {

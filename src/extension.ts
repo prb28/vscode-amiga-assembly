@@ -150,6 +150,16 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
+    // List all symbols in selection
+    disposable = vscode.commands.registerCommand('amiga-assembly.list-used-registers', async () => {
+        state.getDefinitionHandler().provideUsedRegistersSymbols().then(symbolsMessage => {
+            vscode.window.showInformationMessage(symbolsMessage);
+        }).catch(err => {
+            vscode.window.showErrorMessage(err.message);
+        });
+    });
+    context.subscriptions.push(disposable);
+
     // create a new calculator
     let calc = state.getCalc();
     let controller = new CalcController(calc);

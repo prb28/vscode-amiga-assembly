@@ -112,7 +112,28 @@ describe("Parser Tests", function () {
             [symbol, range] = results[2];
             expect(symbol).to.be.equal("LOGOMARGIN");
             expect(range).to.be.eql(new Range(new Position(0, 26), new Position(0, 36)));
-
+        });
+        it("Should retrieve the registers from a data line", function () {
+            let asmLine = new ASMLine("   move.l #mysymb,a0");
+            let results = asmLine.getRegistersFromData();
+            expect(results.length).to.be.equal(1);
+            expect(results[0]).to.be.equal("a0");
+            asmLine = new ASMLine("   move.l D1,A0   ; d0 not selected");
+            results = asmLine.getRegistersFromData();
+            expect(results.length).to.be.equal(2);
+            expect(results[0]).to.be.equal("d1");
+            expect(results[1]).to.be.equal("a0");
+            asmLine = new ASMLine("   move.l d8,a8 ");
+            results = asmLine.getRegistersFromData();
+            expect(results.length).to.be.equal(0);
+            asmLine = new ASMLine("   move.l $d1,a7 ");
+            results = asmLine.getRegistersFromData();
+            expect(results.length).to.be.equal(1);
+            expect(results[0]).to.be.equal("a7");
+            asmLine = new ASMLine("   move.l #$a1,d7 ");
+            results = asmLine.getRegistersFromData();
+            expect(results.length).to.be.equal(1);
+            expect(results[0]).to.be.equal("d7");
         });
         it("Should parse a single line instruction", function () {
             let asmLine = new ASMLine(" rts");
