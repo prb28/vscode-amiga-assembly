@@ -4,7 +4,7 @@
 
 import { expect } from 'chai';
 import { M68kDefinitionHandler } from '../definitionHandler';
-import { Uri, workspace, WorkspaceEdit, window, commands, Position, extensions } from 'vscode';
+import { Uri, workspace, WorkspaceEdit, window, commands, extensions } from 'vscode';
 import * as Path from 'path';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
