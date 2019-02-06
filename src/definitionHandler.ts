@@ -31,12 +31,18 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 let symbols = symbolFile.getVariables();
                 for (let i = 0; i < symbols.length; i++) {
                     let symbol = symbols[i];
-                    results.push(new SymbolInformation(symbol.getLabel(), vscode.SymbolKind.Variable, "", new Location(symbol.getFile().getUri(), symbol.getRange())));
+                    results.push(new SymbolInformation(symbol.getLabel(), vscode.SymbolKind.Constant, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
                 }
                 symbols = symbolFile.getLabels();
                 for (let i = 0; i < symbols.length; i++) {
                     let symbol = symbols[i];
-                    results.push(new SymbolInformation(symbol.getLabel(), vscode.SymbolKind.Method, "", new Location(symbol.getFile().getUri(), symbol.getRange())));
+                    let symbolKind = vscode.SymbolKind.Function;
+                    if (symbolFile.getSubRoutines().indexOf(symbol.getLabel()) >= 0) {
+                        symbolKind = vscode.SymbolKind.Class;
+                    } else if (symbolFile.getDcLabels().indexOf(symbol) >= 0) {
+                        symbolKind = vscode.SymbolKind.Variable;
+                    }
+                    results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
                 }
             }
             resolve(results);

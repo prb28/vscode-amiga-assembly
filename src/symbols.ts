@@ -7,6 +7,8 @@ export class SymbolFile {
     private referedSymbols = new Array<Symbol>();
     private variables = new Array<Symbol>();
     private labels = new Array<Symbol>();
+    private subroutines = new Array<string>();
+    private dclabel = new Array<Symbol>();
     //private importedFiles = new Array<SymbolFile>();
 
     constructor(uri: Uri) {
@@ -28,6 +30,8 @@ export class SymbolFile {
 
     public readDocument(document: TextDocument) {
         this.clear();
+        let lastLabel: Symbol | null = null;
+        let labelsBeforeRts = Array<Symbol>();
         for (let i = 0; i < document.lineCount; i++) {
             let line = document.lineAt(i);
             let asmLine = new ASMLine(line.text, line);
@@ -44,10 +48,40 @@ export class SymbolFile {
                 }
             }
             if (asmLine.label.length > 0) {
-                this.labels.push(new Symbol(asmLine.label, this, asmLine.labelRange));
+                let label = asmLine.label.replace(":", "");
+                let s = new Symbol(label, this, asmLine.labelRange);
+                this.labels.push(s);
+                lastLabel = s;
             }
             if (asmLine.variable.length > 0) {
                 this.variables.push(new Symbol(asmLine.variable, this, asmLine.variableRange, asmLine.value));
+            }
+            let instruct = asmLine.instruction.toLowerCase();
+            if (instruct.indexOf("bsr") >= 0) {
+                this.subroutines.push(asmLine.data);
+            } else if ((instruct.indexOf("dc") === 0) || (instruct.indexOf("ds") === 0) || (instruct.indexOf("incbin") === 0)) {
+                if (lastLabel) {
+                    this.dclabel.push(lastLabel);
+                }
+            } else if (instruct.indexOf("rts") >= 0) {
+                if (lastLabel) {
+                    labelsBeforeRts.push(lastLabel);
+                }
+            }
+        }
+        let inSub = false;
+        let lastParent: Symbol | undefined;
+        for (let l of this.labels) {
+            if (this.subroutines.indexOf(l.getLabel()) >= 0) {
+                inSub = true;
+                lastParent = l;
+            } else if (inSub && lastParent) {
+                l.setParent(lastParent.getLabel());
+                let range = lastParent.getRange();
+                lastParent.setRange(range.union(l.getRange()));
+            }
+            if (labelsBeforeRts.indexOf(l) >= 0) {
+                inSub = false;
             }
         }
     }
@@ -72,6 +106,12 @@ export class SymbolFile {
     public getLabels(): Array<Symbol> {
         return this.labels;
     }
+    public getSubRoutines(): Array<string> {
+        return this.subroutines;
+    }
+    public getDcLabels(): Array<Symbol> {
+        return this.dclabel;
+    }
 }
 
 export class Symbol {
@@ -79,11 +119,13 @@ export class Symbol {
     private file: SymbolFile;
     private range: Range;
     private value?: string;
+    private parent: string = "";
     constructor(label: string, file: SymbolFile, range: Range, value?: string) {
         this.label = label;
         this.file = file;
         this.range = range;
         this.value = value;
+        this.parent = label;
     }
     public getFile(): SymbolFile {
         return this.file;
@@ -91,10 +133,19 @@ export class Symbol {
     public getRange(): Range {
         return this.range;
     }
+    public setRange(range: Range) {
+        this.range = range;
+    }
     public getLabel(): string {
         return this.label;
     }
     public getValue(): string | undefined {
         return this.value;
+    }
+    public getParent(): string {
+        return this.parent;
+    }
+    public setParent(parent: string) {
+        this.parent = parent;
     }
 }
