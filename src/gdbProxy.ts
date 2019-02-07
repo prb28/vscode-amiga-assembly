@@ -390,7 +390,7 @@ export class GdbProxy extends EventEmitter {
      */
     public static calculateChecksum(text: string): string {
         let cs = 0;
-        var buffer = new Buffer(text);
+        var buffer = Buffer.alloc(text.length, text);
         for (let i = 0; i < buffer.length; ++i) {
             cs += buffer[i];
         }
@@ -411,7 +411,7 @@ export class GdbProxy extends EventEmitter {
      */
     public sendPacketString(text: string): Promise<string> {
         return new Promise(async (resolve, reject) => {
-            var data = new Buffer(text.length + 5);
+            var data = Buffer.alloc(text.length + 5);
             let offset = 0;
             data.write('$', offset++);
             data.write(text, offset);

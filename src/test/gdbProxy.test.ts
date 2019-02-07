@@ -12,7 +12,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 
 function formatBuffer(text: string): Buffer {
-    var data = new Buffer(text.length + 5);
+    var data = Buffer.alloc(text.length + 5);
     let offset = 0;
     data.write('$', offset++);
     data.write(text, offset);
