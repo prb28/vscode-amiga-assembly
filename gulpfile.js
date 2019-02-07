@@ -15,7 +15,7 @@ gulp.task('cover:enableconfig', () => {
         .pipe(gulp.dest("./", { 'overwrite': true }));
 });
 
-gulp.task('cover:enable', ['cover:clean', 'cover:enableconfig'], () => { });
+gulp.task('cover:enable', gulp.series(['cover:clean', 'cover:enableconfig']));
 
 gulp.task('cover:disable', () => {
     return gulp.src("./template/coverconfig.json")
