@@ -4,18 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [0.13.0] - 2019-02-09
+- [Feat #54](https://github.com/prb28/vscode-amiga-assembly/issues/54) Hierarchical Outline
+- [Feat #48](https://github.com/prb28/vscode-amiga-assembly/issues/48) Display used/free registers in selected codeblock
+
 ### [0.12.0] - 2019-01-15
 - [Feat #46](https://github.com/prb28/vscode-amiga-assembly/issues/46) Evaluate variables values
-- [Feat #45](https://github.com/prb28/vscode-amiga-assembly/issues/45) Set a prefered comment and/or instruction position while formatting a source
+- [Feat #45](https://github.com/prb28/vscode-amiga-assembly/issues/45) Set a preferred comment and/or instruction position while formatting a source
 - [Feat #44](https://github.com/prb28/vscode-amiga-assembly/issues/44) Provide outline information
 
 ### [0.11.0] - 2019-01-02
 - [Feat #37](https://github.com/prb28/vscode-amiga-assembly/issues/39) Generate adf file with the output
 - [Issue #43](https://github.com/prb28/vscode-amiga-assembly/issues/43) Bad assignment formatting
-- [Issue #41](https://github.com/prb28/vscode-amiga-assembly/issues/41) When runing the program, the stop button should kill FS-UAE
+- [Issue #41](https://github.com/prb28/vscode-amiga-assembly/issues/41) When running the program, the stop button should kill FS-UAE
 
 ### [0.10.2] - 2018-12-23
-- [Feat #37](https://github.com/prb28/vscode-amiga-assembly/issues/37) Text format should alingn = or equ statements
+- [Feat #37](https://github.com/prb28/vscode-amiga-assembly/issues/37) Text format should align = or equ statements
 - [Issue #38](https://github.com/prb28/vscode-amiga-assembly/issues/38) Breakpoint set before debugging session start is not sent to fs-uae 
 
 ### [0.10.1] - 2018-11-13
@@ -23,9 +27,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Vasm error parsing fixes
 
 ### [0.10.0] - 2018-10-28
-- [Feat #32](https://github.com/prb28/vscode-amiga-assembly/issues/32) Print memory adresses in custom registries (dffxxx)
+- [Feat #32](https://github.com/prb28/vscode-amiga-assembly/issues/32) Print memory addresses in custom registries (dffxxx)
 - [Issue #31](https://github.com/prb28/vscode-amiga-assembly/issues/31) Bad symbol address if it is in a different segment/sections from code
-- [Issue #30](https://github.com/prb28/vscode-amiga-assembly/issues/30) Bad adresses in memory dump
+- [Issue #30](https://github.com/prb28/vscode-amiga-assembly/issues/30) Bad addresses in memory dump
 - [Issue #28](https://github.com/prb28/vscode-amiga-assembly/issues/28) Working directory for emulator is invalid
 - [Feat #26](https://github.com/prb28/vscode-amiga-assembly/issues/26) Copper disassembly 
 - [Issue #25](https://github.com/prb28/vscode-amiga-assembly/issues/25) command 'amiga-assembly.disassemble-file' not found after update

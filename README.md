@@ -2,17 +2,16 @@
 [![Coverage Status](https://coveralls.io/repos/github/prb28/vscode-amiga-assembly/badge.png?branch=master)](https://coveralls.io/github/prb28/vscode-amiga-assembly?branch=master)
 
 # Amiga Assembly for Visual Studio Code
-Amiga Assembly for Visual Studio Code is a extension to support assembly language for the Amiga Motorolla 68000 machines and emulators.
+Amiga Assembly for Visual Studio Code is a extension to support assembly language for the Amiga Motorola 68000 machines and emulators.
 
 Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to discover all the features and get the documentation.
 
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases). 
 
 
-## New in 0.12.0
-- Evaluate variables values in source development and debug
-- Set a prefered comment and/or instruction position while formatting a source
-- Provide outline information
+## New in 0.13.0
+- Display used/free registers in selected codeblock
+- Hierarchical Outline
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -47,8 +46,8 @@ The assembly language will be formatted with the standard shortcuts :
 ![Formatting screenshot](images/formattingrange.gif)
 
 ### Contextual documentation 
-- On passing over an assembly command a short documentation will apear.
-- On passing over a register address or name a short documentation will apear.
+- On passing over an assembly command a short documentation will appear.
+- On passing over a register address or name a short documentation will appear.
 
 ![Tooltip for instruction screenshot](images/hover.gif)
 
@@ -66,7 +65,7 @@ The assembly language will be formatted with the standard shortcuts :
 ![Simple calculator command](images/calculator.gif)
 
 ### Color editor
-- Visualisation of the color set to a register and visual edition
+- Visualization of the color set to a register and visual edition
 
 ![Evaluation in realtime](images/coloredit.gif)
 
@@ -75,9 +74,13 @@ The assembly language will be formatted with the standard shortcuts :
 ![Disassemble a copper list](images/copperdisassembly.gif)
 
 ## Release Notes
+## 0.13.0
+- Display used/free registers in selected codeblock
+- Hierarchical Outline
+
 ## 0.12.0
 - Evaluate variables values
-- Set a prefered comment and/or instruction position while formatting a source
+- Set a preferred comment and/or instruction position while formatting a source
 - Provide outline information
 
 ## 0.11.0
@@ -94,7 +97,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 ### 0.10.0
 - Copper disassembly
-- Print memory adresses in custom registries (dffxxx)
+- Print memory addresses in custom registries (dffxxx)
 - Bug fixes
 
 ### 0.9.0
