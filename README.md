@@ -10,7 +10,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 
 ## New in 0.13.0
-- Display used/free registers in selected codeblock
+- Display used/free registers in selected code block
 - Hierarchical Outline
 
 ### Other features
@@ -75,7 +75,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 ## Release Notes
 ## 0.13.0
-- Display used/free registers in selected codeblock
+- Display used/free registers in selected code block
 - Hierarchical Outline
 
 ## 0.12.0
