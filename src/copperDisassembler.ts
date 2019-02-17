@@ -1,5 +1,5 @@
-import { HoverRegister, HoverRegistersManager } from "./parser";
 import { StringUtils } from "./stringUtils";
+import { MemoryLabelsRegistry } from "./customMemoryAdresses";
 
 /** Type of copper instruction */
 export enum CopperIntructionType {
@@ -51,7 +51,6 @@ export class CopperInstruction {
 }
 
 export class CopperMove extends CopperInstruction {
-    static hoverRegistersManager = new HoverRegistersManager();
     /*DA = destination address */
     public DA: number;
     /*  RD = RAM data to be moved to destination register */
@@ -62,11 +61,8 @@ export class CopperMove extends CopperInstruction {
         super(CopperIntructionType.MOVE, first, second);
         this.DA = first & 0x01fe;
         this.RD = second;
-        let register = `DFF${this.DA.toString(16)}`;
-        let hr: HoverRegister | undefined = CopperMove.hoverRegistersManager.registersByAddress.get(register);
-        if (hr) {
-            this.label = hr.name;
-        }
+        let register = 0xdff000 + this.DA;
+        this.label = MemoryLabelsRegistry.getCustomName(register);
     }
     public toString(): string {
         let l: string;

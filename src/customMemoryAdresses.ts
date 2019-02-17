@@ -369,12 +369,15 @@ export class MemoryLabelsRegistry {
     ];
 
     private static customMap: Map<string, CustomData> | undefined;
+    private static customMapByAddr: Map<number, CustomData> | undefined;
 
     private static prepareCustomMap() {
         if (MemoryLabelsRegistry.customMap === undefined) {
             MemoryLabelsRegistry.customMap = new Map<string, CustomData>();
+            MemoryLabelsRegistry.customMapByAddr = new Map<number, CustomData>();
             for (let d of MemoryLabelsRegistry.customData) {
                 MemoryLabelsRegistry.customMap.set(d.name, d);
+                MemoryLabelsRegistry.customMapByAddr.set(d.adr, d);
             }
         }
     }
@@ -390,6 +393,16 @@ export class MemoryLabelsRegistry {
                 }
             } else {
                 return d.adr;
+            }
+        }
+        return undefined;
+    }
+    public static getCustomName(address: number): string | undefined {
+        MemoryLabelsRegistry.prepareCustomMap();
+        if (MemoryLabelsRegistry.customMapByAddr) {
+            let d = MemoryLabelsRegistry.customMapByAddr.get(address);
+            if (d) {
+                return d.name;
             }
         }
         return undefined;

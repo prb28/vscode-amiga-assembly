@@ -112,7 +112,7 @@ describe("debug disassebled Tests", function () {
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n2: 00 00     move.l a0,a1\n");
             let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
-            let stack = await manager.getStackFrame(0, 10, "my label");
+            let stack = await manager.getStackFrame(0, 10, "my label", false);
             expect(stack).to.be.eql(<StackFrame>{
                 column: 1,
                 id: 0,
@@ -120,7 +120,7 @@ describe("debug disassebled Tests", function () {
                 name: "my label",
                 source: new Source("0__$a__500.dbgasm", "disassembly:///0__$a__500.dbgasm")
             });
-            stack = await manager.getStackFrame(0, 2, "my label");
+            stack = await manager.getStackFrame(0, 2, "my label", false);
             expect(stack).to.be.eql(<StackFrame>{
                 column: 1,
                 id: 0,
@@ -134,7 +134,7 @@ describe("debug disassebled Tests", function () {
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n4: 00 00     move.l a0,a1\n");
             let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
-            let stack = await manager.getStackFrame(0, 2, "my label");
+            let stack = await manager.getStackFrame(0, 2, "my label", false);
             expect(stack.column).to.be.equal(0);
             expect(stack.id).to.be.equal(0);
             expect(stack.line).to.be.equal(0);
@@ -143,7 +143,7 @@ describe("debug disassebled Tests", function () {
             // reject get memory
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n2: 00 00     move.l a0,a1\n");
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenReject(new Error("no no"));
-            stack = await manager.getStackFrame(0, 2, "my label");
+            stack = await manager.getStackFrame(0, 2, "my label", false);
             expect(stack.column).to.be.equal(0);
             expect(stack.id).to.be.equal(0);
             expect(stack.line).to.be.equal(0);
@@ -152,7 +152,7 @@ describe("debug disassebled Tests", function () {
             // Reject disassemble
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenReject("no no");
-            stack = await manager.getStackFrame(0, 2, "my label");
+            stack = await manager.getStackFrame(0, 2, "my label", false);
             expect(stack.column).to.be.equal(0);
             expect(stack.id).to.be.equal(0);
             expect(stack.line).to.be.equal(0);
@@ -161,7 +161,7 @@ describe("debug disassebled Tests", function () {
             // capstone not defined
             manager = new DebugDisassembledMananger(gdbProxy, undefined, variableResolver);
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n4: 00 00     move.l a0,a1\n");
-            stack = await manager.getStackFrame(0, 2, "my label");
+            stack = await manager.getStackFrame(0, 2, "my label", false);
             expect(stack.column).to.be.equal(0);
             expect(stack.id).to.be.equal(0);
             expect(stack.line).to.be.equal(0);

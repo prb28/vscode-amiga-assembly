@@ -147,15 +147,16 @@ export class DebugDisassembledMananger {
         this.variableResolver = variableResolver;
     }
 
-    public getStackFrame(stackFrameIndex: number, address: number, stackframeLabel: string): Promise<StackFrame> {
+    public getStackFrame(stackFrameIndex: number, address: number, stackframeLabel: string, isCopper: boolean): Promise<StackFrame> {
         return new Promise(async (resolve, reject) => {
             let dAsmFile = new DebugDisassembledFile();
             let url: string;
             let length = 500;
             let lineNumber = 1;
+            dAsmFile.setCopper(isCopper);
             // is the pc on a opened segment ?
             let [segmentId, offset] = this.gdbProxy.toRelativeOffset(address);
-            if (segmentId >= 0) {
+            if ((segmentId >= 0) && !isCopper) {
                 // We have a segment
                 dAsmFile.setSegmentId(segmentId);
                 let returnedLineNumber = await this.getLineNumberInDisassembledSegent(segmentId, offset).catch((err) => {
@@ -166,7 +167,43 @@ export class DebugDisassembledMananger {
                     lineNumber = returnedLineNumber;
                 }
             } else {
-                dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(`\$${address.toString(16)}`).setLength(length);
+                let newAddress = address;
+                if (isCopper) {
+                    // Search for selected copper list
+                    // Read 
+                    let lineInCop1 = -1;
+                    let lineInCop2 = -1;
+                    let cop1Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver).catch(err => {
+                        reject(err);
+                    });
+                    if (cop1Addr) {
+                        lineInCop1 = (address - cop1Addr + 4) / 4;
+                    }
+                    let cop2Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver).catch(err => {
+                        reject(err);
+                    });
+                    if (cop2Addr) {
+                        lineInCop2 = (address - cop2Addr + 4) / 4;
+                    }
+                    if (cop1Addr && (lineInCop1 >= 0)) {
+                        if (cop2Addr && (lineInCop2 >= 0)) {
+                            if (lineInCop1 <= lineInCop2) {
+                                newAddress = cop1Addr;
+                                lineNumber = lineInCop1;
+                            } else {
+                                newAddress = cop2Addr;
+                                lineNumber = lineInCop2;
+                            }
+                        } else {
+                            newAddress = cop1Addr;
+                            lineNumber = lineInCop1;
+                        }
+                    } else if (cop2Addr && (lineInCop2 >= 0)) {
+                        newAddress = cop2Addr;
+                        lineNumber = lineInCop2;
+                    }
+                }
+                dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(`\$${newAddress.toString(16)}`).setLength(length);
             }
             url = `disassembly:///${dAsmFile}`;
             if (lineNumber >= 0) {

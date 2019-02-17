@@ -4,7 +4,8 @@ import {
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
-import { GdbProxy, GdbRegister, GdbBreakpoint, Segment, GdbHaltStatus } from './gdbProxy';
+import { GdbProxy } from './gdbProxy';
+import { GdbRegister, GdbBreakpoint, Segment, GdbHaltStatus, GdbAmigaSysThreadId } from './gdbProxyCore';
 import { ExecutorHelper } from './execHelper';
 import { CancellationTokenSource, workspace, window } from 'vscode';
 import { DebugInfo } from './debugInfo';
@@ -58,9 +59,6 @@ export interface PendingBreakPointsRequestData {
 export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
     // Default selection mask for exception : each bit is a exception code
     static readonly DEFAULT_EXCEPTION_MASK = 0b1111111000000010000011110000000000000000011111111111100;
-
-    // we don't support multiple threads, so we can use a hardcoded ID for the default thread
-    private static THREAD_ID = 1;
 
     // a Mock runtime (or debugger)
     private variableHandles = new Handles<string>();
@@ -143,18 +141,18 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 	 */
     public initProxy() {
         // setup event handlers
-        this.gdbProxy.on('stopOnEntry', () => {
-            this.sendEvent(new StoppedEvent('entry', FsUAEDebugSession.THREAD_ID));
+        this.gdbProxy.on('stopOnEntry', (threadId: number) => {
+            this.sendEvent(new StoppedEvent('entry', threadId));
         });
-        this.gdbProxy.on('stopOnStep', () => {
-            this.sendEvent(new StoppedEvent('step', FsUAEDebugSession.THREAD_ID));
+        this.gdbProxy.on('stopOnStep', (threadId: number) => {
+            this.sendEvent(new StoppedEvent('step', threadId));
         });
-        this.gdbProxy.on('stopOnBreakpoint', () => {
-            this.sendEvent(new StoppedEvent('breakpoint', FsUAEDebugSession.THREAD_ID));
+        this.gdbProxy.on('stopOnBreakpoint', (threadId: number) => {
+            this.sendEvent(new StoppedEvent('breakpoint', threadId));
         });
-        this.gdbProxy.on('stopOnException', (status: GdbHaltStatus) => {
+        this.gdbProxy.on('stopOnException', (status: GdbHaltStatus, threadId: number) => {
             this.sendEvent(new OutputEvent(`Exception raised: ${status.details}\n`));
-            this.sendEvent(new StoppedEvent('exception', FsUAEDebugSession.THREAD_ID));
+            this.sendEvent(new StoppedEvent('exception', threadId, status.details));
         });
         this.gdbProxy.on('segmentsUpdated', (segments: Array<Segment>) => {
             this.updateSegments(segments);
@@ -427,6 +425,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         let debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
         const path = <string>args.source.path;
         const clientLines = args.lines || [];
+        let hasError = false;
 
         // clear all breakpoints for this file
         if (this.debugInfo) {
@@ -459,7 +458,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             response.success = false;
                             response.message = err.toString();
                             this.sendResponse(response);
-                            return;
+                            hasError = true;
                         });
                     } else {
                         debugBreakPoints.push(<DebugProtocol.Breakpoint>{
@@ -473,13 +472,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         response: response,
                         args: args
                     });
+                    return;
                 }
             } else {
                 let address = await this.debugDisassembledMananger.getAddressForFileEditorLine(path, l).catch((err) => {
                     response.success = false;
                     response.message = err.toString();
                     this.sendResponse(response);
-                    return;
+                    hasError = true;
                 });
                 if (address) {
                     await this.gdbProxy.setBreakPointFromAddress(address).then(bp => {
@@ -494,7 +494,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         response.success = false;
                         response.message = err.toString();
                         this.sendResponse(response);
-                        return;
+                        hasError = true;
                     });
                 } else {
                     debugBreakPoints.push(<DebugProtocol.Breakpoint>{
@@ -505,91 +505,109 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 }
             }
         }
-        // send back the actual breakpoint positions
-        response.body = {
-            breakpoints: debugBreakPoints
-        };
-        this.sendResponse(response);
+        if (!hasError) {
+            // send back the actual breakpoint positions
+            response.body = {
+                breakpoints: debugBreakPoints
+            };
+            this.sendResponse(response);
+        }
     }
 
     protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
-        // runtime supports now threads so just return a default thread.
-        response.body = {
-            threads: [
-                new Thread(FsUAEDebugSession.THREAD_ID, "thread 1")
-            ]
-        };
-        this.sendResponse(response);
+        this.gdbProxy.getThreadIds().then(tids => {
+            let threads = new Array<Thread>();
+            for (let t of tids) {
+                threads.push(new Thread(t.getId(), t.getDisplayName()));
+            }
+            response.body = {
+                threads: threads
+            };
+            this.sendResponse(response);
+        }).catch((err) => {
+            response.success = false;
+            response.message = err.toString();
+            this.sendResponse(response);
+            return;
+        });
     }
 
     protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
         if (this.debugInfo) {
             const dbgInfo = this.debugInfo;
-            this.gdbProxy.stack().then(async stk => {
-                let stackFrames = [];
-                for (let f of stk.frames) {
-                    let stackFrameDone = false;
-                    let pc = f.pc.toString(16);
-                    if (f.segmentId >= 0) {
-                        let values = dbgInfo.resolveFileLine(f.segmentId, f.offset);
-                        if (values) {
-                            let line = values[2];
-                            if (line) {
-                                let idx = line.indexOf(';');
-                                if (idx > 0) {
-                                    line = line.substring(0, idx);
-                                }
-                                line = pc + ": " + line.trim().replace(/\s\s+/g, ' ');
-                            } else {
-                                line = pc;
-                            }
-                            stackFrames.push(new StackFrame(f.index, line, this.createSource(values[0]), values[1], 1));
-                            stackFrameDone = true;
-                        }
-                    }
-                    if (!stackFrameDone) {
-                        let line: string;
-                        let dCode = this.disassembledCache.get(f.pc);
-                        if (dCode) {
-                            line = dCode;
-                        } else {
-                            // Get the disassembled line
-                            line = pc + ": ";
-                            if (this.capstone) {
-                                let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
-                                    console.error("Error ingored: " + err.getMessage());
-                                });
-                                if (memory) {
-                                    let disassembled = await this.capstone.disassemble(memory);
-                                    let selectedLine = disassembled.split(/\r\n|\r|\n/g)[0];
-                                    let elms = selectedLine.split("  ");
-                                    if (elms.length > 2) {
-                                        selectedLine = elms[2];
+            const thread = this.gdbProxy.getThread(args.threadId);
+            if (thread) {
+                this.gdbProxy.stack(thread).then(async stk => {
+                    let stackFrames = [];
+                    for (let f of stk.frames) {
+                        let stackFrameDone = false;
+                        let pc = f.pc.toString(16);
+                        if (f.segmentId >= 0) {
+                            let values = dbgInfo.resolveFileLine(f.segmentId, f.offset);
+                            if (values) {
+                                let line = values[2];
+                                if (line) {
+                                    let idx = line.indexOf(';');
+                                    if (idx > 0) {
+                                        line = line.substring(0, idx);
                                     }
-                                    line += selectedLine.trim().replace(/\s\s+/g, ' ');
+                                    line = pc + ": " + line.trim().replace(/\s\s+/g, ' ');
+                                } else {
+                                    line = pc;
                                 }
+                                stackFrames.push(new StackFrame(f.index, line, this.createSource(values[0]), values[1], 1));
+                                stackFrameDone = true;
                             }
-                            this.disassembledCache.set(f.pc, line);
                         }
-                        // The the stack frame from the manager
-                        let stackFrame = await this.debugDisassembledMananger.getStackFrame(f.index, f.pc, line);
-                        if (stackFrame) {
-                            stackFrames.push(stackFrame);
+                        if (!stackFrameDone) {
+                            let line: string = "pc";
+                            let dCode = this.disassembledCache.get(f.pc);
+                            if (dCode) {
+                                line = dCode;
+                            } else if (thread.getThreadId() === GdbAmigaSysThreadId.CPU) {
+                                // Get the disassembled line
+                                line += ": ";
+                                if (this.capstone) {
+                                    let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
+                                        console.error("Error ingored: " + err.getMessage());
+                                    });
+                                    if (memory) {
+                                        let disassembled = await this.capstone.disassemble(memory);
+                                        let selectedLine = disassembled.split(/\r\n|\r|\n/g)[0];
+                                        let elms = selectedLine.split("  ");
+                                        if (elms.length > 2) {
+                                            selectedLine = elms[2];
+                                        }
+                                        line += selectedLine.trim().replace(/\s\s+/g, ' ');
+                                    }
+                                }
+                                this.disassembledCache.set(f.pc, line);
+                            }
+                            // The the stack frame from the manager
+                            let stackFrame = await this.debugDisassembledMananger.getStackFrame(f.index, f.pc, line, (thread.getThreadId() === GdbAmigaSysThreadId.COP));
+                            if (stackFrame) {
+                                stackFrames.push(stackFrame);
+                            }
                         }
                     }
-                }
-                response.body = {
-                    stackFrames: stackFrames,
-                    totalFrames: stk.count
-                };
-                this.sendResponse(response);
-                return;
-            }).catch((err) => {
+                    response.body = {
+                        stackFrames: stackFrames,
+                        totalFrames: stk.count
+                    };
+                    this.sendResponse(response);
+                    return;
+                }).catch((err) => {
+                    response.success = false;
+                    response.message = err.toString();
+                    this.sendResponse(response);
+                    return;
+                });
+            } else {
                 response.success = false;
-                response.message = err.toString();
+                response.message = "Unknown thread";
                 this.sendResponse(response);
                 return;
-            });
+            }
         } else {
             this.sendResponse(response);
         }
@@ -707,33 +725,54 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
-        this.gdbProxy.continueExecution().then(() => {
-            this.sendResponse(response);
-        }).catch(err => {
+        let thread = this.gdbProxy.getThread(args.threadId);
+        if (thread) {
+            this.gdbProxy.continueExecution(thread).then(() => {
+                this.sendResponse(response);
+            }).catch(err => {
+                response.success = false;
+                response.message = err.toString();
+                this.sendResponse(response);
+            });
+        } else {
             response.success = false;
-            response.message = err.toString();
+            response.message = "Unknown thread";
             this.sendResponse(response);
-        });
+        }
     }
 
     protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
-        this.gdbProxy.step().then(() => {
-            this.sendResponse(response);
-        }).catch(err => {
+        let thread = this.gdbProxy.getThread(args.threadId);
+        if (thread) {
+            this.gdbProxy.step(thread).then(() => {
+                this.sendResponse(response);
+            }).catch(err => {
+                response.success = false;
+                response.message = err.toString();
+                this.sendResponse(response);
+            });
+        } else {
             response.success = false;
-            response.message = err.toString();
+            response.message = "Unknown thread";
             this.sendResponse(response);
-        });
+        }
     }
 
     protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments): void {
-        this.gdbProxy.stepIn().then(() => {
-            this.sendResponse(response);
-        }).catch(err => {
+        let thread = this.gdbProxy.getThread(args.threadId);
+        if (thread) {
+            this.gdbProxy.stepIn(thread).then(() => {
+                this.sendResponse(response);
+            }).catch(err => {
+                response.success = false;
+                response.message = err.toString();
+                this.sendResponse(response);
+            });
+        } else {
             response.success = false;
-            response.message = err.toString();
+            response.message = "Unknown thread";
             this.sendResponse(response);
-        });
+        }
     }
 
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
@@ -966,13 +1005,20 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): void {
-        this.gdbProxy.pause().then(() => {
-            this.sendResponse(response);
-        }).catch(err => {
+        let thread = this.gdbProxy.getThread(args.threadId);
+        if (thread) {
+            this.gdbProxy.pause(thread).then(() => {
+                this.sendResponse(response);
+            }).catch(err => {
+                response.success = false;
+                response.message = err.toString();
+                this.sendResponse(response);
+            });
+        } else {
             response.success = false;
-            response.message = err.toString();
+            response.message = "Unknown thread";
             this.sendResponse(response);
-        });
+        }
     }
 
     protected exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments): void {
