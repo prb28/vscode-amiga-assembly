@@ -20,4 +20,7 @@ tslint.json
 .cover*
 test-report*
 build-scripts
+scripts/build/**
+old.visx/**
+
 
