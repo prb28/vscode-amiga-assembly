@@ -103,7 +103,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     private debugDisassembledMananger: DebugDisassembledMananger;
 
     /** Pending breakpoint to send to the server */
-    private pendingBreakPoints = new Array<PendingBreakPointsRequestData>();
+    private pendingBreakPoints = new Array<DebugProtocol.Breakpoint>();
+
+    /** Next breakpoint id */
+    private nextBreakpointId = 0;
 
 
 	/**
@@ -332,9 +335,13 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             timeoutValue = 1;
         }
         if (this.pendingBreakPoints !== null) {
-            for (let data of this.pendingBreakPoints) {
-                this.setBreakPointsRequest(data.response, data.args);
+            let newPendingBps = new Array<DebugProtocol.Breakpoint>();
+            for (let bp of this.pendingBreakPoints) {
+                await this.setBreakPoint(bp).catch(err => {
+                    newPendingBps.push(bp);
+                });
             }
+            this.pendingBreakPoints = newPendingBps;
         }
         setTimeout(function () {
             // connects to FS-UAE
@@ -421,97 +428,85 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
-        let debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
-        const path = <string>args.source.path;
-        const clientLines = args.lines || [];
-        let hasError = false;
 
-        // clear all breakpoints for this file
-        if (this.debugInfo) {
-            let values = this.debugInfo.getAllSegmentIds(path);
-            for (let segmentId of values) {
-                await this.gdbProxy.clearBreakpoints(segmentId);
-            }
-        }
+    protected setBreakPoint(debugBp: DebugProtocol.Breakpoint): Promise<DebugProtocol.Breakpoint> {
+        return new Promise(async (resolve, reject) => {
+            if (debugBp.source && debugBp.line && debugBp.id) {
+                debugBp.verified = false;
+                const path = <string>debugBp.source.path;
 
-        // set and verify breakpoint locations
-        let breakPoints: GdbBreakpoint[] = [];
-        for (let l of clientLines) {
-            if (!DebugDisassembledFile.isDebugAsmFile(path)) {
-                if (this.debugInfo) {
-                    const dbInfo = this.debugInfo;
-                    let values = this.debugInfo.getAddressSeg(path, l);
-                    if (values) {
-                        await this.gdbProxy.setBreakPoint(values[0], values[1]).then(bp => {
-                            breakPoints.push(bp);
-                            let values = dbInfo.resolveFileLine(bp.segmentId, bp.offset);
-                            if (values) {
-                                debugBreakPoints.push(<DebugProtocol.Breakpoint>{
-                                    id: bp.id,
-                                    line: values[1],
-                                    source: path, // The path is the local path and not the stored in binary file
-                                    verified: true // We assume that if the line is in the binary, it is verified
-                                });
-                            }
-                        }).catch((err) => {
-                            response.success = false;
-                            response.message = err.toString();
-                            this.sendResponse(response);
-                            hasError = true;
-                        });
+                if (!DebugDisassembledFile.isDebugAsmFile(path)) {
+                    if (this.debugInfo) {
+                        let values = this.debugInfo.getAddressSeg(path, debugBp.line);
+                        if (values) {
+                            await this.gdbProxy.setBreakPoint(debugBp.id, values[0], values[1]).then(bp => {
+                                resolve(debugBp);
+                            }).catch((err) => {
+                                reject(err);
+                            });
+                        } else {
+                            reject(new Error("Segment offset not resolved"));
+                        }
                     } else {
-                        debugBreakPoints.push(<DebugProtocol.Breakpoint>{
-                            line: l,
-                            source: path,
-                            verified: false
-                        });
+                        reject(new Error("Debug information not resolved retrieved"));
                     }
                 } else {
-                    this.pendingBreakPoints.push(<PendingBreakPointsRequestData>{
-                        response: response,
-                        args: args
-                    });
-                    return;
-                }
-            } else {
-                let address = await this.debugDisassembledMananger.getAddressForFileEditorLine(path, l).catch((err) => {
-                    response.success = false;
-                    response.message = err.toString();
-                    this.sendResponse(response);
-                    hasError = true;
-                });
-                if (address) {
-                    await this.gdbProxy.setBreakPointFromAddress(address).then(bp => {
-                        breakPoints.push(bp);
-                        debugBreakPoints.push(<DebugProtocol.Breakpoint>{
-                            id: bp.id,
-                            line: l,
-                            source: path, // The path is the local path and not the stored in binary file
-                            verified: true // We assume that if the line is in the binary, it is verified
+                    const name = <string>debugBp.source.name;
+                    const id = debugBp.id;
+                    await this.debugDisassembledMananger.getAddressForFileEditorLine(name, debugBp.line).then(async address => {
+                        await this.gdbProxy.setBreakPoint(id, undefined, address).then(bp => {
+                            resolve(debugBp);
+                        }).catch((err) => {
+                            reject(err);
                         });
                     }).catch((err) => {
-                        response.success = false;
-                        response.message = err.toString();
-                        this.sendResponse(response);
-                        hasError = true;
+                        reject(err);
                     });
-                } else {
-                    debugBreakPoints.push(<DebugProtocol.Breakpoint>{
-                        line: l,
-                        source: path,
+                }
+            } else {
+                reject("Breakpoint info incomplete");
+            }
+        });
+    }
+
+    protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            let debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
+            const path = <string>args.source.path;
+
+            // clear all breakpoints for this file
+            if (this.debugInfo && !DebugDisassembledFile.isDebugAsmFile(path)) {
+                let values = this.debugInfo.getAllSegmentIds(path);
+                for (let segmentId of values) {
+                    await this.gdbProxy.clearBreakpoints(segmentId);
+                }
+            }
+
+            // set and verify breakpoint locations
+            if (args.breakpoints) {
+                for (let reqBp of args.breakpoints) {
+                    let debugBp = <DebugProtocol.Breakpoint>{
+                        id: this.nextBreakpointId++,
+                        line: reqBp.line,
+                        source: args.source,
                         verified: false
+                    };
+                    await this.setBreakPoint(debugBp).then(modifiedBp => {
+                        debugBreakPoints.push(modifiedBp);
+                    }).catch(err => {
+                        debugBreakPoints.push(debugBp);
+                        this.pendingBreakPoints.push(debugBp);
                     });
                 }
             }
-        }
-        if (!hasError) {
             // send back the actual breakpoint positions
             response.body = {
                 breakpoints: debugBreakPoints
             };
+            response.success = true;
             this.sendResponse(response);
-        }
+        });
+
     }
 
     protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
@@ -728,6 +723,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         let thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             this.gdbProxy.continueExecution(thread).then(() => {
+                response.body = {
+                    allThreadsContinued: false
+                };
                 this.sendResponse(response);
             }).catch(err => {
                 response.success = false;

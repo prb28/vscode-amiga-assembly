@@ -272,7 +272,9 @@ export class DebugDisassembledMananger {
             let searchedAddress: number | void;
             if ((isCopper) && ((addressExpression === '1') || (addressExpression === '2'))) {
                 // Retrieve the copper address
-                searchedAddress = await MemoryLabelsRegistry.getCopperAddress(parseInt(addressExpression), this.variableResolver);
+                searchedAddress = await MemoryLabelsRegistry.getCopperAddress(parseInt(addressExpression), this.variableResolver).catch((err) => {
+                    reject(err);
+                });
             } else {
                 searchedAddress = await this.debugExpressionHelper.getAddressFromExpression(addressExpression, undefined, this.variableResolver).catch((err) => {
                     reject(err);
@@ -384,7 +386,7 @@ export class DebugDisassembledMananger {
                     let address = dAsmFile.getAddressExpression();
                     let length = dAsmFile.getLength();
                     if ((address !== undefined) && (length !== undefined)) {
-                        await this.disassembleAddress(address, length, false).then(variables => {
+                        await this.disassembleAddress(address, length, dAsmFile.isCopper()).then(variables => {
                             let searchedLN = lineNumber - 1;
                             if (searchedLN < variables.length) {
                                 resolve(parseInt(variables[searchedLN].name, 16));

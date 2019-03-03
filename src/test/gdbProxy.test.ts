@@ -131,7 +131,7 @@ describe("GdbProxy Tests", function () {
         });
         it("Should set a pending breakpoint segments are not retrieved", async function () {
             when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
-            await expect(proxy.setBreakPoint(0, 4)).to.eventually.eql(<GdbBreakpoint>{
+            await expect(proxy.setBreakPoint(0, 0, 4)).to.eventually.eql(<GdbBreakpoint>{
                 id: 0,
                 segmentId: 0,
                 offset: 4,
@@ -174,7 +174,7 @@ describe("GdbProxy Tests", function () {
             });
             it("Should set a breakpoint", async function () {
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
-                await expect(proxy.setBreakPoint(0, 4)).to.eventually.eql(<GdbBreakpoint>{
+                await expect(proxy.setBreakPoint(0, 0, 4)).to.eventually.eql(<GdbBreakpoint>{
                     segmentId: 0,
                     offset: 4,
                     id: 0,
@@ -196,13 +196,13 @@ describe("GdbProxy Tests", function () {
             });
             it("Should return an error when setting a breakpoint", async function () {
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenReject(error);
-                await expect(proxy.setBreakPoint(0, 4)).to.be.rejectedWith(error);
+                await expect(proxy.setBreakPoint(0, 0, 4)).to.be.rejectedWith(error);
                 verify(spiedProxy.sendPacketString('Z0,4,0')).once();
             });
             it("Should return an error on invalid breakpoint", async function () {
                 // segment 1 is invalid
                 when(spiedProxy.sendPacketString('Z0,4,1')).thenResolve(RESPONSE_OK);
-                await expect(proxy.setBreakPoint(1, 4)).to.be.rejected;
+                await expect(proxy.setBreakPoint(0, 1, 4)).to.be.rejected;
                 verify(spiedProxy.sendPacketString('Z0,4,1')).never();
             });
             it("Should get the registers", async function () {
@@ -262,10 +262,10 @@ describe("GdbProxy Tests", function () {
             it("Should remove an existing breakpoint", async function () {
                 // Set a breakpoint
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
-                await proxy.setBreakPoint(0, 4);
+                await proxy.setBreakPoint(0, 0, 4);
                 // Remove
                 when(spiedProxy.sendPacketString('z0,4,0')).thenResolve(RESPONSE_OK);
-                await proxy.removeBreakPoint(0, 4);
+                await proxy.removeBreakPoint(0, 0, 4);
                 verify(spiedProxy.sendPacketString('z0,4,0')).once();
             });
             it("Should remove an existing exception breakpoint", async function () {
@@ -280,7 +280,7 @@ describe("GdbProxy Tests", function () {
             it("Should get an error when removing a non existing breakpoint", async function () {
                 // Set a breakpoint
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
-                await proxy.setBreakPoint(0, 4);
+                await proxy.setBreakPoint(0, 0, 4);
                 // Remove
                 when(spiedProxy.sendPacketString('z0,5,0')).thenResolve(RESPONSE_OK);
                 await expect(proxy.removeBreakPoint(0, 5)).to.be.rejected;
@@ -291,7 +291,7 @@ describe("GdbProxy Tests", function () {
                 await expect(proxy.clearBreakpoints(0)).to.fulfilled;
                 // Set a breakpoint
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
-                await proxy.setBreakPoint(0, 4);
+                await proxy.setBreakPoint(0, 0, 4);
                 // Remove
                 when(spiedProxy.sendPacketString('z0,4,0')).thenResolve(RESPONSE_OK);
                 await expect(proxy.clearBreakpoints(0)).to.fulfilled;
@@ -300,7 +300,7 @@ describe("GdbProxy Tests", function () {
             it("Should get an error when clearing all breakpoint of a non existing segment", async function () {
                 // Set a breakpoint
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
-                await proxy.setBreakPoint(0, 4);
+                await proxy.setBreakPoint(0, 0, 4);
                 // Remove
                 when(spiedProxy.sendPacketString('z0,4,0')).thenResolve(RESPONSE_OK);
                 await expect(proxy.clearBreakpoints(1)).to.be.rejected;
@@ -309,7 +309,7 @@ describe("GdbProxy Tests", function () {
             it("Should get an error when clearing all breakpoint and there is on brkpt error", async function () {
                 // Set a breakpoint
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
-                await proxy.setBreakPoint(0, 4);
+                await proxy.setBreakPoint(0, 0, 4);
                 // Remove
                 when(spiedProxy.sendPacketString('z0,4,0')).thenReject(error);
                 await expect(proxy.clearBreakpoints(0)).to.be.rejectedWith(error);

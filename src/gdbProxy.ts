@@ -19,12 +19,12 @@ export class GdbProxy extends EventEmitter {
     static readonly REGISTER_CTRL_INDEX = 26;
     static readonly REGISTER_IAR_INDEX = 27;
     static readonly REGISTER_COPPER_ADDR_INDEX = 30;
+    /** Kind of breakpoints */
+    static readonly BREAKPOINT_KIND_ABSOLUTE_ADDR = 100;
     /** Code to set the debugger to the current frame index */
     static readonly DEFAULT_FRAME_INDEX = -1;
-    // Socket to connect
+    /** Socket to connect */
     private socket: Socket;
-    // break point id counter
-    private nextBreakPointId = 0;
     /** Current source file */
     private programFilename?: string;
     /** Segmentes of memory */
@@ -362,31 +362,21 @@ export class GdbProxy extends EventEmitter {
         });
     }
 
-
     /**
      * Ask for a new breakpoint
-     * @param address Address for the breakpoint
-     * @return Promise with a breakpoint
-     */
-    public setBreakPointFromAddress(address: number): Promise<GdbBreakpoint> {
-        let [segmentId, offset] = this.toRelativeOffset(address);
-        if (segmentId >= 0) {
-            return this.setBreakPoint(segmentId, offset);
-        } else {
-            return this.setBreakPoint(-1, address);
-        }
-    }
-
-    /**
-     * Ask for a new breakpoint
+     * @param breakpointId Identifier of the breakpoint
      * @param segmentId Identifier of the segment
      * @param offset Offset in segment coordinated
+     * @param exceptionMask Mask for the exception selection
      * @return Promise with a breakpoint
      */
-    public setBreakPoint(segmentId: number | undefined, offset: number, exceptionMask?: number): Promise<GdbBreakpoint> {
+    public setBreakPoint(breakpointId: number, segmentId: number | undefined, offset: number, exceptionMask?: number): Promise<GdbBreakpoint> {
         return new Promise(async (resolve, reject) => {
             let self = this;
-            if ((((this.segments) && (segmentId !== undefined)) || ((segmentId === undefined) && (offset >= 0)) || ((segmentId === 0) && (offset === 0))) && (this.socket.writable)) {
+            if ((((this.segments) && (segmentId !== undefined)) ||
+                ((segmentId === undefined) && (offset >= 0)) ||
+                ((segmentId === 0) && (offset === 0))) &&
+                this.socket.writable) {
                 if (this.segments && (segmentId !== undefined) && (segmentId >= this.segments.length)) {
                     reject(new Error("Invalid breakpoint segment id: " + segmentId));
                     return;
@@ -402,7 +392,7 @@ export class GdbProxy extends EventEmitter {
                         message = 'Z1,' + GdbProxy.formatNumber(offset) + segStr + ";X" + expMskHexSz + "," + expMskHex;
                     } else {
                         let segStr = "";
-                        if (segmentId !== undefined) {
+                        if ((segmentId !== undefined) && (segmentId >= 0)) {
                             segStr = ',' + GdbProxy.formatNumber(segmentId);
                         }
                         message = 'Z0,' + GdbProxy.formatNumber(offset) + segStr;
@@ -412,7 +402,7 @@ export class GdbProxy extends EventEmitter {
                             verified: true,
                             segmentId: segmentId,
                             offset: offset,
-                            id: self.nextBreakPointId++,
+                            id: breakpointId,
                             exceptionMask: exceptionMask
                         };
                         self.breakPoints.push(bp);
@@ -427,7 +417,7 @@ export class GdbProxy extends EventEmitter {
                     verified: false,
                     segmentId: segmentId,
                     offset: offset,
-                    id: self.nextBreakPointId++,
+                    id: breakpointId,
                     exceptionMask: exceptionMask
                 };
                 if (!this.pendingBreakpoints) {
@@ -450,7 +440,7 @@ export class GdbProxy extends EventEmitter {
                 this.pendingBreakpoints = new Array<GdbBreakpoint>();
                 let breakpoints: GdbBreakpoint[] = [];
                 for (let bp of pending) {
-                    await this.setBreakPoint(bp.segmentId, bp.offset, bp.exceptionMask).then(bp => {
+                    await this.setBreakPoint(bp.id, bp.segmentId, bp.offset, bp.exceptionMask).then(bp => {
                         breakpoints.push(bp);
                     });
                 }
