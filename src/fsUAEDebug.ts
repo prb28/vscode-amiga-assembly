@@ -334,20 +334,12 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         if (this.testMode) {
             timeoutValue = 1;
         }
-        if (this.pendingBreakPoints !== null) {
-            let newPendingBps = new Array<DebugProtocol.Breakpoint>();
-            for (let bp of this.pendingBreakPoints) {
-                await this.setBreakPoint(bp).catch(err => {
-                    newPendingBps.push(bp);
-                });
-            }
-            this.pendingBreakPoints = newPendingBps;
-        }
         setTimeout(function () {
             // connects to FS-UAE
             debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(async () => {
                 // Loads the program
                 debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
+                debAdapter.gdbProxy.setSendPendingBreakpointsCallback(debAdapter.sendAllPendingBreakpoint());
                 await debAdapter.gdbProxy.load(args.program, args.stopOnEntry).then(() => {
                     debAdapter.sendResponse(response);
                 }).catch(err => {
@@ -428,7 +420,17 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-
+    public sendAllPendingBreakpoint(): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            if (this.pendingBreakPoints !== null) {
+                for (let bp of this.pendingBreakPoints) {
+                    await this.setBreakPoint(bp).catch(err => {
+                    });
+                }
+            }
+            resolve();
+        });
+    }
     protected setBreakPoint(debugBp: DebugProtocol.Breakpoint): Promise<DebugProtocol.Breakpoint> {
         return new Promise(async (resolve, reject) => {
             if (debugBp.source && debugBp.line && debugBp.id) {

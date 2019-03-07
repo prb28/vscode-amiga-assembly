@@ -54,6 +54,8 @@ export class GdbProxy extends EventEmitter {
     private threadsNative = new Map<string, GdbThread>();
     /** Disables the stop event */
     private disableStopEvent = false;
+    /** function from parent to send all pending breakpoints */
+    private sendPendingBreakpointsCallback: Promise<void> | undefined = undefined;
 
     /**
      * Constructor 
@@ -430,24 +432,31 @@ export class GdbProxy extends EventEmitter {
         });
     }
 
+    public setSendPendingBreakpointsCallback(callback: Promise<void>) {
+        this.sendPendingBreakpointsCallback = callback;
+    }
+
     /**
      * Sends all the pending breakpoint
      */
     public sendAllPendingBreakpoints(): Promise<GdbBreakpoint[]> {
         return new Promise(async (resolve, reject) => {
+            let breakpoints: GdbBreakpoint[] = [];
             if ((this.pendingBreakpoints) && this.pendingBreakpoints.length > 0) {
                 let pending = this.pendingBreakpoints;
                 this.pendingBreakpoints = new Array<GdbBreakpoint>();
-                let breakpoints: GdbBreakpoint[] = [];
                 for (let bp of pending) {
                     await this.setBreakPoint(bp.id, bp.segmentId, bp.offset, bp.exceptionMask).then(bp => {
                         breakpoints.push(bp);
                     });
                 }
-                resolve(breakpoints);
-            } else {
-                resolve([]);
             }
+            if (this.sendPendingBreakpointsCallback) {
+                await this.sendPendingBreakpointsCallback.catch(err => {
+                    reject(err);
+                });
+            }
+            resolve(breakpoints);
         });
     }
 
@@ -1196,6 +1205,5 @@ export class GdbProxy extends EventEmitter {
         }
         return n.toString(16);
     }
-
 }
 
