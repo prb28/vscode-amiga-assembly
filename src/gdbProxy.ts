@@ -1,7 +1,8 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
 import { Mutex } from 'ts-simple-mutex/build';
-import { GdbPacketType, GdbPacket, GdbAmigaSysThreadId, GdbBreakpoint, GdbError, GdbHaltStatus, GdbRegister, GdbSignal, GdbStackFrame, GdbStackPosition, GdbThread, Segment } from './gdbProxyCore';
+import { GdbPacketType, GdbPacket, GdbAmigaSysThreadId, GdbError, GdbHaltStatus, GdbRegister, GdbSignal, GdbStackFrame, GdbStackPosition, GdbThread, Segment } from './gdbProxyCore';
+import { GdbBreakpoint } from './breakpointManager';
 
 
 /**
@@ -29,10 +30,6 @@ export class GdbProxy extends EventEmitter {
     private programFilename?: string;
     /** Segmentes of memory */
     private segments?: Array<Segment>;
-    /** Breakpoints selected */
-    private breakPoints = new Array<GdbBreakpoint>();
-    /** Pending breakpoint no yet sent to debuger */
-    private pendingBreakpoints: Array<GdbBreakpoint> | null = null;
     /** Stop on entry asked */
     private stopOnEntryRequested = false;
     /** Flag for the first stop - to install the breakpoints */
@@ -46,8 +43,8 @@ export class GdbProxy extends EventEmitter {
     private traceProtocol = true;
     /** vCont commands are supported */
     private supportVCont = false;
-    /** Function waiting for data */
-    private waitingDataFunction: any;
+    /** Active the data processing */
+    private doProcessData = false;
     /** Created threads */
     private threads = new Map<number, GdbThread>();
     /** Created threads indexed by native ids */
@@ -55,7 +52,7 @@ export class GdbProxy extends EventEmitter {
     /** Disables the stop event */
     private disableStopEvent = false;
     /** function from parent to send all pending breakpoints */
-    private sendPendingBreakpointsCallback: Promise<void> | undefined = undefined;
+    private sendPendingBreakpointsCallback: (() => Promise<void>) | undefined = undefined;
 
     /**
      * Constructor 
@@ -223,8 +220,8 @@ export class GdbProxy extends EventEmitter {
                         break;
                 }
             }
-            if (this.waitingDataFunction) {
-                this.waitingDataFunction(data);
+            if (this.doProcessData) {
+                await this.processData(data);
             }
             resolve();
         });
@@ -307,6 +304,52 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
+     * Prepares a string to be send: checksum + start char
+     * @param text Text to be sent
+     */
+    public formatString(text: string): Buffer {
+        var data = Buffer.alloc(text.length + 5);
+        let offset = 0;
+        data.write('$', offset++);
+        data.write(text, offset);
+        offset += text.length;
+        data.write('#', offset++);
+        data.write(GdbProxy.calculateChecksum(text), offset);
+        offset += 2;
+        data.writeInt8(0, offset);
+        return data;
+    }
+
+    private processData(data: any): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+            const unlock = await this.mutex.capture('sendPacketString');
+            let packets = GdbProxy.parseData(data);
+            if (packets.length <= 0) {
+                this.doProcessData = false;
+                unlock();
+                reject(new Error("Invalid message : '" + data.toString() + "'"));
+            } else if ((packets.length > 1) || (packets[0].type !== GdbPacketType.PLUS)) {
+                // Skip the PLUS packets.. they are used for aknownledgment
+                this.doProcessData = false;
+                unlock();
+                let firstMessage = null;
+                for (let packet of packets) {
+                    if (packet.type === GdbPacketType.ERROR) {
+                        reject(this.parseError(packet.message));
+                    } else if (!firstMessage) {
+                        firstMessage = packet.message;
+                    }
+                }
+                if (firstMessage) {
+                    resolve(firstMessage);
+                } else {
+                    reject(new Error("Invalid message : '" + data.toString() + "'"));
+                }
+            }
+        });
+    }
+
+    /**
      * Main send function.
      * If sends a text in the format "$mymessage#checksum"
      * @param text Text to send
@@ -314,46 +357,14 @@ export class GdbProxy extends EventEmitter {
      */
     public sendPacketString(text: string): Promise<string> {
         return new Promise(async (resolve, reject) => {
-            var data = Buffer.alloc(text.length + 5);
-            let offset = 0;
-            data.write('$', offset++);
-            data.write(text, offset);
-            offset += text.length;
-            data.write('#', offset++);
-            data.write(GdbProxy.calculateChecksum(text), offset);
-            offset += 2;
-            data.writeInt8(0, offset);
+            var dataToSend = this.formatString(text);
             if (this.traceProtocol) {
-                this.sendEvent("output", ` <--- ${data}`);
+                this.sendEvent("output", ` <--- ${dataToSend}`);
             }
             const unlock = await this.mutex.capture('sendPacketString');
             if (this.socket.writable) {
-                this.socket.write(data);
-                this.waitingDataFunction = function (data: any) {
-                    let packets = GdbProxy.parseData(data);
-                    if (packets.length <= 0) {
-                        this.waitingDataFunction = null;
-                        unlock();
-                        reject(new Error("Invalid message : '" + data.toString() + "'"));
-                    } else if ((packets.length > 1) || (packets[0].type !== GdbPacketType.PLUS)) {
-                        // Skip the PLUS packets.. they are used for aknownledgment
-                        this.waitingDataFunction = null;
-                        unlock();
-                        let firstMessage = null;
-                        for (let packet of packets) {
-                            if (packet.type === GdbPacketType.ERROR) {
-                                reject(this.parseError(packet.message));
-                            } else if (!firstMessage) {
-                                firstMessage = packet.message;
-                            }
-                        }
-                        if (firstMessage) {
-                            resolve(firstMessage);
-                        } else {
-                            reject(new Error("Invalid message : '" + data.toString() + "'"));
-                        }
-                    }
-                };
+                this.socket.write(dataToSend);
+                this.doProcessData = true;
                 this.socket.once('error', (err) => {
                     unlock();
                     reject(err);
@@ -366,23 +377,22 @@ export class GdbProxy extends EventEmitter {
 
     /**
      * Ask for a new breakpoint
-     * @param breakpointId Identifier of the breakpoint
-     * @param segmentId Identifier of the segment
-     * @param offset Offset in segment coordinated
-     * @param exceptionMask Mask for the exception selection
+     * @param breakpoint breakpoitn to add
      * @return Promise with a breakpoint
      */
-    public setBreakPoint(breakpointId: number, segmentId: number | undefined, offset: number, exceptionMask?: number): Promise<GdbBreakpoint> {
+    public setBreakpoint(breakpoint: GdbBreakpoint): Promise<void> {
         return new Promise(async (resolve, reject) => {
+            let segmentId = breakpoint.segmentId;
+            let offset = breakpoint.offset;
+            let exceptionMask = breakpoint.exceptionMask;
             let self = this;
-            if ((((this.segments) && (segmentId !== undefined)) ||
-                ((segmentId === undefined) && (offset >= 0)) ||
-                ((segmentId === 0) && (offset === 0))) &&
-                this.socket.writable) {
+            if (!this.socket.writable) {
+                reject(new Error("The Gdb connection is not opened"));
+            } else {
                 if (this.segments && (segmentId !== undefined) && (segmentId >= this.segments.length)) {
                     reject(new Error("Invalid breakpoint segment id: " + segmentId));
                     return;
-                } else {
+                } else if (offset >= 0) {
                     let message: string;
                     if (exceptionMask) {
                         let expMskHex = GdbProxy.formatNumber(exceptionMask);
@@ -400,128 +410,58 @@ export class GdbProxy extends EventEmitter {
                         message = 'Z0,' + GdbProxy.formatNumber(offset) + segStr;
                     }
                     await this.sendPacketString(message).then(function (data) {
-                        let bp = <GdbBreakpoint>{
-                            verified: true,
-                            segmentId: segmentId,
-                            offset: offset,
-                            id: breakpointId,
-                            exceptionMask: exceptionMask
-                        };
-                        self.breakPoints.push(bp);
-                        self.sendEvent("breakpointValidated", bp);
-                        resolve(bp);
+                        self.sendEvent("breakpointValidated", breakpoint);
+                        resolve();
                     }).catch((err) => {
                         reject(err);
                     });
+                } else {
+                    reject(new Error("Invalid breakpoint offset"));
                 }
-            } else {
-                let bp = <GdbBreakpoint>{
-                    verified: false,
-                    segmentId: segmentId,
-                    offset: offset,
-                    id: breakpointId,
-                    exceptionMask: exceptionMask
-                };
-                if (!this.pendingBreakpoints) {
-                    this.pendingBreakpoints = new Array<GdbBreakpoint>();
-                }
-                this.pendingBreakpoints.push(bp);
-                //console.log("Breakpoint added to pending: " + segmentId + "," + offset);
-                resolve(bp);
             }
         });
     }
 
-    public setSendPendingBreakpointsCallback(callback: Promise<void>) {
+    public setSendPendingBreakpointsCallback(callback: () => Promise<void>) {
         this.sendPendingBreakpointsCallback = callback;
     }
 
     /**
      * Sends all the pending breakpoint
      */
-    public sendAllPendingBreakpoints(): Promise<GdbBreakpoint[]> {
-        return new Promise(async (resolve, reject) => {
-            let breakpoints: GdbBreakpoint[] = [];
-            if ((this.pendingBreakpoints) && this.pendingBreakpoints.length > 0) {
-                let pending = this.pendingBreakpoints;
-                this.pendingBreakpoints = new Array<GdbBreakpoint>();
-                for (let bp of pending) {
-                    await this.setBreakPoint(bp.id, bp.segmentId, bp.offset, bp.exceptionMask).then(bp => {
-                        breakpoints.push(bp);
-                    });
-                }
-            }
-            if (this.sendPendingBreakpointsCallback) {
-                await this.sendPendingBreakpointsCallback.catch(err => {
-                    reject(err);
-                });
-            }
-            resolve(breakpoints);
-        });
+    public sendAllPendingBreakpoints(): Promise<void> {
+        if (this.sendPendingBreakpointsCallback) {
+            return this.sendPendingBreakpointsCallback();
+        } else {
+            return Promise.reject(new Error("send all pending breakpoints callback not set"));
+        }
     }
 
     /**
      * Ask for a breakpoint removal
-     * @param segmentId Id of the segment
-     * @param offset Offset in local coordinates
+     * @param breakpoint breakpoitn to remove
      */
-    public removeBreakPoint(segmentId: number, offset: number, exceptionMask?: number): Promise<void> {
+    public removeBreakpoint(breakpoint: GdbBreakpoint): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (this.segments && (segmentId < this.segments.length)) {
-                // Look for the breakpoint in the current list
-                let breakpoint = null;
-                let pos = 0;
-                for (let bp of this.breakPoints) {
-                    if ((bp.segmentId === segmentId) && (bp.offset === offset) && (bp.exceptionMask === exceptionMask)) {
-                        breakpoint = bp;
-                        break;
-                    }
-                    pos++;
-                }
-                if (breakpoint) {
-                    this.breakPoints.splice(pos, 1);
-                    let code = 0;
-                    if (exceptionMask) {
-                        code = 1;
-                    }
-                    await this.sendPacketString('z' + code + ',' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId)).then(data => { resolve(); });
-                } else {
-                    reject(new Error("Breakpoint not found"));
-                }
+            let segmentId = breakpoint.segmentId;
+            let offset = breakpoint.offset;
+            let exceptionMask = breakpoint.exceptionMask;
+            let message: string | undefined = undefined;
+            if (this.segments && (segmentId !== undefined) && (segmentId < this.segments.length)) {
+                message = 'z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId);
+            } else if (offset > 0) {
+                message = 'z0,' + GdbProxy.formatNumber(offset);
+            } else if (exceptionMask !== undefined) {
+                message = 'z1,' + GdbProxy.formatNumber(offset);
             } else {
-                reject(new Error("No segments are define or segmentId is invalid, is the debugger connected?"));
+                reject(new Error("No segments are defined or segmentId is invalid, is the debugger connected?"));
             }
-        });
-    }
-
-    /**
-     * Clear all the breakpoints for a segment
-     * @param segmentId Id of the segment
-     */
-    public clearBreakpoints(segmentId: number): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            if (this.breakPoints.length > 0) {
-                if (this.segments && (segmentId < this.segments.length)) {
-                    let keep = new Array<GdbBreakpoint>();
-                    let bp = this.breakPoints.pop();
-                    while (bp) {
-                        if (bp.segmentId === segmentId) {
-                            await this.sendPacketString('z0,' + GdbProxy.formatNumber(bp.offset) + ',' + GdbProxy.formatNumber(bp.segmentId)).catch(err => {
-                                reject(err);
-                            });
-                        } else {
-                            keep.push(bp);
-                        }
-                        bp = this.breakPoints.pop();
-                    }
-                    this.breakPoints = keep;
+            if (message) {
+                await this.sendPacketString(message).then(data => {
                     resolve();
-                } else {
-                    reject(new Error("No segments are define, is the debugger connected?"));
-                }
-            } else {
-                // there are no breakpoints to remove
-                resolve();
+                }).catch(err => {
+                    reject(err);
+                });
             }
         });
     }

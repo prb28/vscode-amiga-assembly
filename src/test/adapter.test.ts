@@ -7,10 +7,11 @@ import { LaunchRequestArguments, FsUAEDebugSession } from '../fsUAEDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
 import { GdbProxy } from '../gdbProxy';
-import { GdbStackFrame, GdbStackPosition, GdbBreakpoint, GdbRegister, Segment, GdbHaltStatus } from '../gdbProxyCore';
+import { GdbStackFrame, GdbStackPosition, GdbRegister, Segment, GdbHaltStatus } from '../gdbProxyCore';
 import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls, capture } from 'ts-mockito/lib/ts-mockito';
 import { ExecutorHelper } from '../execHelper';
 import { Capstone } from '../capstone';
+import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
 
 describe('Node Debug Adapter', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
@@ -821,7 +822,7 @@ describe('Node Debug Adapter', () => {
 			const [segId, offset, mask] = capture(this.mockedGdbProxy.removeBreakPoint).last();
 			expect(segId).to.be.equal(0);
 			expect(offset).to.be.equal(0);
-			expect(mask).to.be.equal(FsUAEDebugSession.DEFAULT_EXCEPTION_MASK);
+			expect(mask).to.be.equal(BreakpointManager.DEFAULT_EXCEPTION_MASK);
 		});
 	});
 });

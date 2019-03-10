@@ -1,17 +1,3 @@
-/** Interface for a breakpoint */
-export interface GdbBreakpoint {
-    /** Indetifier */
-    id: number;
-    /** Id for the segment */
-    segmentId: number;
-    /** Offset relative to the segment*/
-    offset: number;
-    /** if true the breakpoint is verified */
-    verified: boolean;
-    /** exception mask : if present it is an exception breakpoint */
-    exceptionMask?: number;
-}
-
 /** Stackframe position */
 export interface GdbStackPosition {
     /** Index of the position */
