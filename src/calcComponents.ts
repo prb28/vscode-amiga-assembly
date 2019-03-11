@@ -1,6 +1,6 @@
 import { StatusBarAlignment, StatusBarItem, window, Disposable } from 'vscode';
 import { NumberParser } from './parser';
-import { ExtensionState } from './extension.js';
+import { ExtensionState } from './extension';
 
 export class CalcComponent {
     private statusBarItem: StatusBarItem | undefined;
