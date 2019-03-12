@@ -107,6 +107,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendPacketString('Z0,0,0')).once();
             verify(spiedProxy.sendPacketString('vRun;dh0:myprog;')).once();
             // the stop command arrives  - should send pending breakpoints
+            proxy.waitingDataFunction = null;
             await mockedOnData(proxy.formatString("S5;0"));
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.continueExecution(anything())).never();
@@ -128,6 +129,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendPacketString('Z0,0,0')).once();
             verify(spiedProxy.sendPacketString('vRun;dh0:myprog;')).once();
             // the stop command arrives  - should send pending breakpoints
+            proxy.waitingDataFunction = null;
             await mockedOnData(proxy.formatString("S5;0"));
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.continueExecution(anything())).once();
@@ -183,6 +185,7 @@ describe("GdbProxy Tests", function () {
                 await proxy.connect('localhost', 6860);
                 await proxy.load("/home/myh\\myprog", true);
                 // the stop command arrives  - should send pending breakpoints
+                proxy.waitingDataFunction = null;
                 await mockedOnData(proxy.formatString("S05;0"));
             });
             it("Should accept a breakpoint", async function () {

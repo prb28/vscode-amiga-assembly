@@ -152,11 +152,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.updateSegments(segments);
         });
         this.gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
-            let debugBp = <DebugProtocol.Breakpoint>{
-                verified: bp.verified,
-                id: bp.id
-            };
-            this.sendEvent(new BreakpointEvent('changed', debugBp));
+            this.sendEvent(new BreakpointEvent('changed', bp));
         });
         this.gdbProxy.on('output', (text: string, filePath?: string, line?: number, column?: number) => {
             const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);

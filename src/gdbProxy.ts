@@ -43,8 +43,8 @@ export class GdbProxy extends EventEmitter {
     private traceProtocol = true;
     /** vCont commands are supported */
     private supportVCont = false;
-    /** Active the data processing */
-    private doProcessData = false;
+    /** Function waiting for data */
+    public waitingDataFunction: ((data: any) => void) | null = null;
     /** Created threads */
     private threads = new Map<number, GdbThread>();
     /** Created threads indexed by native ids */
@@ -220,8 +220,8 @@ export class GdbProxy extends EventEmitter {
                         break;
                 }
             }
-            if (this.doProcessData) {
-                await this.processData(data);
+            if (this.waitingDataFunction !== null) {
+                this.waitingDataFunction(data);
             }
             resolve();
         });
@@ -320,35 +320,6 @@ export class GdbProxy extends EventEmitter {
         return data;
     }
 
-    private processData(data: any): Promise<string> {
-        return new Promise(async (resolve, reject) => {
-            const unlock = await this.mutex.capture('sendPacketString');
-            let packets = GdbProxy.parseData(data);
-            if (packets.length <= 0) {
-                this.doProcessData = false;
-                unlock();
-                reject(new Error("Invalid message : '" + data.toString() + "'"));
-            } else if ((packets.length > 1) || (packets[0].type !== GdbPacketType.PLUS)) {
-                // Skip the PLUS packets.. they are used for aknownledgment
-                this.doProcessData = false;
-                unlock();
-                let firstMessage = null;
-                for (let packet of packets) {
-                    if (packet.type === GdbPacketType.ERROR) {
-                        reject(this.parseError(packet.message));
-                    } else if (!firstMessage) {
-                        firstMessage = packet.message;
-                    }
-                }
-                if (firstMessage) {
-                    resolve(firstMessage);
-                } else {
-                    reject(new Error("Invalid message : '" + data.toString() + "'"));
-                }
-            }
-        });
-    }
-
     /**
      * Main send function.
      * If sends a text in the format "$mymessage#checksum"
@@ -364,11 +335,35 @@ export class GdbProxy extends EventEmitter {
             const unlock = await this.mutex.capture('sendPacketString');
             if (this.socket.writable) {
                 this.socket.write(dataToSend);
-                this.doProcessData = true;
                 this.socket.once('error', (err) => {
                     unlock();
                     reject(err);
                 });
+                this.waitingDataFunction = function (data: any) {
+                    let packets = GdbProxy.parseData(data);
+                    if (packets.length <= 0) {
+                        this.waitingDataFunction = null;
+                        unlock();
+                        reject(new Error("Invalid message : '" + data.toString() + "'"));
+                    } else if ((packets.length > 1) || (packets[0].type !== GdbPacketType.PLUS)) {
+                        // Skip the PLUS packets.. they are used for aknownledgment
+                        this.waitingDataFunction = null;
+                        unlock();
+                        let firstMessage = null;
+                        for (let packet of packets) {
+                            if (packet.type === GdbPacketType.ERROR) {
+                                reject(this.parseError(packet.message));
+                            } else if (!firstMessage) {
+                                firstMessage = packet.message;
+                            }
+                        }
+                        if (firstMessage) {
+                            resolve(firstMessage);
+                        } else {
+                            reject(new Error("Invalid message : '" + data.toString() + "'"));
+                        }
+                    }
+                };
             } else {
                 reject(new Error("Socket can't be written"));
             }
@@ -410,6 +405,8 @@ export class GdbProxy extends EventEmitter {
                         message = 'Z0,' + GdbProxy.formatNumber(offset) + segStr;
                     }
                     await this.sendPacketString(message).then(function (data) {
+                        breakpoint.verified = true;
+                        breakpoint.message = undefined;
                         self.sendEvent("breakpointValidated", breakpoint);
                         resolve();
                     }).catch((err) => {

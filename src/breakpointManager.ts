@@ -108,16 +108,8 @@ export class BreakpointManager {
         };
     }
 
-    public sendAllPendingBreakpoint(): Promise<void> {
+    public sendAllPendingBreakpoint = (): Promise<void> => {
         return new Promise(async (resolve, reject) => {
-            if (this.pendingBreakpoints !== null) {
-                for (let bp of this.pendingBreakpoints) {
-                    await this.setBreakpoint(bp).catch(err => {
-                    });
-                }
-            }
-            resolve();
-
             if ((this.pendingBreakpoints) && this.pendingBreakpoints.length > 0) {
                 let pending = this.pendingBreakpoints;
                 this.pendingBreakpoints = new Array<GdbBreakpoint>();
