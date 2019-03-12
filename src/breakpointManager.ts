@@ -41,7 +41,7 @@ export class BreakpointManager {
     }
     public setBreakpoint(debugBp: GdbBreakpoint): Promise<GdbBreakpoint> {
         return new Promise(async (resolve, reject) => {
-            if (debugBp.source && debugBp.line && debugBp.id) {
+            if (debugBp.source && debugBp.line && (debugBp.id !== undefined)) {
                 debugBp.verified = false;
                 const path = <string>debugBp.source.path;
 

@@ -127,6 +127,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.testMode = true;
         this.capstone = capstone;
         this.debugDisassembledMananger = new DebugDisassembledMananger(gdbProxy, capstone, this);
+        this.breakpointManager = new BreakpointManager(this.gdbProxy, this.debugDisassembledMananger);
     }
 
 	/**
