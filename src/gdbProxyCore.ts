@@ -52,10 +52,12 @@ export class GdbThread {
     private id: number;
     private processId: number;
     private threadId: number;
+    private state: GdbThreadState;
     public constructor(processId: number, threadId: number) {
         this.id = GdbThread.getNextId();
         this.processId = processId;
         this.threadId = threadId;
+        this.state = GdbThreadState.RUNNING;
     }
     public marshall(): string {
         return this.processId.toString(16) + '.' + this.threadId.toString(16);
@@ -136,6 +138,12 @@ export class GdbThread {
     }
     public static setSupportMultiprocess(supportMultiprocess: boolean) {
         GdbThread.supportMultiprocess = supportMultiprocess;
+    }
+    public setState(state: GdbThreadState) {
+        this.state = state;
+    }
+    public getState(): GdbThreadState {
+        return this.state;
     }
 }
 
@@ -231,10 +239,16 @@ export enum GdbAmigaSysThreadId {
     CPU = 0xf,			// Thread id designating default cpu execution
 }
 
+/** Possible states of the thread */
+export enum GdbThreadState {
+    STEPPING,
+    RUNNING,
+}
+
 /** Status for the current halt */
 export interface GdbHaltStatus {
     code: number;
     details: string;
     registers: Map<number, number>;
-    thread: GdbThread | undefined;
+    thread?: GdbThread;
 }

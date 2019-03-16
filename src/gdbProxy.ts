@@ -1,7 +1,7 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
 import { Mutex } from 'ts-simple-mutex/build';
-import { GdbPacketType, GdbPacket, GdbAmigaSysThreadId, GdbError, GdbHaltStatus, GdbRegister, GdbSignal, GdbStackFrame, GdbStackPosition, GdbThread, Segment } from './gdbProxyCore';
+import { GdbPacketType, GdbPacket, GdbAmigaSysThreadId, GdbError, GdbHaltStatus, GdbRegister, GdbSignal, GdbStackFrame, GdbStackPosition, GdbThread, Segment, GdbThreadState } from './gdbProxyCore';
 import { GdbBreakpoint } from './breakpointManager';
 
 
@@ -590,6 +590,7 @@ export class GdbProxy extends EventEmitter {
             // Not a real GDB command...
             message = 'n';
         }
+        thread.setState(GdbThreadState.STEPPING);
         return this.sendPacketString(message).then(data => { return; });
     }
 
@@ -604,6 +605,7 @@ export class GdbProxy extends EventEmitter {
         } else {
             message = 's';
         }
+        thread.setState(GdbThreadState.STEPPING);
         return this.sendPacketString(message).then(data => { return; });
     }
 
@@ -833,11 +835,14 @@ export class GdbProxy extends EventEmitter {
         return new Promise(async (resolve, reject) => {
             let haltStatus = this.parseHaltStatus(message);
             let currentCpuThread = this.getCurrentCpuThread();
-            let currentCpuThreadId = -1;
+            let currentThreadId = -1;
+            let threadState: GdbThreadState = GdbThreadState.RUNNING;
             if (haltStatus.thread) {
-                currentCpuThreadId = haltStatus.thread.getId();
+                currentThreadId = haltStatus.thread.getId();
+                threadState = haltStatus.thread.getState();
             } else if (currentCpuThread) {
-                currentCpuThreadId = currentCpuThread.getId();
+                currentThreadId = currentCpuThread.getId();
+                threadState = currentCpuThread.getState();
             }
             switch (haltStatus.code) {
                 case GdbSignal.GDB_SIGNAL_TRAP: // Trace/breakpoint trap
@@ -868,23 +873,31 @@ export class GdbProxy extends EventEmitter {
                     }
                     if (this.stopOnEntryRequested) {
                         this.stopOnEntryRequested = false;
-                        this.sendEvent('stopOnEntry', currentCpuThreadId);
+                        this.sendEvent('stopOnEntry', currentThreadId);
                     } else if ((!continueDebugging || !this.firstStop) && (!this.disableStopEvent)) {
-                        this.sendEvent('stopOnBreakpoint', currentCpuThreadId);
+                        if (threadState === GdbThreadState.RUNNING) {
+                            this.sendEvent('stopOnBreakpoint', currentThreadId);
+                        } else {
+                            this.sendEvent('stopOnStep', currentThreadId);
+                        }
                     }
                     resolve();
                     break;
                 case GdbSignal.GDB_SIGNAL_EMT: // Emulation trap -> copper breakpoint
                     // Exception reached
                     if (!this.disableStopEvent) {
-                        this.sendEvent('stopOnBreakpoint', currentCpuThreadId);
+                        if (threadState === GdbThreadState.RUNNING) {
+                            this.sendEvent('stopOnBreakpoint', currentThreadId);
+                        } else {
+                            this.sendEvent('stopOnStep', currentThreadId);
+                        }
                     }
                     resolve();
                     break;
                 default:
                     // Exception reached
                     if (!this.disableStopEvent) {
-                        this.sendEvent('stopOnException', haltStatus, currentCpuThreadId);
+                        this.sendEvent('stopOnException', haltStatus, currentThreadId);
                     }
                     resolve();
                     break;
@@ -998,6 +1011,7 @@ export class GdbProxy extends EventEmitter {
             // Not a real GDB command...
             message = 'vCtrlC';
         }
+        thread.setState(GdbThreadState.STEPPING);
         return this.sendPacketString(message).then(data => { return; });
     }
 
@@ -1012,6 +1026,7 @@ export class GdbProxy extends EventEmitter {
             // Not a real GDB command...
             message = 'c';
         }
+        thread.setState(GdbThreadState.RUNNING);
         return this.sendPacketString(message).then(data => { return; });
     }
 
