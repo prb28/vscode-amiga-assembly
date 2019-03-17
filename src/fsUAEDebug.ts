@@ -1,5 +1,5 @@
 import {
-    InitializedEvent, TerminatedEvent, StoppedEvent, BreakpointEvent,
+    InitializedEvent, TerminatedEvent, BreakpointEvent,
     Thread, StackFrame, Scope, Source, Handles, DebugSession, OutputEvent
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
@@ -136,23 +136,69 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     public initProxy() {
         // setup event handlers
         this.gdbProxy.on('stopOnEntry', (threadId: number) => {
-            this.sendEvent(new StoppedEvent('entry', threadId));
+            let event = <DebugProtocol.StoppedEvent>{
+                event: "stopped",
+                body: {
+                    reason: "entry",
+                    threadId: threadId,
+                    preserveFocusHint: false,
+                    allThreadsStopped: true
+                }
+            };
+            this.sendEvent(event);
         });
-        this.gdbProxy.on('stopOnStep', (threadId: number) => {
+        this.gdbProxy.on('stopOnStep', (threadId: number, preserveFocusHint?: boolean) => {
             this.sendEvent(new OutputEvent(`step ${threadId}\n`));
-            this.sendEvent(new StoppedEvent('step', threadId));
+            let event = <DebugProtocol.StoppedEvent>{
+                event: "stopped",
+                body: {
+                    reason: "step",
+                    threadId: threadId,
+                    preserveFocusHint: preserveFocusHint,
+                    allThreadsStopped: true
+                }
+            };
+            this.sendEvent(event);
         });
         this.gdbProxy.on('stopOnPause', (threadId: number) => {
+            let event = <DebugProtocol.StoppedEvent>{
+                event: "stopped",
+                body: {
+                    reason: "pause",
+                    threadId: threadId,
+                    preserveFocusHint: false,
+                    allThreadsStopped: true
+                }
+            };
             this.sendEvent(new OutputEvent(`pause ${threadId}\n`));
-            this.sendEvent(new StoppedEvent('pause', threadId));
+            this.sendEvent(event);
         });
         this.gdbProxy.on('stopOnBreakpoint', (threadId: number) => {
+            let event = <DebugProtocol.StoppedEvent>{
+                event: "stopped",
+                body: {
+                    reason: "breakpoint",
+                    threadId: threadId,
+                    preserveFocusHint: false,
+                    allThreadsStopped: true
+                }
+            };
             this.sendEvent(new OutputEvent(`breakpoint ${threadId}\n`));
-            this.sendEvent(new StoppedEvent('breakpoint', threadId));
+            this.sendEvent(event);
         });
         this.gdbProxy.on('stopOnException', (status: GdbHaltStatus, threadId: number) => {
             this.sendEvent(new OutputEvent(`Exception raised: ${status.details}\n`));
-            this.sendEvent(new StoppedEvent('exception', threadId, status.details));
+            let event = <DebugProtocol.StoppedEvent>{
+                event: "stopped",
+                body: {
+                    reason: "exception",
+                    description: status.details,
+                    threadId: threadId,
+                    preserveFocusHint: false,
+                    allThreadsStopped: true
+                }
+            };
+            this.sendEvent(event);
         });
         this.gdbProxy.on('segmentsUpdated', (segments: Array<Segment>) => {
             this.updateSegments(segments);
@@ -445,6 +491,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             let threads = new Array<Thread>();
             for (let t of tids) {
                 threads.push(new Thread(t.getId(), t.getDisplayName()));
+                this.sendEvent(new OutputEvent(`threadsRequest ${t.getId()}, ${t.getDisplayName()} \n`));
             }
             response.body = {
                 threads: threads
@@ -487,7 +534,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             }
                         }
                         if (!stackFrameDone) {
-                            let line: string = "pc";
+                            let line: string = pc;
                             let dCode = this.disassembledCache.get(f.pc);
                             if (dCode) {
                                 line = dCode;
@@ -500,7 +547,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                     });
                                     if (memory) {
                                         let disassembled = await this.capstone.disassemble(memory);
-                                        let selectedLine = disassembled.split(/\r\n|\r|\n/g)[0];
+                                        let lines = disassembled.split(/\r\n|\r|\n/g);
+                                        let selectedLine = lines[0];
+                                        for (let l of lines) {
+                                            if (l.trim().length > 0) {
+                                                selectedLine = l;
+                                                break;
+                                            }
+                                        }
                                         let elms = selectedLine.split("  ");
                                         if (elms.length > 2) {
                                             selectedLine = elms[2];
@@ -952,9 +1006,16 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments): void {
         this.gdbProxy.getHaltStatus().then((haltStatus) => {
+            let selectedHs: GdbHaltStatus = haltStatus[0];
+            for (let hs of haltStatus) {
+                if ((hs.thread) && (hs.thread.getThreadId() === GdbAmigaSysThreadId.CPU)) {
+                    selectedHs = hs;
+                    break;
+                }
+            }
             response.body = {
-                exceptionId: haltStatus.code.toString(),
-                description: haltStatus.details,
+                exceptionId: selectedHs.code.toString(),
+                description: selectedHs.details,
                 breakMode: 'always'
             };
             this.sendResponse(response);

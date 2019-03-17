@@ -17,10 +17,20 @@ export enum GdbPacketType {
 export class GdbPacket {
     private type: GdbPacketType;
     private message: string;
+    private notification: boolean;
 
     constructor(type: GdbPacketType, message: string) {
         this.type = type;
         this.message = message;
+        this.notification = false;
+    }
+
+    public setNotification(isNotification: boolean) {
+        this.notification = isNotification;
+    }
+
+    public isNotification(): boolean {
+        return this.notification;
     }
 
     public getType(): GdbPacketType {
@@ -48,7 +58,14 @@ export class GdbPacket {
                 }
                 while (match = messageRegexp.exec(s)) {
                     let message = GdbPacket.extractPacket(match[1]);
-                    parsedData.push(new GdbPacket(GdbPacket.parseType(message), message));
+                    let isNotification = false;
+                    if (message.startsWith("%Stop")) {
+                        isNotification = true;
+                        message = message.replace("%Stop:", "");
+                    }
+                    let packet = new GdbPacket(GdbPacket.parseType(message), message);
+                    packet.setNotification(isNotification);
+                    parsedData.push(packet);
                 }
             }
             // TODO: check the checksum and ask to repeat the message if it is not verified

@@ -445,17 +445,21 @@ export class GdbProxy extends EventEmitter {
                     reject(err);
                 });
                 if (haltStatus) {
-                    let copperAddress = haltStatus.registers.get(GdbProxy.REGISTER_COPPER_ADDR_INDEX);
-                    if (copperAddress) {
-                        resolve(<GdbStackPosition>{
-                            index: frameIndex * 1000,
-                            stackFrameIndex: 0,
-                            segmentId: -10,
-                            offset: 0,
-                            pc: copperAddress
-                        });
-                    } else {
-                        reject("No stack frame returned");
+                    for (let hs of haltStatus) {
+                        if ((hs.thread) && (hs.thread.getThreadId() === thread.getThreadId())) {
+                            let copperAddress = hs.registers.get(GdbProxy.REGISTER_COPPER_ADDR_INDEX);
+                            if (copperAddress) {
+                                resolve(<GdbStackPosition>{
+                                    index: frameIndex * 1000,
+                                    stackFrameIndex: 0,
+                                    segmentId: -10,
+                                    offset: 0,
+                                    pc: copperAddress
+                                });
+                            } else {
+                                reject("No stack frame returned");
+                            }
+                        }
                     }
                 }
             } else {
@@ -516,7 +520,12 @@ export class GdbProxy extends EventEmitter {
         }
         thread.setState(GdbThreadState.STEPPING);
         return this.sendPacketString(message, GdbPacketType.STOP).then(data => {
-            this.sendEvent('stopOnStep', thread.getId());
+            for (let thId of this.threads.keys()) {
+                if (thId !== thread.getId()) {
+                    this.sendEvent('stopOnStep', thId, true);
+                }
+            }
+            this.sendEvent('stopOnStep', thread.getId(), false);
             resolve();
         });
     }
@@ -534,7 +543,12 @@ export class GdbProxy extends EventEmitter {
         }
         thread.setState(GdbThreadState.STEPPING);
         return this.sendPacketString(message, GdbPacketType.STOP).then(data => {
-            this.sendEvent('stopOnStep', thread.getId());
+            for (let thId of this.threads.keys()) {
+                if (thId !== thread.getId()) {
+                    this.sendEvent('stopOnStep', thId, true);
+                }
+            }
+            this.sendEvent('stopOnStep', thread.getId(), false);
             resolve();
         });
     }
@@ -897,13 +911,34 @@ export class GdbProxy extends EventEmitter {
     /**
      * Ask for the status of the current stop
      */
-    public async getHaltStatus(): Promise<GdbHaltStatus> {
+    public async getHaltStatus(): Promise<GdbHaltStatus[]> {
         return new Promise(async (resolve, reject) => {
-            await this.sendPacketString('?').then(message => {
-                resolve(this.parseHaltStatus(message));
-            }).catch(err => {
+            let rejected = false;
+            let returnedHaltStatus = new Array<GdbHaltStatus>();
+            let response = await this.sendPacketString('?').catch(err => {
                 reject(err);
+                rejected = true;
             });
+            if (response) {
+                if (response.indexOf("OK") < 0) {
+                    returnedHaltStatus.push(this.parseHaltStatus(response));
+                    let finished = false;
+                    while (!finished && !rejected) {
+                        let response = await this.sendPacketString('vStopped').catch(err => {
+                            reject(err);
+                            rejected = true;
+                        });
+                        if (response && response.indexOf("OK") < 0) {
+                            returnedHaltStatus.push(this.parseHaltStatus(response));
+                        } else {
+                            finished = true;
+                        }
+                    }
+                }
+            }
+            if (!rejected) {
+                resolve(returnedHaltStatus);
+            }
         });
     }
 

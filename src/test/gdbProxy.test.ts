@@ -5,7 +5,7 @@
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { GdbProxy } from '../gdbProxy';
-import { GdbRegister, GdbStackPosition, GdbStackFrame, GdbError } from '../gdbProxyCore';
+import { GdbRegister, GdbStackPosition, GdbStackFrame, GdbError, GdbHaltStatus, GdbAmigaSysThreadId } from '../gdbProxyCore';
 import { Socket } from 'net';
 import { spy, verify, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
@@ -47,6 +47,7 @@ function createBreakpoint(breakpointId: number, segmentId: number | undefined, o
 }
 
 describe("GdbProxy Tests", function () {
+    const supportedReply = "multiprocess+;vContSupported+;QStartNoAckMode+;QNonStop+";
     context('Communication', function () {
         const RESPONSE_OK = "OK";
         const RESPONSE_ERROR = "E1";
@@ -75,7 +76,7 @@ describe("GdbProxy Tests", function () {
             reset(mockedSocket);
         });
         it("Should connect to fs-UAE", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve("multiprocess+;vContSupported+;QStartNoAckMode+");
+            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString("QStartNoAckMode")).thenResolve(RESPONSE_OK);
             await proxy.connect('localhost', 6860);
             verify(mockedSocket.connect(6860, 'localhost')).once();
@@ -85,14 +86,14 @@ describe("GdbProxy Tests", function () {
             await expect(proxy.connect('localhost', 6860)).to.be.rejected;
         });
         it("Should send an error on connection error to fs-UAE error", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve("multiprocess+;vContSupported+;QStartNoAckMode+");
+            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString("QStartNoAckMode")).thenReject(error);
             await expect(proxy.connect('localhost', 6860)).to.be.rejectedWith(error);
             verify(mockedSocket.connect(6860, 'localhost')).once();
             verify(spiedProxy.sendPacketString('QStartNoAckMode')).once();
         });
         it("Should load a program and stop on entry", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve("multiprocess+;vContSupported+;QStartNoAckMode+");
+            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('vRun;dh0:myprog;')).thenResolve("AS;aef;20");
@@ -112,7 +113,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.continueExecution(anything())).never();
         });
         it("Should load a program and continue if not stop on entry", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve("multiprocess+;vContSupported+;QStartNoAckMode+");
+            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve("m00.07,00.0f,l");
             when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
@@ -133,7 +134,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.continueExecution(anything())).once();
         });
         it("Should load a program and reject if there is an error in breakpoint installation", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve("multiprocess+;vContSupported+;QStartNoAckMode+");
+            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve("m00.07,00.0f,l");
             when(spiedProxy.sendPacketString('Z0,0,0')).thenReject(error);
@@ -142,7 +143,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendPacketString('vRun;dh0:myprog;')).never();
         });
         it("Should load a program and reject if there is an error during run command", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve("multiprocess+;vContSupported+;QStartNoAckMode+");
+            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve("m00.07,00.0f,l");
             when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
@@ -152,7 +153,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendPacketString('vRun;dh0:myprog;')).once();
         });
         it("Should reject breakpoint when not connected", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve("multiprocess+;vContSupported+;QStartNoAckMode+");
+            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve("m00.07,00.0f,l");
             when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
@@ -169,7 +170,7 @@ describe("GdbProxy Tests", function () {
         });
         context('Connexion established', function () {
             beforeEach(async function () {
-                when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve("multiprocess+;vContSupported+;QStartNoAckMode+");
+                when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
                 when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
                 when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve("m00.07,00.0f,l");
                 when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
@@ -388,9 +389,24 @@ describe("GdbProxy Tests", function () {
                 verify(spiedProxy.sendPacketString('P0=8aff')).once();
             });
             it("Should query for halt status", async function () {
-                when(spiedProxy.sendPacketString('?')).thenResolve("S05");
-                await expect(proxy.getHaltStatus()).to.be.fulfilled;
+                when(spiedProxy.sendPacketString('?')).thenResolve("T05thread:00.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860");
+                when(spiedProxy.sendPacketString('vStopped')).thenResolve("T05thread:00.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860").thenResolve(RESPONSE_OK);
+                let haltStatus: GdbHaltStatus[] = await proxy.getHaltStatus();
+                expect(haltStatus.length).to.be.equal(2);
+                expect(haltStatus[0].code).to.be.equal(5);
+                // tslint:disable-next-line: no-unused-expression
+                expect(haltStatus[0].thread).not.to.be.undefined;
+                if (haltStatus[0].thread) {
+                    expect(haltStatus[0].thread.getThreadId()).to.be.equal(GdbAmigaSysThreadId.CPU);
+                }
+                expect(haltStatus[1].code).to.be.equal(5);
+                // tslint:disable-next-line: no-unused-expression
+                expect(haltStatus[1].thread).not.to.be.undefined;
+                if (haltStatus[1].thread) {
+                    expect(haltStatus[1].thread.getThreadId()).to.be.equal(GdbAmigaSysThreadId.COP);
+                }
                 verify(spiedProxy.sendPacketString('?')).once();
+                verify(spiedProxy.sendPacketString('vStopped')).twice();
             });
             it("Should query for pause", async function () {
                 when(spiedProxy.sendPacketString('vCont;t:0.f')).thenResolve(RESPONSE_OK);

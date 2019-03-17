@@ -559,7 +559,7 @@ describe('Node Debug Adapter', () => {
 			}
 			expect(stackFrames[1].id).to.be.equal(1);
 			expect(stackFrames[1].line).to.be.equal(1);
-			expect(stackFrames[1].name).to.be.equal("pc: sub.l	(a1), d0");
+			expect(stackFrames[1].name).to.be.equal("a: sub.l	(a1), d0");
 			let responseScopes: DebugProtocol.ScopesResponse = await dc.scopesRequest(<DebugProtocol.ScopesArguments>{ frameId: 0 });
 			expect(responseScopes.body.scopes[0].name).to.be.equal('Registers');
 			expect(responseScopes.body.scopes[1].name).to.be.equal('Segments');
