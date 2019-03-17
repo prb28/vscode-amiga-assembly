@@ -30,21 +30,6 @@ export interface Segment {
     size: number;
 }
 
-/** Type of the message packet */
-export enum GdbPacketType {
-    ERROR,
-    REGISTER,
-    MEMORY,
-    SEGMENT,
-    END,
-    STOP,
-    UNKNOWN,
-    OK,
-    PLUS,
-    FRAME,
-    MINUS
-}
-
 /** Information for threads in emulator */
 export class GdbThread {
     private static supportMultiprocess = false;
@@ -198,13 +183,6 @@ export class GdbError extends Error {
                 break;
         }
     }
-}
-
-/** Packet sent by the debugging server */
-export interface GdbPacket {
-    type: GdbPacketType;
-    command?: string;
-    message: string;
 }
 
 /** Halt signal */

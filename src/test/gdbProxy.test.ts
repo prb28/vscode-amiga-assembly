@@ -5,7 +5,7 @@
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { GdbProxy } from '../gdbProxy';
-import { GdbRegister, GdbStackPosition, GdbStackFrame, GdbPacket, GdbPacketType, GdbError } from '../gdbProxyCore';
+import { GdbRegister, GdbStackPosition, GdbStackFrame, GdbError } from '../gdbProxyCore';
 import { Socket } from 'net';
 import { spy, verify, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
@@ -107,7 +107,6 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendPacketString('Z0,0,0')).once();
             verify(spiedProxy.sendPacketString('vRun;dh0:myprog;')).once();
             // the stop command arrives  - should send pending breakpoints
-            proxy.waitingDataFunction = null;
             await mockedOnData(proxy.formatString("S5;0"));
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.continueExecution(anything())).never();
@@ -129,7 +128,6 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendPacketString('Z0,0,0')).once();
             verify(spiedProxy.sendPacketString('vRun;dh0:myprog;')).once();
             // the stop command arrives  - should send pending breakpoints
-            proxy.waitingDataFunction = null;
             await mockedOnData(proxy.formatString("S5;0"));
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.continueExecution(anything())).once();
@@ -185,7 +183,6 @@ describe("GdbProxy Tests", function () {
                 await proxy.connect('localhost', 6860);
                 await proxy.load("/home/myh\\myprog", true);
                 // the stop command arrives  - should send pending breakpoints
-                proxy.waitingDataFunction = null;
                 await mockedOnData(proxy.formatString("S05;0"));
             });
             it("Should accept a breakpoint", async function () {
@@ -295,20 +292,20 @@ describe("GdbProxy Tests", function () {
                 let bp = createBreakpoint(0, undefined, 0, 10);
                 await proxy.setBreakpoint(bp);
                 // Remove
-                when(spiedProxy.sendPacketString('z1,0')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('z1,a')).thenResolve(RESPONSE_OK);
                 await proxy.removeBreakpoint(bp);
-                verify(spiedProxy.sendPacketString('z1,0')).once();
+                verify(spiedProxy.sendPacketString('z1,a')).once();
             });
             it("Should reject on error removing a breakpoint", async function () {
                 let bp = createBreakpoint(1, undefined, -5);
                 await expect(proxy.removeBreakpoint(bp)).to.be.rejected;
             });
             it("Should step instruction", async function () {
-                when(spiedProxy.sendPacketString('vCont;r0,0:0.f')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('vCont;r0,0:0.f', anything())).thenResolve(RESPONSE_OK);
                 let thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     await expect(proxy.step(thread)).to.be.fulfilled;
-                    verify(spiedProxy.sendPacketString('vCont;r0,0:0.f')).once();
+                    verify(spiedProxy.sendPacketString('vCont;r0,0:0.f', anything())).once();
                 } else {
                     fail("Thread not found");
                 }
@@ -316,7 +313,7 @@ describe("GdbProxy Tests", function () {
             it("Should reject on step instruction error", async function () {
                 let thread = proxy.getCurrentCpuThread();
                 if (thread) {
-                    when(spiedProxy.sendPacketString('vCont;r0,0:0.f')).thenReject(error);
+                    when(spiedProxy.sendPacketString('vCont;r0,0:0.f', anything())).thenReject(error);
                     await expect(proxy.step(thread)).to.be.rejectedWith(error);
                 } else {
                     fail("Thread not found");
@@ -325,9 +322,9 @@ describe("GdbProxy Tests", function () {
             it("Should step in instruction", async function () {
                 let thread = proxy.getCurrentCpuThread();
                 if (thread) {
-                    when(spiedProxy.sendPacketString('vCont;s:0.f')).thenResolve(RESPONSE_OK);
+                    when(spiedProxy.sendPacketString('vCont;s:0.f', anything())).thenResolve(RESPONSE_OK);
                     await expect(proxy.stepIn(thread)).to.be.fulfilled;
-                    verify(spiedProxy.sendPacketString('vCont;s:0.f')).once();
+                    verify(spiedProxy.sendPacketString('vCont;s:0.f', anything())).once();
                 } else {
                     fail("Thread not found");
                 }
@@ -335,7 +332,7 @@ describe("GdbProxy Tests", function () {
             it("Should reject on step in instruction error", async function () {
                 let thread = proxy.getCurrentCpuThread();
                 if (thread) {
-                    when(spiedProxy.sendPacketString('vCont;s:0.f')).thenReject(error);
+                    when(spiedProxy.sendPacketString('vCont;s:0.f', anything())).thenReject(error);
                     await expect(proxy.stepIn(thread)).to.be.rejectedWith(error);
                 } else {
                     fail("Thread not found");
@@ -418,32 +415,6 @@ describe("GdbProxy Tests", function () {
             expect(GdbProxy.calculateChecksum("mc187e0,1a0")).to.be.equal("f3");
             expect(GdbProxy.calculateChecksum("n")).to.be.equal("6e");
             expect(GdbProxy.calculateChecksum("")).to.be.equal("00");
-        });
-        it("Should parse the reponse", function () {
-            let expected = [<GdbPacket>{
-                message: "OK",
-                type: GdbPacketType.OK
-            }];
-            expect(GdbProxy.parseData("$OK#9a")).to.be.eql(expected);
-            expected = [<GdbPacket>{
-                message: "F00000013",
-                type: GdbPacketType.FRAME
-            }];
-            expect(GdbProxy.parseData("$F00000013#ca")).to.be.eql(expected);
-            expected = [<GdbPacket>{
-                message: "4ef900f8101c4ef900f8",
-                type: GdbPacketType.UNKNOWN
-            }];
-            expect(GdbProxy.parseData("$4ef900f8101c4ef900f8#61")).to.be.eql(expected);
-            // Two messages
-            expected = [<GdbPacket>{
-                message: "OK",
-                type: GdbPacketType.OK
-            }, <GdbPacket>{
-                message: "S05",
-                type: GdbPacketType.STOP
-            }];
-            expect(GdbProxy.parseData("$OK#9a$S05#b8")).to.be.eql(expected);
         });
     });
     context('GdbError', function () {

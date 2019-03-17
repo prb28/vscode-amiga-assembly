@@ -139,9 +139,15 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.sendEvent(new StoppedEvent('entry', threadId));
         });
         this.gdbProxy.on('stopOnStep', (threadId: number) => {
+            this.sendEvent(new OutputEvent(`step ${threadId}\n`));
             this.sendEvent(new StoppedEvent('step', threadId));
         });
+        this.gdbProxy.on('stopOnPause', (threadId: number) => {
+            this.sendEvent(new OutputEvent(`pause ${threadId}\n`));
+            this.sendEvent(new StoppedEvent('pause', threadId));
+        });
         this.gdbProxy.on('stopOnBreakpoint', (threadId: number) => {
+            this.sendEvent(new OutputEvent(`breakpoint ${threadId}\n`));
             this.sendEvent(new StoppedEvent('breakpoint', threadId));
         });
         this.gdbProxy.on('stopOnException', (status: GdbHaltStatus, threadId: number) => {
@@ -434,6 +440,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
+        this.sendEvent(new OutputEvent(`threadsRequest \n`));
         this.gdbProxy.getThreadIds().then(tids => {
             let threads = new Array<Thread>();
             for (let t of tids) {
@@ -456,6 +463,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             const dbgInfo = this.debugInfo;
             const thread = this.gdbProxy.getThread(args.threadId);
             if (thread) {
+                this.sendEvent(new OutputEvent(`stackTraceRequest ${args.threadId}\n`));
                 this.gdbProxy.stack(thread).then(async stk => {
                     let stackFrames = [];
                     for (let f of stk.frames) {
@@ -514,20 +522,19 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         totalFrames: stk.count
                     };
                     this.sendResponse(response);
-                    return;
                 }).catch((err) => {
                     response.success = false;
                     response.message = err.toString();
                     this.sendResponse(response);
-                    return;
                 });
             } else {
                 response.success = false;
                 response.message = "Unknown thread";
                 this.sendResponse(response);
-                return;
             }
         } else {
+            response.success = false;
+            response.message = "No debug info loaded";
             this.sendResponse(response);
         }
     }
