@@ -284,7 +284,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             let value = v.getValue();
             if ((value !== undefined) && (value.length > 0)) {
                 if (value.match(/[A-Za-z_]*/)) {
-                    value = this.replaceVaraiblesInFormula(value);
+                    value = this.replaceVariablesInFormula(value);
                 }
             }
             return value;
@@ -292,7 +292,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return undefined;
     }
 
-    private replaceVaraiblesInFormula(formula: string): string {
+    private replaceVariablesInFormula(formula: string): string {
         let newFormula = formula;
         let variables = this.findVariablesInFormula(newFormula);
         for (let i = 0; i < variables.length; i++) {
@@ -334,15 +334,19 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
 
     public evaluateFormula(formula: string): Promise<number> {
         return new Promise(async (resolve, reject) => {
-            let newFormula = this.replaceVaraiblesInFormula(formula);
+            let resolved = false;
+            let newFormula = this.replaceVariablesInFormula(formula);
             if (newFormula) {
                 let calc = new Calc();
                 let result = calc.calculate(newFormula);
-                if (result !== NaN) {
-                    return resolve(result);
+                if ((result !== NaN) && (result !== undefined)) {
+                    resolve(result);
+                    resolved = true;
                 }
             }
-            reject();
+            if (!resolved) {
+                reject(new Error(`Formula '${formula}' can't be evaluated`));
+            }
         });
     }
 

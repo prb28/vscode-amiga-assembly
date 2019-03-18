@@ -1,6 +1,6 @@
 import {
     InitializedEvent, TerminatedEvent, BreakpointEvent,
-    Thread, StackFrame, Scope, Source, Handles, DebugSession, OutputEvent
+    Thread, StackFrame, Scope, Source, Handles, DebugSession, OutputEvent, ContinuedEvent
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
@@ -199,6 +199,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 }
             };
             this.sendEvent(event);
+        });
+        this.gdbProxy.on('continueThread', (threadId: number, allThreadsContinued?: boolean) => {
+            this.sendEvent(new ContinuedEvent(threadId, allThreadsContinued));
         });
         this.gdbProxy.on('segmentsUpdated', (segments: Array<Segment>) => {
             this.updateSegments(segments);
@@ -486,12 +489,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
-        this.sendEvent(new OutputEvent(`threadsRequest \n`));
         this.gdbProxy.getThreadIds().then(tids => {
             let threads = new Array<Thread>();
             for (let t of tids) {
                 threads.push(new Thread(t.getId(), t.getDisplayName()));
-                this.sendEvent(new OutputEvent(`threadsRequest ${t.getId()}, ${t.getDisplayName()} \n`));
             }
             response.body = {
                 threads: threads
@@ -510,7 +511,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             const dbgInfo = this.debugInfo;
             const thread = this.gdbProxy.getThread(args.threadId);
             if (thread) {
-                this.sendEvent(new OutputEvent(`stackTraceRequest ${args.threadId}\n`));
                 this.gdbProxy.stack(thread).then(async stk => {
                     let stackFrames = [];
                     for (let f of stk.frames) {

@@ -80,7 +80,7 @@ export class GdbProxy extends EventEmitter {
         return new Promise((resolve, reject) => {
             self.socket.connect(port, host);
             self.socket.once('connect', async () => {
-                await self.sendPacketString('qSupportedQStartNoAckMode;multiprocess;vContSupported').then(async data => {
+                await self.sendPacketString('qSupportedQStartNoAckMode;multiprocess;vContSupported;QNonStop').then(async data => {
                     const returnedData = data;
                     if (returnedData.indexOf("multiprocess+") >= 0) {
                         GdbThread.setSupportMultiprocess(true);
@@ -118,7 +118,9 @@ export class GdbProxy extends EventEmitter {
 
     /** Defaut handler for the on data event*/
     private defaultOnDataHandler = (packet: GdbPacket): boolean => {
-        this.sendEvent("output", `defaultOnDataHandler`);
+        if (this.traceProtocol) {
+            this.sendEvent("output", `defaultOnDataHandler (notif : ${packet.isNotification()}) : --> ${packet.getMessage()}`);
+        }
         let consumed = false;
         switch (packet.getType()) {
             case GdbPacketType.STOP:
@@ -150,13 +152,13 @@ export class GdbProxy extends EventEmitter {
      * @param data Data to parse
      */
     private onData(proxy: GdbProxy, data: any): Promise<void> {
-        if (this.traceProtocol) {
-            proxy.sendEvent("output", `---> ${data}`);
-        }
         return new Promise(async (resolve, reject) => {
             let packets = GdbPacket.parseData(data);
             for (let packet of packets) {
-                this.recievedDataManager.trigger(packet);
+                // plus packet are acknowledge - to be ignored
+                if (packet.getType() !== GdbPacketType.PLUS) {
+                    this.recievedDataManager.trigger(packet);
+                }
             }
             resolve();
         });
@@ -264,9 +266,6 @@ export class GdbProxy extends EventEmitter {
     public sendPacketString(text: string, expectedType?: GdbPacketType): Promise<string> {
         return new Promise(async (resolve, reject) => {
             var dataToSend = this.formatString(text);
-            if (this.traceProtocol) {
-                this.sendEvent("output", ` <--- ${dataToSend}`);
-            }
             const unlock = await this.mutex.capture('sendPacketString');
             if (this.socket.writable) {
                 let p = this.recievedDataManager.waitData(<GdbPacketHandler>{
@@ -275,7 +274,9 @@ export class GdbProxy extends EventEmitter {
                             reject(this.parseError(packet.getMessage()));
                         } else if ((!expectedType) || (expectedType === packet.getType())) {
                             resolve(packet.getMessage());
-                            this.sendEvent("output", `${dataToSend} --> ${packet.getMessage()}`);
+                            if (this.traceProtocol) {
+                                this.sendEvent("output", `${dataToSend} --> ${packet.getMessage()}`);
+                            }
                             unlock();
                             return true;
                         }
@@ -974,7 +975,9 @@ export class GdbProxy extends EventEmitter {
             message = 'c';
         }
         thread.setState(GdbThreadState.RUNNING);
-        return this.sendPacketString(message).then(data => { return; });
+        return this.sendPacketString(message).then(data => {
+            this.sendEvent('continueThread', thread.getId(), true);
+        });
     }
 
     /**
