@@ -47,6 +47,7 @@ function createBreakpoint(breakpointId: number, segmentId: number | undefined, o
 }
 
 describe("GdbProxy Tests", function () {
+    const suppportRequest = "qSupportedQStartNoAckMode;multiprocess;vContSupported;QNonStop";
     const supportedReply = "multiprocess+;vContSupported+;QStartNoAckMode+;QNonStop+";
     context('Communication', function () {
         const RESPONSE_OK = "OK";
@@ -76,24 +77,24 @@ describe("GdbProxy Tests", function () {
             reset(mockedSocket);
         });
         it("Should connect to fs-UAE", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString(suppportRequest)).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString("QStartNoAckMode")).thenResolve(RESPONSE_OK);
             await proxy.connect('localhost', 6860);
             verify(mockedSocket.connect(6860, 'localhost')).once();
         });
         it("Should send an error on QStartNoAckMode not active", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve("multiprocess+;vContSupported+");
+            when(spiedProxy.sendPacketString(suppportRequest)).thenResolve("multiprocess+;vContSupported+");
             await expect(proxy.connect('localhost', 6860)).to.be.rejected;
         });
         it("Should send an error on connection error to fs-UAE error", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString(suppportRequest)).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString("QStartNoAckMode")).thenReject(error);
             await expect(proxy.connect('localhost', 6860)).to.be.rejectedWith(error);
             verify(mockedSocket.connect(6860, 'localhost')).once();
             verify(spiedProxy.sendPacketString('QStartNoAckMode')).once();
         });
         it("Should load a program and stop on entry", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString(suppportRequest)).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('vRun;dh0:myprog;')).thenResolve("AS;aef;20");
@@ -113,7 +114,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.continueExecution(anything())).never();
         });
         it("Should load a program and continue if not stop on entry", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString(suppportRequest)).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve("m00.07,00.0f,l");
             when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
@@ -134,7 +135,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.continueExecution(anything())).once();
         });
         it("Should load a program and reject if there is an error in breakpoint installation", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString(suppportRequest)).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve("m00.07,00.0f,l");
             when(spiedProxy.sendPacketString('Z0,0,0')).thenReject(error);
@@ -143,7 +144,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendPacketString('vRun;dh0:myprog;')).never();
         });
         it("Should load a program and reject if there is an error during run command", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString(suppportRequest)).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve("m00.07,00.0f,l");
             when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
@@ -153,7 +154,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendPacketString('vRun;dh0:myprog;')).once();
         });
         it("Should reject breakpoint when not connected", async function () {
-            when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString(suppportRequest)).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve("m00.07,00.0f,l");
             when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
@@ -170,7 +171,7 @@ describe("GdbProxy Tests", function () {
         });
         context('Connexion established', function () {
             beforeEach(async function () {
-                when(spiedProxy.sendPacketString("qSupportedQStartNoAckMode;multiprocess;vContSupported")).thenResolve(supportedReply);
+                when(spiedProxy.sendPacketString(suppportRequest)).thenResolve(supportedReply);
                 when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
                 when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve("m00.07,00.0f,l");
                 when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
