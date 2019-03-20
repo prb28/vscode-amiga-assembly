@@ -152,7 +152,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.sendEvent(event);
         });
         this.gdbProxy.on('stopOnStep', (threadId: number, preserveFocusHint?: boolean) => {
-            this.sendEvent(new OutputEvent(`step ${threadId}\n`));
             let event = <DebugProtocol.StoppedEvent>{
                 event: "stopped",
                 body: {
@@ -174,7 +173,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     allThreadsStopped: true
                 }
             };
-            this.sendEvent(new OutputEvent(`pause ${threadId}\n`));
             this.sendEvent(event);
         });
         this.gdbProxy.on('stopOnBreakpoint', (threadId: number) => {
@@ -187,11 +185,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     allThreadsStopped: true
                 }
             };
-            this.sendEvent(new OutputEvent(`breakpoint ${threadId}\n`));
             this.sendEvent(event);
         });
         this.gdbProxy.on('stopOnException', (status: GdbHaltStatus, threadId: number) => {
-            this.sendEvent(new OutputEvent(`Exception raised: ${status.details}\n`));
             let event = <DebugProtocol.StoppedEvent>{
                 event: "stopped",
                 body: {
