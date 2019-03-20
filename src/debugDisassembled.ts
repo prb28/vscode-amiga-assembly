@@ -281,48 +281,58 @@ export class DebugDisassembledMananger {
                 });
             }
             if (searchedAddress !== undefined) {
-                const address = searchedAddress;
-                if (isCopper) {
-                    await this.gdbProxy.getMemory(address, length).then((memory) => {
-                        let startAddress = address;
-                        let copDis = new CopperDisassembler(memory);
-                        let instructions = copDis.disassemble();
-                        let variables = new Array<DebugProtocol.Variable>();
-                        let offset = 0;
-                        for (let i of instructions) {
-                            let addOffset = startAddress + offset;
-                            variables.push({
-                                value: i.toString(),
-                                name: addOffset.toString(16),
-                                variablesReference: 0
-                            });
-                            // 4 iadresses : 32b / address
-                            offset += 4;
-                        }
+                await this.disassembleNumericalAddress(searchedAddress, length, isCopper).then(code => {
+                    resolve(code);
+                }).catch(err => {
+                    reject(err);
+                });
+            } else {
+                reject(new Error("Unable to resolve adress expression void returned"));
+            }
+        });
+    }
+
+    public disassembleNumericalAddress(searchedAddress: number, length: number, isCopper: boolean): Promise<DebugProtocol.Variable[]> {
+        return new Promise(async (resolve, reject) => {
+            const address = searchedAddress;
+            if (isCopper) {
+                await this.gdbProxy.getMemory(address, length).then((memory) => {
+                    let startAddress = address;
+                    let copDis = new CopperDisassembler(memory);
+                    let instructions = copDis.disassemble();
+                    let variables = new Array<DebugProtocol.Variable>();
+                    let offset = 0;
+                    for (let i of instructions) {
+                        let addOffset = startAddress + offset;
+                        variables.push({
+                            value: i.toString(),
+                            name: addOffset.toString(16),
+                            variablesReference: 0
+                        });
+                        // 4 iadresses : 32b / address
+                        offset += 4;
+                    }
+                    resolve(variables);
+                }).catch((err) => {
+                    reject(err);
+                });
+            } else if (this.capstone) {
+                const localCapstone = this.capstone;
+                // ask for memory dump
+                await this.gdbProxy.getMemory(address, length).then(async (memory) => {
+                    let startAddress = address;
+                    // disassemble the code 
+                    await localCapstone.disassemble(memory).then((code) => {
+                        let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
                         resolve(variables);
                     }).catch((err) => {
                         reject(err);
                     });
-                } else if (this.capstone) {
-                    const localCapstone = this.capstone;
-                    // ask for memory dump
-                    await this.gdbProxy.getMemory(address, length).then(async (memory) => {
-                        let startAddress = address;
-                        // disassemble the code 
-                        await localCapstone.disassemble(memory).then((code) => {
-                            let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
-                            resolve(variables);
-                        }).catch((err) => {
-                            reject(err);
-                        });
-                    }).catch((err) => {
-                        reject(err);
-                    });
-                } else {
-                    reject(new Error("Capstone has not been defined"));
-                }
+                }).catch((err) => {
+                    reject(err);
+                });
             } else {
-                reject(new Error("Unable to resolve adress expression void returned"));
+                reject(new Error("Capstone has not been defined"));
             }
         });
     }

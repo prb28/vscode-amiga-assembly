@@ -38,6 +38,7 @@ describe('Node Debug Adapter', () => {
 	let testWithRealEmulator = false;
 	let defaultTimeout = 10000;
 	let th = new GdbThread(0, GdbAmigaSysThreadId.CPU);
+	let thCop = new GdbThread(1, GdbAmigaSysThreadId.COP);
 
 	before(function () {
 		if (testWithRealEmulator) {
@@ -498,7 +499,7 @@ describe('Node Debug Adapter', () => {
 					return Promise.resolve();
 				});
 				when(this.mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, _reject) => { resolve(["0", -1]); })).thenReturn(new Promise((resolve, _reject) => { resolve(["a", 1]); }));
-				when(this.mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
+				when(this.mockedGdbProxy.getMemory(10, anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
 				when(this.mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
 					name: "d0",
 					value: 1
@@ -546,6 +547,8 @@ describe('Node Debug Adapter', () => {
 			expect(stackFrames[0].line).to.be.equal(32);
 			expect(stackFrames[0].name).to.be.equal("0: move.l 4.w,a6");
 			let src = stackFrames[0].source;
+			// tslint:disable-next-line: no-unused-expression
+			expect(src).to.not.be.undefined;
 			if (src) {
 				// tslint:disable-next-line:no-unused-expression
 				expect(src.name).not.to.be.undefined;
@@ -580,6 +583,60 @@ describe('Node Debug Adapter', () => {
 			expect(vSymbolsResponse.body.variables[0].type).to.be.equal("symbol");
 			expect(vSymbolsResponse.body.variables[0].value).to.be.equal("a");
 			expect(vSymbolsResponse.body.variables[0].variablesReference).to.be.equal(0);
+		});
+		it('should retrieve a copper stack', async function () {
+			when(this.mockedGdbProxy.getMemory(22624, 10)).thenReturn(Promise.resolve("0180056c2c07fffe0180"));
+			when(this.mockedGdbProxy.getMemory(14676096, 4)).thenReturn(Promise.resolve("5850"));
+			this.timeout(defaultTimeout);
+			when(this.mockedGdbProxy.getThread(thCop.getId())).thenReturn(thCop);
+			when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th, thCop]));
+			if (!testWithRealEmulator) {
+				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: -1,
+						segmentId: 0,
+						offset: 0,
+						pc: 0,
+						stackFrameIndex: 1
+					}],
+					count: 1
+				}));
+				when(this.mockedGdbProxy.stack(thCop)).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: -1,
+						segmentId: 0,
+						offset: 22624,
+						pc: 22624,
+						stackFrameIndex: 1
+					}],
+					count: 1
+				}));
+			}
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			launchArgsCopy.stopOnEntry = true;
+			await Promise.all([
+				dc.configurationSequence(),
+				dc.launch(launchArgsCopy),
+				dc.assertStoppedLocation('entry', { line: 32 })
+			]);
+			let response: DebugProtocol.StackTraceResponse = await dc.stackTraceRequest(<DebugProtocol.StackTraceArguments>{ threadId: thCop.getId() });
+			expect(response.success).to.be.equal(true);
+			expect(response.body.totalFrames).to.be.equal(1);
+			let stackFrames = response.body.stackFrames;
+			expect(stackFrames[0].id).to.be.equal(-1);
+			expect(stackFrames[0].line).to.be.equal(5);
+			expect(stackFrames[0].name).to.be.equal("5860: dc.w $0180,$056c");
+			let src = stackFrames[0].source;
+			// tslint:disable-next-line: no-unused-expression
+			expect(src).to.not.be.undefined;
+			if (src) {
+				// tslint:disable-next-line:no-unused-expression
+				expect(src.name).not.to.be.undefined;
+				if (src.name) {
+					expect(src.name).to.be.equal("copper_$5850__500.dbgasm");
+				}
+			}
 		});
 	});
 	describe('evaluateExpression', function () {

@@ -17,6 +17,7 @@ import * as fs from 'fs';
 import { StringUtils } from './stringUtils';
 import { MemoryLabelsRegistry } from './customMemoryAdresses';
 import { BreakpointManager, GdbBreakpoint } from './breakpointManager';
+import { CopperDisassembler } from './copperDisassembler';
 const { Subject } = require('await-notify');
 
 
@@ -87,6 +88,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     /** Cache for disassembled code */
     private disassembledCache = new Map<number, string>();
+
+    /** Cache for disassembled code */
+    private disassembledCopperCache = new Map<number, string>();
 
     /** Helper class to deal with the debug expressions */
     private debugExpressionHelper = new DebugExpressionHelper();
@@ -535,34 +539,52 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         }
                         if (!stackFrameDone) {
                             let line: string = pc;
-                            let dCode = this.disassembledCache.get(f.pc);
-                            if (dCode) {
-                                line = dCode;
-                            } else if (thread.getThreadId() === GdbAmigaSysThreadId.CPU) {
-                                // Get the disassembled line
-                                line += ": ";
-                                if (this.capstone) {
+                            if (thread.getThreadId() === GdbAmigaSysThreadId.CPU) {
+                                let dCode = this.disassembledCache.get(f.pc);
+                                if (dCode) {
+                                    line = dCode;
+                                } else {
+                                    // Get the disassembled line
+                                    line += ": ";
+                                    if (this.capstone) {
+                                        let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
+                                            console.error("Error ingored: " + err.getMessage());
+                                        });
+                                        if (memory) {
+                                            let disassembled = await this.capstone.disassemble(memory);
+                                            let lines = disassembled.split(/\r\n|\r|\n/g);
+                                            let selectedLine = lines[0];
+                                            for (let l of lines) {
+                                                if (l.trim().length > 0) {
+                                                    selectedLine = l;
+                                                    break;
+                                                }
+                                            }
+                                            let elms = selectedLine.split("  ");
+                                            if (elms.length > 2) {
+                                                selectedLine = elms[2];
+                                            }
+                                            line += selectedLine.trim().replace(/\s\s+/g, ' ');
+                                        }
+                                    }
+                                    this.disassembledCache.set(f.pc, line);
+                                }
+                            } else if (thread.getThreadId() === GdbAmigaSysThreadId.COP) {
+                                let dCopperCode = this.disassembledCopperCache.get(f.pc);
+                                if (dCopperCode) {
+                                    line = dCopperCode;
+                                } else {
+                                    // Get the disassembled line
+                                    line += ": ";
                                     let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
                                         console.error("Error ingored: " + err.getMessage());
                                     });
                                     if (memory) {
-                                        let disassembled = await this.capstone.disassemble(memory);
-                                        let lines = disassembled.split(/\r\n|\r|\n/g);
-                                        let selectedLine = lines[0];
-                                        for (let l of lines) {
-                                            if (l.trim().length > 0) {
-                                                selectedLine = l;
-                                                break;
-                                            }
-                                        }
-                                        let elms = selectedLine.split("  ");
-                                        if (elms.length > 2) {
-                                            selectedLine = elms[2];
-                                        }
-                                        line += selectedLine.trim().replace(/\s\s+/g, ' ');
+                                        let cDis = new CopperDisassembler(memory);
+                                        line = line + cDis.disassemble()[0].toString().split("    ")[0];
+                                        this.disassembledCopperCache.set(f.pc, line);
                                     }
                                 }
-                                this.disassembledCache.set(f.pc, line);
                             }
                             // The the stack frame from the manager
                             let stackFrame = await this.debugDisassembledMananger.getStackFrame(f.index, f.pc, line, (thread.getThreadId() === GdbAmigaSysThreadId.COP));
