@@ -52,6 +52,7 @@ export class BreakpointManager {
                             debugBp.segmentId = values[0];
                             debugBp.offset = values[1];
                             await this.gdbProxy.setBreakpoint(debugBp).then(() => {
+                                this.breakpoints.push(debugBp);
                                 resolve(debugBp);
                             }).catch((err) => {
                                 this.addPendingBreakpoint(debugBp, err);
@@ -73,6 +74,7 @@ export class BreakpointManager {
                         debugBp.segmentId = undefined;
                         debugBp.offset = address;
                         await this.gdbProxy.setBreakpoint(debugBp).then(() => {
+                            this.breakpoints.push(debugBp);
                             resolve(debugBp);
                         }).catch((err) => {
                             this.addPendingBreakpoint(debugBp, err);
@@ -151,31 +153,34 @@ export class BreakpointManager {
         });
     }
 
+    private isSameSource(source: DebugProtocol.Source, other: DebugProtocol.Source): boolean {
+        let path = source.path;
+        if (path) {
+            return ((source.path === other.path) ||
+                (DebugDisassembledFile.isDebugAsmFile(path) && source.name === other.name));
+        }
+        return source.path === other.path;
+    }
+
     public clearBreakpoints(source: DebugProtocol.Source): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            const path = <string>source.path;
-            if (this.debugInfo && !DebugDisassembledFile.isDebugAsmFile(path)) {
-                let hasError = false;
-                let values = this.debugInfo.getAllSegmentIds(path);
-                for (let segmentId of values) {
-                    let remainingBreakpoints = new Array<GdbBreakpoint>();
-                    for (let bp of this.breakpoints) {
-                        if (bp.segmentId === segmentId) {
-                            await this.gdbProxy.removeBreakpoint(bp).catch(err => {
-                                remainingBreakpoints.push(bp);
-                                hasError = true;
-                            });
-                        } else {
-                            remainingBreakpoints.push(bp);
-                        }
-                    }
-                    this.breakpoints = remainingBreakpoints;
-                }
-                if (hasError) {
-                    reject(new Error("Some breakpoints cannot be removed"));
+            let hasError = false;
+            let remainingBreakpoints = new Array<GdbBreakpoint>();
+            for (let bp of this.breakpoints) {
+                if (bp.source && this.isSameSource(bp.source, source)) {
+                    await this.gdbProxy.removeBreakpoint(bp).catch(err => {
+                        remainingBreakpoints.push(bp);
+                        hasError = true;
+                    });
                 } else {
-                    resolve();
+                    remainingBreakpoints.push(bp);
                 }
+            }
+            this.breakpoints = remainingBreakpoints;
+            if (hasError) {
+                reject(new Error("Some breakpoints cannot be removed"));
+            } else {
+                resolve();
             }
         });
     }
