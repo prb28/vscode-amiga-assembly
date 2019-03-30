@@ -17,7 +17,7 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
         }
     }
 
-    public provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): Thenable<string> {
+    public provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): Promise<string> {
         return new Promise(async (resolve, reject) => {
             let debugSession = this.getDebugSession();
             if (debugSession) {
@@ -34,22 +34,37 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                             resolve(output);
                         }, (error) => {
                             vscode.window.showErrorMessage(error.message);
-                            reject(error.message);
+                            reject(error);
                         });
                     } else if (dAsmFile.isCopper()) {
-                        debugSession.customRequest('disassemble', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), length: dAsmFile.getLength(), copper: true }).then((response) => {
+                        await debugSession.customRequest('disassemble', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), length: dAsmFile.getLength(), copper: true }).then((response) => {
                             const variables: Array<DebugProtocol.Variable> = response.variables;
                             let output = '';
+                            let isFirst = true;
+                            let sz = 0;
                             for (let v of variables) {
-                                output += `${v.name}: ${v.value}\n`;
+                                if (!isFirst) {
+                                    output += `\n`;
+                                } else {
+                                    isFirst = false;
+                                }
+                                output += `${v.name}: ${v.value}`;
+                                sz++;
+                                if (sz > 40) {
+                                    break;
+                                }
                             }
-                            resolve(output);
+                            if (token.isCancellationRequested) {
+                                reject(new Error("Cancelled"));
+                            } else {
+                                resolve(output);
+                            }
                         }, (error) => {
                             vscode.window.showErrorMessage(error.message);
-                            reject(error.message);
+                            reject(error);
                         });
                     } else {
-                        debugSession.customRequest('disassemble', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), stackFrameIndex: dAsmFile.getStackFrameIndex(), length: dAsmFile.getLength() }).then((response) => {
+                        await debugSession.customRequest('disassemble', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), stackFrameIndex: dAsmFile.getStackFrameIndex(), length: dAsmFile.getLength() }).then((response) => {
                             const variables: Array<DebugProtocol.Variable> = response.variables;
                             let output = '';
                             for (let v of variables) {
@@ -58,7 +73,7 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                             resolve(output);
                         }, (error) => {
                             vscode.window.showErrorMessage(error.message);
-                            reject(error.message);
+                            reject(error);
                         });
                     }
                 } else {

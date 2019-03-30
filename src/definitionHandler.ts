@@ -42,7 +42,9 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                     } else if (symbolFile.getDcLabels().indexOf(symbol) >= 0) {
                         symbolKind = vscode.SymbolKind.Variable;
                     }
-                    results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
+                    if (symbol.getLabel()) {
+                        results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
+                    }
                 }
             }
             resolve(results);
