@@ -177,13 +177,13 @@ export class DebugDisassembledMananger {
                         reject(err);
                     });
                     if (cop1Addr) {
-                        lineInCop1 = (address - cop1Addr + 4) / 4;
+                        lineInCop1 = Math.floor((address - cop1Addr + 4) / 4);
                     }
                     let cop2Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver).catch(err => {
                         reject(err);
                     });
                     if (cop2Addr) {
-                        lineInCop2 = (address - cop2Addr + 4) / 4;
+                        lineInCop2 = Math.floor((address - cop2Addr + 4) / 4);
                     }
                     if (cop1Addr && (lineInCop1 >= 0)) {
                         if (cop2Addr && (lineInCop2 >= 0)) {

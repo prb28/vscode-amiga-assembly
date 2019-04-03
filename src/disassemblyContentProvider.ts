@@ -50,9 +50,6 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                                 }
                                 output += `${v.name}: ${v.value}`;
                                 sz++;
-                                if (sz > 40) {
-                                    break;
-                                }
                             }
                             if (token.isCancellationRequested) {
                                 reject(new Error("Cancelled"));
