@@ -993,12 +993,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         variablesReference: 0,
                     };
                     this.sendResponse(response);
-                    resolve();
                 }).catch((err) => {
                     response.success = false;
                     response.message = err.toString();
                     this.sendResponse(response);
-                    return reject(err);
                 });
             }
             resolve();
