@@ -8,8 +8,12 @@ import { DummyTextDocument } from './dummy';
 
 describe("Executor Tests", function () {
     let spiedOutputChannel: vscode.OutputChannel;
-    before(() => {
-        // Opening file to activate the extension
+    before(async () => {
+        // activate the extension
+        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
         const newFile = vscode.Uri.parse("untitled://./exe.s");
         return vscode.window.showTextDocument(newFile).then(() => { spiedOutputChannel = spy(ExtensionState.getCurrent().getStatusManager().outputChannel); });
     });

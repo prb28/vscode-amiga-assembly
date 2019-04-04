@@ -125,7 +125,7 @@ export class ExecutorHelper {
 
     handleDiagnosticErrors(document: vscode.TextDocument | undefined, errors: ICheckResult[], diagnosticSeverity?: vscode.DiagnosticSeverity) {
         let diagnosticMap: Map<string, Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>> = new Map();
-        errors.forEach(error => {
+        for (let error of errors) {
             if (error.line <= 0) {
                 vscode.window.showErrorMessage(error.msg);
             } else {
@@ -162,9 +162,9 @@ export class ExecutorHelper {
                 diag.push(diagnostic);
                 diagnosticMap.set(canonicalFile, diagnostics);
             }
-        });
+        }
 
-        diagnosticMap.forEach((diagMap, file) => {
+        for (const [file, diagMap] of diagnosticMap) {
             const fileUri = vscode.Uri.parse(file);
             let warningDiagnosticCollection = ExtensionState.getCurrent().getWarningDiagnosticCollection();
             let errorDiagnosticCollection = ExtensionState.getCurrent().getErrorDiagnosticCollection();
@@ -177,7 +177,9 @@ export class ExecutorHelper {
                 if (newErrors && existingWarnings) {
                     const errorLines = newErrors.map(x => x.range.start.line);
                     existingWarnings = existingWarnings.filter(x => errorLines.indexOf(x.range.start.line) === -1);
-                    warningDiagnosticCollection.set(fileUri, existingWarnings);
+                    if (existingWarnings.length > 0) {
+                        warningDiagnosticCollection.set(fileUri, existingWarnings);
+                    }
                 }
             }
             if (diagnosticSeverity === undefined || diagnosticSeverity === vscode.DiagnosticSeverity.Warning) {
@@ -192,7 +194,7 @@ export class ExecutorHelper {
 
                 warningDiagnosticCollection.set(fileUri, newWarnings);
             }
-        });
+        }
     }
 
 
