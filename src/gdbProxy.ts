@@ -190,7 +190,7 @@ export class GdbProxy extends EventEmitter {
                 this.programFilename = programFilename;
                 let elms = this.programFilename.replace(/\\/g, '/').split('/');
                 this.sendPacketString("Z0,0,0").then(async data => {
-                    let self = this;
+                    const self = this;
                     // Let fs-uae terminate before sending the run command
                     // TODO : check if this is necessary
                     await setTimeout(async function () {
@@ -203,7 +203,10 @@ export class GdbProxy extends EventEmitter {
                                 console.error("Unexpected return message for program lauch command");
                             }
                             // Call for thread dump
-                            await self.getThreadIds().then(() => {
+                            await self.getThreadIds().then((threads) => {
+                                for (let th of threads) {
+                                    self.sendEvent('threadStarted', th.getId());
+                                }
                                 resolve();
                             }).catch(err => {
                                 reject(err);

@@ -209,6 +209,16 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
             this.sendEvent(new BreakpointEvent('changed', bp));
         });
+        this.gdbProxy.on('threadStarted', (threadId: number) => {
+            let event = <DebugProtocol.ThreadEvent>{
+                event: "thread",
+                body: {
+                    reason: 'started',
+                    threadId: threadId
+                }
+            };
+            this.sendEvent(event);
+        });
         this.gdbProxy.on('output', (text: string, filePath?: string, line?: number, column?: number) => {
             const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
             if (filePath !== undefined) {
@@ -313,88 +323,94 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         return this.debugInfo.loadInfo(args.program);
     }
 
-    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
-        // Does the program exists ? -> Loads the debug info
-        let dInfoLoaded = false;
-        try {
-            dInfoLoaded = this.loadDebugInfo(args);
-        } catch (err) {
-            response.success = false;
-            response.message = "Invalid program to debug: " + err.message;
-            this.sendResponse(response);
-            return;
-        }
-        if ((!args.program) || (!dInfoLoaded)) {
-            response.success = false;
-            response.message = "Invalid program to debug - review launch settings";
-            this.sendResponse(response);
-            return;
-        }
+    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            // Does the program exists ? -> Loads the debug info
+            let dInfoLoaded = false;
+            try {
+                dInfoLoaded = this.loadDebugInfo(args);
+            } catch (err) {
+                response.success = false;
+                response.message = "Invalid program to debug: " + err.message;
+                this.sendResponse(response);
+                resolve();
+                return;
+            }
+            if ((!args.program) || (!dInfoLoaded)) {
+                response.success = false;
+                response.message = "Invalid program to debug - review launch settings";
+                this.sendResponse(response);
+                resolve();
+                return;
+            }
 
-        // Showing the help text
-        if (!this.testMode) {
-            let text = "Commands:\n" +
-                "    Memory dump:\n" +
-                "        m address, size[, wordSizeInBytes, rowSizeInWords,ab]\n" +
-                "        			a: show ascii output, b: show bytes output\n" +
-                "            example: m 5c50,10,2,4\n" +
-                "        m ${register|symbol}, #{symbol}, size[, wordSizeInBytes, rowSizeInWords]\n" +
-                "            example: m ${mycopperlabel},10,2,4\n" +
-                "    Disassembled Memory dump:\n" +
-                "        m address|${register|symbol}|#{symbol},size,d\n" +
-                "            example: m ${pc},10,d\n" +
-                "    Memory set:\n" +
-                "        M address=bytes\n" +
-                "            example: M 5c50=0ff534\n" +
-                "        M ${register|symbol}=bytes\n" +
-                "        M #{register|symbol}=bytes\n" +
-                "            example: M ${mycopperlabel}=0ff534\n" +
-                "      ${symbol} gives the adress of symbol," +
-                "      #{symbol} gives the pointed value from the symbol\n";
-            this.sendEvent(new OutputEvent(text));
-        }
+            // Showing the help text
+            if (!this.testMode) {
+                let text = "Commands:\n" +
+                    "    Memory dump:\n" +
+                    "        m address, size[, wordSizeInBytes, rowSizeInWords,ab]\n" +
+                    "        			a: show ascii output, b: show bytes output\n" +
+                    "            example: m 5c50,10,2,4\n" +
+                    "        m ${register|symbol}, #{symbol}, size[, wordSizeInBytes, rowSizeInWords]\n" +
+                    "            example: m ${mycopperlabel},10,2,4\n" +
+                    "    Disassembled Memory dump:\n" +
+                    "        m address|${register|symbol}|#{symbol},size,d\n" +
+                    "            example: m ${pc},10,d\n" +
+                    "    Memory set:\n" +
+                    "        M address=bytes\n" +
+                    "            example: M 5c50=0ff534\n" +
+                    "        M ${register|symbol}=bytes\n" +
+                    "        M #{register|symbol}=bytes\n" +
+                    "            example: M ${mycopperlabel}=0ff534\n" +
+                    "      ${symbol} gives the adress of symbol," +
+                    "      #{symbol} gives the pointed value from the symbol\n";
+                this.sendEvent(new OutputEvent(text));
+            }
 
-        // Launch the emulator
-        try {
-            this.startEmulator(args).catch(err => {
-                window.showErrorMessage(err.message);
-                this.sendEvent(new TerminatedEvent());
-            });
-        } catch (error) {
-            response.success = false;
-            response.message = error.message;
-            this.sendResponse(response);
-            return;
-        }
+            // Launch the emulator
+            try {
+                this.startEmulator(args).catch(err => {
+                    window.showErrorMessage(err.message);
+                    this.sendEvent(new TerminatedEvent());
+                });
+            } catch (error) {
+                response.success = false;
+                response.message = error.message;
+                this.sendResponse(response);
+                resolve();
+                return;
+            }
 
-        // wait until configuration has finished (and configurationDoneRequest has been called)
-        await this.configurationDone.wait(1000);
+            // wait until configuration has finished (and configurationDoneRequest has been called)
+            await this.configurationDone.wait(1000);
 
-        // temp to use in timeout
-        let debAdapter = this;
+            // temp to use in timeout
+            let debAdapter = this;
 
-        let timeoutValue = 3000;
-        if (this.testMode) {
-            timeoutValue = 1;
-        }
-        setTimeout(function () {
-            // connects to FS-UAE
-            debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(async () => {
-                // Loads the program
-                debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
-                await debAdapter.gdbProxy.load(args.program, args.stopOnEntry).then(() => {
-                    debAdapter.sendResponse(response);
+            let timeoutValue = 3000;
+            if (this.testMode) {
+                timeoutValue = 1;
+            }
+            await setTimeout(async () => {
+                // connects to FS-UAE
+                await debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(async () => {
+                    // Loads the program
+                    debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
+                    await debAdapter.gdbProxy.load(args.program, args.stopOnEntry).then(() => {
+                        debAdapter.sendResponse(response);
+                    }).catch(err => {
+                        response.success = false;
+                        response.message = err.toString();
+                        debAdapter.sendResponse(response);
+                    });
                 }).catch(err => {
                     response.success = false;
                     response.message = err.toString();
                     debAdapter.sendResponse(response);
                 });
-            }).catch(err => {
-                response.success = false;
-                response.message = err.toString();
-                debAdapter.sendResponse(response);
-            });
-        }, timeoutValue);
+                resolve();
+            }, timeoutValue);
+        });
     }
 
     public checkEmulator(emulatorPath: string): boolean {
@@ -488,21 +504,23 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     }
 
-    protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
-        this.gdbProxy.getThreadIds().then(tids => {
-            let threads = new Array<Thread>();
-            for (let t of tids) {
-                threads.push(new Thread(t.getId(), t.getDisplayName()));
-            }
-            response.body = {
-                threads: threads
-            };
-            this.sendResponse(response);
-        }).catch((err) => {
-            response.success = false;
-            response.message = err.toString();
-            this.sendResponse(response);
-            return;
+    protected threadsRequest(response: DebugProtocol.ThreadsResponse): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            await this.gdbProxy.getThreadIds().then(tids => {
+                let threads = new Array<Thread>();
+                for (let t of tids) {
+                    threads.push(new Thread(t.getId(), t.getDisplayName()));
+                }
+                response.body = {
+                    threads: threads
+                };
+                this.sendResponse(response);
+            }).catch((err) => {
+                response.success = false;
+                response.message = err.toString();
+                this.sendResponse(response);
+            });
+            resolve();
         });
     }
 
@@ -1003,47 +1021,53 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         });
     }
 
-    protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): void {
-        let thread = this.gdbProxy.getThread(args.threadId);
-        if (thread) {
-            this.gdbProxy.pause(thread).then(() => {
+    protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): Promise<void> {
+        return new Promise(async (resolve, _reject) => {
+            let thread = this.gdbProxy.getThread(args.threadId);
+            if (thread) {
+                await this.gdbProxy.pause(thread).then(() => {
+                    this.sendResponse(response);
+                }).catch(err => {
+                    response.success = false;
+                    response.message = err.toString();
+                    this.sendResponse(response);
+                });
+            } else {
+                response.success = false;
+                response.message = "Unknown thread";
+                this.sendResponse(response);
+            }
+            resolve();
+        });
+    }
+
+    protected exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments): Promise<void> {
+        return new Promise(async (resolve, _reject) => {
+            await this.gdbProxy.getHaltStatus().then((haltStatus) => {
+                let selectedHs: GdbHaltStatus = haltStatus[0];
+                for (let hs of haltStatus) {
+                    if ((hs.thread) && (hs.thread.getThreadId() === GdbAmigaSysThreadId.CPU)) {
+                        selectedHs = hs;
+                        break;
+                    }
+                }
+                response.body = {
+                    exceptionId: selectedHs.code.toString(),
+                    description: selectedHs.details,
+                    breakMode: 'always'
+                };
                 this.sendResponse(response);
             }).catch(err => {
                 response.success = false;
                 response.message = err.toString();
                 this.sendResponse(response);
             });
-        } else {
-            response.success = false;
-            response.message = "Unknown thread";
-            this.sendResponse(response);
-        }
-    }
-
-    protected exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments): void {
-        this.gdbProxy.getHaltStatus().then((haltStatus) => {
-            let selectedHs: GdbHaltStatus = haltStatus[0];
-            for (let hs of haltStatus) {
-                if ((hs.thread) && (hs.thread.getThreadId() === GdbAmigaSysThreadId.CPU)) {
-                    selectedHs = hs;
-                    break;
-                }
-            }
-            response.body = {
-                exceptionId: selectedHs.code.toString(),
-                description: selectedHs.details,
-                breakMode: 'always'
-            };
-            this.sendResponse(response);
-        }).catch(err => {
-            response.success = false;
-            response.message = err.toString();
-            this.sendResponse(response);
+            resolve();
         });
     }
 
     protected setExceptionBreakPointsRequest(response: DebugProtocol.SetExceptionBreakpointsResponse, args: DebugProtocol.SetExceptionBreakpointsArguments): Promise<void> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async (resolve, _reject) => {
             if (args.filters.length > 0) {
                 await this.breakpointManager.setExceptionBreakpoint().then(() => {
                     response.success = true;
@@ -1061,6 +1085,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     response.message = err.toString();
                 });
             }
+            resolve();
         });
     }
 
