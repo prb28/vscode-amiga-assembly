@@ -41,7 +41,6 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                             const variables: Array<DebugProtocol.Variable> = response.variables;
                             let output = '';
                             let isFirst = true;
-                            let sz = 0;
                             for (let v of variables) {
                                 if (!isFirst) {
                                     output += `\n`;
@@ -49,7 +48,6 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                                     isFirst = false;
                                 }
                                 output += `${v.name}: ${v.value}`;
-                                sz++;
                             }
                             if (token.isCancellationRequested) {
                                 reject(new Error("Cancelled"));
