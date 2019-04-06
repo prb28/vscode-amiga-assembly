@@ -484,11 +484,7 @@ export class NumberParser {
             pos--;
         }
         let end = startPos + len;
-        if (end >= len) {
-            ret[0] = str;
-        } else {
-            ret[0] = str.substring(0, end);
-        }
+        ret[0] = str.substring(0, end);
         return ret;
     }
 

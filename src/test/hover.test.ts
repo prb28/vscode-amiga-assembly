@@ -13,6 +13,7 @@ import * as chai from 'chai';
 import { ExtensionState } from '../extension';
 import * as Path from 'path';
 import { M68kDefinitionHandler } from '../definitionHandler';
+import * as vscode from 'vscode';
 
 chai.use(chaiAsPromised);
 // tslint:disable:no-unused-expression
@@ -22,6 +23,11 @@ describe("Hover Tests", function () {
     const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
     let dHnd: M68kDefinitionHandler;
     before(async function () {
+        // activate the extension
+        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
         let state = ExtensionState.getCurrent();
         dHnd = state.getDefinitionHandler();
         await dHnd.scanFile(Uri.file(MAIN_SOURCE));
@@ -117,7 +123,7 @@ describe("Hover Tests", function () {
             let elm = result.contents[0];
             expect(elm instanceof MarkdownString).to.be.true;
             if (elm instanceof MarkdownString) {
-                expect(elm.value).to.be.equal("#`4096000` - $`3e.8000` - %`111110.10000000.00000000` - @`17500000.0000`");
+                expect(elm.value).to.be.equal("#`4096000` - $`3e.8000` - %`111110.10000000.00000000` - @`1750.0000`");
             }
         }
     });
@@ -169,6 +175,11 @@ describe("Hover Tests", function () {
         expect(mdStr).to.not.be.null;
         if (mdStr) {
             expect(mdStr.value).to.be.equal("#`8` - $`8` - %`1000` - @`10`");
+        }
+        mdStr = hp.renderNumberForWord("#$83f0");
+        expect(mdStr).to.not.be.null;
+        if (mdStr) {
+            expect(mdStr.value).to.be.equal("#`33776` - $`83f0` - %`10000011.11110000` - @`10.1760`");
         }
     });
     it("Should render a register value", function () {
