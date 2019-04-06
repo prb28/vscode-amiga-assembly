@@ -9,9 +9,8 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases). 
 
 
-## New in 0.13.0
-- Display used/free registers in selected code block
-- Hierarchical Outline
+## New in 0.14.0
+- Enhanced Debugger with Copper debugging
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -74,6 +73,10 @@ The assembly language will be formatted with the standard shortcuts :
 ![Disassemble a copper list](images/copperdisassembly.gif)
 
 ## Release Notes
+## 0.14.0
+- Copper debugging
+- Bug fixes
+
 ## 0.13.0
 - Display used/free registers in selected code block
 - Hierarchical Outline
