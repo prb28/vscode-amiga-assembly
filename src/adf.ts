@@ -61,7 +61,8 @@ export class ADFTools {
                 }
                 let includes = conf.includes;
                 let excludes = conf.excludes;
-                await this.createBootableADFDiskFromDir(filename, rootSourceDir, includes, excludes, cancellationToken).then(() => {
+                let adfCreateOptions = conf.adfCreateOptions;
+                await this.createBootableADFDiskFromDir(filename, rootSourceDir, includes, excludes, adfCreateOptions, cancellationToken).then(() => {
                     resolve();
                 }).catch((err) => {
                     reject(err);
@@ -79,13 +80,14 @@ export class ADFTools {
      * @param rootSourceDir Directory root to copy in the created disk
      * @param includes Expression for the files to include
      * @param excludes Expression for the files to exclude
+     * @param adfCreateOptions Option for the create command
      * @param cancellationToken Token to cancel the process
      */
-    public createBootableADFDiskFromDir(filename: string, rootSourceDir: string, includes: string, excludes: string, cancellationToken?: CancellationToken): Promise<void> {
+    public createBootableADFDiskFromDir(filename: string, rootSourceDir: string, includes: string, excludes: string, adfCreateOptions: Array<string>, cancellationToken?: CancellationToken): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
                 // Create a disk
-                await this.createADFDisk(filename, cancellationToken).catch((err) => {
+                await this.createADFDisk(filename, adfCreateOptions, cancellationToken).catch((err) => {
                     return reject(err);
                 });
                 // Install the disk
@@ -204,10 +206,14 @@ export class ADFTools {
     /**
      * Create a new disk
      * @param filename Filename of the new adf disk file
+     * @param adfCreateOptions Option for the create command
      * @param cancellationToken Token to cancel the process
      */
-    public createADFDisk(filename: string, cancellationToken?: CancellationToken): Promise<void> {
-        return this.executeADFCommand(this.adfCreateFilepath, [filename], cancellationToken);
+    public createADFDisk(filename: string, adfCreateOptions: Array<string>, cancellationToken?: CancellationToken): Promise<void> {
+        let args = new Array<string>();
+        args = args.concat(adfCreateOptions);
+        args.push(filename);
+        return this.executeADFCommand(this.adfCreateFilepath, args, cancellationToken);
     }
 
     /**

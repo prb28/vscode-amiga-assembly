@@ -27,11 +27,14 @@ describe("ADFTools test", function () {
         when(mockedExecutor.runToolRetrieveStdout(anything(), anything(), anything(), anything(), anything())).thenResolve("Done.\n");
         let adfTools = new ADFTools(rootToolsDir);
         adfTools.setTestContext(executor);
-        await adfTools.createBootableADFDiskFromDir(adfDiskName, adfRootDir, "s/*", "**/.*");
+        await adfTools.createBootableADFDiskFromDir(adfDiskName, adfRootDir, "s/*", "**/.*", ["myopt", "myopt2"]);
         let i = 0;
         let [args, , commandFilename, ,] = capture(mockedExecutor.runToolRetrieveStdout).byCallIndex(i++);
         expect(commandFilename).to.be.equal(path.join(rootToolsDir, "adfcreate"));
-        expect(args[0]).to.be.equal(adfDiskName);
+        expect(args.length).to.be.equal(3);
+        expect(args[0]).to.be.equal("myopt");
+        expect(args[1]).to.be.equal("myopt2");
+        expect(args[2]).to.be.equal(adfDiskName);
         [args, , commandFilename, ,] = capture(mockedExecutor.runToolRetrieveStdout).byCallIndex(i++);
         expect(commandFilename).to.be.equal(path.join(rootToolsDir, "adfinst"));
         expect(args[0]).to.be.equal("-i");
@@ -56,6 +59,6 @@ describe("ADFTools test", function () {
         let adfTools = new ADFTools(rootToolsDir);
         adfTools.setTestContext(executor);
         // tslint:disable-next-line:no-unused-expression
-        expect(adfTools.createBootableADFDiskFromDir(adfDiskName, adfRootDir, "**/genc*", "**/.*")).to.be.rejected;
+        expect(adfTools.createBootableADFDiskFromDir(adfDiskName, adfRootDir, "**/genc*", "**/.*", ["opts"])).to.be.rejected;
     });
 });

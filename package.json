@@ -160,6 +160,15 @@
                         "excludes": {
                             "type": "string",
                             "description": "GlobPattern to select the files to exclude in the ADF disk"
+                        },
+                        "adfCreateOptions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "title": "adfCreate option"
+                            },
+                            "default": [],
+                            "description": "adfCreate options"
                         }
                     },
                     "default": {
@@ -167,7 +176,10 @@
                         "sourceRootDir": "my/path/to/rootdiskdir",
                         "outputADFFile": "./build/disk.adf",
                         "includes": "**/*",
-                        "excludes": "**/.*"
+                        "excludes": "**/.*",
+                        "adfCreateOptions": [
+                            "--label=MYDISK"
+                        ]
                     },
                     "description": "ADFFile generation from the destination build dir"
                 },
