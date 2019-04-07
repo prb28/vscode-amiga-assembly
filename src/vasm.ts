@@ -383,6 +383,12 @@ export class VASMParser implements ExecutorParser {
                                 error.file = match[2];
                                 error.line = parseInt(match[1]);
                                 error.msg = lastHeaderLine;
+                            } else {
+                                let match = /\s*included from line\s([\d]+)\sof\s[\"](.+)[\"]/.exec(line);
+                                if (match) {
+                                    // It's an included file
+                                    error.parentFile = match[2];
+                                }
                             }
                         }
                     }

@@ -5,8 +5,13 @@ import { reset, capture, spy, verify, anyString, instance, when, anything, mock,
 import { ExecutorHelper, ExecutorParser, ICheckResult } from '../execHelper';
 import { ExtensionState } from '../extension';
 import { DummyTextDocument } from './dummy';
+import { Uri, workspace, TextDocument } from 'vscode';
+import * as Path from 'path';
 
 describe("Executor Tests", function () {
+    const PROJECT_ROOT = Path.join(__dirname, '..', '..');
+    const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
+    const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
     let spiedOutputChannel: vscode.OutputChannel;
     before(async () => {
         // activate the extension
@@ -151,7 +156,7 @@ describe("Executor Tests", function () {
             }
             verify(spiedWarningDiagnosticCollection.set(anything(), anything())).never();
         });
-        it("Should handle the Diagnostics of waring only", async () => {
+        it("Should handle the Diagnostics of warning only", async () => {
             await ex.handleDiagnosticErrors(document, errors, vscode.DiagnosticSeverity.Warning);
             verify(spiedErrorDiagnosticCollection.clear()).never();
             verify(spiedWarningDiagnosticCollection.clear()).never();
@@ -168,6 +173,34 @@ describe("Executor Tests", function () {
                 expect.fail("FileUri should be defined and be a uri");
             }
             verify(spiedErrorDiagnosticCollection.set(anything(), anything())).never();
+        });
+        context("Opened document", function () {
+            let sourceDocument: TextDocument;
+            before(async function () {
+                sourceDocument = await workspace.openTextDocument(Uri.file(MAIN_SOURCE));
+            });
+            it("Should handle the Diagnostics errors of included files", async () => {
+                let includedFileError = new ICheckResult();
+                includedFileError.file = "hw.i";
+                includedFileError.parentFile = sourceDocument.uri.path;
+                includedFileError.line = 1;
+                includedFileError.msg = "errorin0";
+                includedFileError.severity = "error";
+                await ex.handleDiagnosticErrors(sourceDocument, [includedFileError], undefined);
+                let [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
+                if (newErrors instanceof Array) {
+                    expect(newErrors.length).to.be.equal(1);
+                    expect(newErrors[0].message).to.be.equal(error.msg);
+                } else {
+                    expect.fail("Diagnostic errors should be an array");
+                }
+                if (fileUri instanceof vscode.Uri) {
+                    let fileParentDir = Path.parse(sourceDocument.uri.path).dir;
+                    expect(fileUri.path).to.be.eql(fileParentDir + "/include/hw.i");
+                } else {
+                    expect.fail("FileUri should be defined and be a uri");
+                }
+            });
         });
     });
 

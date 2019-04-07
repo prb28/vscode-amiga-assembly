@@ -9,7 +9,8 @@ export class SymbolFile {
     private labels = new Array<Symbol>();
     private subroutines = new Array<string>();
     private dclabel = new Array<Symbol>();
-    //private importedFiles = new Array<SymbolFile>();
+    private includeDir = "";
+    private includedFiles = new Array<string>();
 
     constructor(uri: Uri) {
         this.uri = uri;
@@ -67,6 +68,10 @@ export class SymbolFile {
                 if (lastLabel) {
                     labelsBeforeRts.push(lastLabel);
                 }
+            } else if (instruct === "incdir") {
+                this.includeDir = asmLine.data.replace(/"/g, '');
+            } else if (instruct === "include") {
+                this.includedFiles.push(asmLine.data.replace(/"/g, ''));
             }
         }
         let inSub = false;
@@ -89,6 +94,12 @@ export class SymbolFile {
     public clear() {
         this.definedSymbols = new Array<Symbol>();
         this.referedSymbols = new Array<Symbol>();
+        this.variables = new Array<Symbol>();
+        this.labels = new Array<Symbol>();
+        this.subroutines = new Array<string>();
+        this.dclabel = new Array<Symbol>();
+        this.includeDir = "";
+        this.includedFiles = new Array<string>();
     }
 
     public getUri(): Uri {
@@ -111,6 +122,12 @@ export class SymbolFile {
     }
     public getDcLabels(): Array<Symbol> {
         return this.dclabel;
+    }
+    public getIncludeDir(): string {
+        return this.includeDir;
+    }
+    public getIncludedFiles(): Array<string> {
+        return this.includedFiles;
     }
 }
 

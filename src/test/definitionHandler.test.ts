@@ -61,4 +61,18 @@ describe("Definition handler Tests", function () {
             await expect(dHnd.provideUsedRegistersSymbols()).to.be.eventually.equal("Registers used: none - free: d0-d7/a0-a7");
         });
     });
+    context("Opened document", function () {
+        before(async function () {
+            // activate the extension
+            let ext = extensions.getExtension('prb28.amiga-assembly');
+            if (ext) {
+                await ext.activate();
+            }
+            await workspace.openTextDocument(Uri.file(MAIN_SOURCE));
+        });
+        it("Should have the included files graph", async () => {
+            let files = dHnd.getIncludedFiles(Uri.file(MAIN_SOURCE));
+            return expect(files).to.be.eventually.eql(["include/hw.i"]);
+        });
+    });
 });

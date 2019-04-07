@@ -204,12 +204,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
 
     public scanWorkspace(): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            await vscode.workspace.findFiles(M68kDefinitionHandler.SOURCE_FILES_GLOB, null, undefined).then((filesURI) => {
+            await vscode.workspace.findFiles(M68kDefinitionHandler.SOURCE_FILES_GLOB, null, undefined).then(async (filesURI) => {
                 let promises = [];
                 for (let i = 0; i < filesURI.length; i++) {
                     promises.push(this.scanFile(filesURI[i]));
                 }
-                Promise.all(promises).then(() => {
+                await Promise.all(promises).then(() => {
                     resolve();
                 }).catch(err => {
                     reject(err);
@@ -352,5 +352,25 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         });
     }
 
+    /**
+     * Retrieves the file includes graph
+     */
+    public async getIncludedFiles(uri: Uri): Promise<Array<string>> {
+        return new Promise(async (resolve, reject) => {
+            this.scanFile(uri).then((symbolFile) => {
+                let returnedFilenames = new Array<string>();
+                let includeDir = symbolFile.getIncludeDir();
+                if (includeDir.length > 0) {
+                    includeDir += '/';
+                }
+                for (let fn of symbolFile.getIncludedFiles()) {
+                    returnedFilenames.push(includeDir + fn);
+                }
+                resolve(returnedFilenames);
+            }).catch(err => {
+                reject(err);
+            });
+        });
+    }
 }
 

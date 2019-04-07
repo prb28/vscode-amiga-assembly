@@ -32,5 +32,7 @@ describe("Symbols reader Tests", function () {
         expect(count).to.be.equal(12);
         expect(variables.length).to.be.equal(18);
         expect(labels.length).to.be.equal(40);
+        expect(sf.getIncludeDir()).to.be.equal("include");
+        expect(sf.getIncludedFiles()).to.be.eql(["hw.i"]);
     });
 });

@@ -275,5 +275,18 @@ describe("VASM Tests", function () {
             expect(error.file).to.be.equal("/myfolder/src/mysource.s");
             expect(error.line).to.be.equal(646);
         });
+        it("Should parse a included file error", async function () {
+            let errStr = "error 9 in line 1 of \"includedfile.s\": instruction not supported on selected architecture\n" +
+                "included from line 3 of \"/myfolder/src/mysource.s\"\n" +
+                ">         movex.l    a9,dx\n";
+            let errors = parser.parse(errStr);
+            expect(errors.length).to.be.equal(1);
+            let error = errors[0];
+            expect(error.msg).to.be.equal("error 9: instruction not supported on selected architecture");
+            expect(error.severity).to.be.equal("error");
+            expect(error.file).to.be.equal("includedfile.s");
+            expect(error.parentFile).to.be.equal("/myfolder/src/mysource.s");
+            expect(error.line).to.be.equal(1);
+        });
     });
 });
