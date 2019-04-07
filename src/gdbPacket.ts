@@ -48,10 +48,14 @@ export class GdbPacket {
         let parsedData = new Array<GdbPacket>();
         if (data) {
             let s = data.toString();
-            if (s === '+') {
-                parsedData.push(new GdbPacket(GdbPacketType.PLUS, s));
-            } else {
-                let messageRegexp = /\$([^$]+)\#[\da-f]{2}/gi;
+            if (s.startsWith('+')) {
+                parsedData.push(new GdbPacket(GdbPacketType.PLUS, "+"));
+                if (s.length > 1) {
+                    s = s.substring(1);
+                }
+            }
+            if (s.length > 0) {
+                let messageRegexp = /\$([^$]*)\#[\da-f]{2}/gi;
                 let match;
                 if (s.startsWith('+')) {
                     s = s.substring(1);

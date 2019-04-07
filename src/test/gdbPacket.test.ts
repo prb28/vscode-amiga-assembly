@@ -17,5 +17,8 @@ describe("GdbPacket Tests", function () {
         // Two messages
         expected = [new GdbPacket(GdbPacketType.OK, "OK"), new GdbPacket(GdbPacketType.STOP, "S05")];
         expect(GdbPacket.parseData("$OK#9a$S05#b8")).to.be.eql(expected);
+        // Old fs - uae message
+        expected = [new GdbPacket(GdbPacketType.PLUS, "+"), new GdbPacket(GdbPacketType.UNKNOWN, "")];
+        expect(GdbPacket.parseData("+$#00")).to.be.eql(expected);
     });
 });

@@ -84,6 +84,8 @@ export class GdbProxy extends EventEmitter {
                     const returnedData = data;
                     if (returnedData.indexOf("multiprocess+") >= 0) {
                         GdbThread.setSupportMultiprocess(true);
+                    } else {
+                        reject(new Error("Please install latest binaries from FS-UAE custom build https://github.com/prb28/vscode-amiga-wks-example/releases"));
                     }
                     if (returnedData.indexOf("vContSupported+") >= 0) {
                         this.supportVCont = true;
