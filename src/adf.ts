@@ -175,13 +175,13 @@ export class ADFTools {
      */
     public mkdirs(filename: string, dirpath: string, createdDirs: Array<string>, cancellationToken?: CancellationToken): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (!(dirpath in createdDirs)) {
+            if (!(createdDirs.includes(dirpath))) {
                 // split the path
                 let normPath = dirpath.replace('\\', '/');
                 let concatPath = "";
                 for (let pathElement of normPath.split('/')) {
                     concatPath += pathElement;
-                    if (!(concatPath in createdDirs)) {
+                    if (!(createdDirs.includes(concatPath))) {
                         await this.mkdir(filename, concatPath, cancellationToken).catch((err) => {
                             return reject(err);
                         });
