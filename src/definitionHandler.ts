@@ -112,7 +112,8 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                         }
                     }
                 }
-                let used = foundRegisters.sort().filter((x, i, a) => !i || x !== a[i - 1]);
+                foundRegisters.sort();
+                let used = foundRegisters.filter((x, i, a) => !i || x !== a[i - 1]);
                 let aused = Array<number>();
                 let dused = Array<number>();
                 let afree = Array<number>();
@@ -326,7 +327,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             let formula = this.evaluateVariableFormula(variable);
             if (formula) {
                 let result = calc.calculate(formula);
-                if (result !== NaN) {
+                if (!Number.isNaN(result)) {
                     return resolve(result);
                 }
             }
@@ -341,7 +342,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             if (newFormula) {
                 let calc = new Calc();
                 let result = calc.calculate(newFormula);
-                if ((result !== NaN) && (result !== undefined)) {
+                if ((!Number.isNaN(result)) && (result !== undefined)) {
                     resolve(result);
                     resolved = true;
                 }

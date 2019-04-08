@@ -368,18 +368,15 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             }
 
             // Launch the emulator
-            try {
-                this.startEmulator(args).catch(err => {
-                    window.showErrorMessage(err.message);
-                    this.sendEvent(new TerminatedEvent());
-                });
-            } catch (error) {
+            this.startEmulator(args).catch(err => {
+                window.showErrorMessage(err.message);
+                this.sendEvent(new TerminatedEvent());
                 response.success = false;
-                response.message = error.message;
+                response.message = err.message;
                 this.sendResponse(response);
                 resolve();
                 return;
-            }
+            });
 
             // wait until configuration has finished (and configurationDoneRequest has been called)
             await this.configurationDone.wait(1000);

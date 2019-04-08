@@ -277,7 +277,6 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
                 config.type = 'fs-uae';
                 config.name = 'Launch';
                 config.request = 'launch';
-                config.program = '${file}';
                 config.stopOnEntry = true;
                 config.startEmulator = true;
                 config.emulator = "fs-uae";
