@@ -351,9 +351,9 @@ var MathCalc = (function (module) {
                             logger.warn('%s at %d (%s)', error.text, error.pos, key);
                         }
                         else {
-                            var error = { text: 'Unexpected EOF', pos: state.pos + 1 };
-                            state.error = error;
-                            logger.warn('%s (%s)', error.text, key);
+                            var lerror = { text: 'Unexpected EOF', pos: state.pos + 1 };
+                            state.error = lerror;
+                            logger.warn('%s (%s)', lerror.text, key);
                         }
                         done = true;
                 }
@@ -363,9 +363,9 @@ var MathCalc = (function (module) {
                 var item = getTop(state, 1);
                 var pos = item.pos || 0;
                 var paren = item.id === 'LParen';
-                var error = { pos: pos, text: paren ? 'Open paren' : 'Invalid expression' };
-                state.error = error;
-                logger.warn('%s at %d (eof)', error.text, error.pos);
+                var loerror = { pos: pos, text: paren ? 'Open paren' : 'Invalid expression' };
+                state.error = loerror;
+                logger.warn('%s at %d (eof)', loerror.text, loerror.pos);
             }
 
             return {
@@ -667,9 +667,10 @@ var MathCalc = (function (module) {
         var parseNumber = Number.parseFloat || parseFloat;
 
         function evalToken(id, s) {
-            switch (id) {
-                case 'Number': return parseNumber(s);
-                default: return s;
+            if (id === 'Number') {
+                return parseNumber(s);
+            } else {
+                return s;
             }
         }
 

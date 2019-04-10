@@ -134,71 +134,40 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.breakpointManager = new BreakpointManager(this.gdbProxy, this.debugDisassembledMananger);
     }
 
+    /**
+     * Creates a stop event
+     */
+    private crateStoppedEvent(threadId: number, reason: string, preserveFocusHint?: boolean): DebugProtocol.StoppedEvent {
+        return <DebugProtocol.StoppedEvent>{
+            event: "stopped",
+            body: {
+                reason: reason,
+                threadId: threadId,
+                preserveFocusHint: preserveFocusHint,
+                allThreadsStopped: true
+            }
+        };
+    }
+
 	/**
 	 * Initialize proxy
 	 */
     public initProxy() {
         // setup event handlers
         this.gdbProxy.on('stopOnEntry', (threadId: number) => {
-            let event = <DebugProtocol.StoppedEvent>{
-                event: "stopped",
-                body: {
-                    reason: "entry",
-                    threadId: threadId,
-                    preserveFocusHint: false,
-                    allThreadsStopped: true
-                }
-            };
-            this.sendEvent(event);
+            this.sendEvent(this.crateStoppedEvent(threadId, "entry", false));
         });
         this.gdbProxy.on('stopOnStep', (threadId: number, preserveFocusHint?: boolean) => {
-            let event = <DebugProtocol.StoppedEvent>{
-                event: "stopped",
-                body: {
-                    reason: "step",
-                    threadId: threadId,
-                    preserveFocusHint: preserveFocusHint,
-                    allThreadsStopped: true
-                }
-            };
-            this.sendEvent(event);
+            this.sendEvent(this.crateStoppedEvent(threadId, "step", preserveFocusHint));
         });
         this.gdbProxy.on('stopOnPause', (threadId: number) => {
-            let event = <DebugProtocol.StoppedEvent>{
-                event: "stopped",
-                body: {
-                    reason: "pause",
-                    threadId: threadId,
-                    preserveFocusHint: false,
-                    allThreadsStopped: true
-                }
-            };
-            this.sendEvent(event);
+            this.sendEvent(this.crateStoppedEvent(threadId, "pause", false));
         });
         this.gdbProxy.on('stopOnBreakpoint', (threadId: number) => {
-            let event = <DebugProtocol.StoppedEvent>{
-                event: "stopped",
-                body: {
-                    reason: "breakpoint",
-                    threadId: threadId,
-                    preserveFocusHint: false,
-                    allThreadsStopped: true
-                }
-            };
-            this.sendEvent(event);
+            this.sendEvent(this.crateStoppedEvent(threadId, "breakpoint", false));
         });
         this.gdbProxy.on('stopOnException', (status: GdbHaltStatus, threadId: number) => {
-            let event = <DebugProtocol.StoppedEvent>{
-                event: "stopped",
-                body: {
-                    reason: "exception",
-                    description: status.details,
-                    threadId: threadId,
-                    preserveFocusHint: false,
-                    allThreadsStopped: true
-                }
-            };
-            this.sendEvent(event);
+            this.sendEvent(this.crateStoppedEvent(threadId, "exception", false));
         });
         this.gdbProxy.on('continueThread', (threadId: number, allThreadsContinued?: boolean) => {
             this.sendEvent(new ContinuedEvent(threadId, allThreadsContinued));
@@ -323,6 +292,17 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         return this.debugInfo.loadInfo(args.program);
     }
 
+    /**
+     * Send a response containing an error.
+     * @param response reponse to send
+     * @param message Error message
+     */
+    private sendStringErrorResponse(response: DebugProtocol.Response, message: string) {
+        response.success = false;
+        response.message = message;
+        this.sendResponse(response);
+    }
+
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
         return new Promise(async (resolve, reject) => {
             // Does the program exists ? -> Loads the debug info
@@ -330,16 +310,12 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             try {
                 dInfoLoaded = this.loadDebugInfo(args);
             } catch (err) {
-                response.success = false;
-                response.message = "Invalid program to debug: " + err.message;
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, "Invalid program to debug: " + err.message);
                 resolve();
                 return;
             }
             if ((!args.program) || (!dInfoLoaded)) {
-                response.success = false;
-                response.message = "Invalid program to debug - review launch settings";
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, "Invalid program to debug - review launch settings");
                 resolve();
                 return;
             }
@@ -371,9 +347,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.startEmulator(args).catch(err => {
                 window.showErrorMessage(err.message);
                 this.sendEvent(new TerminatedEvent());
-                response.success = false;
-                response.message = err.message;
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, err.message);
                 resolve();
                 return;
             });
@@ -388,7 +362,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             if (this.testMode) {
                 timeoutValue = 1;
             }
-            await setTimeout(async () => {
+            setTimeout(async () => {
                 // connects to FS-UAE
                 await debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(async () => {
                     // Loads the program
@@ -396,14 +370,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     await debAdapter.gdbProxy.load(args.program, args.stopOnEntry).then(() => {
                         debAdapter.sendResponse(response);
                     }).catch(err => {
-                        response.success = false;
-                        response.message = err.toString();
-                        debAdapter.sendResponse(response);
+                        debAdapter.sendStringErrorResponse(response, err.message);
                     });
                 }).catch(err => {
-                    response.success = false;
-                    response.message = err.toString();
-                    debAdapter.sendResponse(response);
+                    debAdapter.sendStringErrorResponse(response, err.message);
                 });
                 resolve();
             }, timeoutValue);
@@ -445,14 +415,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected customRequest(command: string, response: DebugProtocol.Response, args: any): void {
-        switch (command) {
-            case 'disassemble':
-                this.disassembleRequest(response, args);
-                break;
-            default:
-                response.body = { error: 'Invalid command.' };
-                this.sendResponse(response);
-                break;
+        if (command === 'disassemble') {
+            this.disassembleRequest(response, args);
+        } else {
+            response.body = { error: 'Invalid command.' };
+            this.sendResponse(response);
         }
     }
 
@@ -463,9 +430,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             };
             this.sendResponse(response);
         }).catch((err) => {
-            response.success = false;
-            response.message = err.toString();
-            this.sendResponse(response);
+            this.sendStringErrorResponse(response, err.message);
         });
     }
 
@@ -513,9 +478,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 };
                 this.sendResponse(response);
             }).catch((err) => {
-                response.success = false;
-                response.message = err.toString();
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, err.message);
             });
             resolve();
         });
@@ -610,19 +573,13 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     };
                     this.sendResponse(response);
                 }).catch((err) => {
-                    response.success = false;
-                    response.message = err.toString();
-                    this.sendResponse(response);
+                    this.sendStringErrorResponse(response, err.message);
                 });
             } else {
-                response.success = false;
-                response.message = "Unknown thread";
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, "Unknown thread");
             }
         } else {
-            response.success = false;
-            response.message = "No debug info loaded";
-            this.sendResponse(response);
+            this.sendStringErrorResponse(response, "No debug info loaded");
         }
     }
 
@@ -668,9 +625,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         };
                         this.sendResponse(response);
                     }).catch(err => {
-                        response.success = false;
-                        response.message = err.toString();
-                        this.sendResponse(response);
+                        this.sendStringErrorResponse(response, err.message);
                     });
                 } else if (id.startsWith("segments_")) {
                     const variables = new Array<DebugProtocol.Variable>();
@@ -724,8 +679,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 this.sendResponse(response);
             });
         } else {
-            response.success = false;
-            this.sendResponse(response);
+            this.sendStringErrorResponse(response, "Illegal variable request");
         }
     }
 
@@ -746,14 +700,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 };
                 this.sendResponse(response);
             }).catch(err => {
-                response.success = false;
-                response.message = err.toString();
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, err.message);
             });
         } else {
-            response.success = false;
-            response.message = "Unknown thread";
-            this.sendResponse(response);
+            this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
 
@@ -763,14 +713,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.gdbProxy.step(thread).then(() => {
                 this.sendResponse(response);
             }).catch(err => {
-                response.success = false;
-                response.message = err.toString();
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, err.message);
             });
         } else {
-            response.success = false;
-            response.message = "Unknown thread";
-            this.sendResponse(response);
+            this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
 
@@ -780,21 +726,15 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.gdbProxy.stepIn(thread).then(() => {
                 this.sendResponse(response);
             }).catch(err => {
-                response.success = false;
-                response.message = err.toString();
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, err.message);
             });
         } else {
-            response.success = false;
-            response.message = "Unknown thread";
-            this.sendResponse(response);
+            this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
 
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
-        response.success = false;
-        response.message = "Option not availaible";
-        this.sendResponse(response);
+        this.sendStringErrorResponse(response, "Option not availaible");
     }
 
     private evaluateRequestRegister(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
@@ -806,9 +746,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             };
             this.sendResponse(response);
         }).catch(err => {
-            response.success = false;
-            response.message = err.toString();
-            this.sendResponse(response);
+            this.sendStringErrorResponse(response, err.message);
         });
     }
 
@@ -930,30 +868,20 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                     this.sendResponse(response);
                                 });
                             } else {
-                                response.success = false;
-                                response.message = "Capstone cstool must be configured in the settings";
-                                this.sendResponse(response);
+                                this.sendStringErrorResponse(response, "Capstone cstool must be configured in the settings");
                             }
                         }
                     }).catch((err) => {
-                        response.success = false;
-                        response.message = err.toString();
-                        this.sendResponse(response);
+                        this.sendStringErrorResponse(response, err.message);
                     });
                 }).catch((err) => {
-                    response.success = false;
-                    response.message = err.toString();
-                    this.sendResponse(response);
+                    this.sendStringErrorResponse(response, err.message);
                 });
             } else {
-                response.success = false;
-                response.message = "Invalid memory dump expression";
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, "Invalid memory dump expression");
             }
         } else {
-            response.success = false;
-            response.message = "Expression not recognized";
-            this.sendResponse(response);
+            this.sendStringErrorResponse(response, "Expression not recognized");
         }
     }
 
@@ -969,24 +897,16 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         args.expression = 'm' + addrStr + ',' + data.length.toString(16);
                         return this.evaluateRequestGetMemory(response, args);
                     }).catch((err) => {
-                        response.success = false;
-                        response.message = err.toString();
-                        this.sendResponse(response);
+                        this.sendStringErrorResponse(response, err.message);
                     });
                 }).catch((err) => {
-                    response.success = false;
-                    response.message = err.toString();
-                    this.sendResponse(response);
+                    this.sendStringErrorResponse(response, err.message);
                 });
             } else {
-                response.success = false;
-                response.message = "Invalid memory set expression";
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, "Invalid memory set expression");
             }
         } else {
-            response.success = false;
-            response.message = "Expression not recognized";
-            this.sendResponse(response);
+            this.sendStringErrorResponse(response, "Expression not recognized");
         }
     }
 
@@ -1009,9 +929,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     };
                     this.sendResponse(response);
                 }).catch((err) => {
-                    response.success = false;
-                    response.message = err.toString();
-                    this.sendResponse(response);
+                    this.sendStringErrorResponse(response, err.message);
                 });
             }
             resolve();
@@ -1025,14 +943,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 await this.gdbProxy.pause(thread).then(() => {
                     this.sendResponse(response);
                 }).catch(err => {
-                    response.success = false;
-                    response.message = err.toString();
-                    this.sendResponse(response);
+                    this.sendStringErrorResponse(response, err.message);
                 });
             } else {
-                response.success = false;
-                response.message = "Unknown thread";
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, "Unknown thread");
             }
             resolve();
         });
@@ -1055,9 +969,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 };
                 this.sendResponse(response);
             }).catch(err => {
-                response.success = false;
-                response.message = err.toString();
-                this.sendResponse(response);
+                this.sendStringErrorResponse(response, err.message);
             });
             resolve();
         });
@@ -1070,16 +982,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     response.success = true;
                     this.sendResponse(response);
                 }).catch(err => {
-                    response.success = false;
-                    response.message = err.toString();
+                    this.sendStringErrorResponse(response, err.message);
                 });
             } else {
                 await this.breakpointManager.removeExceptionBreakpoint().then(breakpoint => {
                     response.success = true;
                     this.sendResponse(response);
                 }).catch(err => {
-                    response.success = false;
-                    response.message = err.toString();
+                    this.sendStringErrorResponse(response, err.message);
                 });
             }
             resolve();
