@@ -53,7 +53,7 @@ export class M86kColorProvider implements DocumentColorProvider {
             }
             let r = parseInt(value[pos++], 16) / 32;
             let g = parseInt(value[pos++], 16) / 32;
-            let b = parseInt(value[pos++], 16) / 32;
+            let b = parseInt(value[pos], 16) / 32;
 
             let color: Color = new Color(r, g, b, 1);
             colors.push(new ColorInformation(range, color));

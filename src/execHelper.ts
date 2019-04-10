@@ -29,15 +29,7 @@ export class ExecutorHelper {
      * @param parser Parser for the output
      */
     runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken): Promise<ICheckResult[]> {
-        let outputChannel = ExtensionState.getCurrent().getStatusManager().outputChannel;
-        let p: cp.ChildProcess;
-        if (token) {
-            token.onCancellationRequested(() => {
-                if (p) {
-                    this.killTree(p.pid);
-                }
-            });
-        }
+        const outputChannel = ExtensionState.getCurrent().getStatusManager().outputChannel;
         return new Promise((resolve, reject) => {
             let options: any = {
                 env: env
@@ -45,7 +37,7 @@ export class ExecutorHelper {
             if (cwd) {
                 options.cwd = cwd;
             }
-            p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
+            let p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
                     if (err && (<any>err).code === 'ENOENT') {
                         return reject(new Error(`Cannot find ${cmd} : ${err.message}`));
@@ -77,7 +69,23 @@ export class ExecutorHelper {
                     reject(e);
                 }
             });
+            this.addKillToCancellationTocken(p, token);
         });
+    }
+
+    /**
+     * Add a kill call when cancellation token is called
+     * @param p: Childprocess
+     * @param token Cancellation token
+     */
+    private addKillToCancellationTocken(p: cp.ChildProcess, token?: vscode.CancellationToken) {
+        if (token) {
+            token.onCancellationRequested(() => {
+                if (p) {
+                    this.killTree(p.pid);
+                }
+            });
+        }
     }
 
     /**
@@ -89,14 +97,6 @@ export class ExecutorHelper {
      * @param token Cancellation token
      */
     runToolRetrieveStdout(args: string[], cwd: string | null, cmd: string, env: any, token?: vscode.CancellationToken): Promise<string> {
-        let p: cp.ChildProcess;
-        if (token) {
-            token.onCancellationRequested(() => {
-                if (p) {
-                    this.killTree(p.pid);
-                }
-            });
-        }
         return new Promise((resolve, reject) => {
             let options: any = {
                 env: env
@@ -104,7 +104,7 @@ export class ExecutorHelper {
             if (cwd) {
                 options.cwd = cwd;
             }
-            p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
+            let p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
                     let bufferOut = "";
                     if (err) {
@@ -122,6 +122,7 @@ export class ExecutorHelper {
                     reject(e);
                 }
             });
+            this.addKillToCancellationTocken(p, token);
         });
     }
 

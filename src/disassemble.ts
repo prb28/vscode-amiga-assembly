@@ -30,8 +30,7 @@ export class Disassembler {
                     await window.showTextDocument(newFile).then((_) => {
                         resolve();
                     }, err => {
-                        let message = err.message;
-                        window.showErrorMessage(message);
+                        window.showErrorMessage(err.message);
                         reject(err);
                     });
                 } else {
@@ -76,8 +75,7 @@ export class Disassembler {
                                 });
                             });
                         }).catch(err => {
-                            let message = err.message;
-                            window.showErrorMessage(message);
+                            window.showErrorMessage(err.message);
                             reject(err);
                         });
                     } else {

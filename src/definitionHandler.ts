@@ -8,11 +8,11 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     static readonly SOURCE_FILES_GLOB = "**/*.{asm,s,i,ASM,S,I}";
     private watcher: FileSystemWatcher;
     private files = new Map<string, SymbolFile>();
-    private definedSymbols = new Map<String, Symbol>();
-    private referedSymbols = new Map<string, Map<String, Array<Symbol>>>();
-    private variables = new Map<String, Symbol>();
-    private labels = new Map<String, Symbol>();
-    private sortedVariablesNames = new Array<String>();
+    private definedSymbols = new Map<string, Symbol>();
+    private referedSymbols = new Map<string, Map<string, Array<Symbol>>>();
+    private variables = new Map<string, Symbol>();
+    private labels = new Map<string, Symbol>();
+    private sortedVariablesNames = new Array<string>();
 
     constructor() {
         this.watcher = vscode.workspace.createFileSystemWatcher(M68kDefinitionHandler.SOURCE_FILES_GLOB);
@@ -205,7 +205,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
 
     public scanWorkspace(): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            await vscode.workspace.findFiles(M68kDefinitionHandler.SOURCE_FILES_GLOB, null, undefined).then(async (filesURI) => {
+            await vscode.workspace.findFiles(M68kDefinitionHandler.SOURCE_FILES_GLOB, null).then(async (filesURI) => {
                 let promises = [];
                 for (let i = 0; i < filesURI.length; i++) {
                     promises.push(this.scanFile(filesURI[i]));
@@ -227,7 +227,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 this.files.set(uri.fsPath, file);
             }
             if (document) {
-                await file.readDocument(document);
+                file.readDocument(document);
             } else {
                 await file.readFile().catch(err => {
                     reject(err);
@@ -240,7 +240,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 this.definedSymbols.set(s.getLabel(), s);
             }
             this.referedSymbols.delete(uri.fsPath);
-            let refs = new Map<String, Array<Symbol>>();
+            let refs = new Map<string, Array<Symbol>>();
             let refSymb = file.getReferedSymbols();
             for (let i = 0; i < refSymb.length; i++) {
                 let s = refSymb[i];
@@ -260,7 +260,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             }
             // sort variables
             this.sortedVariablesNames = Array.from(this.variables.keys());
-            await this.sortedVariablesNames.sort((a, b) => {
+            this.sortedVariablesNames.sort((a, b) => {
                 return b.length - a.length;
             });
 
@@ -313,7 +313,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     public findVariablesInFormula(formula: string): Array<string> {
         let variables = new Array<string>();
         for (let i = 0; i < this.sortedVariablesNames.length; i++) {
-            let vn = this.sortedVariablesNames[i].toString();
+            let vn = this.sortedVariablesNames[i];
             if (formula.indexOf(vn) >= 0) {
                 variables.push(vn);
             }

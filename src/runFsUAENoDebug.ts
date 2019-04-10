@@ -102,17 +102,14 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Log, false);
 
 		// Launch the emulator
-		try {
-			this.startEmulator(args).catch(err => {
-				window.showErrorMessage(err.message);
-				this.sendEvent(new TerminatedEvent());
-			});
-		} catch (error) {
+		this.startEmulator(args).catch(err => {
+			window.showErrorMessage(err.message);
+			this.sendEvent(new TerminatedEvent());
 			response.success = false;
-			response.message = error.message;
+			response.message = err.message;
 			this.sendResponse(response);
 			return;
-		}
+		});
 
 		// wait until configuration has finished (and configurationDoneRequest has been called)
 		await this.configurationDone.wait(1000);

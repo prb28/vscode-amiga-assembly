@@ -195,7 +195,7 @@ export class GdbProxy extends EventEmitter {
                     const self = this;
                     // Let fs-uae terminate before sending the run command
                     // TODO : check if this is necessary
-                    await setTimeout(async function () {
+                    setTimeout(async function () {
                         self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
                         await self.sendPacketString("vRun;dh0:" + elms[elms.length - 1] + ";").then(async (message) => {
                             let type = GdbPacket.parseType(message);
@@ -510,6 +510,19 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
+     * Send a stop on step event for thread
+     * @param thread selected thread
+     */
+    private sendStopOnStepEvent(thread: GdbThread) {
+        for (let thId of this.threads.keys()) {
+            if (thId !== thread.getId()) {
+                this.sendEvent('stopOnStep', thId, true);
+            }
+        }
+        this.sendEvent('stopOnStep', thread.getId(), false);
+    }
+
+    /**
      * Ask the debbuger to step 
      * @param thread Thread selected
      */
@@ -526,12 +539,7 @@ export class GdbProxy extends EventEmitter {
         }
         thread.setState(GdbThreadState.STEPPING);
         return this.sendPacketString(message, GdbPacketType.STOP).then(data => {
-            for (let thId of this.threads.keys()) {
-                if (thId !== thread.getId()) {
-                    this.sendEvent('stopOnStep', thId, true);
-                }
-            }
-            this.sendEvent('stopOnStep', thread.getId(), false);
+            this.sendStopOnStepEvent(thread);
             resolve();
         });
     }
@@ -549,12 +557,7 @@ export class GdbProxy extends EventEmitter {
         }
         thread.setState(GdbThreadState.STEPPING);
         return this.sendPacketString(message, GdbPacketType.STOP).then(data => {
-            for (let thId of this.threads.keys()) {
-                if (thId !== thread.getId()) {
-                    this.sendEvent('stopOnStep', thId, true);
-                }
-            }
-            this.sendEvent('stopOnStep', thread.getId(), false);
+            this.sendStopOnStepEvent(thread);
             resolve();
         });
     }

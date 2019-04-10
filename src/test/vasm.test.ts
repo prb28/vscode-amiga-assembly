@@ -78,7 +78,7 @@ describe("VASM Tests", function () {
             let spiedWorkspace = spy(vscode.workspace);
             let file1 = vscode.Uri.parse("file:///file1.s");
             let file2 = vscode.Uri.parse("file:///file2");
-            when(spiedWorkspace.findFiles(anything(), anything(), anything())).thenReturn(new Promise((resolve, reject) => {
+            when(spiedWorkspace.findFiles(anything(), anything())).thenReturn(new Promise((resolve, reject) => {
                 resolve([file1, file2]);
             }));
             when(spiedWorkspace.openTextDocument(file1)).thenReturn(new Promise((resolve, reject) => {

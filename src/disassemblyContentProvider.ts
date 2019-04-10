@@ -26,12 +26,7 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                     let dAsmFile = DebugDisassembledFile.fromPath(path);
                     if (dAsmFile.isSegment()) {
                         debugSession.customRequest('disassemble', <DisassembleAddressArguments>{ segmentId: dAsmFile.getSegmentId() }).then((response) => {
-                            const variables: Array<DebugProtocol.Variable> = response.variables;
-                            let output = '';
-                            for (let v of variables) {
-                                output += `${v.name}: ${v.value}\n`;
-                            }
-                            resolve(output);
+                            resolve(this.printVariables(response.variables));
                         }, (error) => {
                             vscode.window.showErrorMessage(error.message);
                             reject(error);
@@ -60,12 +55,7 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                         });
                     } else {
                         await debugSession.customRequest('disassemble', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), stackFrameIndex: dAsmFile.getStackFrameIndex(), length: dAsmFile.getLength() }).then((response) => {
-                            const variables: Array<DebugProtocol.Variable> = response.variables;
-                            let output = '';
-                            for (let v of variables) {
-                                output += `${v.name}: ${v.value}\n`;
-                            }
-                            resolve(output);
+                            resolve(this.printVariables(response.variables));
                         }, (error) => {
                             vscode.window.showErrorMessage(error.message);
                             reject(error);
@@ -78,5 +68,17 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                 reject(new Error("No active debug session"));
             }
         });
+    }
+
+    /**
+     * Print variables to stirng
+     * @param variables to b printed/
+     */
+    private printVariables(variables: Array<DebugProtocol.Variable>): string {
+        let output = '';
+        for (let v of variables) {
+            output += `${v.name}: ${v.value}\n`;
+        }
+        return output;
     }
 }

@@ -212,7 +212,7 @@ export function activate(context: vscode.ExtensionContext) {
     let vController = new VASMController(compiler);
     context.subscriptions.push(vController);
     // Build the workspace
-    disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', async () => {
+    vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', async () => {
         statusManager.onDefault();
         await compiler.buildWorkspace().then(() => {
             statusManager.onSuccess();
@@ -220,6 +220,7 @@ export function activate(context: vscode.ExtensionContext) {
             statusManager.onError(error.message);
         });
     });
+    context.subscriptions.push(disposable);
     // Clean the workspace
     disposable = vscode.commands.registerCommand('amiga-assembly.clean-vasm-workspace', async () => {
         await compiler.cleanWorkspace().then(() => {
@@ -335,7 +336,7 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
 }
 
 class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
-    private server?: Net.Server;
+    private runServer?: Net.Server;
 	/**
 	 * Massage a debug configuration just before a debug session is being launched,
 	 * e.g. add all missing attributes to the debug configuration.
@@ -370,16 +371,16 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
     private setSession(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
         if (EMBED_DEBUG_ADAPTER) {
             // start port listener on launch of first debug session
-            if (!this.server) {
+            if (!this.runServer) {
                 // start listening on a random port
-                this.server = Net.createServer(socket => {
+                this.runServer = Net.createServer(socket => {
                     const session = new RunFsUAENoDebugSession();
                     session.setRunAsServer(true);
                     session.start(<NodeJS.ReadableStream>socket, socket);
                 }).listen(0);
             }
             // make VS Code connect to debug server instead of launching debug adapter
-            let address: any = this.server.address();
+            let address: any = this.runServer.address();
             if (address instanceof Object) {
                 config.debugServer = address.port;
             }
@@ -388,8 +389,8 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
     }
 
     dispose() {
-        if (this.server) {
-            this.server.close();
+        if (this.runServer) {
+            this.runServer.close();
         }
     }
 }

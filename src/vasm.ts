@@ -160,7 +160,7 @@ export class VASMCompiler {
             const configuration = workspace.getConfiguration('amiga-assembly');
             const confVLINK: any = configuration.get('vlink');
             if (workspaceRootDir && buildDir) {
-                await workspace.findFiles(includes, excludes, undefined).then(async filesURI => {
+                await workspace.findFiles(includes, excludes).then(async filesURI => {
                     let promises: Thenable<ICheckResult[]>[] = [];
                     for (let i = 0; i < filesURI.length; i++) {
                         const fileUri = filesURI[i];

@@ -139,7 +139,6 @@ export class ASMLine {
                     current = next;
                     next = this.instructionRange.start;
                     this.spacesLabelToInstructionRange = new Range(current, next);
-                    current = next;
                 }
                 current = this.instructionRange.end;
                 let endInTrimLine = keywordIndex + keyword[0].length;
@@ -290,7 +289,7 @@ export class ASMLine {
  * Class to manage the instructions
  */
 export class HoverInstructionsManager {
-    instructions = new Map<String, Array<HoverInstruction>>();
+    instructions = new Map<string, Array<HoverInstruction>>();
     constructor() {
         // Read the instructions file
         // Creating the relative path to find the test file
@@ -359,8 +358,8 @@ export class HoverInstruction {
  * Class to manage the registers
  */
 export class HoverRegistersManager {
-    registersByName = new Map<String, HoverRegister>();
-    registersByAddress = new Map<String, HoverRegister>();
+    registersByName = new Map<string, HoverRegister>();
+    registersByAddress = new Map<string, HoverRegister>();
     constructor() {
         // Read the registers file
         // Creating the relative path to find the test file
