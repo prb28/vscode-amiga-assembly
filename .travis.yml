@@ -1,4 +1,6 @@
-sudo: false
+
+dist: trusty
+
 os:
   - osx
   - linux
@@ -6,7 +8,11 @@ os:
 node_js:
   - "10"
 
-before_install:
+addons:
+  sonarcloud:
+    organization: "prb28-github"
+
+    before_install:
   - npm install -g npm@latest
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
@@ -21,3 +27,4 @@ install:
 script:
   - npm run test:coverage --silent
   - node_modules/.bin/coveralls < coverage/lcov.info;
+  - sonar-scanner

@@ -22,5 +22,6 @@ test-report*
 build-scripts
 scripts/build/**
 old.visx/**
+sonar-project.properties
 
 
