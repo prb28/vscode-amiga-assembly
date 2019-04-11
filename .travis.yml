@@ -28,11 +28,7 @@ install:
 script:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       npm run test:coverage --silent;
-      npm run tslint;
       node_modules/.bin/coveralls < coverage/lcov.info;
+      npm run tslint;
       sonar-scanner;
     fi
-
-cache:
-  directories:
-    - '$HOME/.sonar/cache'
