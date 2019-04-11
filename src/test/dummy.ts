@@ -78,8 +78,8 @@ export class DummyTextDocument implements TextDocument {
         str = String(str);
         pos = Number(pos) >>> 0;
         // Search for the word's beginning and end.
-        var left = str.slice(0, pos + 1).search(/\S+$/),
-            right = str.slice(pos).search(/\s/);
+        let left = str.slice(0, pos + 1).search(/\S+$/);
+        let right = str.slice(pos).search(/\s/);
         // The last word in the string is a special case.
         if (right < 0) {
             return str.slice(left);
@@ -93,8 +93,8 @@ export class DummyTextDocument implements TextDocument {
         str = String(str);
         pos = Number(pos) >>> 0;
         // Search for the word's beginning and end.
-        var left = str.slice(0, pos + 1).search(/[^\s,\.;:\$#]+$/),
-            right = str.slice(pos).search(/[\s,\.;:\$#]/);
+        let left = str.slice(0, pos + 1).search(/[^\s,\.;:\$#]+$/);
+        let right = str.slice(pos).search(/[\s,\.;:\$#]/);
         // The last word in the string is a special case.
         if (right < 0) {
             return new Range(new Position(line.lineNumber, left), new Position(line.lineNumber, str.length));
