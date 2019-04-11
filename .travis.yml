@@ -12,7 +12,7 @@ addons:
   sonarcloud:
     organization: "prb28-github"
 
-    before_install:
+before_install:
   - npm install -g npm@latest
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
