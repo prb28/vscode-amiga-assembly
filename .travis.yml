@@ -24,7 +24,9 @@ install:
   - npm install
   - npm run vscode:prepublish
 
-script:
-  - npm run test:coverage --silent
-  - node_modules/.bin/coveralls < coverage/lcov.info;
-  - sonar-scanner
+stage: test
+  if: os = linux
+  script:
+    - npm run test:coverage --silent
+    - node_modules/.bin/coveralls < coverage/lcov.info;
+    - sonar-scanner
