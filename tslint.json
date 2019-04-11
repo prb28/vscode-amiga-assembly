@@ -1,5 +1,12 @@
 {
+	"jsRules": {},
 	"rules": {
+		"align": [
+			true,
+			"statements"
+		],
+		"one-variable-per-declaration": true,
+		"no-consecutive-blank-lines": true,
 		"no-string-throw": true,
 		"no-unused-expression": true,
 		"no-duplicate-variable": true,
@@ -11,5 +18,5 @@
 		],
 		"triple-equals": true
 	},
-	"defaultSeverity": "warning"
+	"rulesDirectory": []
 }

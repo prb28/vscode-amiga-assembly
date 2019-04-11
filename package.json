@@ -555,7 +555,8 @@
         "coverage:disable": "gulp cover:disable",
         "build": "gulp cover:disable && npm run compile --loglevel silent",
         "package": "vsce package",
-        "publish": "vsce publish"
+        "publish": "vsce publish",
+        "tslint": "tslint -t json -o tslint-report.json --project . --force"
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",
