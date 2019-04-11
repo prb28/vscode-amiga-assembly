@@ -45,6 +45,7 @@ describe('Node Debug Adapter', () => {
 			defaultTimeout = 60000;
 		}
 		// Opening file to activate the extension
+		this.timeout(this.defaultTimeout);
 		const newFile = vscode.Uri.parse("untitled://./debug.s");
 		return vscode.window.showTextDocument(newFile);
 	});
@@ -98,8 +99,6 @@ describe('Node Debug Adapter', () => {
 		this.session.shutdown();
 		this.server.close();
 	});
-
-
 
 	describe('basic', function () {
 		it('unknown request should produce error', function () {
@@ -163,7 +162,6 @@ describe('Node Debug Adapter', () => {
 				dc.waitForEvent('terminated')
 			]);
 		});
-
 		it('should stop on entry', function () {
 			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
@@ -199,8 +197,6 @@ describe('Node Debug Adapter', () => {
 				dc.assertStoppedLocation('entry', { line: 32 })
 			]);
 		});
-
-
 		it('should stop on entry', function () {
 			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {

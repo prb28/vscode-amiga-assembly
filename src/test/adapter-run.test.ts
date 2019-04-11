@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import { spy, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
 import { ExecutorHelper } from '../execHelper';
 
-describe('Node Debug Adapter', () => {
+describe('Node Debug Adapter Run', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
 	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js');
 	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug');
@@ -27,6 +27,7 @@ describe('Node Debug Adapter', () => {
 		if (testWithRealEmulator) {
 			defaultTimeout = 60000;
 		}
+		this.timeout(this.defaultTimeout);
 		// Opening file to activate the extension
 		const newFile = vscode.Uri.parse("untitled://./debug.s");
 		return vscode.window.showTextDocument(newFile);
@@ -72,8 +73,6 @@ describe('Node Debug Adapter', () => {
 		this.session.shutdown();
 		this.server.close();
 	});
-
-
 
 	describe('basic', function () {
 		it('unknown request should produce error', function () {
