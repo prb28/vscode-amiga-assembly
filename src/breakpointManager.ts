@@ -32,13 +32,14 @@ export class BreakpointManager {
         this.debugInfo = debugInfo;
     }
 
-    private addPendingBreakpoint(breakpoint: GdbBreakpoint, err?: Error) {
+    public addPendingBreakpoint(breakpoint: GdbBreakpoint, err?: Error) {
         breakpoint.verified = false;
         if (err) {
             breakpoint.message = err.message;
         }
         this.pendingBreakpoints.push(breakpoint);
     }
+
     public setBreakpoint(debugBp: GdbBreakpoint): Promise<GdbBreakpoint> {
         return new Promise(async (resolve, reject) => {
             if (debugBp.source && debugBp.line && (debugBp.id !== undefined)) {
@@ -116,8 +117,8 @@ export class BreakpointManager {
                 let pending = this.pendingBreakpoints;
                 this.pendingBreakpoints = new Array<GdbBreakpoint>();
                 for (let bp of pending) {
-                    await this.setBreakpoint(bp).catch(err => {
-                        this.pendingBreakpoints.push(bp);
+                    await this.setBreakpoint(bp).catch(() => {
+                        //nothing to do - the breakpoint was already added to the pending list
                     });
                 }
             }
@@ -183,6 +184,10 @@ export class BreakpointManager {
                 resolve();
             }
         });
+    }
+
+    public getPendingBreakpoints(): Array<GdbBreakpoint> {
+        return this.pendingBreakpoints;
     }
 }
 
