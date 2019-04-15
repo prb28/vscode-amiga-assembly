@@ -83,7 +83,10 @@
         ],
         "capabilities": {
             "definitionProvider": "true",
-            "referencesProvider": "true"
+            "referencesProvider": "true",
+            "codeLensProvider": {
+                "resolveProvider": "true"
+            }
         },
         "configuration": {
             "type": "object",
@@ -315,6 +318,11 @@
                 "command": "amiga-assembly.list-used-registers",
                 "title": "Amiga Assembly: List used registers in selection",
                 "description": "Lists all the registers (a0-a7 / d0-d7) used in the selected code"
+            },
+            {
+                "command": "amiga-assembly.generate-data",
+                "title": "Amiga Assembly: Generate data from expression",
+                "description": "Generate numerical values from a mathematical expression"
             }
         ],
         "breakpoints": [
@@ -540,6 +548,12 @@
                         }
                     }
                 ]
+            }
+        ],
+        "snippets": [
+            {
+                "language": "m68k",
+                "path": "./snippets/m68k.json"
             }
         ]
     },

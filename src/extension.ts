@@ -16,6 +16,7 @@ import { Disassembler } from './disassemble';
 import { M68kDefinitionHandler } from './definitionHandler';
 import { DisassemblyContentProvider } from './disassemblyContentProvider';
 import { ADFTools } from './adf';
+import { DataGeneratorCodeLensProvider } from './expressionDataGenerator';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -37,6 +38,7 @@ export class ExtensionState {
     private disassembler: Disassembler | undefined;
     private adfTools: ADFTools | undefined;
     private definitionHandler: M68kDefinitionHandler | undefined;
+    private dataGenerator: DataGeneratorCodeLensProvider | undefined;
     public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
         if (this.errorDiagnosticCollection === undefined) {
             this.errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');
@@ -92,6 +94,12 @@ export class ExtensionState {
             this.definitionHandler = new M68kDefinitionHandler();
         }
         return this.definitionHandler;
+    }
+    public getDataGenerator(): DataGeneratorCodeLensProvider {
+        if (this.dataGenerator === undefined) {
+            this.dataGenerator = new DataGeneratorCodeLensProvider();
+        }
+        return this.dataGenerator;
     }
 }
 
@@ -230,6 +238,15 @@ export function activate(context: vscode.ExtensionContext) {
         });
     });
     context.subscriptions.push(disposable);
+
+    // Data generator code lens provider
+    disposable = vscode.commands.registerCommand('amiga-assembly.generate-data', async (range: vscode.Range) => {
+        await state.getDataGenerator().onGenerateData(range).catch(error => {
+            vscode.window.showErrorMessage(error.message);
+        });
+    });
+    context.subscriptions.push(disposable);
+    context.subscriptions.push(vscode.languages.registerCodeLensProvider(AMIGA_ASM_MODE, state.getDataGenerator()));
 
     // Debug configuration
     context.subscriptions.push(vscode.commands.registerCommand('amiga-assembly.getProgramName', config => {
