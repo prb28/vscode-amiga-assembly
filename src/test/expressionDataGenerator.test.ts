@@ -2,7 +2,7 @@
 import { expect } from 'chai';
 import { ExpressionDataGenerator, ExpressionDataVariable, OutputDataType, ExpressionDataGeneratorSerializer } from '../expressionDataGenerator';
 
-describe.only("Expression data generator", function () {
+describe("Expression data generator", function () {
     it("should generate a line expression data", function () {
         let expVar = new ExpressionDataVariable("x", 1, 10, 1);
         let expDGen = new ExpressionDataGenerator("x+2", expVar);
