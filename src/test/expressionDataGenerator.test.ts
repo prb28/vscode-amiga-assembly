@@ -136,7 +136,7 @@ describe("Expression data generator", function () {
             if (editor) {
                 let codeLens = await prov.provideCodeLenses(editor.document, tokenEmitter.token);
                 expect(codeLens.length).to.be.equal(1);
-                let expectedRange = new Range(new Position(0, 0), new Position(16, 39));
+                let expectedRange = new Range(new Position(0, 0), new Position(16, 40));
                 expect(codeLens[0].range).to.be.eql(expectedRange);
                 // resolve
                 let cl = codeLens[0];
