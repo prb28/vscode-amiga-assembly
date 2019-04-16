@@ -1,7 +1,7 @@
 // The module 'chai' provides assertion methods from node
 import { expect } from 'chai';
 import { ExpressionDataGenerator, ExpressionDataVariable, OutputDataType, ExpressionDataGeneratorSerializer, DataGeneratorCodeLensProvider } from '../expressionDataGenerator';
-import { Uri, Position, window, CancellationTokenSource, Range } from "vscode";
+import { Uri, Position, window, CancellationTokenSource } from "vscode";
 import { fail } from 'assert';
 
 describe("Expression data generator", function () {
@@ -136,8 +136,10 @@ describe("Expression data generator", function () {
             if (editor) {
                 let codeLens = await prov.provideCodeLenses(editor.document, tokenEmitter.token);
                 expect(codeLens.length).to.be.equal(1);
-                let expectedRange = new Range(new Position(0, 0), new Position(16, 40));
-                expect(codeLens[0].range).to.be.eql(expectedRange);
+                let range = codeLens[0].range;
+                expect(range.start).to.be.eql(new Position(0, 0));
+                expect(range.end.line).to.be.eql(16);
+                expect(range.end.character).to.be.greaterThan(29);
                 // resolve
                 let cl = codeLens[0];
                 if (cl && prov.resolveCodeLens) {
@@ -153,7 +155,7 @@ describe("Expression data generator", function () {
                 // Editor openned
                 // tslint:disable-next-line: no-unused-expression
                 expect(editor.document.getText().includes("FOOFOO")).to.be.true;
-                await prov.onGenerateData(expectedRange);
+                await prov.onGenerateData(range);
                 let newText = editor.document.getText();
                 // tslint:disable-next-line: no-unused-expression
                 expect(newText.includes("FOOFOO")).to.be.false;
