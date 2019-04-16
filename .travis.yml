@@ -27,8 +27,10 @@ install:
 
 script:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
-      npm run test:coverage --silent;
+      npm run test:coverage;
       node_modules/.bin/coveralls < coverage/lcov.info;
       npm run tslint;
       sonar-scanner;
+    else
+      npm run test;
     fi
