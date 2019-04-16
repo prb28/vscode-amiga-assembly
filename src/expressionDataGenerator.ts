@@ -278,9 +278,14 @@ export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
                         let generator = serializer.parse(oldText);
                         let newText = serializer.print(generator);
                         edit.replace(range, newText);
-                        resolve();
                     } catch (error) {
                         reject(error);
+                    }
+                }).then(edited => {
+                    if (edited) {
+                        resolve();
+                    } else {
+                        reject(new Error("Error during edit"));
                     }
                 });
             } else {

@@ -1,6 +1,8 @@
 // The module 'chai' provides assertion methods from node
 import { expect } from 'chai';
-import { ExpressionDataGenerator, ExpressionDataVariable, OutputDataType, ExpressionDataGeneratorSerializer } from '../expressionDataGenerator';
+import { ExpressionDataGenerator, ExpressionDataVariable, OutputDataType, ExpressionDataGeneratorSerializer, DataGeneratorCodeLensProvider } from '../expressionDataGenerator';
+import { Uri, Position, window, CancellationTokenSource, Range } from "vscode";
+import { fail } from 'assert';
 
 describe("Expression data generator", function () {
     it("should generate a line expression data", function () {
@@ -110,5 +112,54 @@ describe("Expression data generator", function () {
         expect(variable.step).to.be.equal(step);
         let output = serializer.print(result);
         expect(comment).to.be.equal(output);
+    });
+    context("CodeLens provider", function () {
+        let expVar = new ExpressionDataVariable("x", 0, 3, 1);
+        let expDGen = new ExpressionDataGenerator("round(sin(x*pi/180)*pow(2,14))", expVar);
+        before(async function () {
+            const newFile = Uri.parse("untitled://./contentprovtest.s");
+            await window.showTextDocument(newFile).then(async (textEditor) => {
+                await textEditor.edit(edit => {
+                    let serializer = new ExpressionDataGeneratorSerializer();
+                    let text = serializer.print(expDGen);
+                    text = text.replace("parameters : modify", "FOOFOO");
+                    edit.insert(new Position(0, 0), text);
+                });
+            });
+        });
+        it("should locate codelens / resolve and apply", async () => {
+            let tokenEmitter = new CancellationTokenSource();
+            let prov = new DataGeneratorCodeLensProvider();
+            let editor = window.activeTextEditor;
+            // tslint:disable-next-line:no-unused-expression
+            expect(editor).to.not.be.undefined;
+            if (editor) {
+                let codeLens = await prov.provideCodeLenses(editor.document, tokenEmitter.token);
+                expect(codeLens.length).to.be.equal(1);
+                let expectedRange = new Range(new Position(0, 0), new Position(16, 39));
+                expect(codeLens[0].range).to.be.eql(expectedRange);
+                // resolve
+                let cl = codeLens[0];
+                if (cl && prov.resolveCodeLens) {
+                    let resolved = await prov.resolveCodeLens(cl, tokenEmitter.token);
+                    // tslint:disable-next-line: no-unused-expression
+                    expect(resolved.isResolved).to.be.true;
+                    if (resolved.command) {
+                        expect(resolved.command.command).to.be.equal("amiga-assembly.generate-data");
+                    }
+                } else {
+                    fail("expected elements");
+                }
+                // Editor openned
+                // tslint:disable-next-line: no-unused-expression
+                expect(editor.document.getText().includes("FOOFOO")).to.be.true;
+                await prov.onGenerateData(expectedRange);
+                let newText = editor.document.getText();
+                // tslint:disable-next-line: no-unused-expression
+                expect(newText.includes("FOOFOO")).to.be.false;
+            } else {
+                fail("Editor not selected");
+            }
+        });
     });
 });
