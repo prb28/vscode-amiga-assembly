@@ -9,8 +9,11 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases). 
 
-## New in 0.14.0  : **!New FS-UAE binaries are needed!**
-- Enhanced Debugger with Copper debugging
+## New in 0.15.0
+- Generate data from an expression
+- Set the name of the generated ADF file
+
+![Debug](images/gendata.gif)
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -73,6 +76,10 @@ The assembly language will be formatted with the standard shortcuts :
 ![Disassemble a copper list](images/copperdisassembly.gif)
 
 ## Release Notes
+## 0.15.0
+- Generate data from an expression
+- Set the name of the generated ADF file
+
 ## 0.14.0
 - Copper debugging
 - Bug fixes
