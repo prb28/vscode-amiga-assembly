@@ -24,6 +24,8 @@ export enum OutputDataType {
 }
 
 export class ExpressionDataGenerator {
+    static readonly SIGNED_VALUES_COMMENT = "; -> SIGNED values <-\n";
+
     calc = new MathCalc();
     expression: string;
     variable: ExpressionDataVariable;
@@ -55,18 +57,30 @@ export class ExpressionDataGenerator {
         let posLine = 0;
         let value = "";
         let type = 'b';
+        let max = Number.MIN_VALUE;
+        let min = Number.MAX_VALUE;
+        let signed = false;
         if (this.outputDataType === OutputDataType.WORD) {
             type = 'w';
         } else if (this.outputDataType === OutputDataType.LONG) {
             type = 'l';
         }
         for (let v of this.eval()) {
+            if (v > max) {
+                max = v;
+            }
+            if (v < min) {
+                min = v;
+            }
+            if (!signed) {
+                signed = (v < 0);
+            }
             // check validity
             if ((this.outputDataType === OutputDataType.BYTE) && (v > 255)) {
                 throw new Error(`Value ${v} does not fit in a byte register`);
-            } else if ((this.outputDataType === OutputDataType.WORD) && (v > (Math.pow(2, 15)))) {
+            } else if ((this.outputDataType === OutputDataType.WORD) && (v > 0x8000)) {
                 throw new Error(`Value ${v} does not fit in a word (16bits) register`);
-            } else if ((this.outputDataType === OutputDataType.LONG) && (v > (Math.pow(2, 31)))) {
+            } else if ((this.outputDataType === OutputDataType.LONG) && (v > 0x80000000)) {
                 throw new Error(`Value ${v} does not fit in a long (32bits) register`);
             }
             if ((this.valuesPerLine > 0) && (posLine >= this.valuesPerLine)) {
@@ -75,7 +89,7 @@ export class ExpressionDataGenerator {
             }
             let outV: string;
             if (this.outputInHex) {
-                outV = "$" + v.toString(16);
+                outV = "$" + this.decimalToHexString(v);
             } else {
                 outV = v.toString();
             }
@@ -87,7 +101,39 @@ export class ExpressionDataGenerator {
             value += `${outV}`;
             posLine++;
         }
+        // check boudaries
+        if (signed) {
+            if ((this.outputDataType === OutputDataType.BYTE) && ((max > 0x7f) || (min < -0x7f))) {
+                throw new Error(`The data boudaries ${min} - ${max} does not fit in a signed byte register`);
+            } else if ((this.outputDataType === OutputDataType.WORD) && ((max > 0x7fff) || (min < -0x7fff))) {
+                throw new Error(`The data boudaries ${min} - ${max} does not fit in a signed word (16bits) register`);
+            } else if ((this.outputDataType === OutputDataType.LONG) && ((max > 0x7fffffff) || (min < -0x7fffffff))) {
+                throw new Error(`The data boudaries ${min} - ${max} does not fit in a signed long (32bits) register`);
+            }
+            value = ExpressionDataGenerator.SIGNED_VALUES_COMMENT + value;
+        }
         return value;
+    }
+    public decimalToHexString(n: number) {
+        if (n < 0) {
+            if (this.outputDataType === OutputDataType.BYTE) {
+                if (n < -0x7f) {
+                    throw (new Error(`Invalid negative number for a byte: ${n}`));
+                }
+                n = (n >>> 0) & 0xff;
+            } else if (this.outputDataType === OutputDataType.WORD) {
+                if (n < -0x7fff) {
+                    throw (new Error(`Invalid negative number for a byte: ${n}`));
+                }
+                n = (n >>> 0) & 0xffff;
+            } else {
+                if (n < -0x7fffffff) {
+                    throw (new Error(`Invalid negative number for a byte: ${n}`));
+                }
+                n = (n >>> 0);
+            }
+        }
+        return n.toString(16);
     }
     public setOutputInHex(outputInHex: boolean) {
         this.outputInHex = outputInHex;

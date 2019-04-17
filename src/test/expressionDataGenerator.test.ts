@@ -31,6 +31,64 @@ describe("Expression data generator", function () {
             expect(values[x]).to.be.equal(v);
         }
     });
+    it("should generate negative numbers", function () {
+        let expVar = new ExpressionDataVariable("x", 1, 2, 1);
+        let expDGen = new ExpressionDataGenerator("-x", expVar);
+        expDGen.setOutputDataType(OutputDataType.BYTE);
+        expDGen.setOutputInHex(false);
+        expect(expDGen.evalString()).to.be.equal(ExpressionDataGenerator.SIGNED_VALUES_COMMENT + "dc.b -1, -2");
+        expDGen.setOutputInHex(true);
+        expect(expDGen.evalString()).to.be.equal(ExpressionDataGenerator.SIGNED_VALUES_COMMENT + "dc.b $ff, $fe");
+        expDGen.setOutputDataType(OutputDataType.WORD);
+        expDGen.setOutputInHex(false);
+        expect(expDGen.evalString()).to.be.equal(ExpressionDataGenerator.SIGNED_VALUES_COMMENT + "dc.w -1, -2");
+        expDGen.setOutputInHex(true);
+        expect(expDGen.evalString()).to.be.equal(ExpressionDataGenerator.SIGNED_VALUES_COMMENT + "dc.w $ffff, $fffe");
+        expDGen.setOutputDataType(OutputDataType.LONG);
+        expDGen.setOutputInHex(false);
+        expect(expDGen.evalString()).to.be.equal(ExpressionDataGenerator.SIGNED_VALUES_COMMENT + "dc.l -1, -2");
+        expDGen.setOutputInHex(true);
+        expect(expDGen.evalString()).to.be.equal(ExpressionDataGenerator.SIGNED_VALUES_COMMENT + "dc.l $ffffffff, $fffffffe");
+    });
+    it("should prevent negative numbers byte out of bounds", function () {
+        let expVar = new ExpressionDataVariable("x", 0x7f + 1, 0x7f + 2, 1);
+        let expDGen = new ExpressionDataGenerator("-x", expVar);
+        expDGen.setOutputInHex(true);
+        expDGen.setOutputDataType(OutputDataType.BYTE);
+        expect(() => expDGen.evalString()).to.throw();
+
+        expVar = new ExpressionDataVariable("x", -1, 149, 50);
+        expDGen = new ExpressionDataGenerator("x", expVar);
+        expDGen.setOutputInHex(true);
+        expDGen.setOutputDataType(OutputDataType.BYTE);
+        expect(() => expDGen.evalString()).to.throw();
+    });
+    it("should prevent negative numbers word out of bounds", function () {
+        let expVar = new ExpressionDataVariable("x", 0x7fff + 1, 0x7fff + 2, 1);
+        let expDGen = new ExpressionDataGenerator("-x", expVar);
+        expDGen.setOutputInHex(true);
+        expDGen.setOutputDataType(OutputDataType.WORD);
+        expect(() => expDGen.evalString()).to.throw();
+
+        expVar = new ExpressionDataVariable("x", -1, 0X7fff + 10, 0x1001);
+        expDGen = new ExpressionDataGenerator("x", expVar);
+        expDGen.setOutputInHex(true);
+        expDGen.setOutputDataType(OutputDataType.WORD);
+        expect(() => expDGen.evalString()).to.throw();
+    });
+    it("should prevent negative numbers long out of bounds", function () {
+        let expVar = new ExpressionDataVariable("x", 0x7fffffff + 1, 0x7fffffff + 2, 1);
+        let expDGen = new ExpressionDataGenerator("-x", expVar);
+        expDGen.setOutputInHex(true);
+        expDGen.setOutputDataType(OutputDataType.LONG);
+        expect(() => expDGen.evalString()).to.throw();
+
+        expVar = new ExpressionDataVariable("x", -1, 0X7fffffff + 10, 0x10000001);
+        expDGen = new ExpressionDataGenerator("x", expVar);
+        expDGen.setOutputInHex(true);
+        expDGen.setOutputDataType(OutputDataType.LONG);
+        expect(() => expDGen.evalString()).to.throw();
+    });
     it("should generate a string output for all output types", function () {
         let expVar = new ExpressionDataVariable("x", 0, 3, 1);
         let expDGen = new ExpressionDataGenerator("round(sin(x*pi/180)*pow(2,14))", expVar);
