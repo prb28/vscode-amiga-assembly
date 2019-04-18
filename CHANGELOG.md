@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### [0.15.0]
+### [0.15.0] - 2019-04-18
 - [Feat #58](https://github.com/prb28/vscode-amiga-assembly/issues/58) Name of generated ADF
 - [Feat #57](https://github.com/prb28/vscode-amiga-assembly/issues/57) Feature: Sinus data generator
 
