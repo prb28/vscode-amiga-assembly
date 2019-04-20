@@ -17,6 +17,7 @@ import { M68kDefinitionHandler } from './definitionHandler';
 import { DisassemblyContentProvider } from './disassemblyContentProvider';
 import { ADFTools } from './adf';
 import { DataGeneratorCodeLensProvider } from './expressionDataGenerator';
+import { IFFViewerPanel } from './iffImageViewer';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -266,6 +267,20 @@ export function activate(context: vscode.ExtensionContext) {
     statusManager.outputChannel.appendLine("------> done");
 
     context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('disassembly', new DisassemblyContentProvider()));
+    // IFF view
+    if (vscode.window.registerWebviewPanelSerializer) {
+        // Make sure we register a serializer in activation event
+        vscode.window.registerWebviewPanelSerializer(IFFViewerPanel.VIEW_TYPE, {
+            async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, _state: any) {
+                IFFViewerPanel.revive(webviewPanel, context.extensionPath);
+            }
+        });
+    }
+    context.subscriptions.push(
+        vscode.commands.registerCommand('amiga-assembly.view-iff', (imageUri: vscode.Uri) => {
+            IFFViewerPanel.createOrShow(context.extensionPath, imageUri);
+        })
+    );
     let api = {
         getState(): ExtensionState {
             return state;

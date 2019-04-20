@@ -23,6 +23,7 @@
         ".vscode-test",
         "out",
         "coverage",
-        "gulpfile.js"
+        "gulpfile.js",
+        "webviews"
     ]
 }
