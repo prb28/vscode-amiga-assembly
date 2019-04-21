@@ -5,7 +5,7 @@ import * as path from 'path';
  * Manages iff image view webview panels
  */
 export class IFFViewerPanel {
-    private static views = new Map<vscode.WebviewPanel, IFFViewerPanel>();
+    public static views = new Map<vscode.WebviewPanel, IFFViewerPanel>();
     public static readonly VIEW_TYPE = 'iffView';
     private static readonly SCRIPTS_PATH = 'webviews/iffviewer';
 
