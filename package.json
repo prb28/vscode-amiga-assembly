@@ -41,7 +41,8 @@
         "onCommand:amiga-assembly.disassemble-copper",
         "onCommand:amiga-assembly.create-adffile",
         "onCommand:amiga-assembly.list-used-registers",
-        "onCommand:amiga-assembly.view-iff"
+        "onCommand:amiga-assembly.view-iff",
+        "onWebviewPanel:iffView"
     ],
     "main": "./out/extension",
     "contributes": {

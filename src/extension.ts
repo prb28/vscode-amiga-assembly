@@ -271,14 +271,14 @@ export function activate(context: vscode.ExtensionContext) {
     if (vscode.window.registerWebviewPanelSerializer) {
         // Make sure we register a serializer in activation event
         vscode.window.registerWebviewPanelSerializer(IFFViewerPanel.VIEW_TYPE, {
-            async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, _state: any) {
-                IFFViewerPanel.revive(webviewPanel, context.extensionPath);
+            async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: any) {
+                IFFViewerPanel.revive(webviewPanel, context.extensionPath, state);
             }
         });
     }
     context.subscriptions.push(
         vscode.commands.registerCommand('amiga-assembly.view-iff', (imageUri: vscode.Uri) => {
-            IFFViewerPanel.createOrShow(context.extensionPath, imageUri);
+            IFFViewerPanel.create(context.extensionPath, imageUri);
         })
     );
     let api = {
