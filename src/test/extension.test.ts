@@ -11,6 +11,7 @@ import * as fs from 'fs';
 import { spy, verify, when, anything, resetCalls, mock, instance } from 'ts-mockito/lib/ts-mockito';
 import { ExtensionState } from '../extension';
 import { Capstone } from '../capstone';
+import { IFFViewerPanel } from '../iffImageViewer';
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
@@ -144,6 +145,18 @@ describe("Global Extension Tests", function () {
             if (editor) {
                 // Editor openned
                 expect(editor.document.getText().replace('\r', '')).to.be.equal(expectedFileContents.replace('\r', ''));
+            }
+        });
+    });
+    describe("Webview", function () {
+        it("Should show an iff file", async () => {
+            let imageName = "TRU256.IFF";
+            const uri = vscode.Uri.file(path.join(testFilesPath, imageName));
+            await vscode.commands.executeCommand("amiga-assembly.view-iff", uri);
+            expect(IFFViewerPanel.views.size).to.be.equal(1);
+            for (let panel of IFFViewerPanel.views.keys()) {
+                expect(panel.title).to.be.equal(imageName);
+                expect(panel.webview.html).to.contain("iff.min.js");
             }
         });
     });

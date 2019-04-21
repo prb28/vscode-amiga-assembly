@@ -12,10 +12,10 @@
         "type": "git",
         "url": "https://github.com/prb28/vscode-amiga-assembly"
     },
-    "version": "0.15.0",
+    "version": "0.16.0",
     "publisher": "prb28",
     "engines": {
-        "vscode": "^1.23.0"
+        "vscode": "^1.26.0"
     },
     "categories": [
         "Formatters",
@@ -40,7 +40,9 @@
         "onCommand:amiga-assembly.disassemble-file",
         "onCommand:amiga-assembly.disassemble-copper",
         "onCommand:amiga-assembly.create-adffile",
-        "onCommand:amiga-assembly.list-used-registers"
+        "onCommand:amiga-assembly.list-used-registers",
+        "onCommand:amiga-assembly.view-iff",
+        "onWebviewPanel:iffView"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -323,6 +325,11 @@
                 "command": "amiga-assembly.generate-data",
                 "title": "Amiga Assembly: Generate data from expression",
                 "description": "Generate numerical values from a mathematical expression"
+            },
+            {
+                "command": "amiga-assembly.view-iff",
+                "title": "View IFF image",
+                "description": "Display an IFF/ILBM image"
             }
         ],
         "breakpoints": [
@@ -555,7 +562,16 @@
                 "language": "m68k",
                 "path": "./snippets/m68k.json"
             }
-        ]
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "when": "resourceExtname =~ /\\.iff/i",
+                    "command": "amiga-assembly.view-iff",
+                    "group": "3_preview"
+                }
+            ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

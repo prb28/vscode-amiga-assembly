@@ -23,5 +23,7 @@ build-scripts
 scripts/build/**
 old.visx/**
 sonar-project.properties
+.scannerwork
+.sonarlint
 
 
