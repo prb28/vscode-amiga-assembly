@@ -9,11 +9,8 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases). 
 
-## New in 0.15.0
-- Generate data from an expression
-- Set the name of the generated ADF file
-
-![Debug](images/gendata.gif)
+## New in 0.16.0
+- View an IFF/ILBM file (use of ilbm.js from Matthias Wiesmann)
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -71,11 +68,15 @@ The assembly language will be formatted with the standard shortcuts :
 
 ![Evaluation in realtime](images/coloredit.gif)
 
-### Copper disassembly
+### Generate data from an expression
 
-![Disassemble a copper list](images/copperdisassembly.gif)
+![Debug](images/gendata.gif)
+
 
 ## Release Notes
+## 0.16.0
+- View an IFF/ILBM file (use of ilbm.js from Matthias Wiesmann)
+
 ## 0.15.0
 - Generate data from an expression
 - Set the name of the generated ADF file
