@@ -93,7 +93,7 @@ describe("Hover Tests", function () {
             }
         }
     });
-    it.only("Should return a hover on a data with a library name", async function () {
+    it("Should return a hover on a data with a library name", async function () {
         let hp = new M68kHoverProvider();
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 25);
