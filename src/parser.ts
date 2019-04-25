@@ -382,6 +382,32 @@ export class HoverRegistersManager {
 }
 
 /**
+ * Class to manage the libraries documentation
+ */
+export class HoverLibraryManager {
+    functionsByName = new Map<string, HoverLibraryFunction>();
+    constructor() {
+        // Read the registers file
+        // Creating the relative path to find the test file
+        const dirPath = path.join(__dirname, "..", "docs", "libs");
+        fs.readdirSync(dirPath).forEach(dirName => {
+            if (!dirName.startsWith(".")) {
+                const librariesDirPath = path.join(dirPath, dirName);
+                fs.readdirSync(librariesDirPath).forEach(filename => {
+                    if (filename.endsWith(".md")) {
+                        let filePath = path.join(librariesDirPath, filename);
+                        let description = fs.readFileSync(filePath, 'utf8');
+                        let name = filename.replace(".md", "").toUpperCase();
+                        let lf = new HoverLibraryFunction(dirName, name, description);
+                        this.functionsByName.set(name, lf);
+                    }
+                });
+            }
+        });
+    }
+}
+
+/**
  * Class reprensenting a register
  */
 export class HoverRegister {
@@ -396,6 +422,26 @@ export class HoverRegister {
      */
     constructor(address: string, name: string, description: string) {
         this.address = address;
+        this.name = name;
+        this.description = description;
+    }
+}
+
+/**
+ * Class reprensenting a library function
+ */
+export class HoverLibraryFunction {
+    libraryName: string;
+    name: string;
+    description: string;
+    /**
+     * Contructor
+     * @param libraryName Name of the library
+     * @param name Name
+     * @param description description in markdown
+     */
+    constructor(libraryName: string, name: string, description: string) {
+        this.libraryName = libraryName;
         this.name = name;
         this.description = description;
     }

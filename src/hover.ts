@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager, NumberParser } from './parser';
+import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager, NumberParser, HoverLibraryManager } from './parser';
 import { ExtensionState } from './extension';
 
 /**
@@ -8,6 +8,7 @@ import { ExtensionState } from './extension';
 export class M68kHoverProvider implements vscode.HoverProvider {
     static hoverInstructionsManager = new HoverInstructionsManager();
     static hoverRegistersManager = new HoverRegistersManager();
+    static hoverLibraryManager = new HoverLibraryManager();
     numberParser = new NumberParser();
     /**
      * Main hover function
@@ -40,7 +41,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 if (word) {
                     // Text to search in
                     let text = document.getText(word);
-                    let rendered = this.renderRegisterHover(text.toUpperCase());
+                    let rendered = this.renderWordHover(text.toUpperCase());
                     let renderedLine2 = null;
                     if (!rendered) {
                         // Translate to get the control character
@@ -192,19 +193,29 @@ export class M68kHoverProvider implements vscode.HoverProvider {
 
     /**
      * Renders a Hover for a register
-     * @param register Register to search
+     * @param word Word to search
      * @return Markdown string
      */
-    public renderRegisterHover(register: string): vscode.MarkdownString | null {
+    public renderWordHover(word: string): vscode.MarkdownString | null {
         let hr;
-        if (register.length > 0) {
-            hr = M68kHoverProvider.hoverRegistersManager.registersByAddress.get(register);
+        if (word.length > 0) {
+            hr = M68kHoverProvider.hoverRegistersManager.registersByAddress.get(word);
             if (!hr) {
-                hr = M68kHoverProvider.hoverRegistersManager.registersByName.get(register);
+                hr = M68kHoverProvider.hoverRegistersManager.registersByName.get(word);
+                if (!hr) {
+                    let pos = word.indexOf('(');
+                    if (pos > 0) {
+                        hr = M68kHoverProvider.hoverLibraryManager.functionsByName.get(word.substring(0, pos));
+                    } else {
+                        hr = M68kHoverProvider.hoverLibraryManager.functionsByName.get(word);
+                    }
+                }
             }
         }
         if (hr) {
-            return new vscode.MarkdownString(hr.description);
+            let mdStr = new vscode.MarkdownString(hr.description);
+            mdStr.isTrusted = true;
+            return mdStr;
         } else {
             return null;
         }

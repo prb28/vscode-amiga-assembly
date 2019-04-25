@@ -4,7 +4,7 @@
 //
 
 import { expect } from 'chai';
-import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager, NumberParser } from '../parser';
+import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager, NumberParser, HoverLibraryManager } from '../parser';
 import { Position, Range } from 'vscode';
 
 // tslint:disable:no-unused-expression
@@ -261,6 +261,14 @@ describe("Parser Tests", function () {
             expect(asmLine.data).to.be.equal("O+,OW-,OW1+,OW6+,P=68000");
             expect(asmLine.comment).to.be.equal("; mycomment");
         });
+        it("Should parse a library call", function () {
+            let asmLine = new ASMLine(" jsr AllocMem(a6)");
+            expect(asmLine.label).to.be.empty;
+            expect(asmLine.instruction).to.be.equal("jsr");
+            expect(asmLine.data).to.be.equal("AllocMem(a6)");
+            expect(asmLine.comment).to.be.empty;
+        });
+
     });
     context("Hover instruction file parsing", function () {
         it("Should read the file correctly", function () {
@@ -327,6 +335,18 @@ describe("Parser Tests", function () {
                 expect(registerByName.description).to.contains("control bit.determines");
             }
             expect(registerByName).to.be.eql(registerByAddress);
+        });
+    });
+    context("Hover library file parsing", function () {
+        it("Should read the files correctly", function () {
+            let manager = new HoverLibraryManager();
+            expect(manager.functionsByName.size).to.be.equal(106);
+            let registerByName = manager.functionsByName.get("OPENLIBRARY");
+            expect(registerByName).to.not.be.undefined;
+            if (registerByName) {
+                expect(registerByName.name).to.be.equals("OPENLIBRARY");
+                expect(registerByName.description).to.contains("gain access to a library");
+            }
         });
     });
     context("Number parsing", function () {
