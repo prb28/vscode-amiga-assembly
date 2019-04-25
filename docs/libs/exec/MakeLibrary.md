@@ -51,16 +51,16 @@ dSize - the size of the library data area, including the
 standard library node data.  This must be at leas
 sizeof(struct Library).
 
-   segList - pointer to an AmigaDOS SegList (segment list).
- This is passed to a library's init code, and is used later
- for removing the library from memory.
+segList - pointer to an AmigaDOS SegList (segment list).
+This is passed to a library's init code, and is used later
+for removing the library from memory.
 
 RESULT
 library - the reference address of the library.  This is the
-  address used in references to the library, not the
-  beginning of the memory area allocated.  If the library
-  vector table require more system memory than is
-  available, this function will return NULL.
+address used in references to the library, not the
+beginning of the memory area allocated.  If the library
+vector table require more system memory than is
+available, this function will return NULL.
 
 **SEE ALSO**
 
