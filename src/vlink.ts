@@ -23,7 +23,7 @@ export class VLINKLinker {
      * @param workspaceRootDir Path to the root of the workspace
      * @param buildDir Build directory
      */
-    public linkFiles(filesURI: Uri[], exeFilepathname: string, entrypoint: string|undefined, workspaceRootDir: Uri, buildDir: Uri): Promise<ICheckResult[]> {
+    public linkFiles(filesURI: Uri[], exeFilepathname: string, entrypoint: string | undefined, workspaceRootDir: Uri, buildDir: Uri): Promise<ICheckResult[]> {
         return new Promise(async (resolve, reject) => {
             let configuration = workspace.getConfiguration('amiga-assembly');
             let conf: any = configuration.get('vlink');
@@ -42,19 +42,28 @@ export class VLINKLinker {
                     }
                     objectPathnames.push(objFilename);
                 }
-                if (entrypoint != undefined) {
+                if (entrypoint !== undefined) {
                     // Vlink is unable to set an entrypoint for Amiga hunk files.
                     // The resulting executable will always start execution at the first
                     // byte of the first section. So, in order to "set" the entrypoint, we
                     // put the object containing the code to be executed first at the
                     // beginning of the objects list.
-                    objectPathnames = objectPathnames.sort(function(a, b) {
-                        if (a == b) return 0;
+                    objectPathnames.sort(function (a, b) {
+                        if (a === b) {
+                            return 0;
+                        }
                         let filename_a = path.basename(a);
                         let filename_b = path.basename(b);
-                        if (filename_a == entrypoint) return -1;
-                        if (filename_b == entrypoint) return 1;
-                        return (a < b) ? -1 : 1;
+                        if (filename_a === entrypoint) {
+                            return -1;
+                        }
+                        if (filename_b === entrypoint) {
+                            return 1;
+                        }
+                        if (a < b) {
+                            return -1;
+                        }
+                        return 1;
                     });
                 }
                 let args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathnames);
