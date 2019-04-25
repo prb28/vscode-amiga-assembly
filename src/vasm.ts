@@ -105,7 +105,8 @@ export class VASMCompiler {
                     let includes = confVLINK.includes;
                     let excludes = confVLINK.excludes;
                     let exefilename = confVLINK.exefilename;
-                    await this.buildWorkspaceInner(includes, excludes, exefilename).then(() => {
+                    let entrypoint = confVLINK.entrypoint;
+                    await this.buildWorkspaceInner(includes, excludes, exefilename, entrypoint).then(() => {
                         resolve();
                     }).catch(err => {
                         reject(err);
@@ -153,7 +154,7 @@ export class VASMCompiler {
         });
     }
 
-    private buildWorkspaceInner(includes: string, excludes: string, exefilename: string): Promise<void> {
+    private buildWorkspaceInner(includes: string, excludes: string, exefilename: string, entrypoint: string|undefined): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const workspaceRootDir = this.getWorkspaceRootDir();
             const buildDir = this.getBuildDir();
@@ -177,7 +178,7 @@ export class VASMCompiler {
                         }
                         // Call the linker
                         if (this.linker.mayLink(confVLINK)) {
-                            await this.linker.linkFiles(filesURI, exefilename, workspaceRootDir, buildDir).then(errors => {
+                            await this.linker.linkFiles(filesURI, exefilename, entrypoint, workspaceRootDir, buildDir).then(errors => {
                                 if (errors && errors.length > 0) {
                                     reject(new Error(`Linker error: ${errors[0].msg}`));
                                 } else {
