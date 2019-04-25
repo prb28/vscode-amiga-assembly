@@ -241,6 +241,10 @@
                             "type": "string",
                             "description": "GlobPattern to select the source files to exclude from the link"
                         },
+                        "entrypoint": {
+                            "type": "string",
+                            "description": "Name of the object file containing the entrypoint"
+                        },
                         "exefilename": {
                             "type": "string",
                             "description": "Name of the executable file"

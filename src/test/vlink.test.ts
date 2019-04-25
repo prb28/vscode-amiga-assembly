@@ -30,7 +30,7 @@ describe("VLINK Tests", function () {
             when(spiedfs.existsSync(anyString())).thenReturn(true);
             when(spiedLinker.mayLink(anything())).thenReturn(true);
             let filesUri = [vscode.Uri.parse("file:///file1.s"), vscode.Uri.parse("file:///file2")];
-            await linker.linkFiles(filesUri, "myprog", vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build"));
+            await linker.linkFiles(filesUri, "myprog", undefined, vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build"));
             verify(executor.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
             let args = capture(executor.runTool).last();
             let buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
@@ -44,7 +44,7 @@ describe("VLINK Tests", function () {
             when(spiedfs.existsSync(anyString())).thenReturn(true);
             let filesUri = [vscode.Uri.parse("file:///file1.s")];
             when(spiedLinker.mayLink(anything())).thenReturn(false);
-            return linker.linkFiles(filesUri, "myprog", vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build")).then(() => {
+            return linker.linkFiles(filesUri, "myprog", undefined, vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build")).then(() => {
                 expect.fail("Should reject");
                 reset(spiedfs);
                 reset(spiedLinker);
@@ -54,7 +54,30 @@ describe("VLINK Tests", function () {
                 reset(spiedLinker);
             });
         });
-    });
+        it('Should sort objects according to the entrypoint', async function() {
+            let spiedLinker = spy(linker);
+            let spiedfs = spy(fs);
+            when(spiedfs.existsSync(anyString())).thenReturn(true);
+            when(spiedLinker.mayLink(anything())).thenReturn(true);
+            let filesUri = [
+                vscode.Uri.parse('file:///file1.s'),
+                vscode.Uri.parse('file:///file2.s'),
+                vscode.Uri.parse('file:///file3.s'),
+                vscode.Uri.parse('file:///file4.s')
+            ];
+            await linker.linkFiles(
+                filesUri, 'myprog', 'file2.o', vscode.Uri.parse('file:///workdir'),
+                vscode.Uri.parse('file:///workdir/build'));
+            let args = capture(executor.runTool).last();
+            let buildPath = '/workdir/build/'.replace(/\/+/g, Path.sep);
+            expect(args[0]).to.be.eql([
+                '-bamigahunk', '-Bstatic', '-o', buildPath + 'myprog',
+                buildPath + 'file2.o', buildPath + 'file1.o', buildPath + 'file3.o', buildPath + 'file4.o'
+            ]);
+            reset(spiedfs);
+            reset(spiedLinker);
+        });
+	});
     context("VLINKParser", function () {
         let parser: VLINKParser;
         before(function () { parser = new VLINKParser(); });
