@@ -1,8 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { M68kFormatter } from './formatter';
-import { M68kHoverProvider } from './hover';
+import { M68kHoverProvider, AmigaLibraryDocumentLinkProvider } from './hover';
 import { M86kColorProvider } from './color';
 import { CalcController } from './calcComponents';
 import { VASMController } from './vasm';
@@ -191,6 +192,15 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
+    // Show documentation
+    disposable = vscode.commands.registerCommand('amiga-assembly.showdoc', async (args: any) => {
+        let docsPathOnDisk = vscode.Uri.file(
+            path.join(context.extensionPath, 'docs', args.path + ".md")
+        );
+        vscode.commands.executeCommand('markdown.showPreview', docsPathOnDisk);
+    });
+    context.subscriptions.push(disposable);
+    
     // Color provider
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_ASM_MODE, new M86kColorProvider()));
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_DEBUG_ASM_MODE, new M86kColorProvider()));

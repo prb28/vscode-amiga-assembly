@@ -340,12 +340,15 @@ describe("Parser Tests", function () {
     context("Hover library file parsing", function () {
         it("Should read the files correctly", function () {
             let manager = new HoverLibraryManager();
-            expect(manager.functionsByName.size).to.be.equal(4);
+            expect(manager.functionsByName.size).to.be.equal(106);
             let registerByName = manager.functionsByName.get("OPENLIBRARY");
             expect(registerByName).to.not.be.undefined;
             if (registerByName) {
                 expect(registerByName.name).to.be.equals("OPENLIBRARY");
                 expect(registerByName.description).to.contains("gain access to a library");
+                // should have refactored a link
+                expect(registerByName.description).not.to.contains("[Library](Library)");
+                expect(registerByName.description).to.contains("[Library](command:amiga-assembly.showdoc?%5B%7B%22path%22%3A%22libs%2Fexec%2FLibrary%22%7D%5D)");
             }
         });
     });

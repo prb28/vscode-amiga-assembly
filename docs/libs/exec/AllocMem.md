@@ -38,7 +38,7 @@ If no flags are set, the system will return the best
 available memory block.  For expanded systems, the fast
 memory pool is searched first.
 
-MEMF_CHIP:  If the requested memory will be used by
+MEMF_CHIP:      If the requested memory will be used by
 the Amiga custom chips, this flag *must*
 be set.
 
@@ -49,7 +49,7 @@ are blitted, audio data, copper lists, sprites
 and Pre-V36 trackdisk.device buffers.
 
 
-MEMF_FAST:  This is non-chip memory.  If no flag is set
+MEMF_FAST:      This is non-chip memory.  If no flag is set
 MEMF_FAST is taken as the default.
 
 DO NOT SPECIFY MEMF_FAST unless you know
@@ -59,7 +59,7 @@ only have chip memory!  This flag may not
 be set when MEMF_CHIP is set.
 
 
-MEMF_PUBLIC:Memory that must not be mapped, swapped,
+MEMF_PUBLIC:    Memory that must not be mapped, swapped,
 or otherwise made non-addressable. ALL
 MEMORY THAT IS REFERENCED VIA INTERRUPTS
 AND/OR BY OTHER TASKS MUST BE EITHER PUBLIC
@@ -67,7 +67,7 @@ OR LOCKED INTO MEMORY! This includes both
 code and data.
 
 
-MEMF_LOCAL: This is memory that will not go away
+MEMF_LOCAL:     This is memory that will not go away
 after the CPU RESET instruction.  Normally,
 autoconfig memory boards become unavailable
 after RESET while motherboard memory
@@ -90,7 +90,7 @@ and AllocMem() will then fail.
 
 options
 
-MEMF_CLEAR: The memory will be initialized to all
+MEMF_CLEAR:     The memory will be initialized to all
 zeros.
 
 
@@ -116,9 +116,9 @@ error handling path taken.  ANY allocation may fail if memory has
 been filled.
 
 EXAMPLES
-AllocMem(64,0L) - Allocate the best available memory
+AllocMem(64,0L)         - Allocate the best available memory
 AllocMem(25,MEMF_CLEAR) - Allocate the best available memory, and
-  clear it before returning.
+clear it before returning.
 AllocMem(128,MEMF_CHIP) - Allocate chip memory
 AllocMem(128,MEMF_CHIP|MEMF_CLEAR) - Allocate cleared chip memory
 AllocMem(821,MEMF_CHIP|MEMF_PUBLIC|MEMF_CLEAR) - Allocate cleared,
@@ -135,4 +135,4 @@ ERROR_NO_FREE_STORE if the memory allocation fails.
 
 **SEE ALSO**
 
-[FreeMem](/exec:FreeMem)
+[FreeMem](FreeMem)

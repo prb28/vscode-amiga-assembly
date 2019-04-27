@@ -397,6 +397,8 @@ export class HoverLibraryManager {
                     if (filename.endsWith(".md")) {
                         let filePath = path.join(librariesDirPath, filename);
                         let description = fs.readFileSync(filePath, 'utf8');
+                        // refactor the description links
+                        description = this.refactorLinks(`libs/${dirName}`, description);
                         let name = filename.replace(".md", "").toUpperCase();
                         let lf = new HoverLibraryFunction(dirName, name, description);
                         this.functionsByName.set(name, lf);
@@ -404,6 +406,19 @@ export class HoverLibraryManager {
                 });
             }
         });
+    }
+    private refactorLinks(relativePath: string, text: string): string {
+        let rText = text;
+        const matcher = /\[([\/\\a-z_\-]*)\]\(([a-z_\-\.]*)\)/gi;
+        let match;
+        while (match = matcher.exec(text)) {
+            let title = match[1];
+            let pageName = match[2];
+            let args = [{ path: `${relativePath}/${pageName}` }];
+            const commandUri = `[${title}](command:amiga-assembly.showdoc?${encodeURIComponent(JSON.stringify(args))})`;
+            rText = rText.replace(match[0], commandUri);
+        }
+        return rText;
     }
 }
 
