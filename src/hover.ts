@@ -203,12 +203,15 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             if (!hr) {
                 hr = M68kHoverProvider.hoverRegistersManager.registersByName.get(word);
                 if (!hr) {
+                    let keyword = word;
                     let pos = word.indexOf('(');
                     if (pos > 0) {
-                        hr = M68kHoverProvider.hoverLibraryManager.functionsByName.get(word.substring(0, pos));
-                    } else {
-                        hr = M68kHoverProvider.hoverLibraryManager.functionsByName.get(word);
+                        keyword = word.substring(0, pos);
                     }
+                    if (keyword.startsWith("_LVO")) {
+                        keyword = keyword.substring(4);
+                    }
+                    hr = M68kHoverProvider.hoverLibraryManager.functionsByName.get(keyword);
                 }
             }
         }

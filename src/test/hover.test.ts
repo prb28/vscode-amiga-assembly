@@ -93,13 +93,25 @@ describe("Hover Tests", function () {
             }
         }
     });
-    it("Should return a hover on a data with a library name", async function () {
+    it.only("Should return a hover on a data with a library name", async function () {
         let hp = new M68kHoverProvider();
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 25);
         let tockenEmitter = new CancellationTokenSource();
         document.addLine("\t.mylabel\t   jsr AllocMem(a6)        ; mycomment   ");
         let result = await hp.provideHover(document, position, tockenEmitter.token);
+        expect(result).to.not.be.undefined;
+        expect(result instanceof Hover).to.be.true;
+        if (result instanceof Hover) {
+            let elm = result.contents[0];
+            expect(elm instanceof MarkdownString).to.be.true;
+            if (elm instanceof MarkdownString) {
+                expect(elm.value.includes("allocator")).to.be.true;
+            }
+        }
+        // LVOprefix is accepted
+        document.addLine("\t.mylabel\t   jsr _LVOAllocMem(a6)        ; mycomment   ");
+        result = await hp.provideHover(document, position, tockenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
