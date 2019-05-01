@@ -5,7 +5,7 @@ AvailMem -- memory available given certain requirements
 
 **SYNOPSIS**
 
-```
+```c
     size = AvailMem(attributes)
     D0              D1
 
@@ -47,4 +47,4 @@ AvailMem(MEMF_CHIP|MEMF_LARGEST);
 
 **SEE ALSO**
 
-[exec/memory.h](exec/memory.h)
+[exec/memory_h](_OOXY)

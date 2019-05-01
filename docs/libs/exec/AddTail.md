@@ -5,12 +5,14 @@ AddTail -- append node to tail of a list
 
 **SYNOPSIS**
 
-```
+```c
     AddTail(list, node)
             A0    A1
 
+    void AddTail(struct List *, struct Node *);
+
 ```
-void AddTail(struct [List](List) *, struct [Node](Node) *);
+Links: [List](_OOWD) [Node](_OOYQ) 
 
 **FUNCTION**
 

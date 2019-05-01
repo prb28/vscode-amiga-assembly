@@ -5,7 +5,7 @@ AllocAbs -- allocate at a given location
 
 **SYNOPSIS**
 
-```
+```c
     memoryBlock = AllocAbs(byteSize, location)
     D0                     D0        A1
 

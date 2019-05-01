@@ -5,7 +5,7 @@ RemResource -- remove a resource from the system
 
 **SYNOPSIS**
 
-```
+```c
     RemResource(resource)
                A1
 

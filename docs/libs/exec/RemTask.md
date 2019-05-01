@@ -5,12 +5,14 @@ RemTask -- remove a task from the system
 
 **SYNOPSIS**
 
-```
+```c
     RemTask(task)
             A1
 
+    void RemTask(struct Task *);
+
 ```
-void RemTask(struct [Task](Task) *);
+Links: [Task](_OOXE) 
 
 **FUNCTION**
 
@@ -30,10 +32,10 @@ cause the next ready task to begin execution.
 
 BUGS
 Before V36 if RemTask() was called on a task other than the current
-task, and that task was created with [amiga.lib/CreateTask](amiga.lib/CreateTask), there was
+task, and that task was created with [amiga_lib/CreateTask](_OQTA), there was
 a slight chance of a crash.  The problem can be hidden by bracketing
-RemTask() with [Forbid()/Permit](Forbid()/Permit).
+RemTask() with <a href="../Includes_and_Autodocs_2._guide/node0369.html">Forbid()/Permit().
 
 **SEE ALSO**
 
-[AddTask](AddTask), [exec/AllocEntry](exec/AllocEntry), [amiga.lib/DeleteTask](amiga.lib/DeleteTask)
+[AddTask](AddTask), [exec/AllocEntry](AllocEntry), [amiga_lib/DeleteTask](_OQUU)

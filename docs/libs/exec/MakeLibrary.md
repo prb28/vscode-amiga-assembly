@@ -5,13 +5,15 @@ MakeLibrary -- construct a library
 
 **SYNOPSIS**
 
-```
+```c
     library = MakeLibrary(vectors, structure, init, dSize, segList)
     D0                    A0       A1         A2    D0     D1
 
+    struct Library *MakeLibrary
+                          (APTR,struct InitStruct *,APTR,ULONG,BPTR);
+
 ```
-struct [Library](Library) *MakeLibrary
-(APTR,struct [InitStruct](InitStruct) *,APTR,ULONG,BPTR);
+Links: [Library](_OOYC) [InitStruct](InitStruct) 
 
 **FUNCTION**
 
@@ -40,9 +42,9 @@ then it will not be used.
 
 init -  If non-NULL, an entry point that will be called before adding
 the library to the system.  Registers are as follows:
-d0 = libAddr    ;Your [Library](Library) Address
+d0 = libAddr    ;Your [Library](_OOYC) Address
 a0 = segList    ;Your AmigaDOS segment list
-a6 = [ExecBase](ExecBase)  ;Address of exec.library
+a6 = [ExecBase](_OOYE)  ;Address of exec.library
 The result of the init function must be the library address,
 or NULL for failure.   If NULL, the init point must manually
 deallocate the library base memory (based on the sizes stored

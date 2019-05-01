@@ -5,12 +5,14 @@ AttemptSemaphore -- try to obtain without blocking
 
 **SYNOPSIS**
 
-```
+```c
     success = AttemptSemaphore(signalSemaphore)
     D0                         A0
 
+    LONG AttemptSemaphore(struct SignalSemaphore *);
+
 ```
-LONG AttemptSemaphore(struct [SignalSemaphore](SignalSemaphore) *);
+Links: [SignalSemaphore](_OOXR) 
 
 **FUNCTION**
 
@@ -30,4 +32,4 @@ This call does NOT preserve registers.
 **SEE ALSO**
 
 [ObtainSemaphore](ObtainSemaphore) [ObtainSemaphoreShared](ObtainSemaphoreShared), [ReleaseSemaphore](ReleaseSemaphore),
-[exec/semaphores.h](exec/semaphores.h)
+[exec/semaphores_h](_OOXR)

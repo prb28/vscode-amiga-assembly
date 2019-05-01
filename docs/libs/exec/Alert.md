@@ -5,7 +5,7 @@ Alert -- alert the user of an error
 
 **SYNOPSIS**
 
-```
+```c
     Alert(alertNum)
           D7
 
@@ -54,4 +54,4 @@ Much more needs to be said about this function and its implications.
 
 **SEE ALSO**
 
-[exec/alerts.h](exec/alerts.h)
+[exec/alerts_h](_OOWF)

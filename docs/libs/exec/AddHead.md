@@ -5,12 +5,14 @@ AddHead -- insert node at the head of a list
 
 **SYNOPSIS**
 
-```
+```c
     AddHead(list, node)
             A0    A1
 
+    void AddHead(struct List *, struct Node *)
+
 ```
-void AddHead(struct [List](List) *, struct [Node](Node) *)
+Links: [List](_OOWD) [Node](_OOYQ) 
 
 **FUNCTION**
 

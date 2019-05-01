@@ -5,7 +5,7 @@ AllocMem -- allocate memory given certain requirements
 
 **SYNOPSIS**
 
-```
+```c
     memoryBlock = AllocMem(byteSize, attributes)
     D0                     D0        D1
 

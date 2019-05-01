@@ -5,7 +5,7 @@ Enable -- permit system interrupts to resume.
 
 **SYNOPSIS**
 
-```
+```c
     Enable();
 
     void Enable(void);
@@ -18,7 +18,7 @@ Allow system interrupts to again occur normally, after a matching
 
 **RESULTS**
 
-[Interrupt](Interrupt) processing is restored to normal operation. The
+[Interrupt](_OOXC) processing is restored to normal operation. The
 programmer must execute exactly one call to Enable() for every call
 to [Disable](Disable).
 

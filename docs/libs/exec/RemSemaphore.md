@@ -5,12 +5,14 @@ RemSemaphore -- remove a signal semaphore from the system
 
 **SYNOPSIS**
 
-```
+```c
     RemSemaphore(signalSemaphore)
                  A1
 
+    void RemSemaphore(struct SignalSemaphore *);
+
 ```
-void RemSemaphore(struct [SignalSemaphore](SignalSemaphore) *);
+Links: [SignalSemaphore](_OOXR) 
 
 **FUNCTION**
 

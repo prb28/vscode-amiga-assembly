@@ -5,7 +5,7 @@ MakeFunctions -- construct a function jump table
 
 **SYNOPSIS**
 
-```
+```c
     tableSize = MakeFunctions(target, functionArray, funcDispBase)
     D0                        A0      A1             A2
 
@@ -45,4 +45,4 @@ tableSize - size of the new table in bytes (for LIB_NEGSIZE).
 
 **SEE ALSO**
 
-[exec/MakeLibrary](exec/MakeLibrary)
+[exec/MakeLibrary](MakeLibrary)

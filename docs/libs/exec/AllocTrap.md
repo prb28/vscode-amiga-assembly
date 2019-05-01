@@ -5,7 +5,7 @@ AllocTrap -- allocate a processor trap vector
 
 **SYNOPSIS**
 
-```
+```c
     trapNum = AllocTrap(trapNum)
     D0                  D0
 

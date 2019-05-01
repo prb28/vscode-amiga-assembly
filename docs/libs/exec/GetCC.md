@@ -5,7 +5,7 @@ GetCC -- get condition codes in a 68010 compatible way.
 
 **SYNOPSIS**
 
-```
+```c
     conditions = GetCC()
       D0
 

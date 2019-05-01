@@ -5,7 +5,7 @@ FreeTrap -- free a processor trap
 
 **SYNOPSIS**
 
-```
+```c
     FreeTrap(trapNum)
              D0
 

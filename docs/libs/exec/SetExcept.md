@@ -5,7 +5,7 @@ SetExcept -- define certain signals to cause exceptions
 
 **SYNOPSIS**
 
-```
+```c
     oldSignals = SetExcept(newSignals, signalMask)
     D0                     D0          D1
 

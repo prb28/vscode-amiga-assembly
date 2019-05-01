@@ -5,7 +5,7 @@ CopyMemQuick - optimized memory copy function
 
 **SYNOPSIS**
 
-```
+```c
     CopyMemQuick( source, dest, size )
                   A0      A1    D0
 

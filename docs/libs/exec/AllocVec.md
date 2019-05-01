@@ -5,7 +5,7 @@ AllocVec -- allocate memory and keep track of the size  (V36)
 
 **SYNOPSIS**
 
-```
+```c
     memoryBlock = AllocVec(byteSize, attributes)
     D0                     D0        D1
 

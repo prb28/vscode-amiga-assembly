@@ -5,7 +5,7 @@ AddResource -- add a resource to the system
 
 **SYNOPSIS**
 
-```
+```c
     AddResource(resource)
                 A1
 
@@ -20,7 +20,7 @@ at this time.
 
 Resources currently have no system-imposed structure, however they
 must start with a standard named node (LN_SIZE), and should with
-a standard [Library](Library) node (LIB_SIZE).
+a standard [Library](_OOYC) node (LIB_SIZE).
 
 **INPUTS**
 

@@ -5,12 +5,14 @@ Deallocate -- deallocate a block of memory
 
 **SYNOPSIS**
 
-```
+```c
     Deallocate(memHeader, memoryBlock, byteSize)
                A0         A1           D0
 
+    void Deallocate(struct MemHeader *,APTR,ULONG);
+
 ```
-void Deallocate(struct [MemHeader](MemHeader) *,APTR,ULONG);
+Links: [MemHeader](_OOXY) 
 
 **FUNCTION**
 
@@ -22,7 +24,7 @@ must be an even multiple of the memory chunk size (currently 8
 bytes).
 
 This function can even be used to add a new free region to an
-existing [MemHeader](MemHeader), however the extent pointers in the [MemHeader](MemHeader)
+existing [MemHeader](_OOXY), however the extent pointers in the [MemHeader](_OOXY)
 will no longer be valid.
 
 If memoryBlock is not on a block boundary (MEM_BLOCKSIZE) then it
@@ -41,4 +43,4 @@ happens.
 
 **SEE ALSO**
 
-Allocate, [exec/memory.h](exec/memory.h)
+Allocate, [exec/memory_h](_OOXY)

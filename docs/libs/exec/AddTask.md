@@ -5,12 +5,14 @@ AddTask -- add a task to the system
 
 **SYNOPSIS**
 
-```
+```c
     AddTask(task, initialPC, finalPC)
             A1    A2         A3
 
+    APTR AddTask(struct Task *, APTR, APTR);
+
 ```
-APTR AddTask(struct [Task](Task) *, APTR, APTR);
+Links: [Task](_OOXE) 
 
 **FUNCTION**
 
@@ -43,7 +45,7 @@ the user to hold additional MemLists (as returned by [AllocEntry](AllocEntry)).
 These will be automatically be deallocated at [RemTask](RemTask) time.
 If the code you have used to start the task has already added
 something to the MEMENTRY list, simply use [AddHead](AddHead) to add your
-new MemLists in.  If no initialization has been done, a [NewList](NewList) will
+new MemLists in.  If no initialization has been done, a [NewList](_OQVQ) will
 need to be performed.
 
 **INPUTS**
@@ -65,9 +67,9 @@ task.  Old code need not check this.
 
 Tasks are a low-level building block, and are unable to call
 dos.library, or any system function that might call dos.library.
-See the AmigaDOS [CreateProc](CreateProc) for information on Processes.
+See the AmigaDOS [CreateProc](_ORXE) for information on Processes.
 
 **SEE ALSO**
 
-[RemTask](RemTask), [FindTask](FindTask), [amiga.lib/CreateTask](amiga.lib/CreateTask), [dos/CreateProc](dos/CreateProc),
-[amiga.lib/NewList](amiga.lib/NewList)
+[RemTask](RemTask), [FindTask](FindTask), [amiga_lib/CreateTask](_OQTA), [dos/CreateProc](../dos/CreateProc),
+[amiga_lib/NewList](_OQVQ)

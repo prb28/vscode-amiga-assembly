@@ -5,12 +5,14 @@ SetTaskPri -- get and set the priority of a task
 
 **SYNOPSIS**
 
-```
+```c
     oldPriority = SetTaskPri(task, priority)
     D0-0:8                   A1    D0-0:8
 
+    BYTE SetTaskPri(struct Task *,LONG);
+
 ```
-BYTE SetTaskPri(struct [Task](Task) *,LONG);
+Links: [Task](_OOXE) 
 
 **FUNCTION**
 

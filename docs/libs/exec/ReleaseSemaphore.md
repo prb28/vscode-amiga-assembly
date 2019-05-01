@@ -5,12 +5,14 @@ ReleaseSemaphore -- make signal semaphore available to others
 
 **SYNOPSIS**
 
-```
+```c
     ReleaseSemaphore(signalSemaphore)
                      A0
 
+    void ReleaseSemaphore(struct SignalSemaphore *);
+
 ```
-void ReleaseSemaphore(struct [SignalSemaphore](SignalSemaphore) *);
+Links: [SignalSemaphore](_OOXR) 
 
 **FUNCTION**
 

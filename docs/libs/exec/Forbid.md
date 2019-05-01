@@ -5,7 +5,7 @@ Forbid -- forbid task rescheduling.
 
 **SYNOPSIS**
 
-```
+```c
     Forbid()
 
     void Forbid(void);

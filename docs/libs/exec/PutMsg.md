@@ -5,12 +5,14 @@ PutMsg -- put a message to a message port
 
 **SYNOPSIS**
 
-```
+```c
     PutMsg(port, message)
            A0    A1
 
+    void PutMsg(struct MsgPort *, struct Message *);
+
 ```
-void PutMsg(struct [MsgPort](MsgPort) *, struct [Message](Message) *);
+Links: [MsgPort](_OOYY) [Message](_OOYY) 
 
 **FUNCTION**
 
@@ -47,4 +49,4 @@ message - pointer to a message
 
 **SEE ALSO**
 
-[GetMsg](GetMsg), [ReplyMsg](ReplyMsg), [exec/ports.h](exec/ports.h)
+[GetMsg](GetMsg), [ReplyMsg](ReplyMsg), [exec/ports_h](_OOYY)

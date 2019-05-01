@@ -5,12 +5,14 @@ Signal -- signal a task
 
 **SYNOPSIS**
 
-```
+```c
     Signal(task, signals)
            A1    D0
 
+    void Signal(struct Task *,ULONG);
+
 ```
-void Signal(struct [Task](Task) *,ULONG);
+Links: [Task](_OOXE) 
 
 **FUNCTION**
 

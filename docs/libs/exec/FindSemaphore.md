@@ -5,12 +5,14 @@ FindSemaphore -- find a given system signal semaphore
 
 **SYNOPSIS**
 
-```
+```c
     signalSemaphore = FindSemaphore(name)
     D0                              A1
 
+    struct SignalSemaphore *FindSemaphore(STRPTR);
+
 ```
-struct [SignalSemaphore](SignalSemaphore) *FindSemaphore(STRPTR);
+Links: [SignalSemaphore](_OOXR) 
 
 **FUNCTION**
 
@@ -19,7 +21,7 @@ semaphore with the given name.  The first semaphore matching this
 name will be returned.
 
 This function does not arbitrate for access to the semaphore list,
-surround the call with a [Forbid()/Permit](Forbid()/Permit) pair.
+surround the call with a <a href="../Includes_and_Autodocs_2._guide/node0369.html">Forbid()/Permit() pair.
 
 INPUT
 name - name of the semaphore to find

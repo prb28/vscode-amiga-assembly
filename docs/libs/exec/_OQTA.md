@@ -1,0 +1,76 @@
+
+**NAME**
+
+CreateTask -- Create task with given name, priority, stacksize
+
+**SYNOPSIS**
+
+```c
+    task = CreateTask(name,pri,initPC,stackSize)
+
+    struct Task *CreateTask(STRPTR,LONG,funcEntry,ULONG);
+
+```
+Links: [Task](_OOXE) 
+
+**FUNCTION**
+
+This function simplifies program creation of sub-tasks by
+dynamically allocating and initializing required structures
+and stack space, and adding the task to Exec's task list
+with the given name and priority. A tc_MemEntry list is provided
+so that all stack and structure memory allocated by CreateTask()
+is automatically deallocated when the task is removed.
+
+An Exec task may not call dos.library functions or any function
+which might cause the loading of a disk-resident library, device,
+or file (since such functions are indirectly calls to dos.library).
+Only AmigaDOS Processes may call AmigaDOS; see the
+[dos_library/CreateProc](../dos/CreateProc) or the [dos_library/CreateNewProc](../dos/CreateNewProc)
+functions for more information.
+
+If other tasks or processes will need to find this task by name,
+provide a complex and unique name to avoid conflicts.
+
+If your compiler provides automatic insertion of stack-checking
+code, you may need to disable this feature when compiling sub-task
+code since the stack for the subtask is at a dynamically allocated
+location.  If your compiler requires 68000 registers to contain
+particular values for base relative addressing, you may need to
+save these registers from your main process, and restore them
+in your initial subtask code.
+
+The function entry initPC is generally provided as follows:
+
+In C:
+extern void functionName();
+char *tname = &#034;unique name&#034;;
+task = CreateTask(tname, 0L, functionName, 4000L);
+
+In assembler:
+PEA     startLabel
+
+**INPUTS**
+
+name - a null-terminated name string
+pri - an Exec task priority between -128 and 127, normally 0
+funcEntry - the address of the first executable instruction
+of the subtask code
+stackSize - size in bytes of stack for the subtask. Don't cut it
+too close - system function stack usage may change.
+
+RESULT
+task - a pointer to the newly created task, or NULL if there was not
+enough memory.
+
+BUGS
+Under exec.library V37 or beyond, the [AddTask](AddTask) function used
+internally by CreateTask() can fail whereas it couldn't fail in
+previous versions of Exec. Prior to amiga.lib V37.14, this function
+did not check for failure of [AddTask](AddTask) and thus might return a
+pointer to a task structure even though the task was not actually
+added to the system.
+
+**SEE ALSO**
+
+[DeleteTask](_OQUU), [exec/FindTask](FindTask)

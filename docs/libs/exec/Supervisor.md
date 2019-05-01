@@ -5,7 +5,7 @@ Supervisor -- trap to a short supervisor mode function
 
 **SYNOPSIS**
 
-```
+```c
     result = Supervisor(userFunc)
     Rx                   A5
 

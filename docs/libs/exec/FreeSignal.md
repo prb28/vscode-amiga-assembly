@@ -5,7 +5,7 @@ FreeSignal -- free a signal bit
 
 **SYNOPSIS**
 
-```
+```c
     FreeSignal(signalNum)
                D0
 

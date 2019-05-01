@@ -5,12 +5,14 @@ CloseDevice -- conclude access to a device
 
 **SYNOPSIS**
 
-```
+```c
     CloseDevice(iORequest)
                 A1
 
+    void CloseDevice(struct IORequest *);
+
 ```
-void CloseDevice(struct [IORequest](IORequest) *);
+Links: [IORequest](_OOYT) 
 
 **FUNCTION**
 
@@ -19,12 +21,12 @@ previously opened has been concluded.  The device may perform
 certain house-cleaning operations.
 
 The user must ensure that all outstanding IORequests have been
-returned before closing the device.  The [AbortIO](AbortIO) function can kill
+returned before closing the device.  The [AbortIO](_OTFW) function can kill
 any stragglers.
 
 After a close, the I/O request structure is free to be reused.
 Starting with V36 exec it is safe to CloseDevice() with an
-[IORequest](IORequest) that is either cleared to zeros, or failed to
+[IORequest](_OOYT) that is either cleared to zeros, or failed to
 open.
 
 **INPUTS**

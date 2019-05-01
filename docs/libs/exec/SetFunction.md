@@ -5,12 +5,14 @@ SetFunction -- change a function vector in a library
 
 **SYNOPSIS**
 
-```
+```c
     oldFunc = SetFunction(library, funcOffset, funcEntry)
     D0                    A1       A0.W        D0
 
+    APTR SetFunction(struct Library *,LONG,APTR);
+
 ```
-APTR SetFunction(struct [Library](Library) *,LONG,APTR);
+Links: [Library](_OOYC) 
 
 **FUNCTION**
 

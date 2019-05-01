@@ -5,7 +5,7 @@ Disable -- disable interrupt processing.
 
 **SYNOPSIS**
 
-```
+```c
     Disable();
 
     void Disable(void);

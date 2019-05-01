@@ -5,12 +5,14 @@ ReleaseSemaphoreList -- make a list of semaphores available
 
 **SYNOPSIS**
 
-```
+```c
     ReleaseSemaphoreList(list)
                          A0
 
+    void ReleaseSemaphoreList(struct List *);
+
 ```
-void ReleaseSemaphoreList(struct [List](List) *);
+Links: [List](_OOWD) 
 
 **FUNCTION**
 

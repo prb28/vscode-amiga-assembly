@@ -5,7 +5,7 @@ CacheControl - Instruction &#038; data cache control
 
 **SYNOPSIS**
 
-```
+```c
     oldBits = CacheControl(cacheBits,cacheMask)
     D0                     D0        D1
 

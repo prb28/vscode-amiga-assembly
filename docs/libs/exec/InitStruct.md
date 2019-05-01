@@ -5,7 +5,7 @@ InitStruct - initialize memory from a table
 
 **SYNOPSIS**
 
-```
+```c
     InitStruct(initTable, memory, size);
                A1         A2      D0
 

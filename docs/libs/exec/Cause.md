@@ -5,12 +5,14 @@ Cause -- cause a software interrupt
 
 **SYNOPSIS**
 
-```
+```c
    Cause(interrupt)
          A1
 
+   void Cause(struct Interrupt *);
+
 ```
-void Cause(struct [Interrupt](Interrupt) *);
+Links: [Interrupt](_OOXC) 
 
 **FUNCTION**
 
@@ -27,7 +29,7 @@ Currently only 5 software interrupt priorities are implemented:
 values outside the -32/+32 range are not allowed.
 
 NOTE
-When setting up the [Interrupt](Interrupt) structure, set the node type to
+When setting up the [Interrupt](_OOXC) structure, set the node type to
 NT_INTERRUPT, or NT_UNKOWN.
 
 IMPLEMENTATION

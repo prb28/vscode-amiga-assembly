@@ -5,7 +5,7 @@ ColdReboot - reboot the Amiga (V36)
 
 **SYNOPSIS**
 
-```
+```c
     ColdReboot()
 
     void ColdReboot(void);

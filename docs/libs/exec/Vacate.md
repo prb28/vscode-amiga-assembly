@@ -5,12 +5,14 @@ Vacate -- release a message lock (semaphore)
 
 **SYNOPSIS**
 
-```
+```c
     Vacate(semaphore)
            A0
 
+    void Vacate(struct Semaphore *);
+
 ```
-void Vacate(struct [Semaphore](Semaphore) *);
+Links: [Semaphore](_OOXR) 
 
 **FUNCTION**
 

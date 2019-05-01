@@ -5,12 +5,14 @@ FindTask -- find a task with the given name or find oneself
 
 **SYNOPSIS**
 
-```
+```c
     task = FindTask(name)
     D0              A1
 
+    struct Task *FindTask(STRPTR);
+
 ```
-struct [Task](Task) *FindTask(STRPTR);
+Links: [Task](_OOXE) 
 
 **FUNCTION**
 
@@ -22,7 +24,7 @@ returned.
 Finding oneself with a NULL for the name is very quick.  Finding a
 task by name is very system expensive, and will disable interrupts
 for a long time.  Since a task may remove itself at any time,
-a [Forbid()/Permit](Forbid()/Permit) pair may be needed to ensure the pointer
+a <a href="../Includes_and_Autodocs_2._guide/node0369.html">Forbid()/Permit() pair may be needed to ensure the pointer
 returned by FindTask() is still valid when used.
 
 INPUT

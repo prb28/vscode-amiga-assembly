@@ -5,12 +5,14 @@ WaitPort -- wait for a given port to be non-empty
 
 **SYNOPSIS**
 
-```
+```c
     message = WaitPort(port)
     D0                 A0
 
+    struct Message *WaitPort(struct MsgPort *);
+
 ```
-struct [Message](Message) *WaitPort(struct [MsgPort](MsgPort) *);
+Links: [Message](_OOYY) [MsgPort](_OOYY) 
 
 **FUNCTION**
 

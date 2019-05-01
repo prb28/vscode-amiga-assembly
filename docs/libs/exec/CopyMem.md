@@ -5,7 +5,7 @@ CopyMem - general purpose memory copy function
 
 **SYNOPSIS**
 
-```
+```c
     CopyMem( source, dest, size )
              A0      A1    D0
 

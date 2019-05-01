@@ -5,12 +5,14 @@ ObtainSemaphoreList -- get a list of semaphores.
 
 **SYNOPSIS**
 
-```
+```c
     ObtainSemaphoreList(list)
                         A0
 
+    void ObtainSemaphoreList(struct List *);
+
 ```
-void ObtainSemaphoreList(struct [List](List) *);
+Links: [List](_OOWD) 
 
 **FUNCTION**
 

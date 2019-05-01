@@ -5,12 +5,14 @@ RemPort -- remove a message port from the system
 
 **SYNOPSIS**
 
-```
+```c
     RemPort(port)
             A1
 
+    void RemPort(struct MsgPort *);
+
 ```
-void RemPort(struct [MsgPort](MsgPort) *);
+Links: [MsgPort](_OOYY) 
 
 **FUNCTION**
 

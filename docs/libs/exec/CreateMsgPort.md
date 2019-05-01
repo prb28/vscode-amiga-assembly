@@ -5,11 +5,13 @@ CreateMsgPort - Allocate and initialize a new message port  (V36)
 
 **SYNOPSIS**
 
-```
+```c
     CreateMsgPort()
 
+    struct MsgPort * CreateMsgPort(void);
+
 ```
-struct [MsgPort](MsgPort) * CreateMsgPort(void);
+Links: [MsgPort](_OOYY) 
 
 **FUNCTION**
 
@@ -22,11 +24,11 @@ You *must* use [DeleteMsgPort](DeleteMsgPort) to delete ports created with
 CreateMsgPort()!
 
 RESULT
-[MsgPort](MsgPort) - A new [MsgPort](MsgPort) structure ready for use, or NULL if out of
+[MsgPort](_OOYY) - A new [MsgPort](_OOYY) structure ready for use, or NULL if out of
 memory or signals.  If you wish to add this port to the public
 port list, fill in the ln_Name and ln_Pri fields, then call
 [AddPort](AddPort).  Don't forget RemPort()!
 
 **SEE ALSO**
 
-[DeleteMsgPort](DeleteMsgPort), [exec/AddPort](exec/AddPort), [exec/ports.h](exec/ports.h), [amiga.lib/CreatePort](amiga.lib/CreatePort)
+[DeleteMsgPort](DeleteMsgPort), [exec/AddPort](AddPort), [exec/ports_h](_OOYY), [amiga_lib/CreatePort](_OQTX)

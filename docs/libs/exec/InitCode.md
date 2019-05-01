@@ -5,7 +5,7 @@ InitCode - initialize resident code modules (internal function)
 
 **SYNOPSIS**
 
-```
+```c
     InitCode(startClass, version)
              D0          D1
 
@@ -20,7 +20,7 @@ Call [InitResident](InitResident) for all resident modules in the ResModules arr
 with the given startClass and with versions equal or greater than
 that specified.  The segList parameter is passed as zero.
 
-[Resident](Resident) modules are used by the system to pull all its parts
+[Resident](_OOAO) modules are used by the system to pull all its parts
 together at startup.  Modules are initialized in a prioritized order.
 
 Modules that do not have a startclass should be of priority -120.

@@ -5,7 +5,7 @@ Wait -- wait for one or more signals
 
 **SYNOPSIS**
 
-```
+```c
     signals = Wait(signalSet)
     D0             D0
 

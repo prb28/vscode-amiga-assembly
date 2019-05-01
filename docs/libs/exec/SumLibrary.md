@@ -5,12 +5,14 @@ SumLibrary -- compute and check the checksum on a library
 
 **SYNOPSIS**
 
-```
+```c
     SumLibrary(library)
                A1
 
+    void SumLibrary(struct Library *);
+
 ```
-void SumLibrary(struct [Library](Library) *);
+Links: [Library](_OOYC) 
 
 **FUNCTION**
 

@@ -5,7 +5,7 @@ CacheClearU - User callable simple cache clearing (V37)
 
 **SYNOPSIS**
 
-```
+```c
     CacheClearU()
 
     void CacheClearU(void);

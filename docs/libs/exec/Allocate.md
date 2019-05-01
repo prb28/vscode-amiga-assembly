@@ -5,17 +5,19 @@ Allocate - allocate a block of memory
 
 **SYNOPSIS**
 
-```
+```c
     memoryBlock=Allocate(memHeader, byteSize)
     D0                   A0         D0
 
+    void *Allocate(struct MemHeader *, ULONG);
+
 ```
-void *Allocate(struct [MemHeader](MemHeader) *, ULONG);
+Links: [MemHeader](_OOXY) 
 
 **FUNCTION**
 
 This function is used to allocate blocks of memory from a given
-private free memory pool (as specified by a [MemHeader](MemHeader) and its
+private free memory pool (as specified by a [MemHeader](_OOXY) and its
 memory chunk list).  Allocate will return the first free block that
 is greater than or equal to the requested size.
 
@@ -26,7 +28,7 @@ bytes.  A request for 8 bytes will use up exactly 8 bytes.  A
 request for 7 bytes will also use up exactly 8 bytes.).
 
 This function can be used to manage an application's internal data
-memory.  Note that no arbitration of the [MemHeader](MemHeader) and associated
+memory.  Note that no arbitration of the [MemHeader](_OOXY) and associated
 free chunk list is done.  You must be the owner before calling
 Allocate.
 
@@ -41,26 +43,26 @@ If there are no free regions large enough to satisfy the
 request, return zero.
 
 EXAMPLE
-#include [&#060;exec/types.h&#062;](&#060;exec/types.h&#062;)
-#include [&#060;exec/memory.h&#062;](&#060;exec/memory.h&#062;)
+#include [&#060;exec/types_h&#062;](_OOYV)
+#include [&#060;exec/memory_h&#062;](_OOXY)
 void *AllocMem();
 #define BLOCKSIZE 4096L /* Or whatever you want */
 
 void main()
 {
-struct [MemHeader](MemHeader) *mh;
-struct [MemChunk](MemChunk)  *mc;
+struct [MemHeader](_OOXY) *mh;
+struct [MemChunk](_OOXY)  *mc;
 APTR   block1;
 APTR   block2;
 
-/* Get the [MemHeader](MemHeader) needed to keep track of our new block */
-mh = (struct [MemHeader](MemHeader) *)
+/* Get the [MemHeader](_OOXY) needed to keep track of our new block */
+mh = (struct [MemHeader](_OOXY) *)
 AllocMem((long)sizeof(struct MemHeader), MEMF_CLEAR );
 if( !mh )
 exit(10);
 
-/* Get the actual block the above [MemHeader](MemHeader) will manage */
-mc = (struct [MemChunk](MemChunk) *)AllocMem( BLOCKSIZE, 0L );
+/* Get the actual block the above [MemHeader](_OOXY) will manage */
+mc = (struct [MemChunk](_OOXY) *)AllocMem( BLOCKSIZE, 0L );
 if( !mc )
 {
 FreeMem( mh, (long)sizeof(struct MemHeader) ); exit(10);
@@ -92,4 +94,4 @@ AN_MemCorrupt, $01000005.
 
 **SEE ALSO**
 
-Deallocate, [exec/memory.h](exec/memory.h)
+Deallocate, [exec/memory_h](_OOXY)

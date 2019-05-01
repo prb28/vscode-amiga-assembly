@@ -5,18 +5,20 @@ StackSwap - EXEC supported method of replacing task's stack      (V37)
 
 **SYNOPSIS**
 
-```
+```c
     StackSwap(newStack)
               A0
 
+    VOID StackSwap(struct StackSwapStruct *);
+
 ```
-VOID StackSwap(struct [StackSwapStruct](StackSwapStruct) *);
+Links: [StackSwapStruct](_OOXE) 
 
 **FUNCTION**
 
 This function will, in an EXEC supported manner, swap the
 stack of your task with the given values in StackSwap.
-The [StackSwapStruct](StackSwapStruct) structure will then contain the values
+The [StackSwapStruct](_OOXE) structure will then contain the values
 of the old stack such that the old stack can be restored.
 This function is new in V37.
 
@@ -43,4 +45,4 @@ will effectively do nothing.
 
 **SEE ALSO**
 
-[AddTask](AddTask), [RemTask](RemTask), [exec/tasks.h](exec/tasks.h)
+[AddTask](AddTask), [RemTask](RemTask), [exec/tasks_h](_OOXE)

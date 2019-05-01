@@ -5,12 +5,14 @@ Remove -- remove a node from a list
 
 **SYNOPSIS**
 
-```
+```c
     Remove(node)
            A1
 
+    void Remove(struct Node *);
+
 ```
-void Remove(struct [Node](Node) *);
+Links: [Node](_OOYQ) 
 
 **FUNCTION**
 

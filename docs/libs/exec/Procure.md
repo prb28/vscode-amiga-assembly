@@ -5,12 +5,14 @@ Procure -- bid for a message lock (semaphore)
 
 **SYNOPSIS**
 
-```
+```c
     result = Procure(semaphore, bidMessage)
     D0               A0         A1
 
+    BYTE Procure(struct Semaphore *, struct Message *);
+
 ```
-BYTE Procure(struct [Semaphore](Semaphore) *, struct [Message](Message) *);
+Links: [Semaphore](_OOXR) [Message](_OOYY) 
 
 **FUNCTION**
 
@@ -31,7 +33,7 @@ PA_IGNORE option, as the MP_SigTask field is used for a pointer to
 the current locker message (not a task). New semaphore ports must
 also have the SM_BIDS word initialized to -1.  If the semaphore is
 public, it should be named, its priority set, and the added with
-[AddPort](AddPort). [Message](Message) port priority is often used for anti-deadlock
+[AddPort](AddPort). [Message](_OOYY) port priority is often used for anti-deadlock
 locking conventions.
 
 RESULT

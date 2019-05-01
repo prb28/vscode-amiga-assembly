@@ -5,7 +5,7 @@ SuperState -- enter supervisor state with user stack
 
 **SYNOPSIS**
 
-```
+```c
     oldSysStack = SuperState()
     D0
 
@@ -28,4 +28,4 @@ is already in supervisor mode, oldSysStack is zero.
 
 **SEE ALSO**
 
-[UserState/Supervisor](UserState/Supervisor)
+[UserState/Supervisor](Supervisor)

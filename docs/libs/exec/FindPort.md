@@ -5,29 +5,31 @@ FindPort -- find a given system message port
 
 **SYNOPSIS**
 
-```
+```c
     port = FindPort(name)
     D0              A1
 
+    struct MsgPort *FindPort(STRPTR);
+
 ```
-struct [MsgPort](MsgPort) *FindPort(STRPTR);
+Links: [MsgPort](_OOYY) 
 
 **FUNCTION**
 
 This function will search the system message port list for a port
 with the given name.  The first port matching this name will be
 returned.  No arbitration of the port list is done.  This function
-MUST be protected with A [Forbid()/Permit](Forbid()/Permit) pair!
+MUST be protected with A <a href="../Includes_and_Autodocs_2._guide/node0369.html">Forbid()/Permit() pair!
 
 EXAMPLE
-#include [&#060;exec/types.h&#062;](&#060;exec/types.h&#062;)
-struct [MsgPort](MsgPort) *FindPort();
+#include [&#060;exec/types_h&#062;](_OOYV)
+struct [MsgPort](_OOYY) *FindPort();
 
 ULONG SafePutToPort(message, portname)
-struct [Message](Message) *message;
+struct [Message](_OOYY) *message;
 STRPTR          portname;
 {
-struct [MsgPort](MsgPort) *port;
+struct [MsgPort](_OOYY) *port;
 
 Forbid();
 port = FindPort(portname);

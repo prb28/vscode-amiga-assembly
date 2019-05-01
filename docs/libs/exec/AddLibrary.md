@@ -5,12 +5,14 @@ AddLibrary -- add a library to the system
 
 **SYNOPSIS**
 
-```
+```c
     AddLibrary(library)
                A1
 
+    void AddLibrary(struct Library *);
+
 ```
-void AddLibrary(struct [Library](Library) *);
+Links: [Library](_OOYC) 
 
 **FUNCTION**
 

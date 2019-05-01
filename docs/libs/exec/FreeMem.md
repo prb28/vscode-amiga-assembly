@@ -5,7 +5,7 @@ FreeMem -- deallocate with knowledge
 
 **SYNOPSIS**
 
-```
+```c
     FreeMem(memoryBlock, byteSize)
             A1           D0
 

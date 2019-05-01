@@ -1,0 +1,205 @@
+```c
+#ifndef EXEC_EXECBASE_H
+#define EXEC_EXECBASE_H
+/*
+**	$Filename: exec/execbase.h $
+**	$Release: 2.04 Includes, V37.4 $
+**	$Revision: 36.18 $
+**	$Date: 91/10/10 $
+**
+**	Definition of the exec.library base structure.
+**
+**	(C) Copyright 1985-1999 Amiga, Inc.
+**	    All Rights Reserved
+*/
+
+#ifndef EXEC_LISTS_H
+#include &#034;exec/lists.h&#034;
+#endif /* EXEC_LISTS_H */
+
+#ifndef EXEC_INTERRUPTS_H
+#include &#034;exec/interrupts.h&#034;
+#endif /* EXEC_INTERRUPTS_H */
+
+#ifndef EXEC_LIBRARIES_H
+#include &#034;exec/libraries.h&#034;
+#endif /* EXEC_LIBRARIES_H */
+
+#ifndef EXEC_TASKS_H
+#include &#034;exec/tasks.h&#034;
+#endif /* EXEC_TASKS_H */
+
+
+/* Definition of the Exec library base structure (pointed to by location 4).
+** Most fields are not to be viewed or modified by user programs.  Use
+** extreme caution.
+*/
+struct ExecBase {
+struct Library LibNode; /* Standard library node */
+
+/******** Static System Variables ********/
+
+UWORD	SoftVer;	/* kickstart release number (obs.) */
+WORD	LowMemChkSum;	/* checksum of 68000 trap vectors */
+ULONG	ChkBase;	/* system base pointer complement */
+APTR	ColdCapture;	/* coldstart soft capture vector */
+APTR	CoolCapture;	/* coolstart soft capture vector */
+APTR	WarmCapture;	/* warmstart soft capture vector */
+APTR	SysStkUpper;	/* system stack base   (upper bound) */
+APTR	SysStkLower;	/* top of system stack (lower bound) */
+ULONG	MaxLocMem;	/* top of chip memory */
+APTR	DebugEntry;	/* global debugger entry point */
+APTR	DebugData;	/* global debugger data segment */
+APTR	AlertData;	/* alert data segment */
+APTR	MaxExtMem;	/* top of extended mem, or null if none */
+
+UWORD	ChkSum;	/* for all of the above (minus 2) */
+
+/****** Interrupt Related ***************************************/
+
+struct	IntVector IntVects[16];
+
+/****** Dynamic System Variables *************************************/
+
+struct	Task *ThisTask; /* pointer to current task (readable) */
+
+ULONG	IdleCount;	/* idle counter */
+ULONG	DispCount;	/* dispatch counter */
+UWORD	Quantum;	/* time slice quantum */
+UWORD	Elapsed;	/* current quantum ticks */
+UWORD	SysFlags;	/* misc internal system flags */
+BYTE	IDNestCnt;	/* interrupt disable nesting count */
+BYTE	TDNestCnt;	/* task disable nesting count */
+
+UWORD	AttnFlags;	/* special attention flags (readable) */
+
+UWORD	AttnResched;	/* rescheduling attention */
+APTR	ResModules;	/* resident module array pointer */
+APTR	TaskTrapCode;
+APTR	TaskExceptCode;
+APTR	TaskExitCode;
+ULONG	TaskSigAlloc;
+UWORD	TaskTrapAlloc;
+
+
+/****** System Lists (private!) ********************************/
+
+struct	List MemList;
+struct	List ResourceList;
+struct	List DeviceList;
+struct	List IntrList;
+struct	List LibList;
+struct	List PortList;
+struct	List TaskReady;
+struct	List TaskWait;
+
+struct	SoftIntList SoftInts[5];
+
+/****** Other Globals *******************************************/
+
+LONG	LastAlert[4];
+
+/* these next two variables are provided to allow
+** system developers to have a rough idea of the
+** period of two externally controlled signals --
+** the time between vertical blank interrupts and the
+** external line rate (which is counted by CIA A's
+** &#034;time of day&#034; clock).  In general these values
+** will be 50 or 60, and may or may not track each
+** other.  These values replace the obsolete AFB_PAL
+** and AFB_50HZ flags.
+*/
+UBYTE	VBlankFrequency;	/* (readable) */
+UBYTE	PowerSupplyFrequency;	/* (readable) */
+
+struct	List SemaphoreList;
+
+/* these next two are to be able to kickstart into user ram.
+** KickMemPtr holds a singly linked list of MemLists which
+** will be removed from the memory list via AllocAbs.  If
+** all the AllocAbs's succeeded, then the KickTagPtr will
+** be added to the rom tag list.
+*/
+APTR	KickMemPtr;	/* ptr to queue of mem lists */
+APTR	KickTagPtr;	/* ptr to rom tag queue */
+APTR	KickCheckSum;	/* checksum for mem and tags */
+
+/****** V36 Exec additions start here **************************************/
+
+UWORD	ex_Pad0;
+ULONG	ex_LaunchPoint;		/* Private to Launch/Switch */
+APTR	ex_RamLibPrivate;
+/* The next ULONG contains the system &#034;E&#034; clock frequency,
+** expressed in Hertz.	The E clock is used as a timebase for
+** the Amiga's 8520 I/O chips. (E is connected to &#034;02&#034;).
+** Typical values are 715909 for NTSC, or 709379 for PAL.
+*/
+ULONG	ex_EClockFrequency;	/* (readable) */
+ULONG	ex_CacheControl;	/* Private to CacheControl calls */
+ULONG	ex_TaskID;		/* Next available task ID */
+
+ULONG	ex_PuddleSize;
+ULONG	ex_PoolThreshold;
+struct	MinList ex_PublicPool;
+
+APTR	ex_MMULock;		/* private */
+
+UBYTE	ex_Reserved[12];
+};
+
+
+/****** Bit defines for AttnFlags (see above) ******************************/
+
+/*  Processors and Co-processors: */
+#define AFB_68010	0	/* also set for 68020 */
+#define AFB_68020	1	/* also set for 68030 */
+#define AFB_68030	2	/* also set for 68040 */
+#define AFB_68040	3
+#define AFB_68881	4	/* also set for 68882 */
+#define AFB_68882	5
+#define	AFB_FPU40	6	/* Set if 68040 FPU */
+/*
+* The AFB_FPU40 bit is set when a working 68040 FPU
+* is in the system.  If this bit is set and both the
+* AFB_68881 and AFB_68882 bits are not set, then the 68040
+* math emulation code has not been loaded and only 68040
+* FPU instructions are available.  This bit is valid *ONLY*
+* if the AFB_68040 bit is set.
+*/
+
+#define AFB_PRIVATE	15	/* Just what it says */
+
+#define AFF_68010	(1L&#060;&#060;0)
+#define AFF_68020	(1L&#060;&#060;1)
+#define AFF_68030	(1L&#060;&#060;2)
+#define AFF_68040	(1L&#060;&#060;3)
+#define AFF_68881	(1L&#060;&#060;4)
+#define AFF_68882	(1L&#060;&#060;5)
+#define	AFF_FPU40	(1L&#060;&#060;6)
+
+#define AFF_PRIVATE	(1L&#060;&#060;15)
+
+/* #define AFB_RESERVED8   8 */
+/* #define AFB_RESERVED9   9 */
+
+
+/****** Selected flag definitions for Cache manipulation calls **********/
+
+#define CACRF_EnableI	    (1L&#060;&#060;0)  /* Enable instruction cache */
+#define CACRF_FreezeI	    (1L&#060;&#060;1)  /* Freeze instruction cache */
+#define CACRF_ClearI	    (1L&#060;&#060;3)  /* Clear instruction cache  */
+#define CACRF_IBE	    (1L&#060;&#060;4)  /* Instruction burst enable */
+#define CACRF_EnableD	    (1L&#060;&#060;8)  /* 68030 Enable data cache  */
+#define CACRF_FreezeD	    (1L&#060;&#060;9)  /* 68030 Freeze data cache  */
+#define CACRF_ClearD	    (1L&#060;&#060;11) /* 68030 Clear data cache	 */
+#define CACRF_DBE	    (1L&#060;&#060;12) /* 68030 Data burst enable */
+#define CACRF_WriteAllocate (1L&#060;&#060;13) /* 68030 Write-Allocate mode
+(must always be set!)	 */
+#define CACRF_CopyBack	    (1L&#060;&#060;31) /* Master enable for copyback caches */
+
+#define DMA_Continue	    (1L&#060;&#060;1)  /* Continuation flag for CachePreDMA */
+#define DMA_NoModify	    (1L&#060;&#060;2)  /* Set if DMA does not update memory */
+
+
+#endif	/* EXEC_EXECBASE_H */
+```

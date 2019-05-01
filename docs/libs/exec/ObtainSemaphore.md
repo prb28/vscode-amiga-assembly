@@ -5,12 +5,14 @@ ObtainSemaphore -- gain exclusive access to a semaphore
 
 **SYNOPSIS**
 
-```
+```c
     ObtainSemaphore(signalSemaphore)
                     A0
 
+    void ObtainSemaphore(struct SignalSemaphore *);
+
 ```
-void ObtainSemaphore(struct [SignalSemaphore](SignalSemaphore) *);
+Links: [SignalSemaphore](_OOXR) 
 
 **FUNCTION**
 
@@ -30,7 +32,7 @@ A queue of waiting tasks is maintained on the stacks of the waiting
 tasks.  Each will be called in turn as soon as the current task
 releases the semaphore.
 
-[Signal](Signal) Semaphores are different than [Procure()/Vacate](Procure()/Vacate) semaphores.
+[Signal](Signal) Semaphores are different than <a href="../Includes_and_Autodocs_2._guide/node0389.html">Procure()/Vacate() semaphores.
 The former requires less CPU time, especially if the semaphore is
 not currently locked.  They require very little set up and user
 thought.  The latter flavor of semaphore make no assumptions about

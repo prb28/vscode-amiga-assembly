@@ -5,12 +5,14 @@ Enqueue -- insert or append node to a system queue
 
 **SYNOPSIS**
 
-```
+```c
     Enqueue(list, node)
             A0    A1
 
+    void Enqueue(struct List *, struct Node *);
+
 ```
-void Enqueue(struct [List](List) *, struct [Node](Node) *);
+Links: [List](_OOWD) [Node](_OOYQ) 
 
 **FUNCTION**
 

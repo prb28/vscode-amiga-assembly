@@ -5,7 +5,7 @@ TypeOfMem -- determine attributes of a given memory address
 
 **SYNOPSIS**
 
-```
+```c
     attributes = TypeOfMem(address)
     D0                     A1
 

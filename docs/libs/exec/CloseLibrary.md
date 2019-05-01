@@ -5,12 +5,14 @@ CloseLibrary -- conclude access to a library
 
 **SYNOPSIS**
 
-```
+```c
     CloseLibrary(library)
                  A1
 
+    void CloseLibrary(struct Library *);
+
 ```
-void CloseLibrary(struct [Library](Library) *);
+Links: [Library](_OOYC) 
 
 **FUNCTION**
 
@@ -26,7 +28,7 @@ a library pointer.
 library - pointer to a library node
 
 NOTE
-[Library](Library) writers must pass a SegList pointer or NULL back from their
+[Library](_OOYC) writers must pass a SegList pointer or NULL back from their
 open point.  This value is used by the system, and not visible as
 a return code from CloseLibrary.
 

@@ -5,7 +5,7 @@ OpenResource -- gain access to a resource
 
 **SYNOPSIS**
 
-```
+```c
     resource = OpenResource(resName)
     D0                      A1
 

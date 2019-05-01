@@ -5,7 +5,7 @@ SetSR -- get and/or set processor status register
 
 **SYNOPSIS**
 
-```
+```c
     oldSR = SetSR(newSR, mask)
     D0            D0     D1
 

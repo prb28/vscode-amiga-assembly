@@ -5,7 +5,7 @@ AllocSignal -- allocate a signal bit
 
 **SYNOPSIS**
 
-```
+```c
     signalNum = AllocSignal(signalNum)
     D0                      D0
 

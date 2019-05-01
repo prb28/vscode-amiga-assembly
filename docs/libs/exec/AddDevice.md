@@ -5,12 +5,14 @@ AddDevice -- add a device to the system
 
 **SYNOPSIS**
 
-```
+```c
     AddDevice(device)
               A1
 
+    void AddDevice(struct Device *);
+
 ```
-void AddDevice(struct [Device](Device) *);
+Links: [Device](_OOXW) 
 
 **FUNCTION**
 
@@ -24,4 +26,4 @@ device - pointer to a properly initialized device node
 
 **SEE ALSO**
 
-[RemDevice](RemDevice), [OpenDevice](OpenDevice), [CloseDevice](CloseDevice), [MakeLibrary](MakeLibrary)
+[RemDevice](RemDevice), [OpenDevice](OpenDevice), [CloseDevice](_OTCC), [MakeLibrary](MakeLibrary)

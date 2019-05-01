@@ -5,12 +5,14 @@ RemHead -- remove the head node from a list
 
 **SYNOPSIS**
 
-```
+```c
     node = RemHead(list)
     D0             A0
 
+    struct Node *RemHead(struct List *);
+
 ```
-struct [Node](Node) *RemHead(struct [List](List) *);
+Links: [Node](_OOYQ) [List](_OOWD) 
 
 **FUNCTION**
 

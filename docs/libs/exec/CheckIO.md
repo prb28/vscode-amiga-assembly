@@ -1,16 +1,18 @@
 
 **NAME**
 
-CheckIO -- get the status of an [IORequest](IORequest)
+CheckIO -- get the status of an [IORequest](_OOYT)
 
 **SYNOPSIS**
 
-```
+```c
     result = CheckIO(iORequest)
     D0               A1
 
+    BOOL CheckIO(struct IORequest *);
+
 ```
-BOOL CheckIO(struct [IORequest](IORequest) *);
+Links: [IORequest](_OOYT) 
 
 **FUNCTION**
 
@@ -18,7 +20,7 @@ This function determines the current state of an I/O request and
 returns FALSE if the I/O has not yet completed.  This function
 effectively hides the internals of the I/O completion mechanism.
 
-CheckIO() will NOT remove the returned [IORequest](IORequest) from the reply port.
+CheckIO() will NOT remove the returned [IORequest](_OOYT) from the reply port.
 This is best performed with [WaitIO](WaitIO). If the request has already
 completed, [WaitIO](WaitIO) will return quickly. Use of the [Remove](Remove)
 function is dangerous, since other tasks may still be adding things
@@ -34,13 +36,13 @@ iORequest - pointer to an I/O request block
 **RESULTS**
 
 result - NULL if I/O is still in progress.  Otherwise
-D0 points to the [IORequest](IORequest) block.
+D0 points to the [IORequest](_OOYT) block.
 
 NOTE
-CheckIO can hang if called on an [IORequest](IORequest) that has never been used.
-This occurs if LN_TYPE of the [IORequest](IORequest) is set to &#034;NT_MESSAGE&#034;.
+CheckIO can hang if called on an [IORequest](_OOYT) that has never been used.
+This occurs if LN_TYPE of the [IORequest](_OOYT) is set to &#034;NT_MESSAGE&#034;.
 Instead simply set LN_TYPE to 0.
 
 **SEE ALSO**
 
-[DoIO](DoIO), [SendIO](SendIO), [WaitIO](WaitIO), [AbortIO](AbortIO)
+[DoIO](DoIO), [SendIO](SendIO), [WaitIO](WaitIO), [AbortIO](_OTFW)

@@ -5,12 +5,14 @@ RemTail -- remove the tail node from a list
 
 **SYNOPSIS**
 
-```
+```c
     node = RemTail(list)
     D0             A0
 
+    struct Node *RemTail(struct List *);
+
 ```
-struct [Node](Node) *RemTail(struct [List](List) *);
+Links: [Node](_OOYQ) [List](_OOWD) 
 
 **FUNCTION**
 

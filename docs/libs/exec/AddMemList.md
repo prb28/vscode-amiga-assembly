@@ -5,7 +5,7 @@ AddMemList - add memory to the system free pool
 
 **SYNOPSIS**
 
-```
+```c
     AddMemList( size, attributes, pri, base, name )
                  D0      D1        D2   A0    A1
 
@@ -15,7 +15,7 @@ AddMemList - add memory to the system free pool
 **FUNCTION**
 
 Add a new region of memory to the system free pool.  The first few
-bytes will be used to hold the [MemHeader](MemHeader) structure.  The remainder
+bytes will be used to hold the [MemHeader](_OOXY) structure.  The remainder
 will be made available to the rest of the world.
 
 **INPUTS**
@@ -34,4 +34,4 @@ system.
 
 **SEE ALSO**
 
-[AllocMem](AllocMem), [exec/memory.h](exec/memory.h)
+[AllocMem](AllocMem), [exec/memory_h](_OOXY)

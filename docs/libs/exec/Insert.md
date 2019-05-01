@@ -5,12 +5,14 @@ Insert -- insert a node into a list
 
 **SYNOPSIS**
 
-```
+```c
     Insert(list, node, listNode)
            A0    A1    A2
 
+    void Insert(struct List *, struct Node *, struct Node *);
+
 ```
-void Insert(struct [List](List) *, struct [Node](Node) *, struct [Node](Node) *);
+Links: [List](_OOWD) [Node](_OOYQ) [Node](_OOYQ) 
 
 **FUNCTION**
 

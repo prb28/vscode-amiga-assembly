@@ -5,7 +5,7 @@ SetSignal -- define the state of this task's signals
 
 **SYNOPSIS**
 
-```
+```c
     oldSignals = SetSignal(newSignals, signalMask)
     D0                     D0          D1
 
@@ -37,7 +37,7 @@ SetSignal(0L,SIGBREAKF_CTRL_C);
 
 Check if the CTRL-C signal was pressed:
 
-#include [&#060;libraries/dos.h&#062;](&#060;libraries/dos.h&#062;)
+#include [&#060;libraries/dos_h&#062;](_OQOX)
 
 /* Check &#038; clear CTRL_C signal */
 if(SetSignal(0L,SIGBREAKF_CTRL_C) &#038; SIGBREAKF_CTRL_C)

@@ -5,7 +5,7 @@ Permit -- permit task rescheduling.
 
 **SYNOPSIS**
 
-```
+```c
     Permit()
 
     void Permit(void);

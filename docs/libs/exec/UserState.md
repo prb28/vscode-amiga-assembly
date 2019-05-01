@@ -5,7 +5,7 @@ UserState -- return to user state with user stack
 
 **SYNOPSIS**
 
-```
+```c
     UserState(sysStack)
               D0
 
@@ -28,4 +28,4 @@ This function is broken in V33/34 Kickstart.  Fixed in V1.31 setpatch.
 
 **SEE ALSO**
 
-[SuperState/Supervisor](SuperState/Supervisor)
+[SuperState/Supervisor](Supervisor)

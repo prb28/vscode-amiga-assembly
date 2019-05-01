@@ -5,12 +5,14 @@ FindName -- find a system list node with a given name
 
 **SYNOPSIS**
 
-```
+```c
     node = FindName(start, name)
     D0,Z            A0     A1
 
+    struct Node *FindName(struct List *, STRPTR);
+
 ```
-struct [Node](Node) *FindName(struct [List](List) *, STRPTR);
+Links: [Node](_OOYQ) [List](_OOWD) 
 
 **FUNCTION**
 

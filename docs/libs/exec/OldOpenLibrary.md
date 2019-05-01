@@ -5,12 +5,14 @@ OldOpenLibrary -- obsolete [OpenLibrary](OpenLibrary)
 
 **SYNOPSIS**
 
-```
+```c
     library = OldOpenLibrary(libName)
     D0                       A1
 
+    struct Library *OldOpenLibrary(APTR);
+
 ```
-struct [Library](Library) *OldOpenLibrary(APTR);
+Links: [Library](_OOYC) 
 
 **FUNCTION**
 

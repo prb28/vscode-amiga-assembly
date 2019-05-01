@@ -5,12 +5,14 @@ OpenDevice -- gain access to a device
 
 **SYNOPSIS**
 
-```
+```c
     error = OpenDevice(devName, unitNumber, iORequest, flags)
     D0                 A0       D0          A1         D1
 
+    BYTE OpenDevice(STRPTR,ULONG,struct IORequest *,ULONG);
+
 ```
-BYTE OpenDevice(STRPTR,ULONG,struct [IORequest](IORequest) *,ULONG);
+Links: [IORequest](_OOYT) 
 
 **FUNCTION**
 
@@ -35,7 +37,7 @@ started.
 As of V36 tasks can safely call OpenDevice, though DOS may open
 system requesters (e.g., asking the user to insert the Workbench
 disk if DEVS: is not online).  You must call this function from a
-DOS [Process](Process) if you want to turn off DOS requesters.
+DOS [Process](_OOWX) if you want to turn off DOS requesters.
 
 **INPUTS**
 
@@ -54,7 +56,7 @@ used to request opening a device with exclusive access.
 **RESULTS**
 
 error - Returns a sign-extended copy of the io_Error field
-of the [IORequest](IORequest).  Zero if successful, else an error code
+of the [IORequest](_OOYT).  Zero if successful, else an error code
 is returned.
 
 BUGS
@@ -68,4 +70,4 @@ Now OpenDevice is protected from tasks.
 
 **SEE ALSO**
 
-[CloseDevice](CloseDevice), [DoIO](DoIO), [SendIO](SendIO), [CheckIO](CheckIO), [AbortIO](AbortIO), [WaitIO](WaitIO)
+[CloseDevice](_OTCC), [DoIO](DoIO), [SendIO](SendIO), [CheckIO](CheckIO), [AbortIO](_OTFW), [WaitIO](WaitIO)

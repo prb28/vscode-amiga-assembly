@@ -1,0 +1,55 @@
+
+**NAME**
+
+CreatePort - Allocate and initialize a new message port
+
+**SYNOPSIS**
+
+```c
+    port = CreatePort(name,pri)
+
+    struct MsgPort *CreatePort(STRPTR,LONG);
+
+```
+Links: [MsgPort](_OOYY) 
+
+**FUNCTION**
+
+Allocates and initializes a new message port. The message list
+of the new port will be prepared for use (via NewList).  A signal
+bit will be allocated, and the port will be set to signal your
+task when a message arrives (PA_SIGNAL).
+
+You *must* use [DeletePort](_OQUS) to delete ports created with
+CreatePort()!
+
+**INPUTS**
+
+name - public name of the port, or NULL if the port is not named.
+The name string is not copied. Most ports do not need names,
+see notes below on this.
+pri  - Priority used for insertion into the public port list,
+normally 0.
+
+RESULT
+port - a new [MsgPort](_OOYY) structure ready for use, or NULL if the port
+could not be created due to not enough memory or no available
+signal bit.
+
+NOTE
+In most cases, ports should not be named. Named ports are used for
+rendez-vous between tasks. Everytime a named port needs to be located,
+the list of all named ports must be traversed. The more named
+ports there are, the longer this list traversal takes. Thus, unless
+you really need to, do not name your ports, which will keep them off
+of the named port list and improve system performance.
+
+BUGS
+With versions of amiga.lib prior to V37.14, this function would
+not fail even though it couldn't allocate a signal bit. The port
+would be returned with no signal allocated.
+
+**SEE ALSO**
+
+[DeletePort](_OQUS), [exec_library/FindPort](FindPort), [&#060;exec/ports_h&#062;](_OOYY),
+[exec_library/CreateMsgPort](CreateMsgPort)

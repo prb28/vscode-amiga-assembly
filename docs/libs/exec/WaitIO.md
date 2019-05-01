@@ -5,12 +5,14 @@ WaitIO -- wait for completion of an I/O request
 
 **SYNOPSIS**
 
-```
+```c
     error = WaitIO(iORequest)
     D0             A1
 
+    BYTE WaitIO(struct IORequest *);
+
 ```
-BYTE WaitIO(struct [IORequest](IORequest) *);
+Links: [IORequest](_OOYT) 
 
 **FUNCTION**
 
@@ -27,12 +29,12 @@ received.  This is how I/O timeouts can be properly handled.
 
 **WARNING**
 
-If this [IORequest](IORequest) was &#034;Quick&#034; or otherwise finished BEFORE this
+If this [IORequest](_OOYT) was &#034;Quick&#034; or otherwise finished BEFORE this
 call, this function drops though immediately, with no call to
 [Wait](Wait).  A side effect is that the signal bit related the port may
 remain set.  Expect this.
 
-When removing a known complete [IORequest](IORequest) from a port, WaitIO() is the
+When removing a known complete [IORequest](_OOYT) from a port, WaitIO() is the
 preferred method.  A simple [Remove](Remove) would require a Disable/Enable
 pair!
 
@@ -47,4 +49,4 @@ error - zero if successful, else an error is returned
 
 **SEE ALSO**
 
-[DoIO](DoIO), [SendIO](SendIO), [CheckIO](CheckIO), [AbortIO](AbortIO)
+[DoIO](DoIO), [SendIO](SendIO), [CheckIO](CheckIO), [AbortIO](_OTFW)

@@ -5,12 +5,14 @@ InitResident - initialize resident module
 
 **SYNOPSIS**
 
-```
+```c
     object = InitResident(resident, segList)
     D0                     A1        D1
 
+    APTR InitResident(struct Resident *,ULONG);
+
 ```
-APTR InitResident(struct [Resident](Resident) *,ULONG);
+Links: [Resident](_OOAO) 
 
 **FUNCTION**
 
@@ -22,7 +24,7 @@ Once the validity of the ROMTag is verified, the RT_INIT pointer
 is jumped to  with the following registers:
 D0 = 0
 A0 = segList
-A6 = [ExecBase](ExecBase)
+A6 = [ExecBase](_OOYE)
 
 **INPUTS**
 
@@ -41,26 +43,26 @@ AUTOINIT FEATURE
 An automatic method of library/device base and vector table
 initialization is also provided by InitResident().  The initial code
 hunk of the library or device should contain &#034;MOVEQ #-1,d0; RTS;&#034;.
-Following that must be an initialized [Resident](Resident) structure with
+Following that must be an initialized [Resident](_OOAO) structure with
 RTF_AUTOINIT set in rt_Flags, and an rt_Init pointer which points
 to four longwords.  These four longwords will be used in a call
 to MakeLibrary();
 
 - The size of your library/device base structure including initial
-[Library](Library) or [Device](Device) structure.
+[Library](_OOYC) or [Device](_OOXW) structure.
 
 - A pointer to a longword table of standard, then library
 specific function offsets, terminated with -1L.
 (short format offsets are also acceptable)
 
-- Pointer to data table in [exec/InitStruct](exec/InitStruct) format for
-initialization of [Library](Library) or [Device](Device) structure.
+- Pointer to data table in [exec/InitStruct](InitStruct) format for
+initialization of [Library](_OOYC) or [Device](_OOXW) structure.
 
 - Pointer to library initialization function, or NULL.
 Calling sequence:
 D0 = library base
 A0 = segList
-A6 = [ExecBase](ExecBase)
+A6 = [ExecBase](_OOYE)
 This function must return in D0 the library/device base to be
 linked into the library/device list.  If the initialization
 function fails, the device memory must be manually deallocated,

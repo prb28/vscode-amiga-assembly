@@ -5,7 +5,7 @@ Debug -- run the system debugger
 
 **SYNOPSIS**
 
-```
+```c
     Debug(flags)
           D0
 

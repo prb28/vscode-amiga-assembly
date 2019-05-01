@@ -5,7 +5,7 @@ FreeVec -- return [AllocVec](AllocVec) memory to the system  (V36)
 
 **SYNOPSIS**
 
-```
+```c
     FreeVec(memoryBlock)
             A1
 

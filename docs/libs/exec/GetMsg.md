@@ -5,12 +5,14 @@ GetMsg -- get next message from a message port
 
 **SYNOPSIS**
 
-```
+```c
     message = GetMsg(port)
     D0               A0
 
+    struct Message *GetMsg(struct MsgPort *);
+
 ```
-struct [Message](Message) *GetMsg(struct [MsgPort](MsgPort) *);
+Links: [Message](_OOYY) [MsgPort](_OOYY) 
 
 **FUNCTION**
 
@@ -44,4 +46,4 @@ Callers must be prepared for zero at any time.
 
 **SEE ALSO**
 
-[PutMsg](PutMsg), [ReplyMsg](ReplyMsg), [WaitPort](WaitPort), Wait, [exec/ports.h](exec/ports.h)
+[PutMsg](PutMsg), [ReplyMsg](ReplyMsg), [WaitPort](WaitPort), Wait, [exec/ports_h](_OOYY)

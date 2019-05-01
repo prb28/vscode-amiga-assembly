@@ -1,16 +1,18 @@
 
 **NAME**
 
-CreateIORequest() -- create an [IORequest](IORequest) structure  (V36)
+CreateIORequest() -- create an [IORequest](_OOYT) structure  (V36)
 
 **SYNOPSIS**
 
-```
+```c
     ioReq = CreateIORequest( ioReplyPort, size );
                              A0           D0
 
+    struct IORequest *CreateIORequest(struct MsgPort *, ULONG);
+
 ```
-struct [IORequest](IORequest) *CreateIORequest(struct [MsgPort](MsgPort) *, ULONG);
+Links: [IORequest](_OOYT) [MsgPort](_OOYY) 
 
 **FUNCTION**
 
@@ -26,8 +28,8 @@ function fails.
 size - the size of the IO request to be created.
 
 RESULT
-ioReq - A pointer to the new [IORequest](IORequest) block, or NULL.
+ioReq - A pointer to the new [IORequest](_OOYT) block, or NULL.
 
 **SEE ALSO**
 
-[DeleteIORequest](DeleteIORequest), [CreateMsgPort](CreateMsgPort), [amiga.lib/CreateExtIO](amiga.lib/CreateExtIO)
+[DeleteIORequest](DeleteIORequest), [CreateMsgPort](CreateMsgPort), [amiga_lib/CreateExtIO](_OQTW)

@@ -5,12 +5,14 @@ OpenLibrary -- gain access to a library
 
 **SYNOPSIS**
 
-```
+```c
     library = OpenLibrary(libName, version)
     D0                    A1       D0
 
+    struct Library *OpenLibrary(STRPTR, ULONG);
+
 ```
-struct [Library](Library) *OpenLibrary(STRPTR, ULONG);
+Links: [Library](_OOYC) 
 
 **FUNCTION**
 
@@ -37,7 +39,7 @@ started.
 As of V36 tasks can safely call OpenLibrary, though DOS may open
 system requesters (e.g., asking the user to insert the Workbench
 disk if LIBS: is not online).  You must call this function from a
-DOS [Process](Process) if you want to turn off DOS requesters.
+DOS [Process](_OOWX) if you want to turn off DOS requesters.
 
 **INPUTS**
 
