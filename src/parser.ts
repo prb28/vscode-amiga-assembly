@@ -394,7 +394,7 @@ export class HoverLibraryManager {
             if (!dirName.startsWith(".")) {
                 const librariesDirPath = path.join(dirPath, dirName);
                 fs.readdirSync(librariesDirPath).forEach(filename => {
-                    if (filename.endsWith(".md")) {
+                    if (filename.endsWith(".md") && !filename.startsWith('_')) {
                         let filePath = path.join(librariesDirPath, filename);
                         let description = fs.readFileSync(filePath, 'utf8');
                         // refactor the description links
