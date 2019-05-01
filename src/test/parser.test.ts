@@ -338,7 +338,7 @@ describe("Parser Tests", function () {
         });
     });
     context("Hover library file parsing", function () {
-        it.only("Should read the files correctly", function () {
+        it("Should read the files correctly", function () {
             let manager = new HoverLibraryManager();
             expect(manager.functionsByName.size).to.be.equal(106);
             let registerByName = manager.functionsByName.get("OPENLIBRARY");
