@@ -25,5 +25,4 @@ old.visx/**
 sonar-project.properties
 .scannerwork
 .sonarlint
-
-
+*.zip

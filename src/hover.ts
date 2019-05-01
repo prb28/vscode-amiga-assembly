@@ -211,7 +211,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     if (keyword.startsWith("_LVO")) {
                         keyword = keyword.substring(4);
                     }
-                    hr = M68kHoverProvider.hoverLibraryManager.functionsByName.get(keyword);
+                    hr = M68kHoverProvider.hoverLibraryManager.loadDescription(keyword);
                 }
             }
         }

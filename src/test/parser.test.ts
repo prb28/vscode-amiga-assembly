@@ -340,8 +340,8 @@ describe("Parser Tests", function () {
     context("Hover library file parsing", function () {
         it("Should read the files correctly", function () {
             let manager = new HoverLibraryManager();
-            expect(manager.functionsByName.size).to.be.equal(106);
-            let registerByName = manager.functionsByName.get("OPENLIBRARY");
+            expect(manager.size()).to.be.equal(390);
+            let registerByName = manager.loadDescription("OPENLIBRARY");
             expect(registerByName).to.not.be.undefined;
             if (registerByName) {
                 expect(registerByName.name).to.be.equals("OPENLIBRARY");
@@ -349,6 +349,13 @@ describe("Parser Tests", function () {
                 // should have refactored a link
                 expect(registerByName.description).not.to.contains("[OpenDevice](OpenDevice)");
                 expect(registerByName.description).to.contains("[OpenDevice](command:amiga-assembly.showdoc?%5B%7B%22path%22%3A%22libs%2Fexec%2FOpenDevice%22%7D%5D)");
+            }
+            registerByName = manager.loadDescription("ADDTASK");
+            expect(registerByName).to.not.be.undefined;
+            if (registerByName) {
+                // should have refactored a link with relative path
+                expect(registerByName.description).not.to.contains("[dos/CreateProc](../dos/CreateProc)");
+                expect(registerByName.description).to.contains("[dos/CreateProc](command:amiga-assembly.showdoc?%5B%7B%22path%22%3A%22libs%2Fexec%2F..%2Fdos%2FCreateProc%22%7D%5D)");
             }
         });
     });

@@ -385,7 +385,7 @@ export class HoverRegistersManager {
  * Class to manage the libraries documentation
  */
 export class HoverLibraryManager {
-    functionsByName = new Map<string, HoverLibraryFunction>();
+    private functionsByName = new Map<string, HoverLibraryFunction>();
     constructor() {
         // Read the registers file
         // Creating the relative path to find the test file
@@ -396,11 +396,8 @@ export class HoverLibraryManager {
                 fs.readdirSync(librariesDirPath).forEach(filename => {
                     if (filename.endsWith(".md") && !filename.startsWith('_')) {
                         let filePath = path.join(librariesDirPath, filename);
-                        let description = fs.readFileSync(filePath, 'utf8');
-                        // refactor the description links
-                        description = this.refactorLinks(`libs/${dirName}`, description);
                         let name = filename.replace(".md", "").toUpperCase();
-                        let lf = new HoverLibraryFunction(dirName, name, description);
+                        let lf = new HoverLibraryFunction(dirName, name, "", filePath);
                         this.functionsByName.set(name, lf);
                     }
                 });
@@ -409,7 +406,7 @@ export class HoverLibraryManager {
     }
     private refactorLinks(relativePath: string, text: string): string {
         let rText = text;
-        const matcher = /\[([\/\\a-z_\-]*)\]\(([a-z_\-\.]*)\)/gi;
+        const matcher = /\[([\/\\a-z0-9_\.\-]*)\]\(([a-z0-9_\-\/\\\.]*)\)/gi;
         let match;
         while (match = matcher.exec(text)) {
             let title = match[1];
@@ -419,6 +416,18 @@ export class HoverLibraryManager {
             rText = rText.replace(match[0], commandUri);
         }
         return rText;
+    }
+    public loadDescription(functionName: string): HoverLibraryFunction | undefined {
+        let hLibFunc = this.functionsByName.get(functionName);
+        if (hLibFunc) {
+            let description = fs.readFileSync(hLibFunc.filepathname, 'utf8');
+            // refactor the description links
+            hLibFunc.description = this.refactorLinks(`libs/${hLibFunc.libraryName}`, description);
+        }
+        return hLibFunc;
+    }
+    public size(): number {
+        return this.functionsByName.size;
     }
 }
 
@@ -449,16 +458,19 @@ export class HoverLibraryFunction {
     libraryName: string;
     name: string;
     description: string;
+    filepathname: string;
     /**
      * Contructor
      * @param libraryName Name of the library
      * @param name Name
      * @param description description in markdown
+     * @param filepathname Path to the file
      */
-    constructor(libraryName: string, name: string, description: string) {
+    constructor(libraryName: string, name: string, description: string, filepathname: string) {
         this.libraryName = libraryName;
         this.name = name;
         this.description = description;
+        this.filepathname = filepathname;
     }
 }
 
