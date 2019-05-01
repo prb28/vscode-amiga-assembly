@@ -48,16 +48,17 @@ export class VLINKLinker {
                     // byte of the first section. So, in order to "set" the entrypoint, we
                     // put the object containing the code to be executed first at the
                     // beginning of the objects list.
+                    let entrypointNoExt = entrypoint.replace(/\.[^/.]+$/, "");
                     objectPathnames.sort(function (a, b) {
                         if (a === b) {
                             return 0;
                         }
-                        let filename_a = path.basename(a);
-                        let filename_b = path.basename(b);
-                        if (filename_a === entrypoint) {
+                        let filename_a = path.basename(a).replace(/\.[^/.]+$/, "");
+                        let filename_b = path.basename(b).replace(/\.[^/.]+$/, "");
+                        if (filename_a === entrypointNoExt) {
                             return -1;
                         }
-                        if (filename_b === entrypoint) {
+                        if (filename_b === entrypointNoExt) {
                             return 1;
                         }
                         if (a < b) {
