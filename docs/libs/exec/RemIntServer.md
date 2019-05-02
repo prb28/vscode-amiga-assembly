@@ -34,4 +34,4 @@ cause a problem.
 
 **SEE ALSO**
 
-[AddIntServer](AddIntServer), [hardware/intbits_h](_OOCE)
+[AddIntServer](AddIntServer), [hardware/intbits.h](_OOCE)

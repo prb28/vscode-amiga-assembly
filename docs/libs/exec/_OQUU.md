@@ -15,7 +15,7 @@ Links: [Task](_OOXE)
 
 **FUNCTION**
 
-This function simply calls [exec_library/RemTask](RemTask), deleting a task
+This function simply calls [exec.library/RemTask](RemTask), deleting a task
 from the Exec task lists and automatically freeing any stack and
 structure memory allocated for it by [CreateTask](_OQTA).
 
@@ -33,9 +33,9 @@ itself.
 task - task to remove from the system
 
 NOTE
-This function simply calls [exec_library/RemTask](RemTask), so you can call
+This function simply calls [exec.library/RemTask](RemTask), so you can call
 [RemTask](RemTask) directly instead of calling this function.
 
 **SEE ALSO**
 
-[CreateTask](_OQTA), [exec_library/RemTask](RemTask)
+[CreateTask](_OQTA), [exec.library/RemTask](RemTask)

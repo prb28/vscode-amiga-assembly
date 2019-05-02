@@ -24,4 +24,4 @@ deviceNode - pointer to the device node, set by Open
 
 **SEE ALSO**
 
-[serial_device/OpenDevice](_OTDT)
+[serial.device/OpenDevice](_OTDT)

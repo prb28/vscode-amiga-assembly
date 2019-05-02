@@ -20,7 +20,7 @@ unchangeable by the system software.  This function is part of a
 support system to modify parts of the ROM.
 
 The ROM code is linked together at run time via ROMTags (also known
-as [Resident](_OOAO) structures, defined in [exec/resident_h](_OOAO).  These tags tell
+as [Resident](_OOAO) structures, defined in [exec/resident.h](_OOAO).  These tags tell
 Exec's low level boot code what subsystems exist in which regions of
 memory.  The current list of ROMTags is contained in the ResModules
 field of [ExecBase](_OOYE).  By default this list contains any ROMTags found

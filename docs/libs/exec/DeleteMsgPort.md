@@ -26,4 +26,4 @@ msgPort - A message port.  NULL for no action.
 
 **SEE ALSO**
 
-[CreateMsgPort](CreateMsgPort), [amiga_lib/DeletePort](_OQUS)
+[CreateMsgPort](CreateMsgPort), [amiga.lib/DeletePort](_OQUS)

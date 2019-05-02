@@ -39,8 +39,8 @@ A point of confusion is that clearing a [MsgPort](_OOYY) structure to all
 zeros is not enough to prepare it for use.  As mentioned in the
 Exec chapter of the ROM Kernel Manual, the [List](_OOWD) for the [MsgPort](_OOYY)
 must be initialized.  This is automatically handled by AddPort(),
-and [amiga_lib/CreatePort](_OQTX).  This initialization can be done manually
-with [amiga_lib/NewList](_OQVQ) or the assembly NEWLIST macro.
+and [amiga.lib/CreatePort](_OQTX).  This initialization can be done manually
+with [amiga.lib/NewList](_OQVQ) or the assembly NEWLIST macro.
 
 Do not AddPort an active port.
 
@@ -50,4 +50,4 @@ port - pointer to a message port
 
 **SEE ALSO**
 
-[RemPort](RemPort), [FindPort](FindPort), [amiga_lib/CreatePort](_OQTX), [amiga_lib/NewList](_OQVQ)
+[RemPort](RemPort), [FindPort](FindPort), [amiga.lib/CreatePort](_OQTX), [amiga.lib/NewList](_OQVQ)

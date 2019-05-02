@@ -49,4 +49,4 @@ message - pointer to a message
 
 **SEE ALSO**
 
-[GetMsg](GetMsg), [ReplyMsg](ReplyMsg), [exec/ports_h](_OOYY)
+[GetMsg](GetMsg), [ReplyMsg](ReplyMsg), [exec/ports.h](_OOYY)

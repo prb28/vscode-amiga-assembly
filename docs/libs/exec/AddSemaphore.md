@@ -38,8 +38,8 @@ signalSemaphore -- an signal semaphore structure
 BUGS
 Does not work in Exec &#060;V36.  Instead use this code:
 
-#include [&#060;exec/execbase_h&#062;](_OOYE)
-#include [&#060;exec/nodes_h&#062;](_OOYQ)
+#include [&#060;exec/execbase.h&#062;](_OOYE)
+#include [&#060;exec/nodes.h&#062;](_OOYQ)
 extern struct [ExecBase](_OOYE) *SysBase;
 ...
 void LocalAddSemaphore(s)

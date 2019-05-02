@@ -43,4 +43,4 @@ set to zero before the call)
 **SEE ALSO**
 
 [ObtainSemaphore](ObtainSemaphore), [ObtainSemaphoreShared](ObtainSemaphoreShared), [AttemptSemaphore](AttemptSemaphore),
-[ReleaseSemaphore](ReleaseSemaphore), [exec/semaphores_h](_OOXR)
+[ReleaseSemaphore](ReleaseSemaphore), [exec/semaphores.h](_OOXR)

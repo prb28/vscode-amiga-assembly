@@ -46,5 +46,5 @@ I/O errors won't be reported until the io completes.
 
 **SEE ALSO**
 
-[devices/serial_h](_OOTB)
+[devices/serial.h](_OOTB)
 ```

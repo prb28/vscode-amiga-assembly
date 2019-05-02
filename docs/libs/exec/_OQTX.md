@@ -51,5 +51,5 @@ would be returned with no signal allocated.
 
 **SEE ALSO**
 
-[DeletePort](_OQUS), [exec_library/FindPort](FindPort), [&#060;exec/ports_h&#062;](_OOYY),
-[exec_library/CreateMsgPort](CreateMsgPort)
+[DeletePort](_OQUS), [exec.library/FindPort](FindPort), [&#060;exec/ports.h&#062;](_OOYY),
+[exec.library/CreateMsgPort](CreateMsgPort)

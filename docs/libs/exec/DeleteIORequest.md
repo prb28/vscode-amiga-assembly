@@ -26,4 +26,4 @@ much memory to free.
 
 **SEE ALSO**
 
-[CreateIORequest](CreateIORequest), [amiga_lib/DeleteExtIO](_OQUR)
+[CreateIORequest](CreateIORequest), [amiga.lib/DeleteExtIO](_OQUR)

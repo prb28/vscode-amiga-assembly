@@ -28,4 +28,4 @@ list - pointer to a [List](_OOWD) or [MinList](_OOWD).
 
 **SEE ALSO**
 
-[&#060;exec/lists_h&#062;](_OOWD)
+[&#060;exec/lists.h&#062;](_OOWD)

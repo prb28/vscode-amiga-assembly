@@ -34,4 +34,4 @@ system.
 
 **SEE ALSO**
 
-[AllocMem](AllocMem), [exec/memory_h](_OOXY)
+[AllocMem](AllocMem), [exec/memory.h](_OOXY)

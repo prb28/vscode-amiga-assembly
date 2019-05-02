@@ -32,4 +32,4 @@ This call does NOT preserve registers.
 **SEE ALSO**
 
 [ObtainSemaphore](ObtainSemaphore) [ObtainSemaphoreShared](ObtainSemaphoreShared), [ReleaseSemaphore](ReleaseSemaphore),
-[exec/semaphores_h](_OOXR)
+[exec/semaphores.h](_OOXR)

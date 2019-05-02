@@ -34,4 +34,4 @@ if (ioReq = CreateExtIO(CreatePort(NULL,0),sizeof(struct IOExtTD)))
 
 **SEE ALSO**
 
-[DeleteExtIO](_OQUR), [CreatePort](_OQTX), [exec_library/CreateMsgPort](CreateMsgPort)
+[DeleteExtIO](_OQUR), [CreatePort](_OQTX), [exec.library/CreateMsgPort](CreateMsgPort)

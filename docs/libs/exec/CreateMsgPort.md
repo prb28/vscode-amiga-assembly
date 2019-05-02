@@ -31,4 +31,4 @@ port list, fill in the ln_Name and ln_Pri fields, then call
 
 **SEE ALSO**
 
-[DeleteMsgPort](DeleteMsgPort), [exec/AddPort](AddPort), [exec/ports_h](_OOYY), [amiga_lib/CreatePort](_OQTX)
+[DeleteMsgPort](DeleteMsgPort), [exec/AddPort](AddPort), [exec/ports.h](_OOYY), [amiga.lib/CreatePort](_OQTX)

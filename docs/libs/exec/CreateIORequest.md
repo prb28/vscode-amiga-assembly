@@ -32,4 +32,4 @@ ioReq - A pointer to the new [IORequest](_OOYT) block, or NULL.
 
 **SEE ALSO**
 
-[DeleteIORequest](DeleteIORequest), [CreateMsgPort](CreateMsgPort), [amiga_lib/CreateExtIO](_OQTW)
+[DeleteIORequest](DeleteIORequest), [CreateMsgPort](CreateMsgPort), [amiga.lib/CreateExtIO](_OQTW)

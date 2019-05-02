@@ -71,5 +71,5 @@ See the AmigaDOS [CreateProc](_ORXE) for information on Processes.
 
 **SEE ALSO**
 
-[RemTask](RemTask), [FindTask](FindTask), [amiga_lib/CreateTask](_OQTA), [dos/CreateProc](../dos/CreateProc),
-[amiga_lib/NewList](_OQVQ)
+[RemTask](RemTask), [FindTask](FindTask), [amiga.lib/CreateTask](_OQTA), [dos/CreateProc](_ORXE),
+[amiga.lib/NewList](_OQVQ)

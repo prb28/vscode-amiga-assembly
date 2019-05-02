@@ -26,7 +26,7 @@ An Exec task may not call dos.library functions or any function
 which might cause the loading of a disk-resident library, device,
 or file (since such functions are indirectly calls to dos.library).
 Only AmigaDOS Processes may call AmigaDOS; see the
-[dos_library/CreateProc](../dos/CreateProc) or the [dos_library/CreateNewProc](../dos/CreateNewProc)
+[dos.library/CreateProc](../dos/CreateProc) or the [dos.library/CreateNewProc](../dos/CreateNewProc)
 functions for more information.
 
 If other tasks or processes will need to find this task by name,

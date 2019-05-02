@@ -72,4 +72,4 @@ Workbench disks.
 
 **SEE ALSO**
 
-[exec/memory_h](_OOXY)
+[exec/memory.h](_OOXY)

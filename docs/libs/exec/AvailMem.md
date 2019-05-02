@@ -47,4 +47,4 @@ AvailMem(MEMF_CHIP|MEMF_LARGEST);
 
 **SEE ALSO**
 
-[exec/memory_h](_OOXY)
+[exec/memory.h](_OOXY)

@@ -32,10 +32,10 @@ cause the next ready task to begin execution.
 
 BUGS
 Before V36 if RemTask() was called on a task other than the current
-task, and that task was created with [amiga_lib/CreateTask](_OQTA), there was
+task, and that task was created with [amiga.lib/CreateTask](_OQTA), there was
 a slight chance of a crash.  The problem can be hidden by bracketing
 RemTask() with <a href="../Includes_and_Autodocs_2._guide/node0369.html">Forbid()/Permit().
 
 **SEE ALSO**
 
-[AddTask](AddTask), [exec/AllocEntry](AllocEntry), [amiga_lib/DeleteTask](_OQUU)
+[AddTask](AddTask), [exec/AllocEntry](AllocEntry), [amiga.lib/DeleteTask](_OQUU)

@@ -22,7 +22,7 @@ returned.  No arbitration of the port list is done.  This function
 MUST be protected with A <a href="../Includes_and_Autodocs_2._guide/node0369.html">Forbid()/Permit() pair!
 
 EXAMPLE
-#include [&#060;exec/types_h&#062;](_OOYV)
+#include [&#060;exec/types.h&#062;](_OOYV)
 struct [MsgPort](_OOYY) *FindPort();
 
 ULONG SafePutToPort(message, portname)

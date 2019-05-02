@@ -34,4 +34,4 @@ zero if none found.
 
 **SEE ALSO**
 
-[exec/resident_h](_OOAO), [InitResident](InitResident)
+[exec/resident.h](_OOAO), [InitResident](InitResident)

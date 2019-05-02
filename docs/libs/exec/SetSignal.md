@@ -37,7 +37,7 @@ SetSignal(0L,SIGBREAKF_CTRL_C);
 
 Check if the CTRL-C signal was pressed:
 
-#include [&#060;libraries/dos_h&#062;](_OQOX)
+#include [&#060;libraries/dos.h&#062;](_OQOX)
 
 /* Check &#038; clear CTRL_C signal */
 if(SetSignal(0L,SIGBREAKF_CTRL_C) &#038; SIGBREAKF_CTRL_C)

@@ -46,4 +46,4 @@ Callers must be prepared for zero at any time.
 
 **SEE ALSO**
 
-[PutMsg](PutMsg), [ReplyMsg](ReplyMsg), [WaitPort](WaitPort), Wait, [exec/ports_h](_OOYY)
+[PutMsg](PutMsg), [ReplyMsg](ReplyMsg), [WaitPort](WaitPort), Wait, [exec/ports.h](_OOYY)

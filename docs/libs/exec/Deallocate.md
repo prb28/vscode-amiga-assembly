@@ -43,4 +43,4 @@ happens.
 
 **SEE ALSO**
 
-Allocate, [exec/memory_h](_OOXY)
+Allocate, [exec/memory.h](_OOXY)

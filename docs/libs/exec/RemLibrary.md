@@ -26,8 +26,8 @@ appropriate to attempt to specifically flush a certain [Library](_OOYC).
 Example:
 
 /* Attempts to flush the named library out of memory. */
-#include [&#060;exec/types_h&#062;](_OOYV)
-#include [&#060;exec/execbase_h&#062;](_OOYE)
+#include [&#060;exec/types.h&#062;](_OOYV)
+#include [&#060;exec/execbase.h&#062;](_OOYE)
 
 void FlushLibrary(name)
 STRPTR name;

@@ -45,4 +45,4 @@ return be checked.
 
 **SEE ALSO**
 
-[SendIO](SendIO), [CheckIO](CheckIO), [WaitIO](WaitIO), [AbortIO](_OTFW), [amiga_lib/BeginIO](_OTCB)
+[SendIO](SendIO), [CheckIO](CheckIO), [WaitIO](WaitIO), [AbortIO](_OTFW), [amiga.lib/BeginIO](_OTCB)

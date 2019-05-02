@@ -43,8 +43,8 @@ If there are no free regions large enough to satisfy the
 request, return zero.
 
 EXAMPLE
-#include [&#060;exec/types_h&#062;](_OOYV)
-#include [&#060;exec/memory_h&#062;](_OOXY)
+#include [&#060;exec/types.h&#062;](_OOYV)
+#include [&#060;exec/memory.h&#062;](_OOXY)
 void *AllocMem();
 #define BLOCKSIZE 4096L /* Or whatever you want */
 
@@ -94,4 +94,4 @@ AN_MemCorrupt, $01000005.
 
 **SEE ALSO**
 
-Deallocate, [exec/memory_h](_OOXY)
+Deallocate, [exec/memory.h](_OOXY)
