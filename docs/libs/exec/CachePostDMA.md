@@ -17,7 +17,7 @@ CachePostDMA - Take actions after to hardware DMA  (V37)
 Take all appropriate steps after Direct Memory Access (DMA).  This
 function is primarily intended for writers of DMA device drivers.  The
 action will depend on the CPU type installed, caching modes, and the
-state of any Memory Management [Unit](_OOXW) (MMU) activity.
+state of any Memory Management [Unit](_0087) (MMU) activity.
 
 As implemented
 68000 - Do nothing

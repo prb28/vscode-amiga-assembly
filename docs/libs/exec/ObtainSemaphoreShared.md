@@ -12,7 +12,7 @@ ObtainSemaphoreShared -- gain shared access to a semaphore (V36)
     void ObtainSemaphoreShared(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_OOXR) 
+Links: [SignalSemaphore](_0082) 
 
 **FUNCTION**
 

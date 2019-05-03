@@ -12,7 +12,7 @@ WaitPort -- wait for a given port to be non-empty
     struct Message *WaitPort(struct MsgPort *);
 
 ```
-Links: [Message](_OOYY) [MsgPort](_OOYY) 
+Links: [Message](_0099) [MsgPort](_0099) 
 
 **FUNCTION**
 

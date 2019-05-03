@@ -12,7 +12,7 @@ AddLibrary -- add a library to the system
     void AddLibrary(struct Library *);
 
 ```
-Links: [Library](_OOYC) 
+Links: [Library](_009C) 
 
 **FUNCTION**
 

@@ -12,7 +12,7 @@ ReleaseSemaphoreList -- make a list of semaphores available
     void ReleaseSemaphoreList(struct List *);
 
 ```
-Links: [List](_OOWD) 
+Links: [List](_007D) 
 
 **FUNCTION**
 

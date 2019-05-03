@@ -12,7 +12,7 @@ Vacate -- release a message lock (semaphore)
     void Vacate(struct Semaphore *);
 
 ```
-Links: [Semaphore](_OOXR) 
+Links: [Semaphore](_0082) 
 
 **FUNCTION**
 

@@ -12,7 +12,7 @@ DeleteMsgPort - Free a message port created by [CreateMsgPort](CreateMsgPort)  (
     void DeleteMsgPort(struct MsgPort *);
 
 ```
-Links: [MsgPort](_OOYY) 
+Links: [MsgPort](_0099) 
 
 **FUNCTION**
 
@@ -26,4 +26,4 @@ msgPort - A message port.  NULL for no action.
 
 **SEE ALSO**
 
-[CreateMsgPort](CreateMsgPort), [amiga.lib/DeletePort](_OQUS)
+[CreateMsgPort](CreateMsgPort), [amiga.lib/DeletePort](_0153)

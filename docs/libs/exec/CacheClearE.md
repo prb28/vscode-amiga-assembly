@@ -60,12 +60,12 @@ too great.  The entire cache may be cleared.
 
 For all current Amiga models, Chip memory is set with Instruction
 caching enabled, data caching disabled.  This prevents coherency
-conflicts with the blitter or other custom chip DMA.  [Custom](_OOCD) chip
+conflicts with the blitter or other custom chip DMA.  [Custom](_00CD) chip
 registers are marked as non-cacheable by the hardware.
 
 The system takes care of appropriately flushing the caches for normal
 operations.  The instruction cache is cleared by all calls that
-modify instructions, including [LoadSeg](_ORCU), [MakeLibrary](MakeLibrary) and
+modify instructions, including [LoadSeg](../dos/LoadSeg), [MakeLibrary](MakeLibrary) and
 [SetFunction](SetFunction).
 
 **SEE ALSO**

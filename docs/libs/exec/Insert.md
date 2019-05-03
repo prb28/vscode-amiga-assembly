@@ -12,7 +12,7 @@ Insert -- insert a node into a list
     void Insert(struct List *, struct Node *, struct Node *);
 
 ```
-Links: [List](_OOWD) [Node](_OOYQ) [Node](_OOYQ) 
+Links: [List](_007D) [Node](_0091) [Node](_0091) 
 
 **FUNCTION**
 

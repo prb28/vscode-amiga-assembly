@@ -12,7 +12,7 @@ ObtainSemaphoreList -- get a list of semaphores.
     void ObtainSemaphoreList(struct List *);
 
 ```
-Links: [List](_OOWD) 
+Links: [List](_007D) 
 
 **FUNCTION**
 

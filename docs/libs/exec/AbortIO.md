@@ -12,20 +12,20 @@ AbortIO - attempt to abort an in-progress I/O request
     VOID AbortIO(struct IORequest *);
 
 ```
-Links: [IORequest](_OOYT) 
+Links: [IORequest](_0094) 
 
 **FUNCTION**
 
-Ask a device to abort a previously started [IORequest](_OOYT).  This is done
-by calling the device's ABORTIO vector, with your given [IORequest](_OOYT).
+Ask a device to abort a previously started [IORequest](_0094).  This is done
+by calling the device's ABORTIO vector, with your given [IORequest](_0094).
 
 
 AbortIO is a command the device that may or may not grant.  If
-successful, the device will stop processing the [IORequest](_OOYT), and
+successful, the device will stop processing the [IORequest](_0094), and
 reply to it earlier than it would otherwise have done.
 
 NOTE
-AbortIO() does NOT [Remove](Remove) the [IORequest](_OOYT) from your ReplyPort, OR
+AbortIO() does NOT [Remove](Remove) the [IORequest](_0094) from your ReplyPort, OR
 wait for it to complete.  After an AbortIO() you must wait normally
 for the reply message before actually reusing the request.
 
@@ -35,7 +35,7 @@ action is taken.
 EXAMPLE
 AbortIO(timer_request);
 WaitIO(timer_request);
-/* [Message](_OOYY) is free to be reused */
+/* [Message](_0099) is free to be reused */
 
 **INPUTS**
 

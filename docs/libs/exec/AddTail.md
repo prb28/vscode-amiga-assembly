@@ -12,7 +12,7 @@ AddTail -- append node to tail of a list
     void AddTail(struct List *, struct Node *);
 
 ```
-Links: [List](_OOWD) [Node](_OOYQ) 
+Links: [List](_007D) [Node](_0091) 
 
 **FUNCTION**
 

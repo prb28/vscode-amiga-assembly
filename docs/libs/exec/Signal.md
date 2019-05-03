@@ -12,7 +12,7 @@ Signal -- signal a task
     void Signal(struct Task *,ULONG);
 
 ```
-Links: [Task](_OOXE) 
+Links: [Task](_008E) 
 
 **FUNCTION**
 

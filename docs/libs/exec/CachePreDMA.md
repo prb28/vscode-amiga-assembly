@@ -17,7 +17,7 @@ CachePreDMA - Take actions prior to hardware DMA  (V37)
 Take all appropriate steps before Direct Memory Access (DMA).  This
 function is primarily intended for writers of DMA device drivers.  The
 action will depend on the CPU type installed, caching modes, and the
-state of any Memory Management [Unit](_OOXW) (MMU) activity.
+state of any Memory Management [Unit](_0087) (MMU) activity.
 
 This function supports advanced cache architectures that have
 &#034;copyback&#034; modes.  With copyback, write data may be cached, but not

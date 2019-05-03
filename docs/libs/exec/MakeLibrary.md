@@ -13,7 +13,7 @@ MakeLibrary -- construct a library
                           (APTR,struct InitStruct *,APTR,ULONG,BPTR);
 
 ```
-Links: [Library](_OOYC) [InitStruct](InitStruct) 
+Links: [Library](_009C) [InitStruct](InitStruct) 
 
 **FUNCTION**
 
@@ -42,9 +42,9 @@ then it will not be used.
 
 init -  If non-NULL, an entry point that will be called before adding
 the library to the system.  Registers are as follows:
-d0 = libAddr    ;Your [Library](_OOYC) Address
+d0 = libAddr    ;Your [Library](_009C) Address
 a0 = segList    ;Your AmigaDOS segment list
-a6 = [ExecBase](_OOYE)  ;Address of exec.library
+a6 = [ExecBase](_009E)  ;Address of exec.library
 The result of the init function must be the library address,
 or NULL for failure.   If NULL, the init point must manually
 deallocate the library base memory (based on the sizes stored

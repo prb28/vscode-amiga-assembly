@@ -12,7 +12,7 @@ ObtainSemaphore -- gain exclusive access to a semaphore
     void ObtainSemaphore(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_OOXR) 
+Links: [SignalSemaphore](_0082) 
 
 **FUNCTION**
 

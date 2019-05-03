@@ -18,7 +18,7 @@ Allow system interrupts to again occur normally, after a matching
 
 **RESULTS**
 
-[Interrupt](_OOXC) processing is restored to normal operation. The
+[Interrupt](_008C) processing is restored to normal operation. The
 programmer must execute exactly one call to Enable() for every call
 to [Disable](Disable).
 

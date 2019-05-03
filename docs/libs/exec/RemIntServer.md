@@ -12,7 +12,7 @@ RemIntServer -- remove an interrupt server from a server chain
     void RemIntServer(ULONG,struct Interrupt *);
 
 ```
-Links: [Interrupt](_OOXC) 
+Links: [Interrupt](_008C) 
 
 **FUNCTION**
 
@@ -34,4 +34,4 @@ cause a problem.
 
 **SEE ALSO**
 
-[AddIntServer](AddIntServer), [hardware/intbits.h](_OOCE)
+[AddIntServer](AddIntServer), [hardware/intbits.h](_00CE)

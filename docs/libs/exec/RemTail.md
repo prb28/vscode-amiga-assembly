@@ -12,7 +12,7 @@ RemTail -- remove the tail node from a list
     struct Node *RemTail(struct List *);
 
 ```
-Links: [Node](_OOYQ) [List](_OOWD) 
+Links: [Node](_0091) [List](_007D) 
 
 **FUNCTION**
 

@@ -12,7 +12,7 @@ FindName -- find a system list node with a given name
     struct Node *FindName(struct List *, STRPTR);
 
 ```
-Links: [Node](_OOYQ) [List](_OOWD) 
+Links: [Node](_0091) [List](_007D) 
 
 **FUNCTION**
 

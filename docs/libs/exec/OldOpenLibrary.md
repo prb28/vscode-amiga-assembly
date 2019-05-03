@@ -12,7 +12,7 @@ OldOpenLibrary -- obsolete [OpenLibrary](OpenLibrary)
     struct Library *OldOpenLibrary(APTR);
 
 ```
-Links: [Library](_OOYC) 
+Links: [Library](_009C) 
 
 **FUNCTION**
 

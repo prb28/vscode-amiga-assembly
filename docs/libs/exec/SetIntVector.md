@@ -12,7 +12,7 @@ SetIntVector -- set a new handler for a system interrupt vector
     struct Interrupt *SetIntVector(ULONG, struct Interrupt *);
 
 ```
-Links: [Interrupt](_OOXC) [Interrupt](_OOXC) 
+Links: [Interrupt](_008C) [Interrupt](_008C) 
 
 **FUNCTION**
 
@@ -22,9 +22,9 @@ disconnects the old one.  Installed handlers are responsible for
 processing, enabling and clearing the interrupt.  Note that interrupts
 may have been left in any state by the previous code.
 
-The IS_CODE and IS_DATA pointers of the [Interrupt](_OOXC) structure will
+The IS_CODE and IS_DATA pointers of the [Interrupt](_008C) structure will
 be copied into a private place by Exec.  A pointer to the previously
-installed [Interrupt](_OOXC) structure is returned.
+installed [Interrupt](_008C) structure is returned.
 
 When the system calls the specified interrupt code, the registers are
 setup as follows:
@@ -47,7 +47,7 @@ all other registers must be preserved
 intNum - the Paula interrupt bit number (0..14).  Only non-chained
 interrupts should be set.  Use [AddIntServer](AddIntServer) for server
 chains.
-interrupt - a pointer to an [Interrupt](_OOXC) structure containing the
+interrupt - a pointer to an [Interrupt](_008C) structure containing the
 handler's entry point and data segment pointer.  A NULL
 interrupt pointer will remove the current interrupt and
 set illegal values for IS_CODE and IS_DATA.

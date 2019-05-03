@@ -12,7 +12,7 @@ RemDevice -- remove a device from the system
     void RemDevice(struct Device *);
 
 ```
-Links: [Device](_OOXW) 
+Links: [Device](_0087) 
 
 **FUNCTION**
 
@@ -26,16 +26,16 @@ appropriate to attempt to specifically flush a certain device.
 Example:
 
 /* Attempts to flush the named device out of memory. */
-#include [&#060;exec/types.h&#062;](_OOYV)
-#include [&#060;exec/execbase.h&#062;](_OOYE)
+#include [&#060;exec/types.h&#062;](_0096)
+#include [&#060;exec/execbase.h&#062;](_009E)
 
 void FlushDevice(name)
 STRPTR name;
 {
-struct [Device](_OOXW) *result;
+struct [Device](_0087) *result;
 
 Forbid();
-if(result=(struct [Device](_OOXW) *)FindName(&#038;SysBase-&#062;DeviceList,name))
+if(result=(struct [Device](_0087) *)FindName(&#038;SysBase-&#062;DeviceList,name))
 RemDevice(result);
 Permit();
 }

@@ -12,7 +12,7 @@ FindPort -- find a given system message port
     struct MsgPort *FindPort(STRPTR);
 
 ```
-Links: [MsgPort](_OOYY) 
+Links: [MsgPort](_0099) 
 
 **FUNCTION**
 
@@ -22,14 +22,14 @@ returned.  No arbitration of the port list is done.  This function
 MUST be protected with A <a href="../Includes_and_Autodocs_2._guide/node0369.html">Forbid()/Permit() pair!
 
 EXAMPLE
-#include [&#060;exec/types.h&#062;](_OOYV)
-struct [MsgPort](_OOYY) *FindPort();
+#include [&#060;exec/types.h&#062;](_0096)
+struct [MsgPort](_0099) *FindPort();
 
 ULONG SafePutToPort(message, portname)
-struct [Message](_OOYY) *message;
+struct [Message](_0099) *message;
 STRPTR          portname;
 {
-struct [MsgPort](_OOYY) *port;
+struct [MsgPort](_0099) *port;
 
 Forbid();
 port = FindPort(portname);

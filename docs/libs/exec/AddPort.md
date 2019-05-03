@@ -12,7 +12,7 @@ AddPort -- add a public message port to the system
     void AddPort(struct MsgPort *);
 
 ```
-Links: [MsgPort](_OOYY) 
+Links: [MsgPort](_0099) 
 
 **FUNCTION**
 
@@ -35,12 +35,12 @@ to remove the port from the list (via RemPort) before deallocating
 its memory.
 
 NOTE
-A point of confusion is that clearing a [MsgPort](_OOYY) structure to all
+A point of confusion is that clearing a [MsgPort](_0099) structure to all
 zeros is not enough to prepare it for use.  As mentioned in the
-Exec chapter of the ROM Kernel Manual, the [List](_OOWD) for the [MsgPort](_OOYY)
+Exec chapter of the ROM Kernel Manual, the [List](_007D) for the [MsgPort](_0099)
 must be initialized.  This is automatically handled by AddPort(),
-and [amiga.lib/CreatePort](_OQTX).  This initialization can be done manually
-with [amiga.lib/NewList](_OQVQ) or the assembly NEWLIST macro.
+and [amiga.lib/CreatePort](_0148).  This initialization can be done manually
+with [amiga.lib/NewList](_0161) or the assembly NEWLIST macro.
 
 Do not AddPort an active port.
 
@@ -50,4 +50,4 @@ port - pointer to a message port
 
 **SEE ALSO**
 
-[RemPort](RemPort), [FindPort](FindPort), [amiga.lib/CreatePort](_OQTX), [amiga.lib/NewList](_OQVQ)
+[RemPort](RemPort), [FindPort](FindPort), [amiga.lib/CreatePort](_0148), [amiga.lib/NewList](_0161)

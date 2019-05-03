@@ -12,7 +12,7 @@ SumLibrary -- compute and check the checksum on a library
     void SumLibrary(struct Library *);
 
 ```
-Links: [Library](_OOYC) 
+Links: [Library](_009C) 
 
 **FUNCTION**
 

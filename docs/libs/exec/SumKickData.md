@@ -20,10 +20,10 @@ unchangeable by the system software.  This function is part of a
 support system to modify parts of the ROM.
 
 The ROM code is linked together at run time via ROMTags (also known
-as [Resident](_OOAO) structures, defined in [exec/resident.h](_OOAO).  These tags tell
+as [Resident](_00A0) structures, defined in [exec/resident.h](_00A0).  These tags tell
 Exec's low level boot code what subsystems exist in which regions of
 memory.  The current list of ROMTags is contained in the ResModules
-field of [ExecBase](_OOYE).  By default this list contains any ROMTags found
+field of [ExecBase](_009E).  By default this list contains any ROMTags found
 in the address ranges $F80000-$FFFFFF and $F00000-$F7FFFF.
 
 There is also a facility to selectively add or replace modules to the
@@ -32,11 +32,11 @@ occupy will be deleted from the memory free list during the boot
 process.  SumKickData() plays an important role in this run-time
 modification of the ROMTag array.
 
-Three variables in [ExecBase](_OOYE) are used in changing the ROMTag array:
+Three variables in [ExecBase](_009E) are used in changing the ROMTag array:
 KickMemPtr, KickTagPtr, and KickCheckSum. KickMemPtr points to a
-linked list of [MemEntry](_OOXY) structures. The memory that these [MemEntry](_OOXY)
+linked list of [MemEntry](_0089) structures. The memory that these [MemEntry](_0089)
 structures reference will be allocated (via AllocAbs) at boot time.
-The [MemEntry](_OOXY) structure itself must also be in the list.
+The [MemEntry](_0089) structure itself must also be in the list.
 
 KickTagPtr points to a long-word array of the same format as the
 ResModules array.  The array has a series of pointers to ROMTag
@@ -58,12 +58,12 @@ There is one more important caveat about adding ROMTags. All this
 ROMTag magic is run very early on in the system -- before expansion
 memory is added to the system. Therefore any memory in this
 additional ROMTag area must be addressable at this time. This means
-that your ROMTag code, [MemEntry](_OOXY) structures, and resident arrays
+that your ROMTag code, [MemEntry](_0089) structures, and resident arrays
 cannot be in expansion memory.  There are two regions of memory that
 are acceptable:  one is chip memory, and the other is &#034;Ranger&#034; memory
 (memory in the range between $C00000-$D80000).
 
-[Remember](_OODT) that changing an existing ROMTag entry falls into the
+[Remember](_00D4) that changing an existing ROMTag entry falls into the
 &#034;heavy magic&#034; category -- be very careful when doing it.  The odd are
 that you will blow yourself out of the water.
 

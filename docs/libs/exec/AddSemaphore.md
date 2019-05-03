@@ -12,7 +12,7 @@ AddSemaphore -- initialize then add a signal semaphore to the system
     void AddSemaphore(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_OOXR) 
+Links: [SignalSemaphore](_0082) 
 
 **FUNCTION**
 
@@ -38,12 +38,12 @@ signalSemaphore -- an signal semaphore structure
 BUGS
 Does not work in Exec &#060;V36.  Instead use this code:
 
-#include [&#060;exec/execbase.h&#062;](_OOYE)
-#include [&#060;exec/nodes.h&#062;](_OOYQ)
-extern struct [ExecBase](_OOYE) *SysBase;
+#include [&#060;exec/execbase.h&#062;](_009E)
+#include [&#060;exec/nodes.h&#062;](_0091)
+extern struct [ExecBase](_009E) *SysBase;
 ...
 void LocalAddSemaphore(s)
-struct [SignalSemaphore](_OOXR) *s;
+struct [SignalSemaphore](_0082) *s;
 {
 s-&#062;ss_Link.ln_Type=NT_SIGNALSEM;
 InitSemaphore(s);

@@ -12,7 +12,7 @@ ReleaseSemaphore -- make signal semaphore available to others
     void ReleaseSemaphore(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_OOXR) 
+Links: [SignalSemaphore](_0082) 
 
 **FUNCTION**
 

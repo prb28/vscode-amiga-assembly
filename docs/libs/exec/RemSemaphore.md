@@ -12,7 +12,7 @@ RemSemaphore -- remove a signal semaphore from the system
     void RemSemaphore(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_OOXR) 
+Links: [SignalSemaphore](_0082) 
 
 **FUNCTION**
 

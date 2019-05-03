@@ -12,7 +12,7 @@ InitSemaphore -- initialize a signal semaphore
     void InitSemaphore(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_OOXR) 
+Links: [SignalSemaphore](_0082) 
 
 **FUNCTION**
 
@@ -22,7 +22,7 @@ pointers and the semaphore counters.
 
 Semaphores are often used to protect critical data structures
 or hardware that can only be accessed by one task at a time.
-After initialization, the address of the [SignalSemaphore](_OOXR) may be
+After initialization, the address of the [SignalSemaphore](_0082) may be
 made available to any number of tasks.  Typically a task will
 try to [ObtainSemaphore](ObtainSemaphore), passing this address in.  If no other
 task owns the semaphore, then the call will lock and return
@@ -43,4 +43,4 @@ set to zero before the call)
 **SEE ALSO**
 
 [ObtainSemaphore](ObtainSemaphore), [ObtainSemaphoreShared](ObtainSemaphoreShared), [AttemptSemaphore](AttemptSemaphore),
-[ReleaseSemaphore](ReleaseSemaphore), [exec/semaphores.h](_OOXR)
+[ReleaseSemaphore](ReleaseSemaphore), [exec/semaphores.h](_0082)

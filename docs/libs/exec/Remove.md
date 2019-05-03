@@ -12,7 +12,7 @@ Remove -- remove a node from a list
     void Remove(struct Node *);
 
 ```
-Links: [Node](_OOYQ) 
+Links: [Node](_0091) 
 
 **FUNCTION**
 

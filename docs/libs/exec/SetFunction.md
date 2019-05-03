@@ -12,7 +12,7 @@ SetFunction -- change a function vector in a library
     APTR SetFunction(struct Library *,LONG,APTR);
 
 ```
-Links: [Library](_OOYC) 
+Links: [Library](_009C) 
 
 **FUNCTION**
 
