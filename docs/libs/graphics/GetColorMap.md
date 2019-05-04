@@ -13,14 +13,14 @@ GetColorMap -- allocate and initialize Colormap
     struct ColorMap *GetColorMap( ULONG);
 
 ```
-Links: [ColorMap](_OOBX) 
+Links: [ColorMap](_00B8) 
 
 **FUNCTION**
 
-Allocates, initializes and returns a pointer to a [ColorMap](_OOBX)
+Allocates, initializes and returns a pointer to a [ColorMap](_00B8)
 data structure, later enabling calls to [SetRGB4](SetRGB4)
 and [LoadRGB4](LoadRGB4) to load colors for a view port. The ColorTable
-pointer in the [ColorMap](_OOBX) structure points to a hardware
+pointer in the [ColorMap](_00B8) structure points to a hardware
 specific colormap data structure. You should not count on
 it being anything you can understand. Use [GetRGB4](GetRGB4) to
 query it or [SetRGB4CM](SetRGB4CM) to set it directly.

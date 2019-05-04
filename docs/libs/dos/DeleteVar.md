@@ -39,4 +39,4 @@ LV_VAR is the only type that can be global
 
 **SEE ALSO**
 
-[GetVar](GetVar), [SetVar](SetVar), [FindVar](FindVar), [DeleteFile](DeleteFile), [&#060;dos/var.h&#062;](_OOWS)
+[GetVar](GetVar), [SetVar](SetVar), [FindVar](FindVar), [DeleteFile](DeleteFile), [&#060;dos/var.h&#062;](_0073)

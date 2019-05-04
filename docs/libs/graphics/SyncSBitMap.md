@@ -1,8 +1,8 @@
 
 **NAME**
 
-SyncSBitMap --   Syncronize Super [BitMap](_OOAV) with whatever is
-in the standard [Layer](_OOAQ) bounds.
+SyncSBitMap --   Syncronize Super [BitMap](_00A6) with whatever is
+in the standard [Layer](_00A1) bounds.
 
 **SYNOPSIS**
 
@@ -13,19 +13,19 @@ in the standard [Layer](_OOAQ) bounds.
     void SyncSBitMap( struct Layer * );
 
 ```
-Links: [Layer](_OOAQ) 
+Links: [Layer](_00A1) 
 
 **FUNCTION**
 
-Copy all bits from ClipRects in [Layer](_OOAQ) into Super [BitMap](_OOAV)
-[BitMap](_OOAV).  This is used for those functions that do not
-want to deal with the [ClipRect](_OOAQ) structures but do want
-to be able to work with a SuperBitMap [Layer](_OOAQ).
+Copy all bits from ClipRects in [Layer](_00A1) into Super [BitMap](_00A6)
+[BitMap](_00A6).  This is used for those functions that do not
+want to deal with the [ClipRect](_00A1) structures but do want
+to be able to work with a SuperBitMap [Layer](_00A1).
 
 **INPUTS**
 
-layer - pointer to a [Layer](_OOAQ) that has a SuperBitMap
-The [Layer](_OOAQ) should already be locked by the caller.
+layer - pointer to a [Layer](_00A1) that has a SuperBitMap
+The [Layer](_00A1) should already be locked by the caller.
 
 RESULT
 After calling this function, the programmer can manipulate
@@ -37,4 +37,4 @@ BUGS
 
 **SEE ALSO**
 
-[CopySBitMap](CopySBitMap) [graphics/clip.h](_OOAQ)
+[CopySBitMap](CopySBitMap) [graphics/clip.h](_00A1)

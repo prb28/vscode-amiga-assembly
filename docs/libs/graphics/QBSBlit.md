@@ -14,7 +14,7 @@ QBSBlit -- Synchronize the blitter request with the video beam.
     void QBSBlit( struct bltnode * );
 
 ```
-Links: [bltnode](_OOCC) 
+Links: [bltnode](_00CC) 
 
 **FUNCTION**
 
@@ -47,4 +47,4 @@ some interdependencies with the beam syncing.
 
 **SEE ALSO**
 
-[QBlit](QBlit) [hardware/blit.h](_OOCC)
+[QBlit](QBlit) [hardware/blit.h](_00CC)

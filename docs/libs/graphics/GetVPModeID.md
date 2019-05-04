@@ -1,7 +1,7 @@
 
 **NAME**
 
-GetVPModeID -- get the 32 bit DisplayID from a [ViewPort](_OOBX). (V36)
+GetVPModeID -- get the 32 bit DisplayID from a [ViewPort](_00B8). (V36)
 
 **SYNOPSIS**
 
@@ -12,28 +12,28 @@ GetVPModeID -- get the 32 bit DisplayID from a [ViewPort](_OOBX). (V36)
     ULONG GetVPModeID( struct ViewPort *);
 
 ```
-Links: [ViewPort](_OOBX) 
+Links: [ViewPort](_00B8) 
 
 **FUNCTION**
 
 returns the normal display modeID, if one is currently  associated
-with this [ViewPort](_OOBX).
+with this [ViewPort](_00B8).
 
 **INPUTS**
 
-vp -- pointer to a [ViewPort](_OOBX) structure.
+vp -- pointer to a [ViewPort](_00B8) structure.
 
 RESULT
 
 modeID -- a 32 bit DisplayInfoRecord identifier associated with
-this [ViewPort](_OOBX), or INVALID_ID.
+this [ViewPort](_00B8), or INVALID_ID.
 
 NOTES
 Test the return value of this function against INVALID_ID, not NULL.
-(INVALID_ID is defined in [graphics/displayinfo.h](_OOBD).
+(INVALID_ID is defined in [graphics/displayinfo.h](_00BD).
 
 BUGS
 
 **SEE ALSO**
 
-[graphics/displayinfo.h](_OOBD), [ModeNotAvailable](ModeNotAvailable)
+[graphics/displayinfo.h](_00BD), [ModeNotAvailable](ModeNotAvailable)

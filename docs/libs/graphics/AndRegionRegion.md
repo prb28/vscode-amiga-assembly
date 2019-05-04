@@ -13,7 +13,7 @@ with second region, leaving result in second region.
     BOOL AndRegionRegion(struct Region *, struct Region * );
 
 ```
-Links: [Region](_OOBW) [Region](_OOBW) 
+Links: [Region](_00B7) [Region](_00B7) 
 
 **FUNCTION**
 
@@ -21,8 +21,8 @@ Remove any portion of region2 that is not in region1.
 
 **INPUTS**
 
-region1 - pointer to [Region](_OOBW) structure
-region2 - pointer to [Region](_OOBW) structure to use and for result
+region1 - pointer to [Region](_00B7) structure
+region2 - pointer to [Region](_00B7) structure to use and for result
 
 **RESULTS**
 
@@ -33,4 +33,4 @@ BUGS
 
 **SEE ALSO**
 
-[OrRegionRegion](OrRegionRegion) [AndRectRegion](AndRectRegion) [graphics/regions.h](_OOBW)
+[OrRegionRegion](OrRegionRegion) [AndRectRegion](AndRectRegion) [graphics/regions.h](_00B7)

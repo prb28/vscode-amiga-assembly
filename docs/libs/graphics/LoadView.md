@@ -13,7 +13,7 @@ list to create the current display.
     void LoadView( struct View * );
 
 ```
-Links: [View](_OOBX) [View](_OOBX) 
+Links: [View](_00B8) [View](_00B8) 
 
 **FUNCTION**
 
@@ -24,16 +24,16 @@ Coprocessor instruction list has been created by
 
 **INPUTS**
 
-[View](_OOBX) - a pointer to the [View](_OOBX) structure which contains the
+[View](_00B8) - a pointer to the [View](_00B8) structure which contains the
 pointer to the constructed coprocessor instructions list, or NULL.
 
 RESULT
-If the [View](_OOBX) pointer is non-NULL, the new [View](_OOBX) is displayed,
+If the [View](_00B8) pointer is non-NULL, the new [View](_00B8) is displayed,
 according to your instructions.  The vertical blank routine
 will pick this pointer up and direct the copper to start
-displaying this [View](_OOBX).
+displaying this [View](_00B8).
 
-If the [View](_OOBX) pointer is NULL, no [View](_OOBX) is displayed.
+If the [View](_00B8) pointer is NULL, no [View](_00B8) is displayed.
 
 NOTE
 Even though a LoadView(NULL) is performed, display DMA will still be
@@ -44,5 +44,5 @@ BUGS
 
 **SEE ALSO**
 
-[InitVPort](InitVPort) [MakeVPort](MakeVPort) [MrgCop](MrgCop) [intuition/RethinkDisplay](_ORTB)
-[graphics/view.h](_OOBX)
+[InitVPort](InitVPort) [MakeVPort](MakeVPort) [MrgCop](MrgCop) [intuition/RethinkDisplay](../intuition/RethinkDisplay)
+[graphics/view.h](_00B8)

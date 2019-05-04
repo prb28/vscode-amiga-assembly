@@ -1,7 +1,7 @@
 
 **NAME**
 
-FindDosEntry -- Finds a specific Dos [List](_OOWD) entry (V36)
+FindDosEntry -- Finds a specific Dos [List](_007D) entry (V36)
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@ FindDosEntry -- Finds a specific Dos [List](_OOWD) entry (V36)
     struct DosList *FindDosEntry(struct DosList *,STRPTR,ULONG)
 
 ```
-Links: [DosList](_OOWX) [DosList](_OOWX) 
+Links: [DosList](_0078) [DosList](_0078) 
 
 **FUNCTION**
 

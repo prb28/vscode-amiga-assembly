@@ -21,7 +21,7 @@ NewLoadSeg -- Improved version of [LoadSeg](LoadSeg) for stacksizes (V36)
     BPTR NewLoadSegTags(STRPTR, ...)
 
 ```
-Links: [TagItem](_OQRE) [TagItem](_OQRE) 
+Links: [TagItem](_012E) [TagItem](_012E) 
 
 **FUNCTION**
 

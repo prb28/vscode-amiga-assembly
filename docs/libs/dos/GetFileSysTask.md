@@ -12,7 +12,7 @@ GetFileSysTask -- Returns the default filesystem for the process (V36)
     struct MsgPort *GetFileSysTask(void)
 
 ```
-Links: [MsgPort](_OOYY) 
+Links: [MsgPort](_0099) 
 
 **FUNCTION**
 

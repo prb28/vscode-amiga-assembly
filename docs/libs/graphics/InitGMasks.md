@@ -1,7 +1,7 @@
 
 **NAME**
 
-InitGMasks -- Initialize all of the masks of an [AnimOb](_OOCS).
+InitGMasks -- Initialize all of the masks of an [AnimOb](_00C3).
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@ InitGMasks -- Initialize all of the masks of an [AnimOb](_OOCS).
     void InitGMasks(struct AnimOb *);
 
 ```
-Links: [AnimOb](_OOCS) 
+Links: [AnimOb](_00C3) 
 
 **FUNCTION**
 
@@ -20,10 +20,10 @@ For every sequence of every component call [InitMasks](InitMasks).
 
 **INPUTS**
 
-anOb = pointer to the [AnimOb](_OOCS)
+anOb = pointer to the [AnimOb](_00C3)
 
 BUGS
 
 **SEE ALSO**
 
-[InitMasks](InitMasks) [graphics/gels.h](_OOCS)
+[InitMasks](InitMasks) [graphics/gels.h](_00C3)

@@ -12,7 +12,7 @@ DoCollision -- Test every gel in gel list for collisions.
     void DoCollision(struct RastPort *);
 
 ```
-Links: [RastPort](_OOAF) 
+Links: [RastPort](_00AF) 
 
 **FUNCTION**
 
@@ -25,7 +25,7 @@ The system routine [SortGList](SortGList) performs this function for the user.
 
 **INPUTS**
 
-rp = pointer to a [RastPort](_OOAF)
+rp = pointer to a [RastPort](_00AF)
 
 RESULT
 
@@ -33,4 +33,4 @@ BUGS
 
 **SEE ALSO**
 
-[InitGels](InitGels)  [SortGList](SortGList)  [graphics/gels.h](_OOCS)  [graphics/gels.h](_OOCS)
+[InitGels](InitGels)  [SortGList](SortGList)  [graphics/gels.h](_00C3)  [graphics/gels.h](_00C3)

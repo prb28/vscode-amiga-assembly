@@ -12,7 +12,7 @@ ChangeSprite -- Change the sprite image pointer.
     void ChangeSprite(struct ViewPort *, struct SimpleSprite *, void * )
 
 ```
-Links: [ViewPort](_OOBX) [SimpleSprite](_OOCU) 
+Links: [ViewPort](_00B8) [SimpleSprite](_00C5) 
 
 **FUNCTION**
 
@@ -20,9 +20,9 @@ The sprite image is changed to use the data starting at newdata
 
 **INPUTS**
 
-vp - pointer to [ViewPort](_OOBX) structure that this sprite is
-relative to,  or 0 if relative only top of [View](_OOBX)
-s - pointer to [SimpleSprite](_OOCU) structure
+vp - pointer to [ViewPort](_00B8) structure that this sprite is
+relative to,  or 0 if relative only top of [View](_00B8)
+s - pointer to [SimpleSprite](_00C5) structure
 newdata - pointer to data structure of the following form.
 struct spriteimage
 {
@@ -32,7 +32,7 @@ UWORD    reserved[2];       /* initialized to */
 /*  0x0,0x0 */
 };
 The programmer must initialize reserved[2].  Spriteimage must be
-in CHIP memory. The height subfield of the [SimpleSprite](_OOCU) structure
+in CHIP memory. The height subfield of the [SimpleSprite](_00C5) structure
 must be set to reflect the height of the new spriteimage BEFORE
 calling ChangeSprite(). The programmer may allocate two sprites to
 handle a single attached sprite.  After [GetSprite](GetSprite), ChangeSprite(),
@@ -48,4 +48,4 @@ BUGS
 
 **SEE ALSO**
 
-[FreeSprite](FreeSprite) ChangeSprite() [MoveSprite](MoveSprite) [AddVSprite](AddVSprite) [graphics/sprite.h](_OOCU)
+[FreeSprite](FreeSprite) ChangeSprite() [MoveSprite](MoveSprite) [AddVSprite](AddVSprite) [graphics/sprite.h](_00C5)

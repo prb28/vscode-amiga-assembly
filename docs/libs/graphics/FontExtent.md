@@ -12,7 +12,7 @@ FontExtent -- get the font attributes of the current font (V36)
     void FontExtent(struct TextFont *, struct TextExtent *);
 
 ```
-Links: [TextFont](_OOAX) [TextExtent](_OOAX) 
+Links: [TextFont](_00A8) [TextExtent](_00A8) 
 
 **FUNCTION**
 
@@ -21,14 +21,14 @@ This function fills the text extent structure with a bounding
 
 **INPUTS**
 
-font       - the [TextFont](_OOAX) from which the font metrics are extracted.
-fontExtent - the [TextExtent](_OOAX) structure to be filled.
+font       - the [TextFont](_00A8) from which the font metrics are extracted.
+fontExtent - the [TextExtent](_00A8) structure to be filled.
 
 RESULT
 fontExtent is filled.
 
 NOTES
-The [TextFont](_OOAX), not the [RastPort](_OOAF), is specified -- unlike
+The [TextFont](_00A8), not the [RastPort](_00AF), is specified -- unlike
 [TextExtent](TextExtent), effect of algorithmic enhancements is not
 included, nor does te_Width include any effect of
 rp_TxSpacing.  The returned te_Width will be negative only
@@ -40,4 +40,4 @@ be reflected in the bounding extent.
 
 **SEE ALSO**
 
-[TextExtent](TextExtent)  [graphics/text.h](_OOAX)
+[TextExtent](TextExtent)  [graphics/text.h](_00A8)

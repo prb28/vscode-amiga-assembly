@@ -21,7 +21,7 @@ SystemTagList -- Have a shell execute a command line (V36)
     LONG SystemTags(STRPTR, ULONG, ...)
 
 ```
-Links: [TagItem](_OQRE) [TagItem](_OQRE) 
+Links: [TagItem](_012E) [TagItem](_012E) 
 
 **FUNCTION**
 
@@ -54,7 +54,7 @@ things like priority, etc for the new process.
 **INPUTS**
 
 command - Program and arguments
-tags    - see [&#060;dos/dostags.h&#062;](_OOVD).  Note that both SystemTagList()-
+tags    - see [&#060;dos/dostags.h&#062;](_006D).  Note that both SystemTagList()-
 specific tags and tags from [CreateNewProc](CreateNewProc) may be passed.
 
 RESULT
@@ -64,4 +64,4 @@ things passed in via tags.
 
 **SEE ALSO**
 
-[Execute](Execute), [CreateNewProc](CreateNewProc), [&#060;dos/dostags.h&#062;](_OOVD), [Input](Input), [Output](Output)
+[Execute](Execute), [CreateNewProc](CreateNewProc), [&#060;dos/dostags.h&#062;](_006D), [Input](Input), [Output](Output)

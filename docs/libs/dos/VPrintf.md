@@ -23,12 +23,12 @@ assumed to handle all internal buffering so that the formatting string
 and resultant formatted values can be arbitrarily long.  Any secondary
 error code is returned in [IoErr](IoErr).  This routine is buffered.
 
-Note: [RawDoFmt](_OSVC) assumes 16 bit ints, so you will usually need 'l's in
+Note: [RawDoFmt](../exec/RawDoFmt) assumes 16 bit ints, so you will usually need 'l's in
 your formats (ex: %ld versus %d).
 
 **INPUTS**
 
-fmt   - exec.library [RawDoFmt](_OSVC) style formatting string
+fmt   - exec.library [RawDoFmt](../exec/RawDoFmt) style formatting string
 argv  - Pointer to array of formatting values
 
 RESULT
@@ -41,4 +41,4 @@ that generates fds, prototypes, and amiga.lib stubs.
 
 **SEE ALSO**
 
-[VFPrintf](VFPrintf), [VFWritef](VFWritef), [RawDoFmt](_OSVC), [FPutC](FPutC)
+[VFPrintf](VFPrintf), [VFWritef](VFWritef), [RawDoFmt](../exec/RawDoFmt), [FPutC](FPutC)

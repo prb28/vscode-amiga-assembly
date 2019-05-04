@@ -36,4 +36,4 @@ BUGS
 
 **SEE ALSO**
 
-[GetSprite](GetSprite) [ChangeSprite](ChangeSprite) [MoveSprite](MoveSprite) [graphics/sprite.h](_OOCU)
+[GetSprite](GetSprite) [ChangeSprite](ChangeSprite) [MoveSprite](MoveSprite) [graphics/sprite.h](_00C5)

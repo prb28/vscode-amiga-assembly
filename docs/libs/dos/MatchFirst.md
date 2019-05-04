@@ -12,22 +12,22 @@ MatchFirst -- Finds file that matches pattern (V36)
     LONG MatchFirst(STRPTR, struct AnchorPath *)
 
 ```
-Links: [AnchorPath](_OOWO) 
+Links: [AnchorPath](_0070) 
 
 **FUNCTION**
 
 Locates the first file or directory that matches a given pattern.
 MatchFirst() is passed your pattern (you do not pass it through
 [ParsePattern](ParsePattern) - MatchFirst() does that for you), and the control
-structure.  MatchFirst() normally initializes your [AnchorPath](_OOWO)
+structure.  MatchFirst() normally initializes your [AnchorPath](_0070)
 structure for you, and returns the first file that matched your
 pattern, or an error.  Note that <a href="../Includes_and_Autodocs_2._guide/node02CE.html">MatchFirst()/MatchNext() are unusual
 for Dos in that they return 0 for success, or the error code (see
-[&#060;dos/dos.h&#062;](_OOVX)), instead of the application getting the error code
+[&#060;dos/dos.h&#062;](_0068)), instead of the application getting the error code
 from [IoErr](IoErr).
 
 When looking at the result of <a href="../Includes_and_Autodocs_2._guide/node02CE.html">MatchFirst()/MatchNext(), the ap_Info
-field of your [AnchorPath](_OOWO) has the results of an [Examine](Examine) of the object.
+field of your [AnchorPath](_0070) has the results of an [Examine](Examine) of the object.
 You normally get the name of the object from fib_FileName, and the
 directory it's in from ap_Current-&#062;an_Lock.  To access this object,
 normally you would temporarily [CurrentDir](CurrentDir) to the lock, do an action
@@ -36,7 +36,7 @@ This makes certain you affect the right object even when two volumes
 of the same name are in the system.  You can use ap_Buf (with
 ap_Strlen) to get a name to report to the user.
 
-To initialize the [AnchorPath](_OOWO) structure (particularily when reusing
+To initialize the [AnchorPath](_0070) structure (particularily when reusing
 it), set ap_BreakBits to the signal bits (CDEF) that you want to take
 a break on, or NULL, if you don't want to convenience the user.
 ap_Flags should be set to any flags you need or all 0's otherwise.
@@ -64,7 +64,7 @@ See [ParsePattern](ParsePattern) for more information on the patterns.
 **INPUTS**
 
 pat        - Pattern to search for
-[AnchorPath](_OOWO) - Place holder for search.  MUST be longword aligned!
+[AnchorPath](_0070) - Place holder for search.  MUST be longword aligned!
 
 RESULT
 error - 0 for success or error code.  (Opposite of most Dos calls!)
@@ -90,4 +90,4 @@ release.
 **SEE ALSO**
 
 [MatchNext](MatchNext), [ParsePattern](ParsePattern), [Examine](Examine), [CurrentDir](CurrentDir), [Examine](Examine),
-[MatchEnd](MatchEnd), [ExNext](ExNext), [&#060;dos/dosasl.h&#062;](_OOWO)
+[MatchEnd](MatchEnd), [ExNext](ExNext), [&#060;dos/dosasl.h&#062;](_0070)

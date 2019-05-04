@@ -1,7 +1,7 @@
 
 **NAME**
 
-GetGBuffers -- Attempt to allocate ALL buffers of an entire [AnimOb](_OOCS).
+GetGBuffers -- Attempt to allocate ALL buffers of an entire [AnimOb](_00C3).
 
 **SYNOPSIS**
 
@@ -12,22 +12,22 @@ GetGBuffers -- Attempt to allocate ALL buffers of an entire [AnimOb](_OOCS).
     BOOL GetGBuffers(struct AnimOb *, struct RastPort *, BOOL);
 
 ```
-Links: [AnimOb](_OOCS) [RastPort](_OOAF) 
+Links: [AnimOb](_00C3) [RastPort](_00AF) 
 
 **FUNCTION**
 
-For each sequence of each component of the [AnimOb](_OOCS), allocate memory for:
+For each sequence of each component of the [AnimOb](_00C3), allocate memory for:
 SaveBuffer
 BorderLine
 CollMask and ImageShadow (point to same buffer)
 if db is set TRUE (user wants double-buffering) allocate:
-[DBufPacket](_OOCS)
+[DBufPacket](_00C3)
 BufBuffer
 
 **INPUTS**
 
-anOb = pointer to the [AnimOb](_OOCS) structure
-rp   = pointer to the current [RastPort](_OOAF)
+anOb = pointer to the [AnimOb](_00C3) structure
+rp   = pointer to the current [RastPort](_00AF)
 db   = double-buffer indicator (set TRUE for double-buffering)
 
 RESULT
@@ -39,4 +39,4 @@ allocations that did succeed.
 
 **SEE ALSO**
 
-[FreeGBuffers](FreeGBuffers) [graphics/gels.h](_OOCS)
+[FreeGBuffers](FreeGBuffers) [graphics/gels.h](_00C3)

@@ -27,7 +27,7 @@ is buffered.
 **INPUTS**
 
 fh    - Filehandle to write to
-fmt   - [RawDoFmt](_OSVC) style formatting string
+fmt   - [RawDoFmt](../exec/RawDoFmt) style formatting string
 argv  - Pointer to array of formatting values
 
 RESULT
@@ -40,4 +40,4 @@ that generates fds, prototypes, and amiga.lib stubs.
 
 **SEE ALSO**
 
-[VPrintf](VPrintf), [VFWritef](VFWritef), [RawDoFmt](_OSVC), [FPutC](FPutC)
+[VPrintf](VPrintf), [VFWritef](VFWritef), [RawDoFmt](../exec/RawDoFmt), [FPutC](FPutC)

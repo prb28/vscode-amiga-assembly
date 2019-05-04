@@ -1,7 +1,7 @@
 
 **NAME**
 
-MakeDosEntry -- Creates a [DosList](_OOWX) structure (V36)
+MakeDosEntry -- Creates a [DosList](_0078) structure (V36)
 
 **SYNOPSIS**
 
@@ -12,11 +12,11 @@ MakeDosEntry -- Creates a [DosList](_OOWX) structure (V36)
     struct DosList *MakeDosEntry(STRPTR, LONG)
 
 ```
-Links: [DosList](_OOWX) 
+Links: [DosList](_0078) 
 
 **FUNCTION**
 
-Create a [DosList](_OOWX) structure, including allocating a name and correctly
+Create a [DosList](_0078) structure, including allocating a name and correctly
 null-terminating the BSTR.  It also sets the dol_Type field, and sets
 all other fields to 0.  This routine should be eliminated and replaced
 by a value passed to AllocDosObject()!

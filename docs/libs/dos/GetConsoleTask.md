@@ -12,7 +12,7 @@ GetConsoleTask -- Returns the default console for the process (V36)
     struct MsgPort *GetConsoleTask(void)
 
 ```
-Links: [MsgPort](_OOYY) 
+Links: [MsgPort](_0099) 
 
 **FUNCTION**
 

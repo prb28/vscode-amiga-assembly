@@ -19,7 +19,7 @@ and type (stored in seg_UC - normally 0).  NOTE: currently unused
 types may cause it to interpret other registers (d4-?) as additional
 parameters in the future.
 
-Do NOT build [Segment](_OOWX) structures yourself!
+Do NOT build [Segment](_0078) structures yourself!
 
 **INPUTS**
 

@@ -14,7 +14,7 @@ InitArea -- Initialize vector collection matrix
     void InitArea(struct AreaInfo *, void *, SHORT);
 
 ```
-Links: [AreaInfo](_OOAF) 
+Links: [AreaInfo](_00AF) 
 
 **FUNCTION**
 
@@ -29,7 +29,7 @@ too many vectors going into the buffer they will return -1.
 
 **INPUTS**
 
-areainfo - pointer to [AreaInfo](_OOAF) structure
+areainfo - pointer to [AreaInfo](_00AF) structure
 buffer - pointer to chunk of memory to collect vertices
 maxvectors - max number of vectors this buffer can hold
 
@@ -41,4 +41,4 @@ BUGS
 
 **SEE ALSO**
 
-[AreaEnd](AreaEnd) [AreaMove](AreaMove) [AreaDraw](AreaDraw) [AreaEllipse](AreaEllipse) [graphics/rastport.h](_OOAF)
+[AreaEnd](AreaEnd) [AreaMove](AreaMove) [AreaDraw](AreaDraw) [AreaEllipse](AreaEllipse) [graphics/rastport.h](_00AF)

@@ -12,7 +12,7 @@ MrgCop -- Merge together coprocessor instructions.
     void MrgCop( struct View * );
 
 ```
-Links: [View](_OOBX) [View](_OOBX) 
+Links: [View](_00B8) [View](_00B8) 
 
 **FUNCTION**
 
@@ -33,7 +33,7 @@ depend on this! Each list must be terminated using CEND(copperlist).
 
 **INPUTS**
 
-[View](_OOBX) - a pointer to the view structure whose coprocessor
+[View](_00B8) - a pointer to the view structure whose coprocessor
 instructions are to be merged.
 
 RESULT
@@ -46,5 +46,5 @@ BUGS
 
 **SEE ALSO**
 
-[InitVPort](InitVPort) [MakeVPort](MakeVPort) [LoadView](LoadView) [graphics/view.h](_OOBX)
+[InitVPort](InitVPort) [MakeVPort](MakeVPort) [LoadView](LoadView) [graphics/view.h](_00B8)
 [intuition.library/RethinkDisplay](../intuition/RethinkDisplay)

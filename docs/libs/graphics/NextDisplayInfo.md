@@ -34,4 +34,4 @@ BUGS
 **SEE ALSO**
 
 [FindDisplayInfo](FindDisplayInfo), [GetDisplayInfoData](GetDisplayInfoData)
-[graphics/displayinfo.h](_OOBD)
+[graphics/displayinfo.h](_00BD)

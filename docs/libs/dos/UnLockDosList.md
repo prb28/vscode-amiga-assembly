@@ -1,7 +1,7 @@
 
 **NAME**
 
-UnLockDosList -- Unlocks the Dos [List](_OOWD) (V36)
+UnLockDosList -- Unlocks the Dos [List](_007D) (V36)
 
 **SYNOPSIS**
 
@@ -14,7 +14,7 @@ UnLockDosList -- Unlocks the Dos [List](_OOWD) (V36)
 ```
 **FUNCTION**
 
-Unlocks the access on the Dos [Device](_OOXW) [List](_OOWD).  You MUST pass the same
+Unlocks the access on the Dos [Device](_0087) [List](_007D).  You MUST pass the same
 flags you used to lock the list.
 
 **INPUTS**
@@ -23,4 +23,4 @@ flags - MUST be the same flags passed to (Attempt)LockDosList()
 
 **SEE ALSO**
 
-[AttemptLockDosList](AttemptLockDosList), [LockDosList](LockDosList), [Permit](_OSVY)
+[AttemptLockDosList](AttemptLockDosList), [LockDosList](LockDosList), [Permit](../exec/Permit)

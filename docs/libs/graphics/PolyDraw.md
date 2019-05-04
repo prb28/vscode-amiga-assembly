@@ -12,7 +12,7 @@ PolyDraw -- Draw lines from table of (x,y) values.
     void PolyDraw( struct RastPort *, WORD, WORD * );
 
 ```
-Links: [RastPort](_OOAF) 
+Links: [RastPort](_00AF) 
 
 **FUNCTION**
 
@@ -21,7 +21,7 @@ it and every successive pair.
 
 **INPUTS**
 
-rp - pointer to [RastPort](_OOAF) structure
+rp - pointer to [RastPort](_00AF) structure
 count -  number of (x,y) pairs in the array
 array - pointer to first (x,y) pair
 
@@ -29,4 +29,4 @@ BUGS
 
 **SEE ALSO**
 
-[Draw](Draw) [Move](Move) [graphics/rastport.h](_OOAF)
+[Draw](Draw) [Move](Move) [graphics/rastport.h](_00AF)

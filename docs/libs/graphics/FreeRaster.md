@@ -34,4 +34,4 @@ called [AllocRaster](AllocRaster) in the first place.
 
 **SEE ALSO**
 
-[AllocRaster](AllocRaster) [graphics/gfx.h](_OOAV)
+[AllocRaster](AllocRaster) [graphics/gfx.h](_00A6)

@@ -12,7 +12,7 @@ Cli -- Returns a pointer to the CLI structure of the process (V36)
     struct CommandLineInterface *Cli(void)
 
 ```
-Links: [CommandLineInterface](_OOWX) 
+Links: [CommandLineInterface](_0078) 
 
 **FUNCTION**
 

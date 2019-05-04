@@ -12,7 +12,7 @@ UnLockRecords -- Unlock a list of records (V36)
     BOOL UnLockRecords(struct RecordLock *)
 
 ```
-Links: [RecordLock](_OOVS) 
+Links: [RecordLock](_0063) 
 
 **FUNCTION**
 
@@ -23,7 +23,7 @@ UnLockRecords() call.
 
 **INPUTS**
 
-record_array - [List](_OOWD) of records to be unlocked
+record_array - [List](_007D) of records to be unlocked
 
 RESULT
 success      - Success or failure.

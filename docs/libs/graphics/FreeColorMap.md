@@ -1,7 +1,7 @@
 
 **NAME**
 
-FreeColorMap -- Free the [ColorMap](_OOBX) structure and return memory
+FreeColorMap -- Free the [ColorMap](_00B8) structure and return memory
 to free memory pool.
 
 **SYNOPSIS**
@@ -13,7 +13,7 @@ to free memory pool.
     void FreeColorMap(struct ColorMap *);
 
 ```
-Links: [ColorMap](_OOBX) 
+Links: [ColorMap](_00B8) 
 
 **FUNCTION**
 
@@ -22,7 +22,7 @@ with [GetColorMap](GetColorMap).
 
 **INPUTS**
 
-colormap - pointer to [ColorMap](_OOBX) allocated with [GetColorMap](GetColorMap)
+colormap - pointer to [ColorMap](_00B8) allocated with [GetColorMap](GetColorMap)
 
 RESULT
 The space is made available for others to use.
@@ -31,4 +31,4 @@ BUGS
 
 **SEE ALSO**
 
-[SetRGB4](SetRGB4) [GetColorMap](GetColorMap) [graphics/view.h](_OOBX)
+[SetRGB4](SetRGB4) [GetColorMap](GetColorMap) [graphics/view.h](_00B8)

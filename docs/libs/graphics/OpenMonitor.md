@@ -1,7 +1,7 @@
 
 **NAME**
 
-OpenMonitor -- open a named [MonitorSpec](_OOAW) (V36)
+OpenMonitor -- open a named [MonitorSpec](_00A7) (V36)
 
 **SYNOPSIS**
 
@@ -12,11 +12,11 @@ OpenMonitor -- open a named [MonitorSpec](_OOAW) (V36)
     struct MonitorSpec *OpenMonitor( char *, ULONG );
 
 ```
-Links: [MonitorSpec](_OOAW) 
+Links: [MonitorSpec](_00A7) 
 
 **FUNCTION**
 
-Locate and open a named [MonitorSpec](_OOAW).
+Locate and open a named [MonitorSpec](_00A7).
 
 **INPUTS**
 
@@ -25,8 +25,8 @@ display_id - an optional 32 bit monitor/mode identifier
 
 **RESULTS**
 
-mspc - a pointer to an open [MonitorSpec](_OOAW) structure.
-NULL if [MonitorSpec](_OOAW) could not  be opened.
+mspc - a pointer to an open [MonitorSpec](_00A7) structure.
+NULL if [MonitorSpec](_00A7) could not  be opened.
 
 NOTE
 if monitor_name is non-NULL, the monitor will be opened by name.
@@ -37,4 +37,4 @@ BUGS
 
 **SEE ALSO**
 
-[CloseMonitor](CloseMonitor) [graphics/monitor.h](_OOAW)
+[CloseMonitor](CloseMonitor) [graphics/monitor.h](_00A7)

@@ -12,24 +12,24 @@ Text -- Write text characters (no formatting).
     void Text(struct RastPort *, STRPTR, WORD);
 
 ```
-Links: [RastPort](_OOAF) 
+Links: [RastPort](_00AF) 
 
 **FUNCTION**
 
 This graphics function writes printable text characters to the
-specified [RastPort](_OOAF) at the current position.  No control meaning
+specified [RastPort](_00AF) at the current position.  No control meaning
 is applied to any of the characters, thus only text on the
 current line is output.
 
-The current position in the [RastPort](_OOAF) is updated to the next
+The current position in the [RastPort](_00AF) is updated to the next
 character position.
-If the characters displayed run past the [RastPort](_OOAF) boundary,
+If the characters displayed run past the [RastPort](_00AF) boundary,
 the current position is truncated to the boundary, and
 thus does not equal the old position plus the text length.
 
 **INPUTS**
 
-rp     - a pointer to the [RastPort](_OOAF) which describes where the
+rp     - a pointer to the [RastPort](_00AF) which describes where the
 text is to be output
 string - the address of string to output
 length - the number of characters in the string.
@@ -51,4 +51,4 @@ will be (inappropriately) clipped.
 
 **SEE ALSO**
 
-[Move](Move)  [TextLength](TextLength)  [graphics/text.h](_OOAX)  [graphics/rastport.h](_OOAF)
+[Move](Move)  [TextLength](TextLength)  [graphics/text.h](_00A8)  [graphics/rastport.h](_00AF)

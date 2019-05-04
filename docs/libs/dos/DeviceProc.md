@@ -1,7 +1,7 @@
 
 **NAME**
 
-DeviceProc -- Return the process [MsgPort](_OOYY) of specific I/O handler
+DeviceProc -- Return the process [MsgPort](_0099) of specific I/O handler
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@ DeviceProc -- Return the process [MsgPort](_OOYY) of specific I/O handler
     struct MsgPort *DeviceProc (STRPTR)
 
 ```
-Links: [MsgPort](_OOYY) 
+Links: [MsgPort](_0099) 
 
 **FUNCTION**
 

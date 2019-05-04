@@ -12,7 +12,7 @@ FreeDeviceProc -- Releases port returned by [GetDeviceProc](GetDeviceProc) (V36)
     void FreeDeviceProc(struct DevProc *)
 
 ```
-Links: [DevProc](_OOWX) 
+Links: [DevProc](_0078) 
 
 **FUNCTION**
 

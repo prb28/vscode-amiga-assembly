@@ -12,7 +12,7 @@ AttemptLockDosList -- Attempt to lock the Dos Lists for use (V36)
     struct DosList *AttemptLockDosList(ULONG)
 
 ```
-Links: [DosList](_OOWX) 
+Links: [DosList](_0078) 
 
 **FUNCTION**
 
@@ -30,4 +30,4 @@ node!
 
 **SEE ALSO**
 
-[LockDosList](LockDosList), [UnLockDosList](UnLockDosList), [Forbid](_OSUS), [NextDosEntry](NextDosEntry)
+[LockDosList](LockDosList), [UnLockDosList](UnLockDosList), [Forbid](../exec/Forbid), [NextDosEntry](NextDosEntry)

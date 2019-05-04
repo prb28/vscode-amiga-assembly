@@ -1,7 +1,7 @@
 
 **NAME**
 
-SetFont -- Set the text font and attributes in a [RastPort](_OOAF).
+SetFont -- Set the text font and attributes in a [RastPort](_00AF).
 
 **SYNOPSIS**
 
@@ -12,29 +12,29 @@ SetFont -- Set the text font and attributes in a [RastPort](_OOAF).
     void SetFont(struct RastPort *, struct TextFont *);
 
 ```
-Links: [RastPort](_OOAF) [TextFont](_OOAX) 
+Links: [RastPort](_00AF) [TextFont](_00A8) 
 
 **FUNCTION**
 
-This function sets the font in the [RastPort](_OOAF) to that described
+This function sets the font in the [RastPort](_00AF) to that described
 by font, and updates the text attributes to reflect that
 change.  This function clears the effect of any previous
 soft styles.
 
 **INPUTS**
 
-rp   - the [RastPort](_OOAF) in which the text attributes are to be changed
-font - pointer to a [TextFont](_OOAX) structure returned from [OpenFont](OpenFont)
-or [OpenDiskFont](_OQFW)
+rp   - the [RastPort](_00AF) in which the text attributes are to be changed
+font - pointer to a [TextFont](_00A8) structure returned from [OpenFont](OpenFont)
+or [OpenDiskFont](../diskfont/OpenDiskFont)
 
 RESULT
 
 NOTES
 This function had previously been documented that it would
 accept a null font.  This practice is discouraged.
-o   Use of a [RastPort](_OOAF) with a null font with text routines has
+o   Use of a [RastPort](_00AF) with a null font with text routines has
 always been incorrect and risked the guru.
-o   Keeping an obsolete font pointer in the [RastPort](_OOAF) is no more
+o   Keeping an obsolete font pointer in the [RastPort](_00AF) is no more
 dangerous than keeping a zero one there.
 o   SetFont(rp, 0) causes spurious low memory accesses under
 some system software releases.
@@ -57,4 +57,4 @@ This can be resolved by calling [StripFont](StripFont).
 **SEE ALSO**
 
 [OpenFont](OpenFont)  [StripFont](StripFont)
-[diskfont.library/OpenDiskFont](../diskfont/OpenDiskFont)  [graphics/text.h](_OOAX)
+[diskfont.library/OpenDiskFont](../diskfont/OpenDiskFont)  [graphics/text.h](_00A8)

@@ -12,7 +12,7 @@ EndNotify -- Ends a notification request (V36)
     VOID EndNotify(struct NotifyRequest *)
 
 ```
-Links: [NotifyRequest](_OOVE) 
+Links: [NotifyRequest](_006E) 
 
 **FUNCTION**
 
@@ -27,4 +27,4 @@ notifystructure - a structure passed to [StartNotify](StartNotify)
 
 **SEE ALSO**
 
-[StartNotify](StartNotify), [&#060;dos/notify.h&#062;](_OOVE)
+[StartNotify](StartNotify), [&#060;dos/notify.h&#062;](_006E)

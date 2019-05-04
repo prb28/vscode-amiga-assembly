@@ -1,7 +1,7 @@
 
 **NAME**
 
-SetRGB4CM -- Set one color register for this [ColorMap](_OOBX).
+SetRGB4CM -- Set one color register for this [ColorMap](_00B8).
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@ SetRGB4CM -- Set one color register for this [ColorMap](_OOBX).
     void SetRGB4CM( struct ColorMap *, SHORT, UBYTE, UBYTE, UBYTE );
 
 ```
-Links: [ColorMap](_OOBX) 
+Links: [ColorMap](_00B8) 
 
 **INPUTS**
 
@@ -24,12 +24,12 @@ g = green level (0-15)
 b = blue level (0-15)
 
 RESULT
-Store the (r,g,b) triplet at index n of the [ColorMap](_OOBX) structure.
-This function can be used to set up a [ColorMap](_OOBX) before before
+Store the (r,g,b) triplet at index n of the [ColorMap](_00B8) structure.
+This function can be used to set up a [ColorMap](_00B8) before before
 linking it into a viewport.
 
 BUGS
 
 **SEE ALSO**
 
-[GetColorMap](GetColorMap) [GetRGB4](GetRGB4) [SetRGB4](SetRGB4) [graphics/view.h](_OOBX)
+[GetColorMap](GetColorMap) [GetRGB4](GetRGB4) [SetRGB4](SetRGB4) [graphics/view.h](_00B8)

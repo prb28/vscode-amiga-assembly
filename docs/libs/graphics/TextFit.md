@@ -17,7 +17,7 @@ TextFit - count characters that will fit in a given extent (V36)
         struct TextExtent *, struct TextExtent *, WORD, UWORD, UWORD);
 
 ```
-Links: [RastPort](_OOAF) [TextExtent](_OOAX) [TextExtent](_OOAX) 
+Links: [RastPort](_00AF) [TextExtent](_00A8) [TextExtent](_00A8) 
 
 **FUNCTION**
 
@@ -28,7 +28,7 @@ that number of characters.
 
 **INPUTS**
 
-rp     - a pointer to the [RastPort](_OOAF) which describes where the
+rp     - a pointer to the [RastPort](_00AF) which describes where the
 text attributes reside.
 string - the address of string to determine the constraint of
 strLen - The number of characters in the string.
@@ -61,11 +61,11 @@ NOTES
 The result is zero chars and an empty textExtent when the fit
 cannot be performed.  This occurs not only when no text will
 fit in the provided constraints, but also when:
--   the [RastPort](_OOAF) rp's rp_TxSpacing sign and magnitude is so
+-   the [RastPort](_00AF) rp's rp_TxSpacing sign and magnitude is so
 great it reverses the path of the text.
 -   the constrainingExtent does not include x = 0.
 
 **SEE ALSO**
 
 [TextExtent](TextExtent)  [TextLength](TextLength)  [Text](Text)
-[graphics/text.h](_OOAX)  [graphics/rastport.h](_OOAF)
+[graphics/text.h](_00A8)  [graphics/rastport.h](_00AF)

@@ -12,7 +12,7 @@ BitMapScale -- Perform raster scaling on a bit map. (V36)
     void BitMapScale(struct BitScaleArgs *);
 
 ```
-Links: [BitScaleArgs](_OOBF) 
+Links: [BitScaleArgs](_00BF) 
 
 **FUNCTION**
 
@@ -64,4 +64,4 @@ is always safe).
 
 **SEE ALSO**
 
-[ScalerDiv](ScalerDiv)  [graphics/scale.h](_OOBF)
+[ScalerDiv](ScalerDiv)  [graphics/scale.h](_00BF)

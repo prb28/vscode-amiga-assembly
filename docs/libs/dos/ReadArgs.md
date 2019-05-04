@@ -12,7 +12,7 @@ ReadArgs - Parse the command line input (V36)
     struct RDArgs * ReadArgs(STRPTR, LONG *, struct RDArgs *)
 
 ```
-Links: [RDArgs](_OOWV) [RDArgs](_OOWV) 
+Links: [RDArgs](_0076) [RDArgs](_0076) 
 
 **FUNCTION**
 
@@ -79,16 +79,16 @@ If there are unfilled /A parameters after parsing, it will grab
 strings from the end of a previous /M parameter list to fill the
 /A's.  This is used for things like Copy (&#034;From/A/M,To/A&#034;).
 
-ReadArgs() returns a struct [RDArgs](_OOWV) if it succeeds.  This serves as an
+ReadArgs() returns a struct [RDArgs](_0076) if it succeeds.  This serves as an
 &#034;anchor&#034; to allow [FreeArgs](FreeArgs) to free the associated memory.  You can
-also pass in a struct [RDArgs](_OOWV) to control the operation of ReadArgs()
+also pass in a struct [RDArgs](_0076) to control the operation of ReadArgs()
 (normally you pass NULL for the parameter, and ReadArgs() allocates
 one for you).  This allows providing different sources for the
 arguments, providing your own string buffer space for temporary
-storage, and extended help text.  See [&#060;dos/rdargs.h&#062;](_OOWV) for more
-information on this.  Note: if you pass in a struct [RDArgs](_OOWV), you must
+storage, and extended help text.  See [&#060;dos/rdargs.h&#062;](_0076) for more
+information on this.  Note: if you pass in a struct [RDArgs](_0076), you must
 still call [FreeArgs](FreeArgs) to release storage that gets attached to it,
-but you are responsible for freeing the [RDArgs](_OOWV) yourself.
+but you are responsible for freeing the [RDArgs](_0076) yourself.
 
 See BUGS regarding passing in strings.
 
@@ -100,7 +100,7 @@ rdargs   - optional rdargs structure for options.  [AllocDosObject](AllocDosObje
 should be used for allocating them if you pass one in.
 
 RESULT
-result   - a struct [RDArgs](_OOWV) or NULL for failure.
+result   - a struct [RDArgs](_0076) or NULL for failure.
 
 BUGS
 In V36, there were a couple of minor bugs with certain argument

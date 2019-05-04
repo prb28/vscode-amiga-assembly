@@ -12,7 +12,7 @@ ErrorReport -- Displays a Retry/Cancel requester for an error (V36)
     BOOL ErrorReport(LONG, LONG, ULONG, struct MsgPort *)
 
 ```
-Links: [MsgPort](_OOYY) 
+Links: [MsgPort](_0099) 
 
 **FUNCTION**
 
@@ -22,7 +22,7 @@ DOS_TRUE immediately.  Returns DOS_TRUE if the user selects CANCEL or
 if the attempt to put up the requester fails, or if the process
 pr_WindowPtr is -1.  Returns FALSE if the user selects Retry.  The
 routine will retry on DISKINSERTED for appropriate error codes.
-These return values are the opposite of what [AutoRequest](_OQFF) returns.
+These return values are the opposite of what [AutoRequest](../intuition/AutoRequest) returns.
 
 Note: this routine sets [IoErr](IoErr) to code before returning.
 

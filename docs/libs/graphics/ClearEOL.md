@@ -12,7 +12,7 @@ ClearEOL -- Clear from current position to end of line.
     void ClearEOL(struct RastPort *);
 
 ```
-Links: [RastPort](_OOAF) 
+Links: [RastPort](_00AF) 
 
 **FUNCTION**
 
@@ -27,7 +27,7 @@ or, if the DrawMode is 2, to the BgPen.
 
 **INPUTS**
 
-rp - pointer to [RastPort](_OOAF) structure
+rp - pointer to [RastPort](_00AF) structure
 
 RESULT
 
@@ -37,4 +37,4 @@ o   This function may use the blitter.
 **SEE ALSO**
 
 [Text](Text)  [ClearScreen](ClearScreen)  [SetRast](SetRast)
-[graphics/text.h](_OOAX)  [graphics/rastport.h](_OOAF)
+[graphics/text.h](_00A8)  [graphics/rastport.h](_00AF)

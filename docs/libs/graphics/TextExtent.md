@@ -1,7 +1,7 @@
 
 **NAME**
 
-[TextExtent](_OOAX) -- Determine raster extent of text data. (V36)
+[TextExtent](_00A8) -- Determine raster extent of text data. (V36)
 
 **SYNOPSIS**
 
@@ -13,7 +13,7 @@
          struct TextExtent *);
 
 ```
-Links: [RastPort](_OOAF) [TextExtent](_OOAX) 
+Links: [RastPort](_00AF) [TextExtent](_00A8) 
 
 **FUNCTION**
 
@@ -23,7 +23,7 @@ function.
 
 **INPUTS**
 
-rp     - a pointer to the [RastPort](_OOAF) which describes where the
+rp     - a pointer to the [RastPort](_00AF) which describes where the
 text attributes reside.
 string - the address of the string to determine the length of.
 count  - the number of characters in the string.
@@ -52,4 +52,4 @@ the rectanangle this would render into.
 **SEE ALSO**
 
 [TextLength](TextLength)  [Text](Text)  [TextFit](TextFit)
-[graphics/text.h](_OOAX)  [graphics/rastport.h](_OOAF)
+[graphics/text.h](_00A8)  [graphics/rastport.h](_00AF)

@@ -14,7 +14,7 @@ blit through a mask.
        (struct RastPort *, void *, SHORT, SHORT, SHORT, SHORT, SHORT);
 
 ```
-Links: [RastPort](_OOAF) 
+Links: [RastPort](_00AF) 
 
 **FUNCTION**
 
@@ -23,11 +23,11 @@ at position rectangle (xl,yl) (maxx,maxy).
 
 **INPUTS**
 
-rp    -  points to the destination [RastPort](_OOAF) for the blit.
+rp    -  points to the destination [RastPort](_00AF) for the blit.
 mask  -  points to 2 dimensional mask if needed
 if mask == NULL then use a rectangle.
-xl,yl -  coordinates of upper left of rectangular region in [RastPort](_OOAF)
-maxx,maxy - points to lower right of rectangular region in [RastPort](_OOAF)
+xl,yl -  coordinates of upper left of rectangular region in [RastPort](_00AF)
+maxx,maxy - points to lower right of rectangular region in [RastPort](_00AF)
 bytecnt - BytesPerRow for mask
 
 RESULT

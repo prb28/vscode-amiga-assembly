@@ -12,7 +12,7 @@ mode for areafills.
     void SetOPen( struct RastPort *, UBYTE );
 
 ```
-Links: [RastPort](_OOAF) 
+Links: [RastPort](_00AF) 
 
 **FUNCTION**
 
@@ -22,11 +22,11 @@ around an areafill during [AreaEnd](AreaEnd).
 
 **INPUTS**
 
-rp = pointer to [RastPort](_OOAF) structure
+rp = pointer to [RastPort](_00AF) structure
 pen = number  between 0-255
 
 BUGS
 
 **SEE ALSO**
 
-[AreaEnd](AreaEnd) [graphics/gfxmacros.h](_OOBV) [graphics/rastport.h](_OOAF)
+[AreaEnd](AreaEnd) [graphics/gfxmacros.h](_00B6) [graphics/rastport.h](_00AF)

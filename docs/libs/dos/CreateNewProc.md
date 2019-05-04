@@ -21,18 +21,18 @@ CreateNewProc -- Create a new process (V36)
     struct Process *CreateNewProcTags(ULONG, ...)
 
 ```
-Links: [Process](_OOWX) [TagItem](_OQRE) [Process](_OOWX) [TagItem](_OQRE) [Process](_OOWX) 
+Links: [Process](_0078) [TagItem](_012E) [Process](_0078) [TagItem](_012E) [Process](_0078) 
 
 **FUNCTION**
 
 This creates a new process according to the tags passed in.  See
-[dos/dostags.h](_OOVD) for the tags.
+[dos/dostags.h](_006D) for the tags.
 
 You must specify one of NP_Seglist or NP_Entry.  NP_Seglist takes a
 seglist (as returned by LoadSeg()).  NP_Entry takes a function
 pointer for the routine to call.
 
-There are many options, as you can see by examining [dos/dostags.h](_OOVD).
+There are many options, as you can see by examining [dos/dostags.h](_006D).
 The defaults are for a non-CLI process, with copies of your
 [CurrentDir](CurrentDir), HomeDir (used for PROGDIR:), priority, consoletask,
 windowptr, and variables.  The input and output filehandles default
@@ -51,7 +51,7 @@ needs to modify the input filehandle to make [ReadArgs](ReadArgs) work properly.
 
 **INPUTS**
 
-tags - a pointer to a [TagItem](_OQRE) array.
+tags - a pointer to a [TagItem](_012E) array.
 
 RESULT
 process - The created process, or NULL.  Note that if it returns
@@ -67,4 +67,4 @@ to run).  In V37, NP_Arguments works, though see the note above.
 
 **SEE ALSO**
 
-[LoadSeg](LoadSeg), [CreateProc](CreateProc), [ReadArgs](ReadArgs), [RunCommand](RunCommand), [&#060;dos/dostags.h&#062;](_OOVD)
+[LoadSeg](LoadSeg), [CreateProc](CreateProc), [ReadArgs](ReadArgs), [RunCommand](RunCommand), [&#060;dos/dostags.h&#062;](_006D)

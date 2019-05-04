@@ -56,4 +56,4 @@ of the variable is put in [IoErr](IoErr).
 
 **SEE ALSO**
 
-[SetVar](SetVar), [DeleteVar](DeleteVar), [FindVar](FindVar), [&#060;dos/var.h&#062;](_OOWS)
+[SetVar](SetVar), [DeleteVar](DeleteVar), [FindVar](FindVar), [&#060;dos/var.h&#062;](_0073)

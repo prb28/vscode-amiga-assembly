@@ -13,7 +13,7 @@ manager.
     SHORT GetSprite( struct SimpleSprite *, SHORT );
 
 ```
-Links: [SimpleSprite](_OOCU) 
+Links: [SimpleSprite](_00C5) 
 
 **FUNCTION**
 
@@ -26,7 +26,7 @@ array.
 
 **INPUTS**
 
-sprite - ptr to programmers [SimpleSprite](_OOCU) structure.
+sprite - ptr to programmers [SimpleSprite](_00C5) structure.
 pick - number in the range of 0-7 or
 -1 if programmer just wants the next one.
 
@@ -36,13 +36,13 @@ If pick is 0-7 attempt to allocate the sprite. If the sprite
 is already allocated then return -1.
 If pick -1 allocate the next sprite starting search at 0.
 If no sprites are available return -1 and fill -1 in num entry
-of [SimpleSprite](_OOCU) structure.
+of [SimpleSprite](_00C5) structure.
 If the sprite is available for allocation, mark it allocated
-and fill in the 'num' entry of the [SimpleSprite](_OOCU) structure.
+and fill in the 'num' entry of the [SimpleSprite](_00C5) structure.
 If successful return the sprite number.
 
 BUGS
 
 **SEE ALSO**
 
-[FreeSprite](FreeSprite) [ChangeSprite](ChangeSprite) [MoveSprite](MoveSprite) GetSprite() [graphics/sprite.h](_OOCU)
+[FreeSprite](FreeSprite) [ChangeSprite](ChangeSprite) [MoveSprite](MoveSprite) GetSprite() [graphics/sprite.h](_00C5)

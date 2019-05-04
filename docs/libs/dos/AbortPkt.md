@@ -12,7 +12,7 @@ AbortPkt -- Aborts an asynchronous packet, if possible. (V36)
     void AbortPkt(struct MsgPort *, struct DosPacket *)
 
 ```
-Links: [MsgPort](_OOYY) [DosPacket](_OOWX) 
+Links: [MsgPort](_0099) [DosPacket](_0078) 
 
 **FUNCTION**
 

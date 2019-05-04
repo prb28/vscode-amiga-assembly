@@ -12,7 +12,7 @@ AddFont -- add a font to the system list
     void AddFont(struct TextFont *);
 
 ```
-Links: [TextFont](_OOAX) 
+Links: [TextFont](_00A8) 
 
 **FUNCTION**
 
@@ -22,7 +22,7 @@ in public memory, and remain until successfully removed.
 
 **INPUTS**
 
-textFont - a [TextFont](_OOAX) structure in public ram.
+textFont - a [TextFont](_00A8) structure in public ram.
 
 RESULT
 
@@ -30,4 +30,4 @@ BUGS
 
 **SEE ALSO**
 
-[SetFont](SetFont)  [RemFont](RemFont)  [graphics/text.h](_OOAX)
+[SetFont](SetFont)  [RemFont](RemFont)  [graphics/text.h](_00A8)

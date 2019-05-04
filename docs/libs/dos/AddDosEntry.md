@@ -1,7 +1,7 @@
 
 **NAME**
 
-AddDosEntry -- Add a Dos [List](_OOWD) entry to the lists (V36)
+AddDosEntry -- Add a Dos [List](_007D) entry to the lists (V36)
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@ AddDosEntry -- Add a Dos [List](_OOWD) entry to the lists (V36)
     LONG AddDosEntry(struct DosList *)
 
 ```
-Links: [DosList](_OOWX) 
+Links: [DosList](_0078) 
 
 **FUNCTION**
 
@@ -22,7 +22,7 @@ name or another device of the same name).  Volume nodes with different
 dates and the same name CAN be added, or with names that conflict with
 devices or assigns.  Note: the dos list does NOT have to be locked to
 call this.  Do not access dlist after adding unless you have locked the
-Dos [Device](_OOXW) list.
+Dos [Device](_0087) list.
 
 An additional note concerning calling this from within a handler:
 in order to avoid deadlocks, your handler must either be multi-
@@ -41,7 +41,7 @@ messages at your filesystem port (don't wait!) and try the
 
 **INPUTS**
 
-dlist   - [Device](_OOXW) list entry to be added.
+dlist   - [Device](_0087) list entry to be added.
 
 RESULT
 success - Success/Failure indicator

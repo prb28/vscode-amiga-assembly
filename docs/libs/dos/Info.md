@@ -12,7 +12,7 @@ Info -- Returns information about the disk
     BOOL Info(BPTR, struct InfoData *)
 
 ```
-Links: [InfoData](_OOVX) 
+Links: [InfoData](_0068) 
 
 **FUNCTION**
 
@@ -24,7 +24,7 @@ number of free blocks and any soft errors.
 **INPUTS**
 
 lock           - BCPL pointer to a lock
-parameterBlock - pointer to an [InfoData](_OOVX) structure
+parameterBlock - pointer to an [InfoData](_0068) structure
 (longword aligned)
 
 **RESULTS**
@@ -32,4 +32,4 @@ parameterBlock - pointer to an [InfoData](_OOVX) structure
 success - boolean
 
 SPECIAL NOTE:
-Note that [InfoData](_OOVX) structure must be longword aligned.
+Note that [InfoData](_0068) structure must be longword aligned.

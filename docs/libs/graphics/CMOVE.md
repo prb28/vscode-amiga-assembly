@@ -16,7 +16,7 @@ CMOVE -- append copper move instruction to user copper list.
     void CMove( struct UCopList *, void *, WORD );
 
 ```
-Links: [UCopList](_OOAD) 
+Links: [UCopList](_00AD) 
 
 **FUNCTION**
 
@@ -24,7 +24,7 @@ Add instruction to move value v to hardware register a.
 
 **INPUTS**
 
-c - pointer to [UCopList](_OOAD) structure
+c - pointer to [UCopList](_00AD) structure
 a - hardware register
 v - 16 bit value to be written
 
@@ -38,4 +38,4 @@ BUGS
 
 **SEE ALSO**
 
-[CINIT](CINIT) [CWAIT](CWAIT) [CEND](CEND) [graphics/copper.h](_OOAD)
+[CINIT](CINIT) [CWAIT](CWAIT) [CEND](CEND) [graphics/copper.h](_00AD)

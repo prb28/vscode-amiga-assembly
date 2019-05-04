@@ -12,7 +12,7 @@ SetSoftStyle -- Set the soft style of the current font.
     ULONG SetSoftStyle(struct RastPort *, ULONG, ULONG);
 
 ```
-Links: [RastPort](_OOAF) 
+Links: [RastPort](_00AF) 
 
 **FUNCTION**
 
@@ -24,7 +24,7 @@ precludes changing them.
 
 **INPUTS**
 
-rp     - the [RastPort](_OOAF) from which the font and style
+rp     - the [RastPort](_00AF) from which the font and style
 are extracted.
 style  - the new font style to set, subject to enable.
 enable - those bits in style to be changed.  Any set bits here
@@ -42,4 +42,4 @@ BUGS
 
 **SEE ALSO**
 
-[AskSoftStyle](AskSoftStyle)  [graphics/text.h](_OOAX)
+[AskSoftStyle](AskSoftStyle)  [graphics/text.h](_00A8)

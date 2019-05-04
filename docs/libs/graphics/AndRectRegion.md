@@ -13,7 +13,7 @@ with region, leaving result in region.
     void AndRectRegion( struct Region *, struct Rectangle * );
 
 ```
-Links: [Region](_OOBW) [Rectangle](_OOAV) 
+Links: [Region](_00B7) [Rectangle](_00A6) 
 
 **FUNCTION**
 
@@ -22,8 +22,8 @@ of the rectangle. Leave the result in region.
 
 **INPUTS**
 
-region - pointer to [Region](_OOBW) structure
-rectangle - pointer to [Rectangle](_OOAV) structure
+region - pointer to [Region](_00B7) structure
+rectangle - pointer to [Rectangle](_00A6) structure
 
 NOTES
 Unlike the other rect-region primitives, AndRectRegion() cannot
@@ -33,4 +33,4 @@ BUGS
 
 **SEE ALSO**
 
-[AndRegionRegion](AndRegionRegion) [OrRectRegion](OrRectRegion) [graphics/regions.h](_OOBW)
+[AndRegionRegion](AndRegionRegion) [OrRectRegion](OrRectRegion) [graphics/regions.h](_00B7)

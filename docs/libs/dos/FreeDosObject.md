@@ -24,4 +24,4 @@ ptr  - ptr returned by [AllocDosObject](AllocDosObject)
 
 **SEE ALSO**
 
-[AllocDosObject](AllocDosObject), [&#060;dos/dos.h&#062;](_OOVX)
+[AllocDosObject](AllocDosObject), [&#060;dos/dos.h&#062;](_0068)

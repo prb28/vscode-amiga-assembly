@@ -19,7 +19,7 @@ accessMode is MODE_OLDFILE, an existing file is opened for reading
 or writing. If the value is MODE_NEWFILE, a new file is created for
 writing. MODE_READWRITE opens a file with an shared lock, but
 creates it if it didn't exist.  Open types are documented in the
-[&#060;dos/dos.h&#062;](_OOVX) or [&#060;libraries/dos.h&#062;](_OQOX) include file.
+[&#060;dos/dos.h&#062;](_0068) or [&#060;libraries/dos.h&#062;](_0108) include file.
 
 The 'name' can be a filename (optionally prefaced by a device
 name), a simple device such as NIL:, a window specification such as

@@ -12,7 +12,7 @@ ReadLink -- Reads the path for a soft filesystem link (V36)
     BOOL ReadLink( struct MsgPort *, BPTR, STRPTR, STRPTR, ULONG)
 
 ```
-Links: [MsgPort](_OOYY) 
+Links: [MsgPort](_0099) 
 
 **FUNCTION**
 

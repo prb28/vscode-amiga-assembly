@@ -12,7 +12,7 @@ LoadRGB4 -- Load RGB color values from table.
     void LoadRGB4( struct ViewPort *, UWORD *, WORD);
 
 ```
-Links: [ViewPort](_OOBX) 
+Links: [ViewPort](_00B8) 
 
 **FUNCTION**
 
@@ -21,7 +21,7 @@ entry 0.
 
 **INPUTS**
 
-vp - pointer to [ViewPort](_OOBX), whose colors you wish to change
+vp - pointer to [ViewPort](_00B8), whose colors you wish to change
 colors - pointer to table of RGB values set up as an array
 of USHORTS
 background--  0x0RGB
@@ -36,7 +36,7 @@ to the next higher color number
 
 **RESULTS**
 
-The [ViewPort](_OOBX) should have a pointer to a valid [ColorMap](_OOBX) to store
+The [ViewPort](_00B8) should have a pointer to a valid [ColorMap](_00B8) to store
 the colors in.
 Updates the hardware copperlist to reflect the new colors.
 Updates the intermediate copperlist with the new colors.
@@ -49,4 +49,4 @@ copper lists.
 
 **SEE ALSO**
 
-[SetRGB4](SetRGB4) [GetRGB4](GetRGB4) [GetColorMap](GetColorMap) [graphics/view.h](_OOBX)
+[SetRGB4](SetRGB4) [GetRGB4](GetRGB4) [GetColorMap](GetColorMap) [graphics/view.h](_00B8)

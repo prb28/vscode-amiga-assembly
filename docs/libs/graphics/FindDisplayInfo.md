@@ -32,4 +32,4 @@ BUGS
 
 **SEE ALSO**
 
-[graphics/displayinfo.h](_OOBD)
+[graphics/displayinfo.h](_00BD)

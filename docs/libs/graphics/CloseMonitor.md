@@ -1,7 +1,7 @@
 
 **NAME**
 
-CloseMonitor -- close a [MonitorSpec](_OOAW) (V36)
+CloseMonitor -- close a [MonitorSpec](_00A7) (V36)
 
 **SYNOPSIS**
 
@@ -12,20 +12,20 @@ CloseMonitor -- close a [MonitorSpec](_OOAW) (V36)
    LONG CloseMonitor( struct MonitorSpec * );
 
 ```
-Links: [MonitorSpec](_OOAW) 
+Links: [MonitorSpec](_00A7) 
 
 **FUNCTION**
 
-Relinquish access to a [MonitorSpec](_OOAW).
+Relinquish access to a [MonitorSpec](_00A7).
 
 **INPUTS**
 
-monitor_spec - a pointer to a [MonitorSpec](_OOAW) opened via [OpenMonitor](OpenMonitor)
+monitor_spec - a pointer to a [MonitorSpec](_00A7) opened via [OpenMonitor](OpenMonitor)
 
 **RESULTS**
 
-error - FALSE if [MonitorSpec](_OOAW) closed uneventfully.
-TRUE if [MonitorSpec](_OOAW) could not be closed.
+error - FALSE if [MonitorSpec](_00A7) closed uneventfully.
+TRUE if [MonitorSpec](_00A7) could not be closed.
 
 BUGS
 

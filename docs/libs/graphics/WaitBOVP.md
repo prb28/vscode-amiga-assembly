@@ -13,7 +13,7 @@ this viewport.
     void WaitBOVP( struct ViewPort * );
 
 ```
-Links: [ViewPort](_OOBX) 
+Links: [ViewPort](_00B8) 
 
 **FUNCTION**
 
@@ -21,7 +21,7 @@ Returns when the vertical beam has reached the bottom of this viewport
 
 **INPUTS**
 
-vp - pointer to [ViewPort](_OOBX) structure
+vp - pointer to [ViewPort](_00B8) structure
 
 RESULT
 This function will return sometime after the beam gets beyond

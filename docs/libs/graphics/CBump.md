@@ -12,7 +12,7 @@ in list).
     void CBump( struct UCopList * );
 
 ```
-Links: [UCopList](_OOAD) 
+Links: [UCopList](_00AD) 
 
 **FUNCTION**
 
@@ -20,7 +20,7 @@ Increment pointer to space for next instruction in user copper list.
 
 **INPUTS**
 
-c - pointer to [UCopList](_OOAD) structure
+c - pointer to [UCopList](_00AD) structure
 
 **RESULTS**
 
@@ -35,4 +35,4 @@ BUGS
 
 **SEE ALSO**
 
-[CINIT](CINIT) [CWAIT](CWAIT) [CMOVE](CMOVE) [CEND](CEND) [graphics/copper.h](_OOAD)
+[CINIT](CINIT) [CWAIT](CWAIT) [CMOVE](CMOVE) [CEND](CEND) [graphics/copper.h](_00AD)

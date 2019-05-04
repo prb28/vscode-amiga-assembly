@@ -12,7 +12,7 @@ CloseFont -- Release a pointer to a system font.
     void CloseFont(struct TextFont *);
 
 ```
-Links: [TextFont](_OOAX) 
+Links: [TextFont](_00A8) 
 
 **FUNCTION**
 
@@ -23,7 +23,7 @@ resources.
 
 **INPUTS**
 
-font -  a font pointer as returned by [OpenFont](OpenFont) or [OpenDiskFont](_OQFW)
+font -  a font pointer as returned by [OpenFont](OpenFont) or [OpenDiskFont](../diskfont/OpenDiskFont)
 
 RESULT
 
@@ -31,4 +31,4 @@ BUGS
 
 **SEE ALSO**
 
-[OpenFont](OpenFont)  [diskfont.library/OpenDiskFont](../diskfont/OpenDiskFont)  [graphics/text.h](_OOAX)
+[OpenFont](OpenFont)  [diskfont.library/OpenDiskFont](../diskfont/OpenDiskFont)  [graphics/text.h](_00A8)

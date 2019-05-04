@@ -12,7 +12,7 @@ QBlit -- Queue up a request for blitter usage
     void QBlit( struct bltnode * );
 
 ```
-Links: [bltnode](_OOCC) 
+Links: [bltnode](_00CC) 
 
 **FUNCTION**
 
@@ -44,4 +44,4 @@ BUGS
 
 **SEE ALSO**
 
-[QBSBlit](QBSBlit) [hardware/blit.h](_OOCC)
+[QBSBlit](QBSBlit) [hardware/blit.h](_00CC)

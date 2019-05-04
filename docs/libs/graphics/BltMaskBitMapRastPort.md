@@ -18,7 +18,7 @@ rastport with masking of source image.
           WORD, WORD, UBYTE, APTR);
 
 ```
-Links: [BitMap](_OOAV) [RastPort](_OOAF) 
+Links: [BitMap](_00A6) [RastPort](_00AF) 
 
 **FUNCTION**
 
@@ -50,4 +50,4 @@ BUGS
 
 **SEE ALSO**
 
-[BltBitMapRastPort](BltBitMapRastPort) [graphics/gfx.h](_OOAV) [graphics/rastport.h](_OOAF)
+[BltBitMapRastPort](BltBitMapRastPort) [graphics/gfx.h](_00A6) [graphics/rastport.h](_00AF)

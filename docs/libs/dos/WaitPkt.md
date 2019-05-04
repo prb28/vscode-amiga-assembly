@@ -12,7 +12,7 @@ WaitPkt -- Waits for a packet to arrive at your pr_MsgPort (V36)
     struct DosPacket *WaitPkt(void);
 
 ```
-Links: [DosPacket](_OOWX) 
+Links: [DosPacket](_0078) 
 
 **FUNCTION**
 

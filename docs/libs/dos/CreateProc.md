@@ -13,7 +13,7 @@ CreateProc -- Create a new process
     struct MsgPort *CreateProc(STRPTR, LONG, BPTR, LONG)
 
 ```
-Links: [MsgPort](_OOYY) 
+Links: [MsgPort](_0099) 
 
 **FUNCTION**
 

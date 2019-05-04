@@ -12,7 +12,7 @@ FreeDosEntry -- Frees an entry created by [MakeDosEntry](MakeDosEntry) (V36)
     void FreeDosEntry(struct DosList *)
 
 ```
-Links: [DosList](_OOWX) 
+Links: [DosList](_0078) 
 
 **FUNCTION**
 
@@ -21,7 +21,7 @@ eliminated and replaced by a value passed to FreeDosObject()!
 
 **INPUTS**
 
-dlist - [DosList](_OOWX) to free.
+dlist - [DosList](_0078) to free.
 
 **SEE ALSO**
 

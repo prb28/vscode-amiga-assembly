@@ -12,7 +12,7 @@ OpenFont -- Get a pointer to a system font.
     struct TextFont *OpenFont(struct TextAttr *);
 
 ```
-Links: [TextFont](_OOAX) [TextAttr](_OOAX) 
+Links: [TextFont](_00A8) [TextAttr](_00A8) 
 
 **FUNCTION**
 
@@ -25,7 +25,7 @@ management of ram fonts.
 
 **INPUTS**
 
-textAttr - a [TextAttr](_OOAX) or [TTextAttr](_OOAX) structure that describes the
+textAttr - a [TextAttr](_00A8) or [TTextAttr](_00A8) structure that describes the
 text font attributes desired.
 
 RESULT
@@ -36,4 +36,4 @@ available, a font with the nearest attributes is returned.
 **SEE ALSO**
 
 [CloseFont](CloseFont)  [SetFont](SetFont)
-[diskfont.library/OpenDiskFont](../diskfont/OpenDiskFont)  [graphics/text.h](_OOAX)
+[diskfont.library/OpenDiskFont](../diskfont/OpenDiskFont)  [graphics/text.h](_00A8)

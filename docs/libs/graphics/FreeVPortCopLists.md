@@ -13,16 +13,16 @@ their headers from a viewport
     void FreeVPortCopLists(struct ViewPort *);
 
 ```
-Links: [ViewPort](_OOBX) 
+Links: [ViewPort](_00B8) 
 
 **FUNCTION**
 
 Search display, color, sprite, and user copper
-lists and call [FreeMem](_OSUU) to deallocate them from memory
+lists and call [FreeMem](../exec/FreeMem) to deallocate them from memory
 
 **INPUTS**
 
-vp - pointer to [ViewPort](_OOBX) structure
+vp - pointer to [ViewPort](_00B8) structure
 
 **RESULTS**
 
@@ -37,4 +37,4 @@ none known
 
 **SEE ALSO**
 
-[graphics/view.h](_OOBX)
+[graphics/view.h](_00B8)

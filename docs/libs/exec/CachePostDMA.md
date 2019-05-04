@@ -6,7 +6,7 @@ CachePostDMA - Take actions after to hardware DMA  (V37)
 **SYNOPSIS**
 
 ```c
-    CachePostDMA(vaddress,&#038;length,flags)
+    CachePostDMA(vaddress,&length,flags)
                  a0       a1      d0
 
     CachePostDMA(APTR,LONG *,ULONG);

@@ -1,7 +1,7 @@
 
 **NAME**
 
-ClearScreen -- Clear from current position to end of [RastPort](_OOAF).
+ClearScreen -- Clear from current position to end of [RastPort](_00AF).
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@ ClearScreen -- Clear from current position to end of [RastPort](_OOAF).
     void ClearScreen(struct RastPort *);
 
 ```
-Links: [RastPort](_OOAF) 
+Links: [RastPort](_00AF) 
 
 **FUNCTION**
 
@@ -25,7 +25,7 @@ or, if the DrawMode is 2, to the BgPen.
 
 **INPUTS**
 
-rp - pointer to [RastPort](_OOAF) structure
+rp - pointer to [RastPort](_00AF) structure
 
 NOTES
 o   This function may use the blitter.
@@ -33,4 +33,4 @@ o   This function may use the blitter.
 **SEE ALSO**
 
 [ClearEOL](ClearEOL)  [Text](Text)  [SetRast](SetRast)
-[graphics/text.h](_OOAX)  [graphics/rastport.h](_OOAF)
+[graphics/text.h](_00A8)  [graphics/rastport.h](_00AF)

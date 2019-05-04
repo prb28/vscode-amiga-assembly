@@ -12,7 +12,7 @@ RemFont -- Remove a font from the system list.
     void RemFont(struct TextFont *);
 
 ```
-Links: [TextFont](_OOAX) 
+Links: [TextFont](_00A8) 
 
 **FUNCTION**
 
@@ -23,7 +23,7 @@ requests to this font are satisfied.
 
 **INPUTS**
 
-textFont - the [TextFont](_OOAX) structure to remove.
+textFont - the [TextFont](_00A8) structure to remove.
 
 RESULT
 
@@ -31,4 +31,4 @@ BUGS
 
 **SEE ALSO**
 
-[SetFont](SetFont)  [AddFont](AddFont)  [graphics/text.h](_OOAX)
+[SetFont](SetFont)  [AddFont](AddFont)  [graphics/text.h](_00A8)

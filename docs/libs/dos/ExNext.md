@@ -12,11 +12,11 @@ ExNext -- Examine the next entry in a directory
     BOOL ExNext(BPTR, struct FileInfoBlock *)
 
 ```
-Links: [FileInfoBlock](_OOVX) [FileInfoBlock](_OOVX) 
+Links: [FileInfoBlock](_0068) [FileInfoBlock](_0068) 
 
 **FUNCTION**
 
-This routine is passed a directory lock and a [FileInfoBlock](_OOVX) that
+This routine is passed a directory lock and a [FileInfoBlock](_0068) that
 have been initialized by a previous call to [Examine](Examine), or updated
 by a previous call to ExNext().  ExNext() gives a return code of zero
 on failure.  The most common cause of failure is reaching the end
@@ -24,10 +24,10 @@ of the list of files in the owning directory.  In this case, [IoErr](IoErr)
 will return ERROR_NO_MORE_ENTRIES and a good exit is appropriate.
 
 So, follow these steps to examine a directory:
-1) Pass a Lock and a [FileInfoBlock](_OOVX) to [Examine](Examine).  The lock must
+1) Pass a Lock and a [FileInfoBlock](_0068) to [Examine](Examine).  The lock must
 be on the directory you wish to examine.
-2) Pass ExNext() the same lock and [FileInfoBlock](_OOVX).
-3) Do something with the information returned in the [FileInfoBlock](_OOVX).
+2) Pass ExNext() the same lock and [FileInfoBlock](_0068).
+3) Do something with the information returned in the [FileInfoBlock](_0068).
 Note that the fib_DirEntryType field is positive for directories,
 negative for files.
 4) Keep calling ExNext() until it returns FALSE.  Check [IoErr](IoErr)
@@ -35,8 +35,8 @@ to ensure that the reason for failure was ERROR_NO_MORE_ENTRIES.
 
 Note: if you wish to recursively scan the file tree and you find
 another directory while ExNext()ing you must Lock that directory and
-[Examine](Examine) it using a new [FileInfoBlock](_OOVX).  Use of the same
-[FileInfoBlock](_OOVX) to enter a directory would lose important state
+[Examine](Examine) it using a new [FileInfoBlock](_0068).  Use of the same
+[FileInfoBlock](_0068) to enter a directory would lose important state
 information such that it will be impossible to continue scanning
 the parent directory.  While it is permissible to [UnLock](UnLock) and [Lock](Lock)
 the parent directory between ExNext() calls, this is NOT recommended.
@@ -46,13 +46,13 @@ rebuilt on each new ExNext() call, and will significantly slow down
 directory scanning.
 
 It is NOT legal to [Examine](Examine) a file, and then to ExNext() from that
-[FileInfoBlock](_OOVX).       You may make a local copy of the [FileInfoBlock](_OOVX), as
+[FileInfoBlock](_0068).       You may make a local copy of the [FileInfoBlock](_0068), as
 long as it is never passed back to the operating system.
 
 **INPUTS**
 
 lock - BCPL pointer to a lock originally used for the [Examine](Examine) call
-infoBlock - pointer to a [FileInfoBlock](_OOVX) used on the previous [Examine](Examine)
+infoBlock - pointer to a [FileInfoBlock](_0068) used on the previous [Examine](Examine)
 or ExNext() call.
 
 **RESULTS**
@@ -60,7 +60,7 @@ or ExNext() call.
 success - boolean
 
 SPECIAL NOTE
-[FileInfoBlock](_OOVX) must be longword-aligned.  [AllocDosObject](AllocDosObject) will
+[FileInfoBlock](_0068) must be longword-aligned.  [AllocDosObject](AllocDosObject) will
 allocate them correctly for you.
 
 **SEE ALSO**

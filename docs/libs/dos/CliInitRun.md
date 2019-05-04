@@ -12,7 +12,7 @@ CliInitRun -- Set up a process to be a shell from initial packet
     LONG CliInitRun( struct DosPacket * )
 
 ```
-Links: [DosPacket](_OOWX) 
+Links: [DosPacket](_0078) 
 
 **FUNCTION**
 
@@ -51,7 +51,7 @@ This function is very similar to [CliInitNewcli](CliInitNewcli).
 
 **INPUTS**
 
-packet - the initial packet sent to your process [MsgPort](_OOYY)
+packet - the initial packet sent to your process [MsgPort](_0099)
 
 RESULT
 fn - flags or a pointer

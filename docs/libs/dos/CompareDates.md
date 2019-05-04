@@ -12,7 +12,7 @@ CompareDates -- Compares two datestamps (V36)
     LONG CompareDates(struct DateStamp *,struct DateStamp *)
 
 ```
-Links: [DateStamp](_OOVX) [DateStamp](_OOVX) 
+Links: [DateStamp](_0068) [DateStamp](_0068) 
 
 **FUNCTION**
 

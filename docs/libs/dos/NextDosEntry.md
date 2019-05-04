@@ -1,7 +1,7 @@
 
 **NAME**
 
-NextDosEntry -- Get the next Dos [List](_OOWD) entry (V36)
+NextDosEntry -- Get the next Dos [List](_007D) entry (V36)
 
 **SYNOPSIS**
 
@@ -12,11 +12,11 @@ NextDosEntry -- Get the next Dos [List](_OOWD) entry (V36)
     struct DosList *NextDosEntry(struct DosList *,ULONG)
 
 ```
-Links: [DosList](_OOWX) [DosList](_OOWX) 
+Links: [DosList](_0078) [DosList](_0078) 
 
 **FUNCTION**
 
-Find the next Dos [List](_OOWD) entry of the right type.  You MUST have locked
+Find the next Dos [List](_007D) entry of the right type.  You MUST have locked
 the types you're looking for.  Returns NULL if there are no more of
 that type in the list.
 

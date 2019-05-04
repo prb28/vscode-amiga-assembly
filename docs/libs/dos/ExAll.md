@@ -12,14 +12,14 @@ ExAll -- Examine an entire directory (V36)
     BOOL ExAll(BPTR,STRPTR,LONG,LONG,struct ExAllControl *)
 
 ```
-Links: [ExAllControl](_OOWY) 
+Links: [ExAllControl](_0079) 
 
 **FUNCTION**
 
 Examines an entire directory.
 
 Lock must be on a directory.  Size is the size of the buffer supplied.
-The buffer will be filled with (partial) [ExAllData](_OOWY) structures, as
+The buffer will be filled with (partial) [ExAllData](_0079) structures, as
 specified by the type field.
 
 Type is a value from those shown below that determines which information is
@@ -78,7 +78,7 @@ called with the following parameters (as is standard for hooks):
 
 BOOL = MatchFunc( hookptr, data, typeptr )
 a0      a1      a2
-(a0 = ptr to hook, a1 = ptr to filled in [ExAllData](_OOWY), a2 = ptr
+(a0 = ptr to hook, a1 = ptr to filled in [ExAllData](_0079), a2 = ptr
 to longword of type).
 
 MatchFunc should return FALSE if the entry is not to be
@@ -119,7 +119,7 @@ if (eac-&#062;eac_Entries == 0) {
 /* ExAll failed normally with no entries */
 continue;                   /* (&#034;more&#034; is *usually* zero) */
 }
-ead = (struct [ExAllData](_OOWY) *) EAData;
+ead = (struct [ExAllData](_0079) *) EAData;
 do {
 /* use ead here */
 ...

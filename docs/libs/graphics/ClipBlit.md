@@ -14,7 +14,7 @@ ClipBlit  --  Calls [BltBitMap](BltBitMap) after accounting for windows
           WORD, WORD, UBYTE);
 
 ```
-Links: [RastPort](_OOAF) [RastPort](_OOAF) 
+Links: [RastPort](_00AF) [RastPort](_00AF) 
 
 **FUNCTION**
 
@@ -24,25 +24,25 @@ all of which are (and should be) transparent to you.  So, whereas
 [BltBitMap](BltBitMap) requires pointers to BitMaps, ClipBlit requires pointers to
 the RastPorts that contain the Bitmaps, Layers, etcetera.
 
-If you are going to blit blocks of data around via the [RastPort](_OOAF) of your
-Intuition [Window](_OODT), you must call this routine (rather than [BltBitMap](BltBitMap)).
+If you are going to blit blocks of data around via the [RastPort](_00AF) of your
+Intuition [Window](_00D4), you must call this routine (rather than [BltBitMap](BltBitMap)).
 
-Either the Src [RastPort](_OOAF), the Dest [RastPort](_OOAF), both, or neither, can have
+Either the Src [RastPort](_00AF), the Dest [RastPort](_00AF), both, or neither, can have
 Layers. This routine takes care of all cases.
 
 See [BltBitMap](BltBitMap) for a thorough explanation.
 
 **INPUTS**
 
-Src          = pointer to the [RastPort](_OOAF) of the source for your blit
+Src          = pointer to the [RastPort](_00AF) of the source for your blit
 SrcX, SrcY   = the topleft offset into Src for your data
-Dest         = pointer to the [RastPort](_OOAF) to receive the blitted data
-DestX, DestY = the topleft offset into the destination [RastPort](_OOAF)
+Dest         = pointer to the [RastPort](_00AF) to receive the blitted data
+DestX, DestY = the topleft offset into the destination [RastPort](_00AF)
 XSize        = the width of the blit
 YSize        = the height of the blit
 Minterm      = the boolean blitter function, where SRCB is
-associated with the Src [RastPort](_OOAF) and SRCC goes to the
-Dest [RastPort](_OOAF)
+associated with the Src [RastPort](_00AF) and SRCC goes to the
+Dest [RastPort](_00AF)
 
 RESULT
 

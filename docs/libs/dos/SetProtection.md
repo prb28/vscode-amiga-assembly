@@ -34,9 +34,9 @@ backing up each file.
 The V36 Shell looks at the execute bit, and will refuse to execute
 a file if it is set.
 
-Other bits will be defined in the [&#060;dos/dos.h&#062;](_OOVX) include files.  Rather
+Other bits will be defined in the [&#060;dos/dos.h&#062;](_0068) include files.  Rather
 than referring to bits by number you should use the definitions in
-[&#060;dos/dos.h&#062;](_OOVX).
+[&#060;dos/dos.h&#062;](_0068).
 
 **INPUTS**
 
@@ -49,4 +49,4 @@ success - boolean
 
 **SEE ALSO**
 
-[SetComment](SetComment), [Examine](Examine), [ExNext](ExNext), [&#060;dos/dos.h&#062;](_OOVX)
+[SetComment](SetComment), [Examine](Examine), [ExNext](ExNext), [&#060;dos/dos.h&#062;](_0068)

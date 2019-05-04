@@ -6,7 +6,7 @@ CachePreDMA - Take actions prior to hardware DMA  (V37)
 **SYNOPSIS**
 
 ```c
-    paddress = CachePreDMA(vaddress,&#038;length,flags)
+    paddress = CachePreDMA(vaddress,&length,flags)
     d0                     a0       a1      d0
 
     APTR CachePreDMA(APTR,LONG *,ULONG);

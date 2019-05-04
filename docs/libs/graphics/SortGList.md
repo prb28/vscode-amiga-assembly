@@ -12,7 +12,7 @@ SortGList -- Sort the current gel list, ordering its y,x coordinates.
     void SortGList(struct RastPort *);
 
 ```
-Links: [RastPort](_OOAF) 
+Links: [RastPort](_00AF) 
 
 **FUNCTION**
 
@@ -21,7 +21,7 @@ This sorting is essential before calls to [DrawGList](DrawGList) or [DoCollision
 
 **INPUTS**
 
-rp = pointer to the [RastPort](_OOAF) structure containing the [GelsInfo](_OOAF)
+rp = pointer to the [RastPort](_00AF) structure containing the [GelsInfo](_00AF)
 
 RESULT
 
@@ -29,4 +29,4 @@ BUGS
 
 **SEE ALSO**
 
-[InitGels](InitGels)  [DoCollision](DoCollision)  [DrawGList](DrawGList)  [graphics/rastport.h](_OOAF)
+[InitGels](InitGels)  [DoCollision](DoCollision)  [DrawGList](DrawGList)  [graphics/rastport.h](_00AF)

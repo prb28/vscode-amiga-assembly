@@ -1,7 +1,7 @@
 
 **NAME**
 
-VideoControl -- Modify the operation of a ViewPort's [ColorMap](_OOBX) (V36)
+VideoControl -- Modify the operation of a ViewPort's [ColorMap](_00B8) (V36)
 
 **SYNOPSIS**
 
@@ -12,12 +12,12 @@ VideoControl -- Modify the operation of a ViewPort's [ColorMap](_OOBX) (V36)
     ULONG VideoControl( struct ColorMap *, struct TagItem * );
 
 ```
-Links: [ColorMap](_OOBX) [TagItem](_OQRE) 
+Links: [ColorMap](_00B8) [TagItem](_012E) 
 
 **FUNCTION**
 
-[Process](_OOWX) the commands in the VideoControl command [TagItem](_OQRE) buffer
-using cm as the target, with respect to its &#034;attached&#034; [ViewPort](_OOBX).
+[Process](_0078) the commands in the VideoControl command [TagItem](_012E) buffer
+using cm as the target, with respect to its &#034;attached&#034; [ViewPort](_00B8).
 
 viewport commands:
 
@@ -54,7 +54,7 @@ batch mode commands:
 (if you want your videocontol taglist to be processed in &#034;batch&#034;
 mode, that is, at the next [MakeVPort](MakeVPort) for the ColorMap-&#062;cm_vp;
 you may intall a static list of videocontrol TagItems into the
-[ColorMap](_OOBX) with the BATCH_ITEMS_SET command; and then enable/disable
+[ColorMap](_00B8) with the BATCH_ITEMS_SET command; and then enable/disable
 batch mode processing of those items via the BATCH_CM control
 command)
 
@@ -68,19 +68,19 @@ VTAG_VPMODEID      [_SET | _CLR | _GET] -- force [GetVPModeID](GetVPModeID) retu
 
 **INPUTS**
 
-cm   = pointer to struct [ColorMap](_OOBX) obtained via [GetColorMap](GetColorMap).
+cm   = pointer to struct [ColorMap](_00B8) obtained via [GetColorMap](GetColorMap).
 tags = pointer to a table of videocontrol tagitems.
 
 RESULT
 error = NULL if no error occured in the control operation.
 (non-NULL if bad colormap pointer, no tagitems or bad tag)
 
-The operating characteristics of the [ColorMap](_OOBX) and its attached
-[ViewPort](_OOBX) are modified. The result will be incorporated into the
-[ViewPort](_OOBX) when its copper lists are reassembled via [MakeVPort](MakeVPort).
+The operating characteristics of the [ColorMap](_00B8) and its attached
+[ViewPort](_00B8) are modified. The result will be incorporated into the
+[ViewPort](_00B8) when its copper lists are reassembled via [MakeVPort](MakeVPort).
 
 BUGS
 
 **SEE ALSO**
 
-[graphics/videocontrol.h](_OOBO), [GetColorMap](GetColorMap), [FreeColorMap](FreeColorMap)
+[graphics/videocontrol.h](_00B0), [GetColorMap](GetColorMap), [FreeColorMap](FreeColorMap)

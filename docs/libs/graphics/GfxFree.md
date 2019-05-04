@@ -12,12 +12,12 @@ GfxFree -- free a graphics extended data structure (V36)
     void GfxFree(struct ExtendedNode *);
 
 ```
-Links: [ExtendedNode](_OOBA) 
+Links: [ExtendedNode](_00BA) 
 
 **FUNCTION**
 
 Free a special graphics extended data structure (each of which
-begins with an [ExtendedNode](_OOBA) structure).
+begins with an [ExtendedNode](_00BA) structure).
 
 **INPUTS**
 
@@ -30,9 +30,9 @@ this special graphics extended node from any associated data
 structures, if necessary, before freeing it (see [GfxAssociate](GfxAssociate)).
 
 BUGS
-an [Alert](_OSRE) will be called if you attempt to free any structure
+an [Alert](../exec/Alert) will be called if you attempt to free any structure
 other than a graphics extended data strucure obtained via GfxFree().
 
 **SEE ALSO**
 
-[graphics/gfxnodes.h](_OOBA) [GfxNew](GfxNew) [GfxAssociate](GfxAssociate) GfxLookUp()
+[graphics/gfxnodes.h](_00BA) [GfxNew](GfxNew) [GfxAssociate](GfxAssociate) GfxLookUp()

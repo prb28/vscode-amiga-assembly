@@ -66,4 +66,4 @@ written its final word of desination data.
 
 **SEE ALSO**
 
-[OwnBlitter](OwnBlitter) [DisownBlitter](DisownBlitter) [hardware/blit.h](_OOCC)
+[OwnBlitter](OwnBlitter) [DisownBlitter](DisownBlitter) [hardware/blit.h](_00CC)

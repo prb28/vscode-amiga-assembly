@@ -12,7 +12,7 @@ GetDeviceProc -- Finds a handler to send a message to (V36)
     struct DevProc *GetDeviceProc(STRPTR, struct DevProc *)
 
 ```
-Links: [DevProc](_OOWX) [DevProc](_OOWX) 
+Links: [DevProc](_0078) [DevProc](_0078) 
 
 **FUNCTION**
 
@@ -20,11 +20,11 @@ Finds the handler/filesystem to send packets regarding 'name' to.
 This may involve getting temporary locks.  It returns a structure
 that includes a lock and msgport to send to to attempt your operation.
 It also includes information on how to handle multiple-directory
-assigns (by passing the [DevProc](_OOWX) back to GetDeviceProc() until it
+assigns (by passing the [DevProc](_0078) back to GetDeviceProc() until it
 returns NULL).
 
 The initial call to GetDeviceProc() should pass NULL for devproc.  If
-after using the returned [DevProc](_OOWX), you get an ERROR_OBJECT_NOT_FOUND,
+after using the returned [DevProc](_0078), you get an ERROR_OBJECT_NOT_FOUND,
 and (devproc-&#062;dvp_Flags &#038; DVPF_ASSIGN) is true, you should call
 GetDeviceProc() again, passing it the devproc structure.  It will
 either return a modified devproc structure, or NULL (with
@@ -43,7 +43,7 @@ relative path (&#034;foo/bar&#034;), relative to the current volume
 devproc - A value returned by GetDeviceProc() before, or NULL
 
 RESULT
-devproc - a pointer to a [DevProc](_OOWX) structure or NULL
+devproc - a pointer to a [DevProc](_0078) structure or NULL
 
 BUGS
 Counter not currently active in 2.0.

@@ -13,7 +13,7 @@ WeighTAMatch -- Get a measure of how well two fonts match. (V36)
          struct TagItem *);
 
 ```
-Links: [TTextAttr](_OOAX) [TextAttr](_OOAX) [TagItem](_OQRE) 
+Links: [TTextAttr](_00A8) [TextAttr](_00A8) [TagItem](_012E) 
 
 **FUNCTION**
 

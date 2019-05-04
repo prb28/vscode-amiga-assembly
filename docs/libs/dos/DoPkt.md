@@ -12,7 +12,7 @@ DoPkt -- Send a dos packet and wait for reply (V36)
     LONG DoPkt(struct MsgPort *,LONG,LONG,LONG,LONG,LONG,LONG)
 
 ```
-Links: [MsgPort](_OOYY) 
+Links: [MsgPort](_0099) 
 
 **FUNCTION**
 
@@ -40,9 +40,9 @@ result2 - Available from [IoErr](IoErr) AND in register D1.
 
 BUGS
 Using DoPkt() from tasks doesn't work in V36. Use [AllocDosObject](AllocDosObject),
-[PutMsg](_OSVB), and <a href="../Includes_and_Autodocs_2._guide/node035A.html">WaitPort()/GetMsg() for a workaround, or you can call
+[PutMsg](../exec/PutMsg), and <a href="../Includes_and_Autodocs_2._guide/node035A.html">WaitPort()/GetMsg() for a workaround, or you can call
 [CreateNewProc](CreateNewProc) to start a process to do Dos I/O for you.  In V37,
-DoPkt() will allocate, use, and free the [MsgPort](_OOYY) required.
+DoPkt() will allocate, use, and free the [MsgPort](_0099) required.
 
 NOTES
 Callable from a task (under V37 and above).

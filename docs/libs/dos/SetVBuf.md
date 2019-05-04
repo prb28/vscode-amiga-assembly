@@ -25,7 +25,7 @@ then only the buffering mode will be changed.
 
 fh   - Filehandle
 buff - buffer pointer for buffered I/O
-type - buffering mode (see [&#060;dos/stdio.h&#062;](_OOVB))
+type - buffering mode (see [&#060;dos/stdio.h&#062;](_006B))
 size - size of buffer for buffered I/O (sizes less than 208 bytes
 will be ignored).
 
