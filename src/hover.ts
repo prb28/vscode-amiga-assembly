@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { ASMLine, HoverInstruction, HoverInstructionsManager, HoverRegistersManager, NumberParser, HoverLibraryManager } from './parser';
+import { ASMLine, NumberParser } from './parser';
+import { HoverInstruction, HoverInstructionsManager, HoverRegistersManager, HoverLibraryManager } from './documentation';
 import { ExtensionState } from './extension';
 
 /**

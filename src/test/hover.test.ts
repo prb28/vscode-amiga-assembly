@@ -5,7 +5,7 @@
 
 import { expect } from 'chai';
 import { M68kHoverProvider } from '../hover';
-import { HoverInstruction } from '../parser';
+import { HoverInstruction } from '../documentation';
 import { Position, CancellationTokenSource, Hover, MarkdownString, Uri } from 'vscode';
 import { DummyTextDocument } from './dummy';
 import * as chaiAsPromised from 'chai-as-promised';
