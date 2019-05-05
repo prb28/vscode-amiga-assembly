@@ -6,6 +6,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Generate summary",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/build/genDocSummary.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/scripts/build/"
+        },
+        {
             "name": "Extension",
             "type": "extensionHost",
             "request": "launch",
