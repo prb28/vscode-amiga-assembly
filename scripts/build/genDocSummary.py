@@ -3,76 +3,47 @@ import os.path
 import re
 
 
-def processLibsNoDescription(libsPath):
-    columnSize = 3
-    column = 0
-    md = ""
-    # list all the files from the lib dir
-    for dir in os.listdir(libsPath):
-        parent = os.path.join(libsPath, dir)
-        if (not dir.startswith(".")):
-            md += "\n### %s\n" % dir
-            md += "|     |     |     |\n|:---:|:---:|:---:|\n"
-            column = 0
-            for f in os.listdir(parent):
-                if (not f.startswith('_')):
-                    if (column == 0):
-                        md += "|"
-                    fname = f.replace(".md", "")
-                    filepathname = os.path.join(parent, f)
-                    fileurl = "libs/%s/%s" % (dir, fname)
-                    md += "[%s](%s)|" % (fname, fileurl)
-                    column += 1
-                    if (column > 2):
-                        md += "\n"
-                        column = 0
-            if (column != 0):
-                md += "\n"
-    return md
-
-
-def readDescription(filepathname):
+def read_description(filepathname):
     with open(filepathname, "r") as f:
         contents = f.read()
-        startPos = contents.find("**NAME**")
-        endPos = contents.find("**SYNOPSIS**")
-        if (startPos >= 0) and (endPos > startPos+8):
-            subs = contents[startPos +
-                            8:endPos].replace("\n", "").replace("\r", "").strip()
-            minusPos = subs.find("--")
-            if (minusPos > 0):
-                return subs[minusPos+2:].strip()
+        start_pos = contents.find("**NAME**")
+        end_pos = contents.find("**SYNOPSIS**")
+        if (start_pos >= 0) and (end_pos > start_pos+8):
+            subs = contents[start_pos +
+                            8:end_pos].replace("\n", "").replace("\r", "").strip()
+            minus_pos = subs.find("--")
+            if (minus_pos > 0):
+                return subs[minus_pos+2:].strip()
             else:
                 return subs
     return ""
 
 
-def processLibs(libsPath):
+def process_libs(libs_path):
     md = ""
     # list all the files from the lib dir
-    for dir in os.listdir(libsPath):
-        parent = os.path.join(libsPath, dir)
+    for dir in os.listdir(libs_path):
+        parent = os.path.join(libs_path, dir)
         if (not dir.startswith(".")):
             md += "\n### %s\n" % dir
             md += "| Function | Description |\n|:---|:---|\n"
-            column = 0
             for f in os.listdir(parent):
                 if (not f.startswith('_')):
                     fname = f.replace(".md", "")
                     filepathname = os.path.join(parent, f)
                     fileurl = "libs/%s/%s" % (dir, fname)
-                    description = readDescription(filepathname)
+                    description = read_description(filepathname)
                     md += "|[%s](%s)|%s|\n" % (fname, fileurl, description)
     return md
 
 
-def createTOC(destPath, libsMd):
+def create_toc(dest_path, libs_md):
     # Load the reference
     contents = ""
     with open("toc.md", "r") as source:
         contents = source.read()
-    contents = contents.replace("@amiga_libs_replacement@", libsMd)
-    with open(os.path.join(destPath, "toc.md"), "w") as destination:
+    contents = contents.replace("@amiga_libs_replacement@", libs_md)
+    with open(os.path.join(dest_path, "toc.md"), "w") as destination:
         destination.write(contents)
 
 
@@ -85,5 +56,5 @@ def displaymatch(match):
 if __name__ == '__main__':
     docsPath = os.path.join("..", "..", "docs")
     libsPath = os.path.join(docsPath, "libs")
-    libsMd = processLibs(libsPath)
-    createTOC(docsPath, libsMd)
+    libsMd = process_libs(libsPath)
+    create_toc(docsPath, libsMd)
