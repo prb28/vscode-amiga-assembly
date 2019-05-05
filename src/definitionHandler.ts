@@ -373,5 +373,21 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             });
         });
     }
+
+    /**
+     * Find all the variables starting by word
+     * @param word Word to search
+     * @return variables found.
+     */
+    findVariableStartingWith(word: string): Map<string, string | undefined> {
+        let values = new Map<string, string | undefined>();
+        let upper = word.toUpperCase();
+        for (const [key, value] of this.variables.entries()) {
+            if (key.toUpperCase().startsWith(upper)) {
+                values.set(key, value.getValue());
+            }
+        }
+        return values;
+    }
 }
 

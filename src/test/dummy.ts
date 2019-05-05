@@ -17,6 +17,7 @@ export class DummyTextDocument implements TextDocument {
     lines = new Array<TextLine>();
     public addLine(line: string) {
         let newLine = new DummyTextLine(line);
+        newLine.lineNumber = this.lineCount;
         this.lines.push(newLine);
         this.lineCount += 1;
     }
@@ -95,6 +96,9 @@ export class DummyTextDocument implements TextDocument {
         // Search for the word's beginning and end.
         let left = str.slice(0, pos + 1).search(/[^\s,\.;:\$#]+$/);
         let right = str.slice(pos).search(/[\s,\.;:\$#]/);
+        if (left < 0) {
+            left = 0;
+        }
         // The last word in the string is a special case.
         if (right < 0) {
             return new Range(new Position(line.lineNumber, left), new Position(line.lineNumber, str.length));

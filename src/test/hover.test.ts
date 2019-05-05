@@ -5,7 +5,7 @@
 
 import { expect } from 'chai';
 import { M68kHoverProvider } from '../hover';
-import { HoverInstruction } from '../documentation';
+import { DocumentationInstruction } from '../documentation';
 import { Position, CancellationTokenSource, Hover, MarkdownString, Uri } from 'vscode';
 import { DummyTextDocument } from './dummy';
 import * as chaiAsPromised from 'chai-as-promised';
@@ -22,19 +22,20 @@ describe("Hover Tests", function () {
     const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
     const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
     let dHnd: M68kDefinitionHandler;
+    let state: ExtensionState;
     before(async function () {
         // activate the extension
         let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
-        let state = ExtensionState.getCurrent();
+        state = ExtensionState.getCurrent();
         dHnd = state.getDefinitionHandler();
         await dHnd.scanFile(Uri.file(MAIN_SOURCE));
     });
     describe("HoverProvider api", function () {
         it("Should return no hover on a empty document", function () {
-            let hp = new M68kHoverProvider();
+            let hp = new M68kHoverProvider(state.getDocumentationManager());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 1);
             let tockenEmitter = new CancellationTokenSource();
@@ -42,7 +43,7 @@ describe("Hover Tests", function () {
             expect(results).to.be.rejected;
         });
         it("Should return a hover on an instruction", async function () {
-            let hp = new M68kHoverProvider();
+            let hp = new M68kHoverProvider(state.getDocumentationManager());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 15);
             let tockenEmitter = new CancellationTokenSource();
@@ -54,12 +55,12 @@ describe("Hover Tests", function () {
                 let elm = result.contents[0];
                 expect(elm instanceof MarkdownString).to.be.true;
                 if (elm instanceof MarkdownString) {
-                    expect(elm.value).to.be.equal("**MOVE**: Copy value");
+                    expect(elm.value).to.be.equal("**move**: Copy value");
                 }
             }
         });
         it("Should return a hover on a data with a number", async function () {
-            let hp = new M68kHoverProvider();
+            let hp = new M68kHoverProvider(state.getDocumentationManager());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 23);
             let tockenEmitter = new CancellationTokenSource();
@@ -77,7 +78,7 @@ describe("Hover Tests", function () {
         });
     });
     it("Should return a hover on a data with a number and a register", async function () {
-        let hp = new M68kHoverProvider();
+        let hp = new M68kHoverProvider(state.getDocumentationManager());
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 30);
         let tockenEmitter = new CancellationTokenSource();
@@ -94,7 +95,7 @@ describe("Hover Tests", function () {
         }
     });
     it("Should return a hover on a data with a library name", async function () {
-        let hp = new M68kHoverProvider();
+        let hp = new M68kHoverProvider(state.getDocumentationManager());
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 25);
         let tockenEmitter = new CancellationTokenSource();
@@ -123,7 +124,7 @@ describe("Hover Tests", function () {
         }
     });
     it("Should return a hover on a data with a formula and a register", async function () {
-        let hp = new M68kHoverProvider();
+        let hp = new M68kHoverProvider(state.getDocumentationManager());
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 51);
         let tockenEmitter = new CancellationTokenSource();
@@ -140,7 +141,7 @@ describe("Hover Tests", function () {
         }
     });
     it("Should return a hover on variable", async function () {
-        let hp = new M68kHoverProvider();
+        let hp = new M68kHoverProvider(state.getDocumentationManager());
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 4);
         let tockenEmitter = new CancellationTokenSource();
@@ -157,10 +158,10 @@ describe("Hover Tests", function () {
         }
     });
     it("Should render a command", function () {
-        let hp = new M68kHoverProvider();
-        let hoverInstruction = new HoverInstruction();
-        hoverInstruction.instruction = "ADD";
-        hoverInstruction.decription = "ADD binary";
+        let hp = new M68kHoverProvider(state.getDocumentationManager());
+        let hoverInstruction = new DocumentationInstruction();
+        hoverInstruction.name = "ADD";
+        hoverInstruction.description = "ADD binary";
         hoverInstruction.syntax = "Dx,Dy";
         hoverInstruction.size = "BW";
         hoverInstruction.x = "1";
@@ -171,7 +172,7 @@ describe("Hover Tests", function () {
         expect(hp.renderHover(hoverInstruction).value).to.be.equal("`ADD[.BW]` `Dx,Dy` _(x:1,n:2,z:3,v:4,c:5)_");
     });
     it("Should render a register hover", function () {
-        let hp = new M68kHoverProvider();
+        let hp = new M68kHoverProvider(state.getDocumentationManager());
         let mdStr = hp.renderWordHover("DFF180");
         expect(mdStr).to.not.be.null;
         if (mdStr) {
@@ -184,7 +185,7 @@ describe("Hover Tests", function () {
         }
     });
     it("Should render a number", function () {
-        let hp = new M68kHoverProvider();
+        let hp = new M68kHoverProvider(state.getDocumentationManager());
         let mdStr = hp.renderNumberForWord("#10");
         expect(mdStr).to.not.be.null;
         if (mdStr) {
@@ -212,7 +213,7 @@ describe("Hover Tests", function () {
         }
     });
     it("Should render a register value", function () {
-        let hp = new M68kHoverProvider();
+        let hp = new M68kHoverProvider(state.getDocumentationManager());
         let expected = "|Bits | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0|\n|---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ----|\n|  | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0|\n\n";
         let mdStr = hp.renderRegisterValue("$1010");
         expect(mdStr).to.not.be.null;

@@ -1,11 +1,15 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+export class DocumentationElement {
+    name: string = "";
+    description: string = "";
+}
 /**
  * Class to manage the instructions
  */
-export class HoverInstructionsManager {
-    instructions = new Map<string, Array<HoverInstruction>>();
+export class DocumentationInstructionsManager {
+    instructions = new Map<string, Array<DocumentationInstruction>>();
     constructor() {
         // Read the instructions file
         // Creating the relative path to find the test file
@@ -14,14 +18,15 @@ export class HoverInstructionsManager {
         var lineIndex = 0;
         for (let line of lines) {
             if (line.length > 0) {
-                let hi = HoverInstruction.parse(line);
+                let hi = DocumentationInstruction.parse(line);
                 if (hi) {
-                    let list = this.instructions.get(hi.instruction);
+                    let key = hi.name.toUpperCase();
+                    let list = this.instructions.get(key);
                     if (!list) {
-                        list = new Array<HoverInstruction>();
+                        list = new Array<DocumentationInstruction>();
                     }
                     list.push(hi);
-                    this.instructions.set(hi.instruction, list);
+                    this.instructions.set(key, list);
                 } else {
                     console.error("Error parsing file 'intructionsset.csv' on line [" + lineIndex + "]: '" + line + "'");
                 }
@@ -34,9 +39,7 @@ export class HoverInstructionsManager {
 /**
  * Class reprensenting an instruction
  */
-export class HoverInstruction {
-    instruction: string = "";
-    decription: string = "";
+export class DocumentationInstruction extends DocumentationElement {
     syntax: string = "";
     size: string = "";
     x: string = "";
@@ -45,25 +48,19 @@ export class HoverInstruction {
     v: string = "";
     c: string = "";
     /**
-     * Constructor
-     */
-    constructor() {
-        // Empty...
-    }
-    /**
      * Function to parse a line and create a HoverInstruction
      * 
      * @param cvsLine The line to parse
      * @return HoverInstruction if the parse succeded or null
      */
     static parse(csvLine: string): any {
-        let hi = new HoverInstruction();
+        let hi = new DocumentationInstruction();
         let elements = csvLine.split(";");
         if (elements.length < 9) {
             return null;
         } else {
-            hi.instruction = elements[0];
-            hi.decription = elements[1];
+            hi.name = elements[0].toLowerCase();
+            hi.description = elements[1];
             hi.syntax = elements[2];
             hi.size = elements[3].replace("-", "");
             hi.x = elements[4];
@@ -79,9 +76,9 @@ export class HoverInstruction {
 /**
  * Class to manage the registers
  */
-export class HoverRegistersManager {
-    registersByName = new Map<string, HoverRegister>();
-    registersByAddress = new Map<string, HoverRegister>();
+export class DocumentationRegistersManager {
+    registersByName = new Map<string, DocumentationRegister>();
+    registersByAddress = new Map<string, DocumentationRegister>();
     constructor() {
         // Read the registers file
         // Creating the relative path to find the test file
@@ -94,7 +91,7 @@ export class HoverRegistersManager {
                 if (elms.length === 2) {
                     let name = elms[1].toUpperCase();
                     let address = elms[0].toUpperCase();
-                    let hr = new HoverRegister(address, name, description);
+                    let hr = new DocumentationRegister(address, name, description);
                     this.registersByAddress.set(address, hr);
                     this.registersByName.set(name, hr);
                 }
@@ -106,10 +103,8 @@ export class HoverRegistersManager {
 /**
  * Class reprensenting a register
  */
-export class HoverRegister {
+export class DocumentationRegister extends DocumentationElement {
     address: string;
-    name: string;
-    description: string;
     /**
      * Contructor
      * @param address address of the register 
@@ -117,6 +112,7 @@ export class HoverRegister {
      * @param description description in markdown
      */
     constructor(address: string, name: string, description: string) {
+        super();
         this.address = address;
         this.name = name;
         this.description = description;
@@ -126,8 +122,8 @@ export class HoverRegister {
 /**
  * Class to manage the libraries documentation
  */
-export class HoverLibraryManager {
-    private functionsByName = new Map<string, HoverLibraryFunction>();
+export class DocumentationLibraryManager {
+    public functionsByName = new Map<string, DocumentationLibraryFunction>();
     constructor() {
         // Read the registers file
         // Creating the relative path to find the test file
@@ -138,9 +134,9 @@ export class HoverLibraryManager {
                 fs.readdirSync(librariesDirPath).forEach(filename => {
                     if (filename.endsWith(".md") && !filename.startsWith('_')) {
                         let filePath = path.join(librariesDirPath, filename);
-                        let name = filename.replace(".md", "").toUpperCase();
-                        let lf = new HoverLibraryFunction(dirName, name, "", filePath);
-                        this.functionsByName.set(name, lf);
+                        let name = filename.replace(".md", "");
+                        let lf = new DocumentationLibraryFunction(dirName, name, "", filePath);
+                        this.functionsByName.set(name.toUpperCase(), lf);
                     }
                 });
             }
@@ -159,9 +155,9 @@ export class HoverLibraryManager {
         }
         return rText;
     }
-    public loadDescription(functionName: string): HoverLibraryFunction | undefined {
+    public loadDescription(functionName: string): DocumentationLibraryFunction | undefined {
         let hLibFunc = this.functionsByName.get(functionName);
-        if (hLibFunc) {
+        if (hLibFunc && (hLibFunc.description.length === 0)) {
             let description = fs.readFileSync(hLibFunc.filepathname, 'utf8');
             // refactor the description links
             hLibFunc.description = this.refactorLinks(`libs/${hLibFunc.libraryName}`, description);
@@ -176,10 +172,8 @@ export class HoverLibraryManager {
 /**
  * Class reprensenting a library function
  */
-export class HoverLibraryFunction {
+export class DocumentationLibraryFunction extends DocumentationElement {
     libraryName: string;
-    name: string;
-    description: string;
     filepathname: string;
     /**
      * Contructor
@@ -189,9 +183,120 @@ export class HoverLibraryFunction {
      * @param filepathname Path to the file
      */
     constructor(libraryName: string, name: string, description: string, filepathname: string) {
+        super();
         this.libraryName = libraryName;
         this.name = name;
         this.description = description;
         this.filepathname = filepathname;
+    }
+}
+
+/**
+ * Documentation manager manages all the documentation contents and holds the states
+ */
+export class DocumentationManager {
+    instructionsManager: DocumentationInstructionsManager;
+    registersManager: DocumentationRegistersManager;
+    libraryManager: DocumentationLibraryManager;
+    relevantKeywordsMap: Map<string, Array<DocumentationElement>>;
+    constructor() {
+        this.instructionsManager = new DocumentationInstructionsManager();
+        this.registersManager = new DocumentationRegistersManager();
+        this.libraryManager = new DocumentationLibraryManager();
+        this.relevantKeywordsMap = new Map<string, Array<DocumentationElement>>();
+        for (const [key, value] of this.instructionsManager.instructions.entries()) {
+            this.addRelevantKeywordElements(key, value[0]);
+        }
+        for (const [key, value] of this.registersManager.registersByName.entries()) {
+            this.addRelevantKeywordElements(key, value);
+        }
+        for (const [key, value] of this.libraryManager.functionsByName.entries()) {
+            this.addRelevantKeywordElements(key, value);
+        }
+    }
+
+    private addRelevantKeywordElements(key: string, element: DocumentationElement) {
+        let lkey = key.toUpperCase();
+        let lelements = this.relevantKeywordsMap.get(lkey);
+        if (!lelements) {
+            this.relevantKeywordsMap.set(lkey, [element]);
+        } else {
+            lelements.push(element);
+            this.relevantKeywordsMap.set(lkey, lelements);
+        }
+    }
+
+    public getInstruction(instruction: string): DocumentationInstruction[] | undefined {
+        return this.instructionsManager.instructions.get(instruction.toUpperCase());
+    }
+    public getRegisterByAddress(address: string): DocumentationRegister | undefined {
+        return this.registersManager.registersByAddress.get(address);
+    }
+    public getRegisterByName(name: string): DocumentationRegister | undefined {
+        return this.registersManager.registersByName.get(name);
+    }
+    public getFunction(functionName: string): DocumentationLibraryFunction | undefined {
+        return this.libraryManager.loadDescription(functionName);
+    }
+
+    /**
+     * Returns the description for a keyword
+     * @param keyword Word to search
+     * @return Description
+     */
+    public get(keyword: string): string | null {
+        let value;
+        if (keyword.length > 0) {
+            value = this.getRegisterByAddress(keyword);
+            if (!value) {
+                value = this.getRegisterByName(keyword);
+                if (!value) {
+                    let newKeyword = keyword;
+                    let pos = newKeyword.indexOf('(');
+                    if (pos > 0) {
+                        newKeyword = newKeyword.substring(0, pos);
+                    }
+                    if (newKeyword.startsWith("_LVO")) {
+                        newKeyword = newKeyword.substring(4);
+                    }
+                    value = this.getFunction(newKeyword);
+                }
+            }
+        }
+        if (value) {
+            return value.description;
+        } else {
+            return null;
+        }
+    }
+    /**
+     * Seeks for a keyword starting with 
+     * @param keyword Keyword part
+     * @return Array of keywords
+     */
+    public findKeywordStartingWith(keyword: string): Array<DocumentationElement> {
+        let values = new Array<DocumentationElement>();
+        let upper = keyword.toUpperCase();
+        if (upper.startsWith("_LVO")) {
+            upper = upper.substring(4);
+        }
+        for (const key of this.relevantKeywordsMap.keys()) {
+            if (key.startsWith(upper)) {
+                let keywordValues = this.relevantKeywordsMap.get(key);
+                if (keywordValues) {
+                    for (const v of keywordValues) {
+                        if (v instanceof DocumentationLibraryFunction) {
+                            const loaded = this.libraryManager.loadDescription(key);
+                            if (loaded) {
+                                values.push(loaded);
+                            }
+                        } else {
+                            values.push(v);
+                        }
+                    }
+                }
+            }
+        }
+        return values;
     }
 }

@@ -272,6 +272,9 @@
                     },
                     "description": "VLINK linker configuration"
                 }
+            },
+            "completionProvider": {
+                "resolveProvider": "true"
             }
         },
         "commands": [

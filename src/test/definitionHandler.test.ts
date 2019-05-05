@@ -60,6 +60,12 @@ describe("Definition handler Tests", function () {
         it("Should find the used and free registers", async () => {
             await expect(dHnd.provideUsedRegistersSymbols()).to.be.eventually.equal("Registers used: none - free: d0-d7/a0-a7");
         });
+        it("Should find the variables begining by a work", async () => {
+            let vars = dHnd.findVariableStartingWith("MY_");
+            expect(vars.size).to.be.equal(2);
+            expect(vars.get("MY_W_VAR")).to.be.equal("W/2");
+            expect(vars.get("MY_H_VAR")).to.be.equal("W*MY_W_VAR/2*(MY_W_VAR)");
+        });
     });
     context("Opened document", function () {
         before(async function () {

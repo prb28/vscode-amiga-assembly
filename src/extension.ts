@@ -19,6 +19,8 @@ import { DisassemblyContentProvider } from './disassemblyContentProvider';
 import { ADFTools } from './adf';
 import { DataGeneratorCodeLensProvider } from './expressionDataGenerator';
 import { IFFViewerPanel } from './iffImageViewer';
+import { M68kCompletionItemProvider } from './completion';
+import { DocumentationManager } from './documentation';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -41,6 +43,8 @@ export class ExtensionState {
     private adfTools: ADFTools | undefined;
     private definitionHandler: M68kDefinitionHandler | undefined;
     private dataGenerator: DataGeneratorCodeLensProvider | undefined;
+    private documentationManager: DocumentationManager | undefined;
+
     public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
         if (this.errorDiagnosticCollection === undefined) {
             this.errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');
@@ -103,6 +107,12 @@ export class ExtensionState {
         }
         return this.dataGenerator;
     }
+    public getDocumentationManager(): DocumentationManager {
+        if (this.documentationManager === undefined) {
+            this.documentationManager = new DocumentationManager();
+        }
+        return this.documentationManager;
+    }
 }
 
 const state = new ExtensionState();
@@ -132,7 +142,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     // Declaring the Hover
-    disposable = vscode.languages.registerHoverProvider(AMIGA_ASM_MODE, new M68kHoverProvider());
+    disposable = vscode.languages.registerHoverProvider(AMIGA_ASM_MODE, new M68kHoverProvider(state.getDocumentationManager()));
     context.subscriptions.push(disposable);
 
     // create a new disassembler
@@ -200,6 +210,9 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.executeCommand('markdown.showPreview', docsPathOnDisk);
     });
     context.subscriptions.push(disposable);
+
+    // Completion provider
+    context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AMIGA_ASM_MODE, new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler()), '.', '\"'));
 
     // Color provider
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_ASM_MODE, new M86kColorProvider()));

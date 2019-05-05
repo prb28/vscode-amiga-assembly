@@ -23,19 +23,19 @@
 ;******************************************************************	
 ;* Constantes
 ;******************************************************************	
-COPPER_WAIT  equ        $FFFE
-W            equ        320
-H            equ        256
-BPLSIZE      equ        (W*H)/8                                                    ; 1 plans de bits en octets
+COPPER_WAIT equ $FFFE
+W           equ 320
+H           equ 256
+BPLSIZE     equ (W*H)/8                                                          ; 1 plans de bits en octets
 
-LOGOW        equ        192                                                        ; padding à 1 word 12*16 = 192 / 11*16 = 172 < 178
-LOGOH        equ        67
-LOGOMARGIN   equ        (W-LOGOW)/2
-LOGOBPL      equ        LOGOW/8
-LOGOBWIDTH   equ        LOGOBPL*3
-LOGOSTARTV   equ        $4c
-MY_W_VAR       =        W/2
-MY_H_VAR       =        W*MY_W_VAR/2*(MY_W_VAR)
+LOGOW       equ 192                                                              ; padding à 1 word 12*16 = 192 / 11*16 = 172 < 178
+LOGOH       equ 67
+LOGOMARGIN  equ (W-LOGOW)/2
+LOGOBPL     equ LOGOW/8
+LOGOBWIDTH  equ LOGOBPL*3
+LOGOSTARTV  equ $4c
+MY_W_VAR      = W/2
+MY_H_VAR      = W*MY_W_VAR/2*(MY_W_VAR)
 ******************************************************************	
 
 start
@@ -146,12 +146,12 @@ Init
            dbf        d0,.l
 
 ; --- Nettoyage d'une partie de l'écran grâce au blitter ---
-bltx = 48;(320-224)/2
-blty = 30
-bltoffs = 30*(W/8)+bltx/8
-blth = 50
-bltw = 224/16  ; in words
-bltskip = (320-224)/8
+bltx          = 48                                                               ;(320-224)/2
+blty          = 30
+bltoffs       = 30*(W/8)+bltx/8
+blth          = 50
+bltw          = 224/16                                                           ; in words
+bltskip       = (320-224)/8
            move.l     #$8440,DMACON(a6)                                          ; Activation du blitter - il a pu être désactivé par une autre processus
 
            bsr        WaitBlit

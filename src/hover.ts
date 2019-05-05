@@ -1,16 +1,17 @@
 import * as vscode from 'vscode';
 import { ASMLine, NumberParser } from './parser';
-import { HoverInstruction, HoverInstructionsManager, HoverRegistersManager, HoverLibraryManager } from './documentation';
+import { DocumentationManager, DocumentationInstruction } from './documentation';
 import { ExtensionState } from './extension';
 
 /**
  * Hover provider class for le assembly language
  */
 export class M68kHoverProvider implements vscode.HoverProvider {
-    static hoverInstructionsManager = new HoverInstructionsManager();
-    static hoverRegistersManager = new HoverRegistersManager();
-    static hoverLibraryManager = new HoverLibraryManager();
+    documentationManager: DocumentationManager;
     numberParser = new NumberParser();
+    constructor(documentationManager: DocumentationManager) {
+        this.documentationManager = documentationManager;
+    }
     /**
      * Main hover function
      * @param document Document to be formatted
@@ -31,7 +32,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 if (token.isCancellationRequested) {
                     reject();
                 }
-                let hoverInstructionList = M68kHoverProvider.hoverInstructionsManager.instructions.get(keyInstruction.toUpperCase());
+                let hoverInstructionList = this.documentationManager.getInstruction(keyInstruction.toUpperCase());
                 if (hoverInstructionList) {
                     let hoverRendered = this.renderHoverList(hoverInstructionList);
                     resolve(new vscode.Hover(hoverRendered, asmLine.instructionRange));
@@ -198,26 +199,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @return Markdown string
      */
     public renderWordHover(word: string): vscode.MarkdownString | null {
-        let hr;
-        if (word.length > 0) {
-            hr = M68kHoverProvider.hoverRegistersManager.registersByAddress.get(word);
-            if (!hr) {
-                hr = M68kHoverProvider.hoverRegistersManager.registersByName.get(word);
-                if (!hr) {
-                    let keyword = word;
-                    let pos = word.indexOf('(');
-                    if (pos > 0) {
-                        keyword = word.substring(0, pos);
-                    }
-                    if (keyword.startsWith("_LVO")) {
-                        keyword = keyword.substring(4);
-                    }
-                    hr = M68kHoverProvider.hoverLibraryManager.loadDescription(keyword);
-                }
-            }
-        }
-        if (hr) {
-            let mdStr = new vscode.MarkdownString(hr.description);
+        let value = this.documentationManager.get(word);
+        if (value) {
+            let mdStr = new vscode.MarkdownString(value);
             mdStr.isTrusted = true;
             return mdStr;
         } else {
@@ -229,10 +213,10 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * Rendering a list of instructions
      * @param hoverInstructionList Instructions list
      */
-    renderHoverList(hoverInstructionList: Array<HoverInstruction>): Array<vscode.MarkdownString> {
+    renderHoverList(hoverInstructionList: Array<DocumentationInstruction>): Array<vscode.MarkdownString> {
         let rendered = new Array<vscode.MarkdownString>();
         let firstInst = hoverInstructionList[0];
-        let title = "**" + firstInst.instruction + "**: " + this.escapeText(firstInst.decription);
+        let title = "**" + firstInst.name + "**: " + this.escapeText(firstInst.description);
         rendered.push(new vscode.MarkdownString(title));
         for (let hoverInstruction of hoverInstructionList) {
             rendered.push(this.renderHover(hoverInstruction));
@@ -245,9 +229,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @param intruction Intruction hover rendered
      * @return String rendered
      */
-    renderHover(hoverInstruction: HoverInstruction): vscode.MarkdownString {
+    renderHover(hoverInstruction: DocumentationInstruction): vscode.MarkdownString {
         let rendered = new vscode.MarkdownString();
-        let s = "`" + hoverInstruction.instruction;
+        let s = "`" + hoverInstruction.name;
         if (hoverInstruction.size.length > 0) {
             s += "[." + hoverInstruction.size + "]";
         }
