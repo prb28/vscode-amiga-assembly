@@ -210,6 +210,15 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.executeCommand('markdown.showPreview', docsPathOnDisk);
     });
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showdoc-toc', async () => {
+        let docsPathOnDisk = vscode.Uri.file(
+            path.join(context.extensionPath, 'docs', "toc.md")
+        );
+        vscode.commands.executeCommand('markdown.showPreview', docsPathOnDisk);
+    });
+    context.subscriptions.push(disposable);
+
+
 
     // Completion provider
     context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AMIGA_ASM_MODE, new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler()), '.', '\"'));

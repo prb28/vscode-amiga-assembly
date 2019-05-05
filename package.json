@@ -335,8 +335,13 @@
             },
             {
                 "command": "amiga-assembly.view-iff",
-                "title": "View IFF image",
+                "title": "Amiga Assembly: View IFF image",
                 "description": "Display an IFF/ILBM image"
+            },
+            {
+                "command": "amiga-assembly.showdoc-toc",
+                "title": "Amiga Assembly: Show documentation",
+                "description": "Display the documentation table of contents"
             }
         ],
         "breakpoints": [
