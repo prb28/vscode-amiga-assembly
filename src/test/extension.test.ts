@@ -153,7 +153,7 @@ describe("Global Extension Tests", function () {
         });
     });
     context("Webview", function () {
-        it.only("Should show an iff file", async () => {
+        it("Should show an iff file", async () => {
             this.timeout(20000);
             let imageName = "TRU256.IFF";
             const uri = vscode.Uri.file(path.join(testFilesPath, imageName));

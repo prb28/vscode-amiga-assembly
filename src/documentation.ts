@@ -258,7 +258,7 @@ export class DocumentationManager {
      * @return Description
      */
     public get(keyword: string): string | null {
-        let value: DocumentationElement;
+        let value: DocumentationElement | undefined;
         if (keyword.length > 0) {
             value = this.getRegisterByAddress(keyword);
             if (!value) {

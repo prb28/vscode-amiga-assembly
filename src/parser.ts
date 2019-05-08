@@ -125,8 +125,11 @@ export class ASMLine {
             if (qPos > 0) {
                 searchInstructionString = searchInstructionString.substring(0, qPos);
             }
-            let keyword = this.search(ASMLine.keywordsRegExps, searchInstructionString);
-            if (!keyword && leadingSpacesCount !== 0) {
+            let keyword: RegExpExecArray | null = null;
+            if (ASMLine.keywordsRegExps) {
+                keyword = this.search(ASMLine.keywordsRegExps, searchInstructionString);
+            }
+            if (!keyword && leadingSpacesCount !== 0 && ASMLine.macrosRegExps) {
                 // it's not a keyword - this could be a macro if there are leading spaces
                 // Consider it is a label if there are no leading spaces
                 keyword = this.search(ASMLine.macrosRegExps, searchInstructionString);
@@ -193,7 +196,7 @@ export class ASMLine {
      * @param value Value to test
      * @return RegExpExecArray if found or null
      */
-    search(regexps: Array<RegExp>, value: string): any {
+    search(regexps: Array<RegExp>, value: string): RegExpExecArray | null {
         let firstMatch: any | null = null;
         for (let regexp of regexps) {
             let r = regexp.exec(value);

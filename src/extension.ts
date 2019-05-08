@@ -317,8 +317,8 @@ export function activate(context: vscode.ExtensionContext) {
         });
     }
     context.subscriptions.push(
-        vscode.commands.registerCommand('amiga-assembly.view-iff', async (imageUri: vscode.Uri) => {
-            await IFFViewerPanel.create(context.extensionPath, imageUri);
+        vscode.commands.registerCommand('amiga-assembly.view-iff', (imageUri: vscode.Uri) => {
+            IFFViewerPanel.create(context.extensionPath, imageUri);
         })
     );
     let api = {

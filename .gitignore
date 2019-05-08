@@ -10,3 +10,4 @@ test_files/debug/fs-uae/fs-uae
 test-report*
 .scannerwork
 tslint-report.json
+dist
