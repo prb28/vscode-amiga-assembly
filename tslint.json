@@ -16,5 +16,11 @@
 		],
 		"triple-equals": true
 	},
-	"rulesDirectory": []
+	"rulesDirectory": [],
+	"linterOptions": {
+		"exclude": [
+			"dist",
+			"node-modules"
+		]
+	}
 }

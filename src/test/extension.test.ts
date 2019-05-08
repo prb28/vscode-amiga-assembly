@@ -12,18 +12,22 @@ import { spy, verify, when, anything, resetCalls, mock, instance } from 'ts-mock
 import { ExtensionState } from '../extension';
 import { Capstone } from '../capstone';
 import { IFFViewerPanel } from '../iffImageViewer';
+import { fail } from 'assert';
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
+    // Creating the relative path to find the test file
+    let testFilesPath = "";
     before(async () => {
         // activate the extension
         let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
+            testFilesPath = path.join(ext.extensionPath, "test_files");
+        } else {
+            fail("Extension no loaded");
         }
     });
-    // Creating the relative path to find the test file
-    const testFilesPath = path.join(__dirname, "..", "..", "test_files");
     context("Formatting comand", function () {
         it("Should format a simple file", async () => {
             this.timeout(2000);
@@ -64,7 +68,7 @@ describe("Global Extension Tests", function () {
             }
         });
     });
-    describe("Build commands", function () {
+    context("Build commands", function () {
         it("Should build the workspace on command", async () => {
             let state = ExtensionState.getCurrent();
             let spiedCompiler = spy(state.getCompiler());
@@ -121,7 +125,7 @@ describe("Global Extension Tests", function () {
             verify(spiedStatus.onError("nope")).once();
         });
     });
-    describe("Disassemble command", function () {
+    context("Disassemble command", function () {
         it("Should disassemble a file", async () => {
             let state = ExtensionState.getCurrent();
             let spiedDisassembler = spy(state.getDisassembler());
@@ -148,11 +152,13 @@ describe("Global Extension Tests", function () {
             }
         });
     });
-    describe("Webview", function () {
-        it("Should show an iff file", async () => {
+    context("Webview", function () {
+        it.only("Should show an iff file", async () => {
+            this.timeout(20000);
             let imageName = "TRU256.IFF";
             const uri = vscode.Uri.file(path.join(testFilesPath, imageName));
             await vscode.commands.executeCommand("amiga-assembly.view-iff", uri);
+
             expect(IFFViewerPanel.views.size).to.be.equal(1);
             for (let panel of IFFViewerPanel.views.keys()) {
                 expect(panel.title).to.be.equal(imageName);

@@ -1,4 +1,4 @@
-import { Hunk, HunkParser, SourceLine, Symbol, HunkType } from './amigaHunkParser';
+import { Hunk, HunkParser, SourceLine, HunkType, Symbol } from './amigaHunkParser';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -125,10 +125,9 @@ export class DebugInfo {
                     // Is there a path replacement
                     if (this.pathReplacements) {
                         let name = data[0];
-                        var it = this.pathReplacements[Symbol.iterator]();
-                        for (let item of it) {
-                            if (name.indexOf(item[0]) >= 0) {
-                                name = name.replace(item[0], item[1]);
+                        for (let [key, value] of this.pathReplacements.entries()) {
+                            if (name.indexOf(key) >= 0) {
+                                name = name.replace(key, value);
                                 break;
                             }
                         }

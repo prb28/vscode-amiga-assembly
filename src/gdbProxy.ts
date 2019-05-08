@@ -1,6 +1,6 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
-import { Mutex } from 'ts-simple-mutex/build';
+import { Mutex } from 'ts-simple-mutex/build/lib/mutex';
 import { GdbAmigaSysThreadId, GdbError, GdbHaltStatus, GdbRegister, GdbSignal, GdbStackFrame, GdbStackPosition, GdbThread, Segment, GdbThreadState } from './gdbProxyCore';
 import { GdbBreakpoint } from './breakpointManager';
 import { GdbRecievedDataManager, GdbPacketHandler } from './gdbEvents';

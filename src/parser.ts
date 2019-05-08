@@ -6,10 +6,9 @@ import { DocumentFormatterConfiguration } from './formatterConfiguration';
  * Formatter class for le assemble language
  */
 export class ASMLine {
-    static m68kLang = new M68kLanguage();
-    static commentLineRegExps = ASMLine.m68kLang.getAllRegExps(/.*comment\.line.*/g);
-    static keywordsRegExps = ASMLine.m68kLang.getAllRegExps(/keyword.*/g);
-    static macrosRegExps = ASMLine.m68kLang.getAllRegExps(/macro.*/g);
+    static m68kLang?: M68kLanguage;
+    static keywordsRegExps?: Array<RegExp>;
+    static macrosRegExps?: Array<RegExp>;
     label: string = "";
     instruction: string = "";
     data: string = "";
@@ -33,6 +32,15 @@ export class ASMLine {
     valueRange: Range;
 
     vscodeTextLine?: TextLine;
+
+    private static init() {
+        if (!ASMLine.m68kLang) {
+            ASMLine.m68kLang = new M68kLanguage();
+            ASMLine.keywordsRegExps = ASMLine.m68kLang.getAllRegExps(/keyword.*/g);
+            ASMLine.macrosRegExps = ASMLine.m68kLang.getAllRegExps(/macro.*/g);
+        }
+    }
+
     /**
      * Constructor
      * @param line Text of the line
@@ -67,6 +75,7 @@ export class ASMLine {
      * @param lineNumber index of the line in document
      */
     parse(line: string, lineNumber: number) {
+        ASMLine.init();
         let l = line.trim();
         let leadingSpacesCount = line.search(/\S/);
         let current = new Position(lineNumber, 0);
@@ -435,7 +444,7 @@ export class ASMDocument {
     public parse(document: TextDocument, formatterConfiguration: DocumentFormatterConfiguration, token?: CancellationToken, range?: Range, position?: Position) {
         let localRange = range;
         if (document.lineCount <= 0) {
-            return null;
+            return;
         }
         if (!localRange) {
             localRange = new Range(new Position(0, 0), new Position(document.lineCount - 1, 0));
@@ -444,7 +453,7 @@ export class ASMDocument {
         for (var i = localRange.start.line; i <= localRange.end.line; i++) {
             let isOversized = false;
             if (token && token.isCancellationRequested) {
-                return [];
+                return;
             }
             const line = document.lineAt(i);
             let asmLine = new ASMLine(line.text, line);

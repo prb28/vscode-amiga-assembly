@@ -44,6 +44,7 @@ export class ExtensionState {
     private definitionHandler: M68kDefinitionHandler | undefined;
     private dataGenerator: DataGeneratorCodeLensProvider | undefined;
     private documentationManager: DocumentationManager | undefined;
+    private extensionPath: string = path.join(__dirname, "..");
 
     public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
         if (this.errorDiagnosticCollection === undefined) {
@@ -109,9 +110,15 @@ export class ExtensionState {
     }
     public getDocumentationManager(): DocumentationManager {
         if (this.documentationManager === undefined) {
-            this.documentationManager = new DocumentationManager();
+            this.documentationManager = new DocumentationManager(this.extensionPath);
         }
         return this.documentationManager;
+    }
+    public setExtensionPath(extensionPath: string) {
+        this.extensionPath = extensionPath;
+    }
+    public getExtensionPath(): string {
+        return this.extensionPath;
     }
 }
 
@@ -120,6 +127,7 @@ const state = new ExtensionState();
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    state.setExtensionPath(context.extensionPath);
     context.globalState.update('state', state);
     // Preparing the status manager
     let statusManager = state.getStatusManager();
@@ -309,8 +317,8 @@ export function activate(context: vscode.ExtensionContext) {
         });
     }
     context.subscriptions.push(
-        vscode.commands.registerCommand('amiga-assembly.view-iff', (imageUri: vscode.Uri) => {
-            IFFViewerPanel.create(context.extensionPath, imageUri);
+        vscode.commands.registerCommand('amiga-assembly.view-iff', async (imageUri: vscode.Uri) => {
+            await IFFViewerPanel.create(context.extensionPath, imageUri);
         })
     );
     let api = {

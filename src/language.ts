@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { ExtensionState } from './extension';
 
 /**
  * Class to manage the language file
@@ -10,8 +11,8 @@ export class M68kLanguage {
      * Contrutor : parses the file
      */
     constructor() {
-        // Creating the relative path to find the test file
-        const syntaxeFilePath = path.join(__dirname, "..", "syntaxes", "M68k-Assembly.tmLanguage.json");
+        let extensionPath = ExtensionState.getCurrent().getExtensionPath();
+        const syntaxeFilePath = path.join(extensionPath, "syntaxes", "M68k-Assembly.tmLanguage.json");
         var data = fs.readFileSync(syntaxeFilePath, 'utf8');
         this.languageMap = JSON.parse(data);
     }

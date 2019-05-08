@@ -15,35 +15,38 @@ export class IFFViewerPanel {
     private image: vscode.Uri;
     private animate: boolean;
 
-    public static create(extensionPath: string, image: vscode.Uri) {
-        const column = vscode.window.activeTextEditor
-            ? vscode.window.activeTextEditor.viewColumn
-            : undefined;
+    public static create(extensionPath: string, image: vscode.Uri): Promise<void> {
+        return new Promise((resolve, _reject) => {
+            const column = vscode.window.activeTextEditor
+                ? vscode.window.activeTextEditor.viewColumn
+                : undefined;
 
-        // And restrict the webview to only loading content from our extension's `media` directory.
-        let localResourceRoots = [vscode.Uri.file(path.join(extensionPath, IFFViewerPanel.SCRIPTS_PATH))];
-        let folders = vscode.workspace.workspaceFolders;
-        if (folders && folders.length) {
-            for (let folder of folders) {
-                localResourceRoots.push(folder.uri);
+            // And restrict the webview to only loading content from our extension's `media` directory.
+            let localResourceRoots = [vscode.Uri.file(path.join(extensionPath, IFFViewerPanel.SCRIPTS_PATH))];
+            let folders = vscode.workspace.workspaceFolders;
+            if (folders && folders.length) {
+                for (let folder of folders) {
+                    localResourceRoots.push(folder.uri);
+                }
             }
-        }
 
-        // Otherwise, create a new panel.
-        const panel = vscode.window.createWebviewPanel(
-            IFFViewerPanel.VIEW_TYPE,
-            'IFF Viewer',
-            column || vscode.ViewColumn.One,
-            {
-                // Enable javascript in the webview
-                enableScripts: true,
-                localResourceRoots: localResourceRoots,
-                retainContextWhenHidden: true
-            }
-        );
+            // Otherwise, create a new panel.
+            const panel = vscode.window.createWebviewPanel(
+                IFFViewerPanel.VIEW_TYPE,
+                'IFF Viewer',
+                column || vscode.ViewColumn.One,
+                {
+                    // Enable javascript in the webview
+                    enableScripts: true,
+                    localResourceRoots: localResourceRoots,
+                    retainContextWhenHidden: true
+                }
+            );
 
-        let view = new IFFViewerPanel(panel, extensionPath, image);
-        IFFViewerPanel.views.set(panel, view);
+            let view = new IFFViewerPanel(panel, extensionPath, image);
+            IFFViewerPanel.views.set(panel, view);
+            resolve();
+        });
     }
 
     public static revive(panel: vscode.WebviewPanel, extensionPath: string, state: any) {

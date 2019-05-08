@@ -163,7 +163,7 @@ export class DebugDisassembledMananger {
                     // Nothing to do
                     lineNumber = -1;
                 });
-                if (returnedLineNumber !== undefined) {
+                if (returnedLineNumber || returnedLineNumber === 0) {
                     lineNumber = returnedLineNumber;
                 }
             } else {
@@ -280,7 +280,7 @@ export class DebugDisassembledMananger {
                     reject(err);
                 });
             }
-            if (searchedAddress !== undefined) {
+            if (searchedAddress || searchedAddress === 0) {
                 await this.disassembleNumericalAddress(searchedAddress, length, isCopper).then(code => {
                     resolve(code);
                 }).catch(err => {

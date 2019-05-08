@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DocumentationManager, DocumentationRegister, DocumentationInstruction } from './documentation';
+import { DocumentationManager, DocumentationType } from './documentation';
 import { M68kDefinitionHandler } from './definitionHandler';
 import { ASMLine } from './parser';
 
@@ -35,10 +35,10 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                             let label = value.name;
                             let kind = vscode.CompletionItemKind.Function;
                             if (isInData) {
-                                if (value instanceof DocumentationInstruction) {
+                                if (value.type === DocumentationType.INSTRUCTION) {
                                     continue;
                                 } else {
-                                    if (value instanceof DocumentationRegister) {
+                                    if (value.type === DocumentationType.REGISTER) {
                                         if (!isInData) {
                                             continue;
                                         }
@@ -47,7 +47,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                                         label = "_LVO" + label;
                                     }
                                 }
-                            } else if (!(value instanceof DocumentationInstruction)) {
+                            } else if (value.type !== DocumentationType.INSTRUCTION) {
                                 continue;
                             }
                             let completion = new vscode.CompletionItem(label, kind);

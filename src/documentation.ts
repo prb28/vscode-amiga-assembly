@@ -1,19 +1,26 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+export enum DocumentationType {
+    UNKNHOWN,
+    INSTRUCTION,
+    REGISTER,
+    FUNCTION
+}
 export class DocumentationElement {
     name: string = "";
     description: string = "";
+    type: DocumentationType = DocumentationType.UNKNHOWN;
 }
 /**
  * Class to manage the instructions
  */
 export class DocumentationInstructionsManager {
     instructions = new Map<string, Array<DocumentationInstruction>>();
-    constructor() {
+    constructor(extensionPath: string) {
         // Read the instructions file
         // Creating the relative path to find the test file
-        const filePath = path.join(__dirname, "..", "docs", "intructionsset.csv");
+        const filePath = path.join(extensionPath, "docs", "intructionsset.csv");
         var lines = fs.readFileSync(filePath, 'utf8').split(/\r\n|\r|\n/g);
         var lineIndex = 0;
         for (let line of lines) {
@@ -47,6 +54,10 @@ export class DocumentationInstruction extends DocumentationElement {
     z: string = "";
     v: string = "";
     c: string = "";
+    constructor() {
+        super();
+        this.type = DocumentationType.INSTRUCTION;
+    }
     /**
      * Function to parse a line and create a HoverInstruction
      * 
@@ -79,10 +90,10 @@ export class DocumentationInstruction extends DocumentationElement {
 export class DocumentationRegistersManager {
     registersByName = new Map<string, DocumentationRegister>();
     registersByAddress = new Map<string, DocumentationRegister>();
-    constructor() {
+    constructor(extensionPath: string) {
         // Read the registers file
         // Creating the relative path to find the test file
-        const dirPath = path.join(__dirname, "..", "docs", "hardware");
+        const dirPath = path.join(extensionPath, "docs", "hardware");
         fs.readdirSync(dirPath).forEach(filename => {
             if (filename.endsWith(".md")) {
                 let filePath = path.join(dirPath, filename);
@@ -116,6 +127,7 @@ export class DocumentationRegister extends DocumentationElement {
         this.address = address;
         this.name = name;
         this.description = description;
+        this.type = DocumentationType.REGISTER;
     }
 }
 
@@ -124,10 +136,10 @@ export class DocumentationRegister extends DocumentationElement {
  */
 export class DocumentationLibraryManager {
     public functionsByName = new Map<string, DocumentationLibraryFunction>();
-    constructor() {
+    constructor(extensionPath: string) {
         // Read the registers file
         // Creating the relative path to find the test file
-        const dirPath = path.join(__dirname, "..", "docs", "libs");
+        const dirPath = path.join(extensionPath, "docs", "libs");
         fs.readdirSync(dirPath).forEach(dirName => {
             if (!dirName.startsWith(".")) {
                 const librariesDirPath = path.join(dirPath, dirName);
@@ -188,6 +200,7 @@ export class DocumentationLibraryFunction extends DocumentationElement {
         this.name = name;
         this.description = description;
         this.filepathname = filepathname;
+        this.type = DocumentationType.FUNCTION;
     }
 }
 
@@ -199,10 +212,10 @@ export class DocumentationManager {
     registersManager: DocumentationRegistersManager;
     libraryManager: DocumentationLibraryManager;
     relevantKeywordsMap: Map<string, Array<DocumentationElement>>;
-    constructor() {
-        this.instructionsManager = new DocumentationInstructionsManager();
-        this.registersManager = new DocumentationRegistersManager();
-        this.libraryManager = new DocumentationLibraryManager();
+    constructor(extensionPath: string) {
+        this.instructionsManager = new DocumentationInstructionsManager(extensionPath);
+        this.registersManager = new DocumentationRegistersManager(extensionPath);
+        this.libraryManager = new DocumentationLibraryManager(extensionPath);
         this.relevantKeywordsMap = new Map<string, Array<DocumentationElement>>();
         for (const [key, value] of this.instructionsManager.instructions.entries()) {
             this.addRelevantKeywordElements(key, value[0]);
@@ -245,7 +258,7 @@ export class DocumentationManager {
      * @return Description
      */
     public get(keyword: string): string | null {
-        let value;
+        let value: DocumentationElement;
         if (keyword.length > 0) {
             value = this.getRegisterByAddress(keyword);
             if (!value) {

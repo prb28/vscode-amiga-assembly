@@ -272,7 +272,8 @@ export class ExecutorHelper {
         } else {
             // on linux and OS X we kill all direct and indirect child processes as well
             try {
-                const cmd = path.join(__dirname, '../scripts/terminateProcess.sh');
+                let extensionPath = ExtensionState.getCurrent().getExtensionPath();
+                const cmd = path.join(extensionPath, 'scripts', 'terminateProcess.sh');
                 cp.spawnSync(cmd, [processId.toString()]);
             } catch (err) {
             }

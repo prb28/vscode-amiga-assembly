@@ -4,12 +4,20 @@
 
 import { expect } from 'chai';
 import { DocumentationInstruction, DocumentationManager } from '../documentation';
+import * as vscode from 'vscode';
+import { ExtensionState } from '../extension';
 
 // tslint:disable:no-unused-expression
 describe("Documentation Tests", function () {
     let documentationManger: DocumentationManager;
-    before(() => {
-        documentationManger = new DocumentationManager();
+    before(async () => {
+        // activate the extension
+        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
+        let state = ExtensionState.getCurrent();
+        documentationManger = state.getDocumentationManager();
     });
     context("Hover instruction file parsing", function () {
         it("Should read the file correctly", function () {

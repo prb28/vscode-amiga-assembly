@@ -65,7 +65,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                                 let value = await definitionHandler.evaluateFormula(elm).catch(err => {
                                     // nothing to do
                                 });
-                                if (value !== undefined) {
+                                if (value || value === 0) {
                                     renderedLine2 = this.renderRegisterValueNumber(value);
                                     if (renderedLine2) {
                                         break;
