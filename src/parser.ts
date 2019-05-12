@@ -215,7 +215,7 @@ export class ASMLine {
     }
 
     /**
-     * Check if it is ans asignment and parses it
+     * Check if it is an asignment and parses it
      * @return true if it is an asignment
      */
     public parseAsignment(line: string, lineNumber: number): boolean {
