@@ -23,7 +23,6 @@ sonar-project.properties
 .sonarlint
 *.zip
 out/test/
-node_modules
 src/
 package-json.lock
 webpack.config.js
