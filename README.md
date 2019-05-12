@@ -156,3 +156,6 @@ The assembly language will be formatted with the standard shortcuts :
 
 ## Misc credits
 See the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) for detailed credits.
+
+## Misc Licence
+Amiga and the boing ball are licenceced by (Cloanto Coporation)[https://cloanto.com]
