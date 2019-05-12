@@ -21,6 +21,8 @@ import { DataGeneratorCodeLensProvider } from './expressionDataGenerator';
 import { IFFViewerPanel } from './iffImageViewer';
 import { M68kCompletionItemProvider } from './completion';
 import { DocumentationManager } from './documentation';
+import { M68kLanguage } from './language';
+import { ASMLine } from './parser';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -44,6 +46,8 @@ export class ExtensionState {
     private definitionHandler: M68kDefinitionHandler | undefined;
     private dataGenerator: DataGeneratorCodeLensProvider | undefined;
     private documentationManager: DocumentationManager | undefined;
+    private language: M68kLanguage | undefined;
+
     private extensionPath: string = path.join(__dirname, "..");
 
     public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
@@ -116,9 +120,16 @@ export class ExtensionState {
     }
     public setExtensionPath(extensionPath: string) {
         this.extensionPath = extensionPath;
+        this.language = new M68kLanguage(this.extensionPath);
     }
     public getExtensionPath(): string {
         return this.extensionPath;
+    }
+    public getLanguage(): M68kLanguage {
+        if (this.language === undefined) {
+            this.language = new M68kLanguage(this.extensionPath);
+        }
+        return this.language;
     }
 }
 
@@ -128,6 +139,7 @@ const state = new ExtensionState();
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     state.setExtensionPath(context.extensionPath);
+    ASMLine.init(state.getLanguage());
     context.globalState.update('state', state);
     // Preparing the status manager
     let statusManager = state.getStatusManager();
@@ -229,7 +241,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     // Completion provider
-    context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AMIGA_ASM_MODE, new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler()), '.', '\"'));
+    context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AMIGA_ASM_MODE, new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage()), '.', '\"'));
 
     // Color provider
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_ASM_MODE, new M86kColorProvider()));

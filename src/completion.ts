@@ -2,29 +2,32 @@ import * as vscode from 'vscode';
 import { DocumentationManager, DocumentationType } from './documentation';
 import { M68kDefinitionHandler } from './definitionHandler';
 import { ASMLine } from './parser';
+import { M68kLanguage } from './language';
 
 export class M68kCompletionItemProvider implements vscode.CompletionItemProvider {
     documentationManager: DocumentationManager;
     definitionHandler: M68kDefinitionHandler;
-    constructor(documentationManager: DocumentationManager, definitionHandler: M68kDefinitionHandler) {
+    language: M68kLanguage;
+    constructor(documentationManager: DocumentationManager, definitionHandler: M68kDefinitionHandler, language: M68kLanguage) {
         this.documentationManager = documentationManager;
         this.definitionHandler = definitionHandler;
+        this.language = language;
     }
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionItem[]> {
         return new Promise((resolve, reject) => {
             let completions = new Array<vscode.CompletionItem>();
             let range = document.getWordRangeAtPosition(position);
+            let line = document.lineAt(position.line);
+            let text = line.text;
+            let lastChar = "";
+            if (position.character > 0) {
+                lastChar = line.text.charAt(position.character - 1);
+            }
+            let asmLine = new ASMLine(text, line);
             if (range) {
-                let line = document.lineAt(range.start.line);
-                let text = line.text;
-                let asmLine = new ASMLine(text, line);
                 let word = document.getText(range);
                 let isInComment = (range.intersection(asmLine.commentRange) !== undefined);
                 let isInInstruction = (range.intersection(asmLine.instructionRange) !== undefined);
-                let lastChar = "";
-                if (text.length > position.character + 1) {
-                    lastChar = line.text.charAt(position.character + 1);
-                }
                 if ((!isInComment) && ((!isInInstruction) || ((lastChar !== ".") && (!asmLine.instruction.includes("."))))) {
                     let labelsAdded = new Array<string>();
                     let isInData = (range.intersection(asmLine.dataRange) !== undefined);
@@ -67,6 +70,16 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                                 completions.push(completion);
                             }
                         }
+                    }
+                }
+            } else if ((lastChar === ".") && asmLine.instructionRange.contains(position.translate(undefined, -1))) {
+                let range = document.getWordRangeAtPosition(position.translate(undefined, -1));
+                let word = document.getText(range);
+                let extensions = this.language.getExtensions(word);
+                if (extensions) {
+                    for (let ext of extensions) {
+                        let completion = new vscode.CompletionItem(ext, vscode.CompletionItemKind.Unit);
+                        completions.push(completion);
                     }
                 }
             }

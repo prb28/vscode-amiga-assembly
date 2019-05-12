@@ -33,9 +33,9 @@ export class ASMLine {
 
     vscodeTextLine?: TextLine;
 
-    private static init() {
+    public static init(language: M68kLanguage) {
         if (!ASMLine.m68kLang) {
-            ASMLine.m68kLang = new M68kLanguage();
+            ASMLine.m68kLang = language;
             ASMLine.keywordsRegExps = ASMLine.m68kLang.getAllRegExps(/keyword.*/g);
             ASMLine.macrosRegExps = ASMLine.m68kLang.getAllRegExps(/macro.*/g);
         }
@@ -75,7 +75,6 @@ export class ASMLine {
      * @param lineNumber index of the line in document
      */
     parse(line: string, lineNumber: number) {
-        ASMLine.init();
         let l = line.trim();
         let leadingSpacesCount = line.search(/\S/);
         let current = new Position(lineNumber, 0);

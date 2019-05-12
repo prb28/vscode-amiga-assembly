@@ -13,6 +13,7 @@ export class DummyTextDocument implements TextDocument {
     readonly isDirty: boolean = false;
     readonly isClosed: boolean = false;
     readonly eol: EndOfLine = EndOfLine.LF;
+    static readonly SEPARATORS = [',', '.', ';', ' ', '$', '#'];
     lineCount: number = 0;
     lines = new Array<TextLine>();
     public addLine(line: string) {
@@ -74,7 +75,7 @@ export class DummyTextDocument implements TextDocument {
         }
         return s;
     }
-    public getWordAt(str: string, pos: number): string {
+    public getWordAt(str: string, pos: number): string | undefined {
         // Perform type conversions.
         str = String(str);
         pos = Number(pos) >>> 0;
@@ -88,23 +89,36 @@ export class DummyTextDocument implements TextDocument {
         // Return the word, using the located bounds to extract it from the string.
         return str.slice(left, right + pos);
     }
-    public getWordRangeAt(line: TextLine, pos: number): Range {
+    public getWordRangeAt(line: TextLine, pos: number): Range | undefined {
         let str = line.text;
         // Perform type conversions.
         str = String(str);
         pos = Number(pos) >>> 0;
         // Search for the word's beginning and end.
-        let left = str.slice(0, pos + 1).search(/[^\s,\.;:\$#]+$/);
+        let left = 0;
+        for (let i = pos - 1; i >= 0; i--) {
+            let c = str.charAt(i);
+            if (DummyTextDocument.SEPARATORS.includes(c)) {
+                left = i + 1;
+                break;
+            }
+        }
+        str.slice(0, pos + 1).search(/[^\s,\.;:\$#]+$/);
         let right = str.slice(pos).search(/[\s,\.;:\$#]/);
         if (left < 0) {
             left = 0;
         }
-        // The last word in the string is a special case.
-        if (right < 0) {
+        if (left === str.length) {
+            return undefined;
+        } else if (right < 0) {
+            // The last word in the string is a special case.
             return new Range(new Position(line.lineNumber, left), new Position(line.lineNumber, str.length));
+        } else if ((right + pos - left) > 0) {
+            // Return the word, using the located bounds to extract it from the string.
+            return new Range(new Position(line.lineNumber, left), new Position(line.lineNumber, right + pos));
+        } else {
+            return undefined;
         }
-        // Return the word, using the located bounds to extract it from the string.
-        return new Range(new Position(line.lineNumber, left), new Position(line.lineNumber, right + pos));
     }
     getWordRangeAtPosition(position: Position, regex?: RegExp): Range | undefined {
         let line = this.lineAt(position.line);

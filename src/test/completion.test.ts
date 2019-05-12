@@ -34,7 +34,7 @@ describe("Completion Tests", function () {
     });
     describe("Completion api", function () {
         it("Should return no completion on an unknown work", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler());
+            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 11);
             let tockenEmitter = new CancellationTokenSource();
@@ -43,7 +43,7 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should return a completion on a library function", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler());
+            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 11);
             let tockenEmitter = new CancellationTokenSource();
@@ -54,7 +54,7 @@ describe("Completion Tests", function () {
             expect(elm.label).to.be.equal("OldOpenLibrary");
         });
         it("Should return a completion on a register", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler());
+            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 11);
             let tockenEmitter = new CancellationTokenSource();
@@ -65,7 +65,7 @@ describe("Completion Tests", function () {
             expect(elm.label).to.be.equal("INTENAR");
         });
         it("Should return a completion on a variable", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler());
+            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 11);
             let tockenEmitter = new CancellationTokenSource();
@@ -76,7 +76,7 @@ describe("Completion Tests", function () {
             expect(elm.label).to.be.equal("MY_W_VAR");
         });
         it("Should return a completion on an instruction", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler());
+            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 3);
             let tockenEmitter = new CancellationTokenSource();
@@ -87,20 +87,22 @@ describe("Completion Tests", function () {
             expect(elm.label).to.be.equal("move");
         });
         it("Should not return a completion on an instruction after .", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler());
+            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage());
             const document = new DummyTextDocument();
-            let position = new Position(0, 4);
+            let position = new Position(0, 6);
             let tockenEmitter = new CancellationTokenSource();
             document.addLine(" move.");
             let results = await cp.provideCompletionItems(document, position, tockenEmitter.token);
-            expect(results).to.be.empty;
+            expect(results.length).to.be.equal(3);
+            let elm = results[0];
+            expect(elm.label).to.be.equal("b");
             position = new Position(1, 6);
             document.addLine(" move.l");
             results = await cp.provideCompletionItems(document, position, tockenEmitter.token);
             expect(results).to.be.empty;
         });
         it("Should not return completion in a comment", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler());
+            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 4);
             let tockenEmitter = new CancellationTokenSource();
@@ -113,7 +115,7 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should not return completion on a variable or function in an instruction place", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler());
+            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 11);
             let tockenEmitter = new CancellationTokenSource();
@@ -126,7 +128,7 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should not return completion with an instruction in a data", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler());
+            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 11);
             let tockenEmitter = new CancellationTokenSource();
@@ -135,7 +137,7 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should not have the same completion in variable and library function or register", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler());
+            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 14);
             let tockenEmitter = new CancellationTokenSource();
