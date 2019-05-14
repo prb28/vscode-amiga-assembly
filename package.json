@@ -358,6 +358,14 @@
                 "label": "FS-UAE Debug",
                 "program": "./out/debugAdapter.js",
                 "runtime": "node",
+                "enableBreakpointsFor": {
+                    "languageIds": [
+                        "m68k",
+                        "amiga-assembly-debug.disassembly",
+                        "c",
+                        "cpp"
+                    ]
+                },
                 "configurationAttributes": {
                     "launch": {
                         "required": [
@@ -415,6 +423,15 @@
                                 "default": {
                                     "<source-path>": "<target-path>"
                                 }
+                            },
+                            "rootSourceFileMap": {
+                                "type": "array",
+                                "description": "Root paths to seek for sources",
+                                "items": {
+                                    "type": "string",
+                                    "title": "Root source path"
+                                },
+                                "default": []
                             },
                             "options": {
                                 "type": "array",

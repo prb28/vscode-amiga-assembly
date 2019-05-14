@@ -71,4 +71,21 @@ describe("AmigaHunkFile", function () {
             expect.fail("hunk has no symbol");
         }
     });
+    it("Should parse the a vbcc generated file", function () {
+        const PROJECT_ROOT = Path.join(__dirname, '..', '..');
+        const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'hello-vbcc');
+        let parser = new HunkParser();
+        let hunks = parser.parse_file(programFilename);
+        expect(hunks.length).to.be.equal(7);
+        // Code hunk
+        let hunk = hunks[0];
+        expect(hunk.codeData).to.exist;
+        expect(hunk.lineDebugInfo).to.exist;
+        if (hunk.lineDebugInfo) {
+            expect(hunk.lineDebugInfo.length).to.be.equal(1);
+            let sourceFile = hunk.lineDebugInfo[0];
+            expect(sourceFile.lines.length).to.be.equal(11);
+            expect(sourceFile.name).to.be.equal("hello.c");
+        }
+    });
 });

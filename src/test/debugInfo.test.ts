@@ -52,4 +52,26 @@ describe("Debug Info", function () {
             expect(di.normalize("\\\\a//b\\c/d")).to.be.equal("/a//b/c/d");
         }
     });
+    it("Should resolve the line number of a C file", function () {
+        const PROJECT_ROOT = Path.join(__dirname, '..', '..');
+        const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'hello-vbcc');
+        const sourceRootPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
+        let pathReplacements = new Map<string, string>();
+        let di = new DebugInfo(pathReplacements, [sourceRootPath]);
+        expect(di.loadInfo(programFilename)).to.be.equal(true);
+        expect(di.resolveFileLine(0, 1024)).to.be.eql([di.normalize(sourceRootPath + Path.sep + "hello.c"), 9, "        printf(\"10 * %d = %d\\n\", i, mul_by_ten(i));"]);
+    });
+    it("Should find the segment address for a C file", function () {
+        const PROJECT_ROOT = Path.join(__dirname, '..', '..');
+        const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'hello-vbcc');
+        const sourceRootPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
+        const sourceFilename = Path.join(sourceRootPath, 'hello.c');
+        let pathReplacements = new Map<string, string>();
+        let di = new DebugInfo(pathReplacements, [sourceRootPath]);
+        di.loadInfo(programFilename);
+        expect(di.getAddressSeg(sourceFilename, 9)).to.be.eql([0, 986]);
+        // Without path
+        expect(di.getAddressSeg('hello.c', 9)).to.be.eql([0, 986]);
+    });
+
 });

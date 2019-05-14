@@ -48,6 +48,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     options: Array<string>;
     /** path replacements for source files */
     sourceFileMap?: Object;
+    /** root paths for sources */
+    rootSourceFileMap?: Array<string>;
     /** Build the workspace before debug */
     buildWorkspace?: boolean;
 }
@@ -287,7 +289,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 }
             }
         }
-        this.debugInfo = new DebugInfo(sMap);
+        this.debugInfo = new DebugInfo(sMap, args.rootSourceFileMap);
         this.breakpointManager.setDebugInfo(this.debugInfo);
         return this.debugInfo.loadInfo(args.program);
     }
