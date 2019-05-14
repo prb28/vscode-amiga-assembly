@@ -161,7 +161,7 @@ export class DebugInfo {
                     if (resolvedFileName.indexOf(key) >= 0) {
                         let value = this.pathReplacements.get(key);
                         if (value) {
-                            resolvedFileName = this.normalize(resolvedFileName.replace(key, value));
+                            resolvedFileName = resolvedFileName.replace(key, value);
                             break;
                         }
                     }
@@ -178,6 +178,7 @@ export class DebugInfo {
                     }
                 }
             }
+            resolvedFileName = this.normalize(resolvedFileName);
             this.resolvedSourceFilesNames.set(filename, resolvedFileName);
         }
         return resolvedFileName;
