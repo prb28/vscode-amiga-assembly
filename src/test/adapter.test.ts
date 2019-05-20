@@ -12,6 +12,7 @@ import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verif
 import { ExecutorHelper } from '../execHelper';
 import { Capstone } from '../capstone';
 import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
+import { DebugDisassembledFile } from '../debugDisassembled';
 
 describe('Node Debug Adapter', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
@@ -160,41 +161,6 @@ describe('Node Debug Adapter', () => {
 				dc.configurationSequence(),
 				dc.launch(launchArgs),
 				dc.waitForEvent('terminated')
-			]);
-		});
-		it('should stop on entry', function () {
-			this.timeout(defaultTimeout);
-			if (!testWithRealEmulator) {
-				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
-				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
-					setTimeout(function () {
-						let cb = callbacks.get('stopOnEntry');
-						if (cb) {
-							cb(th.getId());
-						}
-					}, 1);
-					return Promise.resolve();
-				});
-				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
-					frames: [<GdbStackPosition>{
-						index: 1,
-						segmentId: 0,
-						offset: 0,
-						pc: 0,
-						stackFrameIndex: 0
-					}],
-					count: 1
-				}));
-				when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
-				when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));
-			}
-			let launchArgsCopy = launchArgs;
-			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
-			launchArgsCopy.stopOnEntry = true;
-			return Promise.all([
-				dc.configurationSequence(),
-				dc.launch(launchArgsCopy),
-				dc.assertStoppedLocation('entry', { line: 32 })
 			]);
 		});
 		it('should stop on entry', function () {
@@ -764,6 +730,38 @@ describe('Node Debug Adapter', () => {
 				expression: "m ${copperlist},10,d"
 			});
 			expect(evaluateResponse.body.result).to.equal('sub.l (a1), d0');
+		});
+		context('Extension actions', function () {
+			it('should disassemble memory in a view', async function () {
+				this.timeout(defaultTimeout);
+				const spiedWindow = spy(vscode.window);
+				let promise = new Promise<string>((resolve, reject) => { resolve("${pc}"); });
+				when(spiedWindow.showInputBox(anything())).thenReturn(promise);
+				when(this.spiedSession.disassembleRequest(anything(), anything())).thenReturn(Promise.resolve()); // Do nothing
+				await vscode.commands.executeCommand("amiga-assembly.disassemble-memory");
+				verify(spiedWindow.showInputBox(anything())).once();
+				let dFile = new DebugDisassembledFile();
+				dFile.setStackFrameIndex(0);
+				dFile.setAddressExpression("${pc}");
+				dFile.setLength(1000);
+				const [uri] = capture(spiedWindow.showTextDocument).last();
+				expect(uri.path).to.be.eql(dFile.toURI().path);
+			});
+			it('should disassemble copper in a view', async function () {
+				this.timeout(defaultTimeout);
+				const spiedWindow = spy(vscode.window);
+				let promise = new Promise<string>((resolve, reject) => { resolve("${copper}"); });
+				when(spiedWindow.showInputBox(anything())).thenReturn(promise);
+				when(this.spiedSession.disassembleRequest(anything(), anything())).thenReturn(Promise.resolve()); // Do nothing
+				await vscode.commands.executeCommand("amiga-assembly.disassemble-copper");
+				verify(spiedWindow.showInputBox(anything())).once();
+				let dFile = new DebugDisassembledFile();
+				dFile.setCopper(true);
+				dFile.setAddressExpression("${copper}");
+				dFile.setLength(3000);
+				const [uri] = capture(spiedWindow.showTextDocument).last();
+				expect(uri.path).to.be.eql(dFile.toURI().path);
+			});
 		});
 	});
 	describe('Set variables', function () {

@@ -3,6 +3,11 @@ import { Capstone } from './capstone';
 import * as path from 'path';
 import { DebugDisassembledFile } from './debugDisassembled';
 
+export enum DisassembleRequestType {
+    MEMORY,
+    FILE,
+    COPPER
+}
 export class Disassembler {
     public getCapstone(): (Capstone | null) {
         let conf: any = workspace.getConfiguration('amiga-assembly').get('cstool');
@@ -15,9 +20,9 @@ export class Disassembler {
     /**
      * Shows an input panel to calculate
      */
-    public showInputPanel(isCopper: boolean): Promise<void> {
+    public showInputPanel(disassembleRequestType: DisassembleRequestType): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (isCopper) {
+            if (disassembleRequestType === DisassembleRequestType.COPPER) {
                 let address = await window.showInputBox(<InputBoxOptions>{
                     //value: "${COP1LC}",
                     prompt: "Copper address: 1 or 2 or $xxxxxxxx or #{symbol} or ${symbol} "
@@ -36,7 +41,7 @@ export class Disassembler {
                 } else {
                     reject(new Error("No input address expression"));
                 }
-            } else {
+            } else if (disassembleRequestType === DisassembleRequestType.FILE) {
                 const capstone = this.getCapstone();
                 if (capstone) {
                     let selectedFiles = await window.showOpenDialog(<OpenDialogOptions>{
@@ -87,6 +92,25 @@ export class Disassembler {
                     let message = "To use this command: configure the capstone path in the settings";
                     window.showErrorMessage(message);
                     reject(new Error(message));
+                }
+            } else {
+                // Memory disassemble
+                let address = await window.showInputBox(<InputBoxOptions>{
+                    prompt: "Memory address: $xxxxxxxx or #{symbol} or ${symbol} "
+                });
+                if (address !== undefined) {
+                    let dFile = new DebugDisassembledFile();
+                    dFile.setStackFrameIndex(0);
+                    dFile.setAddressExpression(address);
+                    dFile.setLength(1000);
+                    await window.showTextDocument(dFile.toURI()).then((_) => {
+                        resolve();
+                    }, err => {
+                        window.showErrorMessage(err.message);
+                        reject(err);
+                    });
+                } else {
+                    reject(new Error("No input address expression"));
                 }
             }
         });

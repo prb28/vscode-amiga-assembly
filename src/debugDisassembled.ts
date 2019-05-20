@@ -6,6 +6,7 @@ import { DebugProtocol } from "vscode-debugprotocol";
 import { CopperDisassembler } from "./copperDisassembler";
 import { DebugVariableResolver } from "./debugVariableResolver";
 import { MemoryLabelsRegistry } from "./customMemoryAdresses";
+import { Uri } from "vscode";
 
 export class DebugDisassembledFile {
     public static readonly DGBFILE_SEG_SEPARATOR = "seg_";
@@ -71,8 +72,7 @@ export class DebugDisassembledFile {
     public toString(): string {
         if (this.isSegment()) {
             return `${this.path}${DebugDisassembledFile.DGBFILE_SEG_SEPARATOR}${this.segmentId}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
-        }
-        if (this.isCopper()) {
+        } else if (this.isCopper()) {
             return `${this.path}${DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR}${this.addressExpression}__${this.length}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
         } else {
             return `${this.path}${this.stackFrameIndex}__${this.addressExpression}__${this.length}.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
@@ -113,6 +113,12 @@ export class DebugDisassembledFile {
             }
         }
         return dAsmFile;
+    }
+
+    public toURI(): Uri {
+        // Code to replace #, it is not done by the Uri.parse
+        const filename = this.toString().replace('#', '%23');
+        return Uri.parse(`disassembly:${filename}`);
     }
 
     public static isDebugAsmFile(path: string): boolean {

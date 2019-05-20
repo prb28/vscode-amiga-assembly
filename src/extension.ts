@@ -13,7 +13,7 @@ import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
 import { CalcComponent } from './calcComponents';
 import { VASMCompiler } from './vasm';
 import { StatusManager } from "./status";
-import { Disassembler } from './disassemble';
+import { Disassembler, DisassembleRequestType } from './disassemble';
 import { M68kDefinitionHandler } from './definitionHandler';
 import { DisassemblyContentProvider } from './disassemblyContentProvider';
 import { ADFTools } from './adf';
@@ -168,7 +168,7 @@ export function activate(context: vscode.ExtensionContext) {
     // create a new disassembler
     let disassembler = state.getDisassembler();
     disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-file', async () => {
-        await disassembler.showInputPanel(false).catch(err => {
+        await disassembler.showInputPanel(DisassembleRequestType.FILE).catch(err => {
             vscode.window.showErrorMessage(err.message);
         });
     });
@@ -176,7 +176,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     // create a new disassembler for copper address
     disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-copper', async () => {
-        await disassembler.showInputPanel(true).catch(err => {
+        await disassembler.showInputPanel(DisassembleRequestType.COPPER).catch(err => {
+            vscode.window.showErrorMessage(err.message);
+        });
+    });
+    context.subscriptions.push(disposable);
+
+    // create a new disassembler for memory address
+    disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-memory', async () => {
+        await disassembler.showInputPanel(DisassembleRequestType.MEMORY).catch(err => {
             vscode.window.showErrorMessage(err.message);
         });
     });

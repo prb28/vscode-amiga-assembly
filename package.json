@@ -39,6 +39,7 @@
         "onCommand:amiga-assembly.clean-vasm-workspace",
         "onCommand:amiga-assembly.disassemble-file",
         "onCommand:amiga-assembly.disassemble-copper",
+        "onCommand:amiga-assembly.disassemble-memory",
         "onCommand:amiga-assembly.create-adffile",
         "onCommand:amiga-assembly.list-used-registers",
         "onCommand:amiga-assembly.view-iff",
@@ -317,6 +318,11 @@
                 "command": "amiga-assembly.disassemble-copper",
                 "title": "Amiga Assembly: Disassemble copper memory",
                 "description": "Disassembles memory address with copper instructions"
+            },
+            {
+                "command": "amiga-assembly.disassemble-memory",
+                "title": "Amiga Assembly: Disassemble memory",
+                "description": "Disassembles memory address"
             },
             {
                 "command": "amiga-assembly.create-adffile",
