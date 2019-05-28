@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - [Feat #66](https://github.com/prb28/vscode-amiga-assembly/issues/66) Debug C source files
 - [Feat #63](https://github.com/prb28/vscode-amiga-assembly/issues/63) IntelliSense for commodore libraries
 - Documentation table of contents
+- Set the entry point for vlink linker
+- Completion for variable and library functions in assembly
 
 ### [0.16.0] - 2019-04-21
 - [Feat #40](https://github.com/prb28/vscode-amiga-assembly/issues/40) View iff/ilbm images
