@@ -4,11 +4,11 @@ The original Denise (8362) does not have this register, so whatever value is lef
 
 | Bit| Description  |
 |---|---  |
-||7-4| Lisa/Denise/ECS Denise Revision level(decrement to bump revision level, hex F represents 0th rev. level).  |
-||3| Maintain as a 1 for future generation  |
-||2| When low indicates AA feature set (LISA)  |
-||1| When low indicates ECS feature set (LISA or ECS DENISE)  |
-||0| Maintain as a 1 for future generation|
+|7-4| Lisa/Denise/ECS Denise Revision level(decrement to bump revision level, hex F represents 0th rev. level).  |
+|3| Maintain as a 1 for future generation  |
+|2| When low indicates AA feature set (LISA)  |
+|1| When low indicates ECS feature set (LISA or ECS DENISE)  |
+|0| Maintain as a 1 for future generation|
 
 A proposed way to detect chip's revision through hardware poking :  
       

@@ -4,6 +4,6 @@ This register contains the control bit LONG referred to above, and a 15 bit numb
 
 | Bit| Function| Description  |
 |---|---|---  |
-||15| LONG| Defines serial receive as 9 bit word.  |
-||14-00| RATE| Defines baud rate=1/((N+1)*.2794 microseconds)|
+|15| LONG| Defines serial receive as 9 bit word.  |
+|14-00| RATE| Defines baud rate=1/((N+1)*.2794 microseconds)|
 

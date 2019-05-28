@@ -9,5 +9,5 @@ This is an added register for Hires chips, and allows larger start & stop ranges
 
 H1 and H0 values define 70ns and 35ns increments respectively, and new LISA bits.  
   
-> > Note: Note: In all 3 display window registers, horizontal bit positions have been renamed to reflect HIRES pixel increments, e.g. what used to be called H0 is now referred to as H2.
+> Note: In all 3 display window registers, horizontal bit positions have been renamed to reflect HIRES pixel increments, e.g. what used to be called H0 is now referred to as H2.
 
