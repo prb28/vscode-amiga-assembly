@@ -7,10 +7,12 @@ Amiga Assembly for Visual Studio Code is a extension to support assembly languag
 
 Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to discover all the features and get the documentation.
 
-**For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases). 
+**For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases) or the [VBCC workspace](https://github.com/prb28/vscode-amiga-vbcc-example).
 
-## New in 0.16.0
-- View an IFF/ILBM file (use of ilbm.js from Matthias Wiesmann)
+## New in 0.17.0
+- Stack frame indicating C source files
+- Documentation for core amiga libraries
+- Documentation table of contents
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -74,6 +76,12 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## New in 0.17.0
+- Stack frame indicating C source files
+- Documentation for core amiga libraries
+- Registers documentation enhanced
+- Documentation table of contents
+
 ## 0.16.0
 - View an IFF/ILBM file (use of ilbm.js from Matthias Wiesmann)
 
