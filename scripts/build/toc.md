@@ -3,6 +3,9 @@
 ## Motorolla 68000 assembler
 [Instructions](instructionset)
 
+## Amiga registers
+@amiga_registers_replacement@
+
 ## Amiga libraries
 @amiga_libs_replacement@
 

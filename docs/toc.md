@@ -3,6 +3,307 @@
 ## Motorolla 68000 assembler
 [Instructions](instructionset)
 
+## Amiga registers
+| Address  | Name | Description |
+|:---|:---|:---|
+|BFD000|[PRA](hardware/BFD000_PRA.md)|CIAB Peripheral Data Register A|
+|BFD100|[PRB](hardware/BFD100_PRB.md)|CIAB Peripheral Data Register A|
+|BFD200|[DDRA](hardware/BFD200_DDRA.md)|CIAB Data Direction Register A|
+|BFD300|[DDRB](hardware/BFD300_DDRB.md)|CIAB Data Direction Register B|
+|BFD400|[TALO](hardware/BFD400_TALO.md)|CIAB Timer A LOw register|
+|BFD500|[TAHI](hardware/BFD500_TAHI.md)|CIAB Timer A HIgh register|
+|BFD600|[TBLO](hardware/BFD600_TBLO.md)|CIAB Timer B LOw register|
+|BFD700|[TBHI](hardware/BFD700_TBHI.md)|CIAB Timer B HIgh register|
+|BFD800|[TODLOW](hardware/BFD800_TODLOW.md)|CIAB Event LSB|
+|BFD900|[TODMID](hardware/BFD900_TODMID.md)|CIAB Event 8-15|
+|BFDA00|[TODHI](hardware/BFDA00_TODHI.md)|CIAB Event MSB|
+|BFDC00|[SDR](hardware/BFDC00_SDR.md)|CIAB Serial Data Register|
+|BFDD00|[ICR](hardware/BFDD00_ICR.md)|CIAB Interrupt Control Register|
+|BFDE00|[CRA](hardware/BFDE00_CRA.md)|CIAB Control register A|
+|BFDF00|[CRB](hardware/BFDF00_CRB.md)|CIAB Control register B|
+|BFE001|[PRA](hardware/BFE001_PRA.md)|CIAA Peripheral Data Register A|
+|BFE101|[PRB](hardware/BFE101_PRB.md)|CIAA Peripheral Data Register B|
+|BFE201|[DDRA](hardware/BFE201_DDRA.md)|CIAA Data Direction Register A|
+|BFE301|[DDRB](hardware/BFE301_DDRB.md)|CIAA Data Direction Register B|
+|BFE401|[TALO](hardware/BFE401_TALO.md)|CIAA Timer A LOw register|
+|BFE501|[TAHI](hardware/BFE501_TAHI.md)|CIAA Timer A HIgh register|
+|BFE601|[TBLO](hardware/BFE601_TBLO.md)|CIAA Timer B LOw register|
+|BFE701|[TBHI](hardware/BFE701_TBHI.md)|CIAA Timer B HIgh register|
+|BFE801|[TODLOW](hardware/BFE801_TODLOW.md)|CIAA Event LSB|
+|BFE901|[TODMID](hardware/BFE901_TODMID.md)|CIAA Event 8-15|
+|BFEA01|[TODHI](hardware/BFEA01_TODHI.md)|CIAA Event MSB|
+|BFEC01|[SDR](hardware/BFEC01_SDR.md)|CIAA Serial Data Register|
+|BFED01|[ICR](hardware/BFED01_ICR.md)|CIAA Interrupt Control Register|
+|BFEE01|[CRA](hardware/BFEE01_CRA.md)|CIAA Control register A|
+|BFEF01|[CRB](hardware/BFEF01_CRB.md)|CIAA Control register B|
+|DFF000|[BLTDDAT](hardware/DFF000_BLTDDAT.md)|Blitter destination data register|
+|DFF002|[DMACONR](hardware/DFF002_DMACONR.md)|DMA Control (and blitter status) read|
+|DFF004|[VPOSR](hardware/DFF004_VPOSR.md)|Read vert most sig. bits (and frame flop)|
+|DFF006|[VHPOSR](hardware/DFF006_VHPOSR.md)|Read vert and horiz position of beam, or lightpen|
+|DFF008|[DSKDATR](hardware/DFF008_DSKDATR.md)|Disk DMA data read (early read dummy address)|
+|DFF00A|[JOY0DAT](hardware/DFF00A_JOY0DAT.md)|Joystick-mouse 0 data (left vert, horiz)|
+|DFF00C|[JOY1DAT](hardware/DFF00C_JOY1DAT.md)|Joystick-mouse 1 data (right vert, horiz)|
+|DFF00E|[CLXDAT](hardware/DFF00E_CLXDAT.md)|Collision detection register (read and clear)|
+|DFF010|[ADKCONR](hardware/DFF010_ADKCONR.md)|Audio, Disk, UART Control Read|
+|DFF012|[POT0DAT](hardware/DFF012_POT0DAT.md)|Pot counter data left pair (vert, horiz)|
+|DFF014|[POT1DAT](hardware/DFF014_POT1DAT.md)|Pot counter data right pair (vert, horiz)|
+|DFF016|[POTINP](hardware/DFF016_POTINP.md)|Pot pin data read|
+|DFF018|[SERDATR](hardware/DFF018_SERDATR.md)|Pot pin data read|
+|DFF01A|[DSKBYTR](hardware/DFF01A_DSKBYTR.md)|Disk data byte and status read|
+|DFF01C|[INTENAR](hardware/DFF01C_INTENAR.md)|Interrupt enable bits (read)|
+|DFF01E|[INTREQR](hardware/DFF01E_INTREQR.md)|Interrupt request bits (read)|
+|DFF020|[DSKPT](hardware/DFF020_DSKPT.md)|Disk Pointer (high 5 bits) (old-3 bits)|
+|DFF020|[DSKPTH](hardware/DFF020_DSKPTH.md)|Disk Pointer (high 5 bits) (old-3 bits)|
+|DFF022|[DSKPTL](hardware/DFF022_DSKPTL.md)|Disk Pointer (low 15 bits)|
+|DFF024|[DSKLEN](hardware/DFF024_DSKLEN.md)|Disk length|
+|DFF026|[DKSDAT](hardware/DFF026_DKSDAT.md)|Disk DMA data write|
+|DFF028|[REFPTR](hardware/DFF028_REFPTR.md)|Refresh pointer|
+|DFF02A|[VPOSW](hardware/DFF02A_VPOSW.md)|Write most sig. bits (and frame flop)|
+|DFF02C|[VHPOSW](hardware/DFF02C_VHPOSW.md)|Write vert and horiz position of beam, or lightpen|
+|DFF02E|[COPCON](hardware/DFF02E_COPCON.md)|Coprocessor control register|
+|DFF030|[SERDAT](hardware/DFF030_SERDAT.md)|Serial port data and stop bits write|
+|DFF032|[SERPER](hardware/DFF032_SERPER.md)|Serial port period and control|
+|DFF034|[POTGO](hardware/DFF034_POTGO.md)|Pot port (4 bit) bi-direction and data and pot counter start|
+|DFF036|[JOYTEST](hardware/DFF036_JOYTEST.md)|Write to all 4 joystick-mouse counters at once|
+|DFF038|[STREQU](hardware/DFF038_STREQU.md)|Strobe for horiz sync with VB (vert blank) and EQU|
+|DFF03A|[STRVBL](hardware/DFF03A_STRVBL.md)|Strobe for horiz sync with VB|
+|DFF03C|[STRHOR](hardware/DFF03C_STRHOR.md)|Strobe for horiz sync|
+|DFF03E|[STRLONG](hardware/DFF03E_STRLONG.md)|Strobe for identification of long horiz line (228CC)|
+|DFF040|[BLTCON0](hardware/DFF040_BLTCON0.md)|Blitter control register 0|
+|DFF042|[BLTCON1](hardware/DFF042_BLTCON1.md)|Blitter control register 0 (lower 8 bits) This is to speed up software - the upper bits are often the same.|
+|DFF044|[BLTAFWM](hardware/DFF044_BLTAFWM.md)|Blitter first word mask for source A|
+|DFF046|[BLTALWM](hardware/DFF046_BLTALWM.md)|Blitter last word mask for source A|
+|DFF048|[BLTCPT](hardware/DFF048_BLTCPT.md)|Blitter pointer to source C (high 5 bits)|
+|DFF048|[BLTCPTH](hardware/DFF048_BLTCPTH.md)|Blitter pointer to source C (high 5 bits)|
+|DFF04A|[BLTCPTL](hardware/DFF04A_BLTCPTL.md)|Blitter pointer to source C (low 15 bits)|
+|DFF04C|[BLTBPT](hardware/DFF04C_BLTBPT.md)|Blitter pointer to source B (high 5 bits)|
+|DFF04C|[BLTBPTH](hardware/DFF04C_BLTBPTH.md)|Blitter pointer to source B (high 5 bits)|
+|DFF04E|[BLTBPTL](hardware/DFF04E_BLTBPTL.md)|Blitter pointer to source B (low 15 bits)|
+|DFF050|[BLTAPT](hardware/DFF050_BLTAPT.md)|Blitter pointer to source A (high 5 bits)|
+|DFF050|[BLTAPTH](hardware/DFF050_BLTAPTH.md)|Blitter pointer to source A (high 5 bits)|
+|DFF052|[BLTAPTL](hardware/DFF052_BLTAPTL.md)|Blitter pointer to source A (low 15 bits)|
+|DFF054|[BLTDPT](hardware/DFF054_BLTDPT.md)|Blitter pointer to destination D (high 5 bits)|
+|DFF054|[BLTDPTH](hardware/DFF054_BLTDPTH.md)|Blitter pointer to destination D (high 5 bits)|
+|DFF056|[BLTDPTL](hardware/DFF056_BLTDPTL.md)|Blitter pointer to destination D (low 15 bits)|
+|DFF058|[BLTSIZE](hardware/DFF058_BLTSIZE.md)|Blitter start and size (width, height)|
+|DFF05A|[BLTCON0L](hardware/DFF05A_BLTCON0L.md)|Pot pin data read|
+|DFF05C|[BLTSIZV](hardware/DFF05C_BLTSIZV.md)|Blitter vertical size (15 bit height)|
+|DFF05E|[BLTSIZH](hardware/DFF05E_BLTSIZH.md)|Blitter horizontal size & start (11 bit width)|
+|DFF060|[BLTCMOD](hardware/DFF060_BLTCMOD.md)|Blitter modulo for source C|
+|DFF062|[BLTBMOD](hardware/DFF062_BLTBMOD.md)|Blitter modulo for source B|
+|DFF064|[BLTAMOD](hardware/DFF064_BLTAMOD.md)|Blitter modulo for source A|
+|DFF066|[BLTDMOD](hardware/DFF066_BLTDMOD.md)|Blitter modulo for destination D|
+|DFF070|[BLTCDAT](hardware/DFF070_BLTCDAT.md)|Blitter source C data register|
+|DFF072|[BLTBDAT](hardware/DFF072_BLTBDAT.md)|Blitter source B data register|
+|DFF074|[BLTADAT](hardware/DFF074_BLTADAT.md)|Blitter source A data register|
+|DFF078|[SPRHDAT](hardware/DFF078_SPRHDAT.md)|Ext. logic UltraHiRes sprite pointer and data|
+|DFF07A|[BPLHDAT](hardware/DFF07A_BPLHDAT.md)|Ext. logic UHRES bit plane identifier|
+|DFF07C|[DENISEID](hardware/DFF07C_DENISEID.md)|Denise/Lisa (video out chip) revision level|
+|DFF07E|[DSKSYNC](hardware/DFF07E_DSKSYNC.md)|Disk sync register, the match code for disk read synchronization See ADKCON bit 10|
+|DFF080|[COP1LC](hardware/DFF080_COP1LC.md)|Coprocessor first location register (high 5 bits) (old-3 bits)|
+|DFF080|[COP1LCH](hardware/DFF080_COP1LCH.md)|Coprocessor first location register (high 5 bits) (old-3 bits)|
+|DFF082|[COP1LCL](hardware/DFF082_COP1LCL.md)|Coprocessor first location register (low 15 bits)|
+|DFF084|[COP2LC](hardware/DFF084_COP2LC.md)|Coprocessor second location register (high 5 bits) (old-3 bits)|
+|DFF084|[COP2LCH](hardware/DFF084_COP2LCH.md)|Coprocessor second location register (high 5 bits) (old-3 bits)|
+|DFF086|[COP2LCL](hardware/DFF086_COP2LCL.md)|Coprocessor second location register (low 15 bits)|
+|DFF088|[COPJMP1](hardware/DFF088_COPJMP1.md)|Coprocessor restart at first location|
+|DFF08A|[COPJMP2](hardware/DFF08A_COPJMP2.md)|Coprocessor restart at second location|
+|DFF08C|[COPINS](hardware/DFF08C_COPINS.md)|Coprocessor instruction fetch identity|
+|DFF08E|[DIWSTRT](hardware/DFF08E_DIWSTRT.md)|Display window start (upper left vertical-horizontal position)|
+|DFF090|[DIWSTOP](hardware/DFF090_DIWSTOP.md)|Display window stop (lower right vertical-horizontal position)|
+|DFF092|[DDFSTRT](hardware/DFF092_DDFSTRT.md)|Display data fetch start (horizontal position)|
+|DFF094|[DDFSTOP](hardware/DFF094_DDFSTOP.md)|Display data fetch stop (horizontal position)|
+|DFF096|[DMACON](hardware/DFF096_DMACON.md)|DMA Control write (clear or set)|
+|DFF098|[CLXCON](hardware/DFF098_CLXCON.md)|Collision control|
+|DFF09A|[INTENA](hardware/DFF09A_INTENA.md)|Interrupt enable bits (clear or set bits)|
+|DFF09A|[POTINP](hardware/DFF09A_POTINP.md)|Interrupt enable bits (clear or set bits)|
+|DFF09C|[INTREQ](hardware/DFF09C_INTREQ.md)|Interrupt request bits (clear or set)|
+|DFF09E|[ADKCON](hardware/DFF09E_ADKCON.md)|Audio, Disk, UART Control Write|
+|DFF0A0|[AUD0LC](hardware/DFF0A0_AUD0LC.md)|Audio Channel 0 Location (high 5 bits)|
+|DFF0A0|[AUD0LCH](hardware/DFF0A0_AUD0LCH.md)|Audio Channel 0 Location (high 5 bits)|
+|DFF0A2|[AUD0LCL](hardware/DFF0A2_AUD0LCL.md)|Audio Channel 0 Location (low 15 bits)|
+|DFF0A4|[AUD0LEN](hardware/DFF0A4_AUD0LEN.md)|Audio Channel 0 length|
+|DFF0A6|[AUD0PER](hardware/DFF0A6_AUD0PER.md)|Audio channel 0 period|
+|DFF0A8|[AUD0VOL](hardware/DFF0A8_AUD0VOL.md)|Audio channel 0 volume|
+|DFF0AA|[AUD0DAT](hardware/DFF0AA_AUD0DAT.md)|Audio Channel 0 data|
+|DFF0B0|[AUD1LC](hardware/DFF0B0_AUD1LC.md)|Audio Channel 1 Location (high 5 bits)|
+|DFF0B0|[AUD1LCH](hardware/DFF0B0_AUD1LCH.md)|Audio Channel 1 Location (high 5 bits)|
+|DFF0B2|[AUD1LCL](hardware/DFF0B2_AUD1LCL.md)|Audio Channel 1 Location (low 15 bits)|
+|DFF0B4|[AUD1LEN](hardware/DFF0B4_AUD1LEN.md)|Audio Channel 1 length|
+|DFF0B6|[AUD1PER](hardware/DFF0B6_AUD1PER.md)|Audio channel 1 period|
+|DFF0B8|[AUD1VOL](hardware/DFF0B8_AUD1VOL.md)|Audio channel 1 volume|
+|DFF0BA|[AUD1DAT](hardware/DFF0BA_AUD1DAT.md)|Audio Channel 1 data|
+|DFF0C0|[AUD2LC](hardware/DFF0C0_AUD2LC.md)|Audio Channel 2 Location (high 5 bits)|
+|DFF0C0|[AUD2LCH](hardware/DFF0C0_AUD2LCH.md)|Audio Channel 2 Location (high 5 bits)|
+|DFF0C2|[AUD2LCL](hardware/DFF0C2_AUD2LCL.md)|Audio Channel 2 Location (low 15 bits)|
+|DFF0C4|[AUD2LEN](hardware/DFF0C4_AUD2LEN.md)|Audio Channel 2 length|
+|DFF0C6|[AUD2PER](hardware/DFF0C6_AUD2PER.md)|Audio channel 2 period|
+|DFF0C8|[AUD2VOL](hardware/DFF0C8_AUD2VOL.md)|Audio channel 2 volume|
+|DFF0CA|[AUD2DAT](hardware/DFF0CA_AUD2DAT.md)|Audio Channel 2 data|
+|DFF0D0|[AUD3LC](hardware/DFF0D0_AUD3LC.md)|Audio Channel 3 Location (high 5 bits)|
+|DFF0D0|[AUD3LCH](hardware/DFF0D0_AUD3LCH.md)|Audio Channel 3 Location (high 5 bits)|
+|DFF0D2|[AUD3LCL](hardware/DFF0D2_AUD3LCL.md)|Audio Channel 3 Location (low 15 bits)|
+|DFF0D4|[AUD3LEN](hardware/DFF0D4_AUD3LEN.md)|Audio Channel 3 length|
+|DFF0D6|[AUD3PER](hardware/DFF0D6_AUD3PER.md)|Audio channel 3 period|
+|DFF0D8|[AUD3VOL](hardware/DFF0D8_AUD3VOL.md)|Audio channel 3 volume|
+|DFF0DA|[AUD3DAT](hardware/DFF0DA_AUD3DAT.md)|Audio Channel 3 data|
+|DFF0E0|[BPL1PT](hardware/DFF0E0_BPL1PT.md)|Bit plane 1 pointer (high 5 bits)|
+|DFF0E0|[BPL1PTH](hardware/DFF0E0_BPL1PTH.md)|Bit plane 1 pointer (high 5 bits)|
+|DFF0E2|[BPL1PTL](hardware/DFF0E2_BPL1PTL.md)|Bit plane 1 pointer (low 15 bits)|
+|DFF0E4|[BPL2PT](hardware/DFF0E4_BPL2PT.md)|Bit plane 2 pointer (high 5 bits)|
+|DFF0E4|[BPL2PTH](hardware/DFF0E4_BPL2PTH.md)|Bit plane 2 pointer (high 5 bits)|
+|DFF0E6|[BPL2PTL](hardware/DFF0E6_BPL2PTL.md)|Bit plane 2 pointer (low 15 bits)|
+|DFF0E8|[BPL3PT](hardware/DFF0E8_BPL3PT.md)|Bit plane 3 pointer (high 5 bits)|
+|DFF0E8|[BPL3PTH](hardware/DFF0E8_BPL3PTH.md)|Bit plane 3 pointer (high 5 bits)|
+|DFF0EA|[BPL3PTL](hardware/DFF0EA_BPL3PTL.md)|Bit plane 3 pointer (low 15 bits)|
+|DFF0EC|[BPL4PT](hardware/DFF0EC_BPL4PT.md)|Bit plane 4 pointer (high 5 bits)|
+|DFF0EC|[BPL4PTH](hardware/DFF0EC_BPL4PTH.md)|Bit plane 4 pointer (high 5 bits)|
+|DFF0EE|[BPL4PTL](hardware/DFF0EE_BPL4PTL.md)|Bit plane 4 pointer (low 15 bits)|
+|DFF0F0|[BPL5PT](hardware/DFF0F0_BPL5PT.md)|Bit plane 5 pointer (high 5 bits)|
+|DFF0F0|[BPL5PTH](hardware/DFF0F0_BPL5PTH.md)|Bit plane 5 pointer (high 5 bits)|
+|DFF0F2|[BPL5PTL](hardware/DFF0F2_BPL5PTL.md)|Bit plane 5 pointer (low 15 bits)|
+|DFF0F4|[BPL6PT](hardware/DFF0F4_BPL6PT.md)|Bit plane 6 pointer (high 5 bits)|
+|DFF0F4|[BPL6PTH](hardware/DFF0F4_BPL6PTH.md)|Bit plane 6 pointer (high 5 bits)|
+|DFF0F6|[BPL6PTL](hardware/DFF0F6_BPL6PTL.md)|Bit plane 6 pointer (low 15 bits)|
+|DFF0F8|[BPL7PT](hardware/DFF0F8_BPL7PT.md)|Bit plane 7 pointer (high 5 bits)|
+|DFF0F8|[BPL7PTH](hardware/DFF0F8_BPL7PTH.md)|Bit plane 7 pointer (high 5 bits)|
+|DFF0FA|[BPL7PTL](hardware/DFF0FA_BPL7PTL.md)|Bit plane 7 pointer (low 15 bits)|
+|DFF0FC|[BPL8PT](hardware/DFF0FC_BPL8PT.md)|Bit plane 8 pointer (high 5 bits)|
+|DFF0FC|[BPL8PTH](hardware/DFF0FC_BPL8PTH.md)|Bit plane 8 pointer (high 5 bits)|
+|DFF0FE|[BPL8PTL](hardware/DFF0FE_BPL8PTL.md)|Bit plane 8 pointer (low 15 bits)|
+|DFF100|[BPLCON0](hardware/DFF100_BPLCON0.md)|Bit Plane Control Register 0 (misc, control bits)|
+|DFF102|[BPLCON1](hardware/DFF102_BPLCON1.md)|Bit Plane Control Register (horizontal, scroll counter)|
+|DFF104|[BPLCON2](hardware/DFF104_BPLCON2.md)|Bit Plane Control Register (new control bits)|
+|DFF106|[BPLCON3](hardware/DFF106_BPLCON3.md)|Bit Plane Control Register (enhanced bits)|
+|DFF108|[BPL1MOD](hardware/DFF108_BPL1MOD.md)|Bit plane modulo (odd planes)|
+|DFF10A|[BPL2MOD](hardware/DFF10A_BPL2MOD.md)|Bit plane modulo (even planes)|
+|DFF10C|[BPLCON4](hardware/DFF10C_BPLCON4.md)|Bit Plane Control Register (display masks)|
+|DFF10E|[CLXCON2](hardware/DFF10E_CLXCON2.md)|Extended Collision Control|
+|DFF110|[BPL1DAT](hardware/DFF110_BPL1DAT.md)|Bit plane 1 data (parallel to serial convert)|
+|DFF112|[BPL2DAT](hardware/DFF112_BPL2DAT.md)|Bit plane 2 data (parallel to serial convert)|
+|DFF114|[BPL3DAT](hardware/DFF114_BPL3DAT.md)|Bit plane 3 data (parallel to serial convert)|
+|DFF116|[BPL4DAT](hardware/DFF116_BPL4DAT.md)|Bit plane 4 data (parallel to serial convert)|
+|DFF118|[BPL5DAT](hardware/DFF118_BPL5DAT.md)|Bit plane 5 data (parallel to serial convert)|
+|DFF11A|[BPL6DAT](hardware/DFF11A_BPL6DAT.md)|Bit plane 6 data (parallel to serial convert)|
+|DFF11C|[BPL7DAT](hardware/DFF11C_BPL7DAT.md)|Bit plane 7 data (parallel to serial convert)|
+|DFF11E|[BPL8DAT](hardware/DFF11E_BPL8DAT.md)|Bit plane 8 data (parallel to serial convert)|
+|DFF120|[SPR0PT](hardware/DFF120_SPR0PT.md)|Sprite 0 pointer (high 5 bits)|
+|DFF120|[SPR0PTH](hardware/DFF120_SPR0PTH.md)|Sprite 0 pointer (high 5 bits)|
+|DFF122|[SPR0PTL](hardware/DFF122_SPR0PTL.md)|Sprite 0 pointer (low 15 bits)|
+|DFF124|[SPR1PT](hardware/DFF124_SPR1PT.md)|Sprite 1 pointer (high 5 bits)|
+|DFF124|[SPR1PTH](hardware/DFF124_SPR1PTH.md)|Sprite 1 pointer (high 5 bits)|
+|DFF126|[SPR1PTL](hardware/DFF126_SPR1PTL.md)|Sprite 1 pointer (low 15 bits)|
+|DFF128|[SPR2PT](hardware/DFF128_SPR2PT.md)|Sprite 2 pointer (high 5 bits)|
+|DFF128|[SPR2PTH](hardware/DFF128_SPR2PTH.md)|Sprite 2 pointer (high 5 bits)|
+|DFF12A|[SPR2PTL](hardware/DFF12A_SPR2PTL.md)|Sprite 2 pointer (low 15 bits)|
+|DFF12C|[SPR3PT](hardware/DFF12C_SPR3PT.md)|Sprite 3 pointer (high 5 bits)|
+|DFF12C|[SPR3PTH](hardware/DFF12C_SPR3PTH.md)|Sprite 3 pointer (high 5 bits)|
+|DFF12E|[SPR3PTL](hardware/DFF12E_SPR3PTL.md)|Sprite 3 pointer (low 15 bits)|
+|DFF130|[SPR4PT](hardware/DFF130_SPR4PT.md)|Sprite 4 pointer (high 5 bits)|
+|DFF130|[SPR4PTH](hardware/DFF130_SPR4PTH.md)|Sprite 4 pointer (high 5 bits)|
+|DFF132|[SPR4PTL](hardware/DFF132_SPR4PTL.md)|Sprite 4 pointer (low 15 bits)|
+|DFF134|[SPR5PT](hardware/DFF134_SPR5PT.md)|Sprite 5 pointer (high 5 bits)|
+|DFF134|[SPR5PTH](hardware/DFF134_SPR5PTH.md)|Sprite 5 pointer (high 5 bits)|
+|DFF136|[SPR5PTL](hardware/DFF136_SPR5PTL.md)|Sprite 5 pointer (low 15 bits)|
+|DFF138|[SPR6PT](hardware/DFF138_SPR6PT.md)|Sprite 6 pointer (high 5 bits)|
+|DFF138|[SPR6PTH](hardware/DFF138_SPR6PTH.md)|Sprite 6 pointer (high 5 bits)|
+|DFF13A|[SPR6PTL](hardware/DFF13A_SPR6PTL.md)|Sprite 6 pointer (low 15 bits)|
+|DFF13C|[SPR7PT](hardware/DFF13C_SPR7PT.md)|Sprite 7 pointer (high 5 bits)|
+|DFF13C|[SPR7PTH](hardware/DFF13C_SPR7PTH.md)|Sprite 7 pointer (high 5 bits)|
+|DFF13E|[SPR7PTL](hardware/DFF13E_SPR7PTL.md)|Sprite 7 pointer (low 15 bits)|
+|DFF140|[SPR0POS](hardware/DFF140_SPR0POS.md)|Sprite 0 vertical & horizontal start positions data|
+|DFF142|[SPR0CTL](hardware/DFF142_SPR0CTL.md)|Sprite 0 position and control data|
+|DFF144|[SPR0DATA](hardware/DFF144_SPR0DATA.md)|Sprite 0 image data register A|
+|DFF146|[SPR0DATB](hardware/DFF146_SPR0DATB.md)|Sprite 0 image data register B|
+|DFF148|[SPR1POS](hardware/DFF148_SPR1POS.md)|Sprite 1 vertical & horizontal start positions data|
+|DFF14A|[SPR1CTL](hardware/DFF14A_SPR1CTL.md)|Sprite 1 position and control data|
+|DFF14C|[SPR1DATA](hardware/DFF14C_SPR1DATA.md)|Sprite 1 image data register A|
+|DFF14E|[SPR1DATB](hardware/DFF14E_SPR1DATB.md)|Sprite 1 image data register B|
+|DFF150|[SPR2POS](hardware/DFF150_SPR2POS.md)|Sprite 2 vertical & horizontal start positions data|
+|DFF152|[SPR2CTL](hardware/DFF152_SPR2CTL.md)|Sprite 2 position and control data|
+|DFF154|[SPR2DATA](hardware/DFF154_SPR2DATA.md)|Sprite 2 image data register A|
+|DFF156|[SPR2DATB](hardware/DFF156_SPR2DATB.md)|Sprite 2 image data register B|
+|DFF158|[SPR3POS](hardware/DFF158_SPR3POS.md)|Sprite 3 vertical & horizontal start positions data|
+|DFF15A|[SPR3CTL](hardware/DFF15A_SPR3CTL.md)|Sprite 3 position and control data|
+|DFF15C|[SPR3DATA](hardware/DFF15C_SPR3DATA.md)|Sprite 3 image data register A|
+|DFF15E|[SPR3DATB](hardware/DFF15E_SPR3DATB.md)|Sprite 3 image data register B|
+|DFF160|[SPR4POS](hardware/DFF160_SPR4POS.md)|Sprite 4 vertical & horizontal start positions data|
+|DFF162|[SPR4CTL](hardware/DFF162_SPR4CTL.md)|Sprite 4 position and control data|
+|DFF164|[SPR4DATA](hardware/DFF164_SPR4DATA.md)|Sprite 4 image data register A|
+|DFF166|[SPR4DATB](hardware/DFF166_SPR4DATB.md)|Sprite 4 image data register B|
+|DFF168|[SPR5POS](hardware/DFF168_SPR5POS.md)|Sprite 5 vertical & horizontal start positions data|
+|DFF16A|[SPR5CTL](hardware/DFF16A_SPR5CTL.md)|Sprite 5 position and control data|
+|DFF16C|[SPR5DATA](hardware/DFF16C_SPR5DATA.md)|Sprite 5 image data register A|
+|DFF16E|[SPR5DATB](hardware/DFF16E_SPR5DATB.md)|Sprite 5 image data register B|
+|DFF170|[SPR6POS](hardware/DFF170_SPR6POS.md)|Sprite 6 vertical & horizontal start positions data|
+|DFF172|[SPR6CTL](hardware/DFF172_SPR6CTL.md)|Sprite 6 position and control data|
+|DFF174|[SPR6DATA](hardware/DFF174_SPR6DATA.md)|Sprite 6 image data register A|
+|DFF176|[SPR6DATB](hardware/DFF176_SPR6DATB.md)|Sprite 6 image data register B|
+|DFF178|[SPR7POS](hardware/DFF178_SPR7POS.md)|Sprite 7 vertical & horizontal start positions data|
+|DFF17A|[SPR7CTL](hardware/DFF17A_SPR7CTL.md)|Sprite 7 position and control data|
+|DFF17C|[SPR7DATA](hardware/DFF17C_SPR7DATA.md)|Sprite 7 image data register A|
+|DFF17E|[SPR7DATB](hardware/DFF17E_SPR7DATB.md)|Sprite 7 image data register B|
+|DFF180|[COLOR00](hardware/DFF180_COLOR00.md)|Color 0|
+|DFF182|[COLOR01](hardware/DFF182_COLOR01.md)|Color 1|
+|DFF184|[COLOR02](hardware/DFF184_COLOR02.md)|Color 2|
+|DFF186|[COLOR03](hardware/DFF186_COLOR03.md)|Color 3|
+|DFF188|[COLOR04](hardware/DFF188_COLOR04.md)|Color 4|
+|DFF18a|[COLOR05](hardware/DFF18a_COLOR05.md)|Color 5|
+|DFF18c|[COLOR06](hardware/DFF18c_COLOR06.md)|Color 6|
+|DFF18e|[COLOR07](hardware/DFF18e_COLOR07.md)|Color 7|
+|DFF190|[COLOR08](hardware/DFF190_COLOR08.md)|Color 8|
+|DFF192|[COLOR09](hardware/DFF192_COLOR09.md)|Color 9|
+|DFF194|[COLOR10](hardware/DFF194_COLOR10.md)|Color 10|
+|DFF196|[COLOR11](hardware/DFF196_COLOR11.md)|Color 11|
+|DFF198|[COLOR12](hardware/DFF198_COLOR12.md)|Color 12|
+|DFF19a|[COLOR13](hardware/DFF19a_COLOR13.md)|Color 13|
+|DFF19c|[COLOR14](hardware/DFF19c_COLOR14.md)|Color 14|
+|DFF19e|[COLOR15](hardware/DFF19e_COLOR15.md)|Color 15|
+|DFF1a0|[COLOR16](hardware/DFF1a0_COLOR16.md)|Color 16|
+|DFF1a2|[COLOR17](hardware/DFF1a2_COLOR17.md)|Color 17|
+|DFF1a4|[COLOR18](hardware/DFF1a4_COLOR18.md)|Color 18|
+|DFF1a6|[COLOR19](hardware/DFF1a6_COLOR19.md)|Color 19|
+|DFF1a8|[COLOR20](hardware/DFF1a8_COLOR20.md)|Color 20|
+|DFF1aa|[COLOR21](hardware/DFF1aa_COLOR21.md)|Color 21|
+|DFF1ac|[COLOR22](hardware/DFF1ac_COLOR22.md)|Color 22|
+|DFF1ae|[COLOR23](hardware/DFF1ae_COLOR23.md)|Color 23|
+|DFF1b0|[COLOR24](hardware/DFF1b0_COLOR24.md)|Color 24|
+|DFF1b2|[COLOR25](hardware/DFF1b2_COLOR25.md)|Color 25|
+|DFF1b4|[COLOR26](hardware/DFF1b4_COLOR26.md)|Color 26|
+|DFF1b6|[COLOR27](hardware/DFF1b6_COLOR27.md)|Color 27|
+|DFF1b8|[COLOR28](hardware/DFF1b8_COLOR28.md)|Color 28|
+|DFF1ba|[COLOR29](hardware/DFF1ba_COLOR29.md)|Color 29|
+|DFF1bc|[COLOR30](hardware/DFF1bc_COLOR30.md)|Color 30|
+|DFF1be|[COLOR31](hardware/DFF1be_COLOR31.md)|Color 31|
+|DFF1C0|[HTOTAL](hardware/DFF1C0_HTOTAL.md)|Highest colour clock count in horizontal line|
+|DFF1C2|[HSSTOP](hardware/DFF1C2_HSSTOP.md)|Horizontal line position for SYNC stop|
+|DFF1C4|[HBSTRT](hardware/DFF1C4_HBSTRT.md)|Horizontal START position|
+|DFF1C6|[HBSTOP](hardware/DFF1C6_HBSTOP.md)|Horizontal STOP position|
+|DFF1C8|[VTOTAL](hardware/DFF1C8_VTOTAL.md)|Highest numbered vertical line (VERBEAMEN = 1)|
+|DFF1CA|[VSSTOP](hardware/DFF1CA_VSSTOP.md)|Vertical position for VSYNC stop|
+|DFF1CC|[VBSTRT](hardware/DFF1CC_VBSTRT.md)|Vertical line for VBLANK start|
+|DFF1CE|[VBSTOP](hardware/DFF1CE_VBSTOP.md)|Vertical line for VBLANK stop|
+|DFF1D0|[SPRHSTRT](hardware/DFF1D0_SPRHSTRT.md)|UHRES sprite vertical display start|
+|DFF1D2|[SPRHSTOP](hardware/DFF1D2_SPRHSTOP.md)|UHRES sprite vertical display stop|
+|DFF1D4|[BLTHSTRT](hardware/DFF1D4_BLTHSTRT.md)|UHRES bit plane vertical stop|
+|DFF1D6|[BPLHSTOP](hardware/DFF1D6_BPLHSTOP.md)|UHRES bit plane vertical stop|
+|DFF1D8|[HHPOSW](hardware/DFF1D8_HHPOSW.md)|DUAL mode hires Hbeam counter write|
+|DFF1DA|[HHPOSR](hardware/DFF1DA_HHPOSR.md)|DUAL mode hires Hbeam counter read|
+|DFF1DC|[BEAMCON0](hardware/DFF1DC_BEAMCON0.md)|Beam Counter Control Bits|
+|DFF1DE|[HSSTRT](hardware/DFF1DE_HSSTRT.md)|Horiz line position for HSYNC stop|
+|DFF1E0|[VSSTRT](hardware/DFF1E0_VSSTRT.md)|Vertical sync start (VARVSY)|
+|DFF1E2|[HCENTER](hardware/DFF1E2_HCENTER.md)|Horizontal position (CCKs) of VSYNC on long field|
+|DFF1E4|[DIWHIGH](hardware/DFF1E4_DIWHIGH.md)|Display window upper bits for start, stop|
+|DFF1E6|[BPLHMOD](hardware/DFF1E6_BPLHMOD.md)|UHRES bit plane modulo|
+|DFF1E8|[SPRHPT](hardware/DFF1E8_SPRHPT.md)|UHRES sprite pointer (high 5 bits)|
+|DFF1E8|[SPRHPTH](hardware/DFF1E8_SPRHPTH.md)|UHRES sprite pointer (high 5 bits)|
+|DFF1EA|[SPRHPTL](hardware/DFF1EA_SPRHPTL.md)|UHRES sprite pointer (low 15 bits)|
+|DFF1EC|[BPLHPT](hardware/DFF1EC_BPLHPT.md)|UHRES (VRAM) bit plane pointer (high 5 bits)|
+|DFF1EC|[BPLHPTH](hardware/DFF1EC_BPLHPTH.md)|UHRES (VRAM) bit plane pointer (high 5 bits)|
+|DFF1EE|[BPLHPTL](hardware/DFF1EE_BPLHPTL.md)|UHRES (VRAM) bit plane pointer (low 15 bits)|
+|DFF1FC|[FMODE](hardware/DFF1FC_FMODE.md)|Memory Fetch Mode|
+
+
 ## Amiga libraries
 
 ### diskfont

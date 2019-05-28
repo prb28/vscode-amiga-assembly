@@ -37,11 +37,35 @@ def process_libs(libs_path):
     return md
 
 
-def create_toc(dest_path, libs_md):
+def read_register_description(filepathname):
+    with open(filepathname, "r") as f:
+        contents = f.readline()
+        return contents.replace("**", "").replace("\n", "")
+    return ""
+
+
+def process_registers(registers_path):
+    md = "| Address  | Name | Description |\n|:---|:---|:---|\n"
+    # list all the files from the hardware dir
+    for fname in os.listdir(registers_path):
+        if (fname.endswith(".md")):
+            name_elements = fname[:-3].split("_")
+            register_address = name_elements[0]
+            register_name = name_elements[1]
+            filepathname = os.path.join(registers_path, fname)
+            fileurl = "hardware/%s" % fname
+            description = read_register_description(filepathname)
+            md += "|%s|[%s](%s)|%s|\n" % (register_address,
+                                          register_name, fileurl, description)
+    return md
+
+
+def create_toc(dest_path, libs_md, registers_md):
     # Load the reference
     contents = ""
     with open("toc.md", "r") as source:
         contents = source.read()
+    contents = contents.replace("@amiga_registers_replacement@", registers_md)
     contents = contents.replace("@amiga_libs_replacement@", libs_md)
     with open(os.path.join(dest_path, "toc.md"), "w") as destination:
         destination.write(contents)
@@ -57,4 +81,6 @@ if __name__ == '__main__':
     docsPath = os.path.join("..", "..", "docs")
     libsPath = os.path.join(docsPath, "libs")
     libsMd = process_libs(libsPath)
-    create_toc(docsPath, libsMd)
+    registers_path = os.path.join(docsPath, "hardware")
+    registersMd = process_registers(registers_path)
+    create_toc(docsPath, libsMd, registersMd)
