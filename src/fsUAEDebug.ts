@@ -2,6 +2,7 @@ import {
     InitializedEvent, TerminatedEvent, BreakpointEvent,
     Thread, StackFrame, Scope, Source, Handles, DebugSession, OutputEvent, ContinuedEvent
 } from 'vscode-debugadapter/lib/main';
+import * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
 import { GdbProxy } from './gdbProxy';
@@ -103,6 +104,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     /** Breakpoint mamanger */
     private breakpointManager: BreakpointManager;
 
+    /** Current memory display pc */
+    private currentMemoryViewPc = -1;
 
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
@@ -425,14 +428,18 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected async disassembleRequest(response: DebugProtocol.Response, args: DisassembleAddressArguments): Promise<void> {
-        await this.debugDisassembledMananger.disassembleRequest(args).then(variables => {
-            response.body = {
-                variables: variables,
-            };
-            this.sendResponse(response);
-        }).catch((err) => {
-            this.sendStringErrorResponse(response, err.message);
+    protected disassembleRequest(response: DebugProtocol.Response, args: DisassembleAddressArguments): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            await this.debugDisassembledMananger.disassembleRequest(args).then(variables => {
+                response.body = {
+                    variables: variables,
+                };
+                this.sendResponse(response);
+                resolve();
+            }).catch((err) => {
+                this.sendStringErrorResponse(response, err.message);
+                reject(err);
+            });
         });
     }
 
@@ -493,7 +500,13 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             if (thread) {
                 this.gdbProxy.stack(thread).then(async stk => {
                     let stackFrames = [];
+                    let updatedView = false;
                     for (let f of stk.frames) {
+                        if ((!updatedView) && (thread.getThreadId() === GdbAmigaSysThreadId.CPU)) {
+                            // Update the cpu view
+                            this.updateDisassemblebView(f.pc, 100);
+                            updatedView = true;
+                        }
                         let stackFrameDone = false;
                         let pc = f.pc.toString(16);
                         if (f.segmentId >= 0) {
@@ -855,7 +868,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                 const ckey = key;
                                 // disassemble the code 
                                 this.capstone.disassemble(memory).then((code) => {
-                                    let [firstRow, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+                                    let [firstRow, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, startAddress);
                                     this.variableRefMap.set(ckey, variables);
                                     this.variableExpressionMap.set(args.expression, ckey);
                                     response.body = {
@@ -1027,6 +1040,20 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 }
             }
         }
+    }
+
+    private updateDisassemblebView(address: number, length: number): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            if (address !== this.currentMemoryViewPc) {
+                this.currentMemoryViewPc = address;
+                await this.debugDisassembledMananger.disassembleNumericalAddressCPU(address, length).then(async dLines => {
+                    await vscode.commands.executeCommand('disassembledMemory.setDisassembledMemory', dLines);
+                    resolve();
+                }).catch((err) => {
+                    reject(err);
+                });
+            }
+        });
     }
 
     //---- helpers

@@ -122,8 +122,8 @@ describe("debug expression helper Tests", function () {
             "value": "90 91                     sub.l     (a1), d0",
             "variablesReference": 0,
         }];
-        expect(helper.processOutputFromDisassembler(code, startAddress)).to.be.eql(["sub.l (a1), d0", variables]);
-        expect(helper.processOutputFromDisassembler("\n" + code + "\n" + "\n", startAddress)).to.be.eql(["sub.l (a1), d0", variables]);
+        expect(helper.processVariablesFromDisassembler(code, startAddress)).to.be.eql(["sub.l (a1), d0", variables]);
+        expect(helper.processVariablesFromDisassembler("\n" + code + "\n" + "\n", startAddress)).to.be.eql(["sub.l (a1), d0", variables]);
         code = " 0  90 91  sub.l\t(a1), d0\n1  90 91  move.l\t(a1), d0";
         variables = [<DebugProtocol.Variable>{
             "name": "1",
@@ -134,6 +134,6 @@ describe("debug expression helper Tests", function () {
             "value": "90 91                     move.l    (a1), d0",
             "variablesReference": 0,
         }];
-        expect(helper.processOutputFromDisassembler(code, startAddress)).to.be.eql(["sub.l (a1), d0", variables]);
+        expect(helper.processVariablesFromDisassembler(code, startAddress)).to.be.eql(["sub.l (a1), d0", variables]);
     });
 });

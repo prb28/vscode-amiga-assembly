@@ -1,6 +1,6 @@
 import { Capstone } from "./capstone";
 import { GdbProxy } from "./gdbProxy";
-import { DebugExpressionHelper } from "./debugExpressionHelper";
+import { DebugExpressionHelper, DisassembledLine } from "./debugExpressionHelper";
 import { StackFrame, Source } from "vscode-debugadapter";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { CopperDisassembler } from "./copperDisassembler";
@@ -230,7 +230,7 @@ export class DebugDisassembledMananger {
                 if (memory) {
                     // disassemble the code 
                     await this.capstone.disassemble(memory).then((code) => {
-                        let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, 0);
+                        let [, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, 0);
                         let offsetString = offset.toString(16);
                         let line = 1;
                         for (let v of variables) {
@@ -259,7 +259,7 @@ export class DebugDisassembledMananger {
                     let startAddress = this.gdbProxy.toAbsoluteOffset(segmentId, 0);
                     // disassemble the code 
                     localCapstone.disassemble(memory).then((code) => {
-                        let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+                        let [, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, startAddress);
                         resolve(variables);
                     }).catch((err) => {
                         reject(err);
@@ -329,8 +329,32 @@ export class DebugDisassembledMananger {
                     let startAddress = address;
                     // disassemble the code 
                     await localCapstone.disassemble(memory).then((code) => {
-                        let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+                        let [, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, startAddress);
                         resolve(variables);
+                    }).catch((err) => {
+                        reject(err);
+                    });
+                }).catch((err) => {
+                    reject(err);
+                });
+            } else {
+                reject(new Error("Capstone has not been defined"));
+            }
+        });
+    }
+
+    public disassembleNumericalAddressCPU(searchedAddress: number, length: number): Promise<Array<DisassembledLine>> {
+        return new Promise(async (resolve, reject) => {
+            const address = searchedAddress;
+            if (this.capstone) {
+                const localCapstone = this.capstone;
+                // ask for memory dump
+                await this.gdbProxy.getMemory(address, length).then(async (memory) => {
+                    let startAddress = address;
+                    // disassemble the code 
+                    await localCapstone.disassemble(memory).then((code) => {
+                        let [, lines] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+                        resolve(lines);
                     }).catch((err) => {
                         reject(err);
                     });

@@ -92,9 +92,22 @@ export class DebugExpressionHelper {
         return [firstRow, variables];
     }
 
-    public processOutputFromDisassembler(code: string, startAddress: number): [string, Array<DebugProtocol.Variable>] {
-        let firstRow = "";
+    public processVariablesFromDisassembler(code: string, startAddress: number): [string, Array<DebugProtocol.Variable>] {
         let variables = new Array<DebugProtocol.Variable>();
+        let [firstRow, disassembledLines] = this.processOutputFromDisassembler(code, startAddress);
+        for (let dl of disassembledLines) {
+            variables.push({
+                value: dl.hexDump + StringUtils.getEndPad(dl.hexDump, 26) + dl.instruction,
+                name: dl.address.toString(16),
+                variablesReference: 0
+            });
+        }
+        return [firstRow, variables];
+    }
+
+    public processOutputFromDisassembler(code: string, startAddress: number): [string, Array<DisassembledLine>] {
+        let firstRow = "";
+        let disassembledLines = new Array<DisassembledLine>();
         let lines = code.split(/\r\n|\r|\n/g);
         let i = 0;
         for (let l of lines) {
@@ -107,30 +120,32 @@ export class DebugExpressionHelper {
                     if (instructionElms.length > 1) {
                         instuction = instructionElms[0] + StringUtils.getEndPad(instructionElms[0], 10) + instructionElms[1];
                     }
-                    let v = elms[1] + StringUtils.getEndPad(elms[1], 26) + instuction;
+                    let offset = parseInt(elms[0], 16);
+                    let addOffset = startAddress + offset;
+                    disassembledLines.push(new DisassembledLine(addOffset, instuction, elms[1]));
                     if (firstRow.length <= 0) {
                         firstRow = elms[2].replace("\t", " ");
                     }
-                    let offset = parseInt(elms[0], 16);
-                    let addOffset = startAddress + offset;
-                    variables.push({
-                        value: v,
-                        name: addOffset.toString(16),
-                        variablesReference: 0
-                    });
                 } else {
+                    disassembledLines.push(new DisassembledLine(i, l, l));
                     if (firstRow.length <= 0) {
                         firstRow = l;
                     }
-                    variables.push({
-                        value: l,
-                        name: i.toString(),
-                        variablesReference: 0
-                    });
                 }
                 i++;
             }
         }
-        return [firstRow, variables];
+        return [firstRow, disassembledLines];
+    }
+}
+
+export class DisassembledLine {
+    public address: number;
+    public instruction: string;
+    public hexDump: string;
+    constructor(address: number, instruction: string, hexDump: string) {
+        this.address = address;
+        this.hexDump = hexDump;
+        this.instruction = instruction;
     }
 }

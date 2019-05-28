@@ -30,6 +30,7 @@
     "activationEvents": [
         "onDebug",
         "onLanguage:m68k",
+        "onLanguage:c",
         "onLanguage:amiga-assembly-debug.disassembly",
         "onCommand:amiga-assembly.calculator",
         "onCommand:amiga-assembly.evaluate-selection",
@@ -348,6 +349,10 @@
                 "command": "amiga-assembly.showdoc-toc",
                 "title": "Amiga Assembly: Show documentation",
                 "description": "Display the documentation table of contents"
+            },
+            {
+                "command": "disassembledMemory.setDisassembledMemory",
+                "title": "Set disassembled memory"
             }
         ],
         "breakpoints": [
@@ -604,6 +609,14 @@
                     "when": "resourceExtname =~ /\\.iff/i",
                     "command": "amiga-assembly.view-iff",
                     "group": "3_preview"
+                }
+            ]
+        },
+        "views": {
+            "debug": [
+                {
+                    "id": "disassembledMemory",
+                    "name": "DISASSEMBLED MEMORY"
                 }
             ]
         }
