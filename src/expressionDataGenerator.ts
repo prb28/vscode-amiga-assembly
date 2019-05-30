@@ -287,6 +287,15 @@ export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
         vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
         // Search for start keyword
         let codeLensArray = new Array<vscode.CodeLens>();
+        for (let range of this.provideCodeLensesRanges(document)) {
+            codeLensArray.push(new vscode.CodeLens(range));
+        }
+        return codeLensArray;
+    }
+
+    private provideCodeLensesRanges(document: vscode.TextDocument): Array<vscode.Range> {
+        // Search for start keyword
+        let rangesArray = new Array<vscode.Range>();
         let text = document.getText();
         let linePos = 0;
         let startPos: vscode.Position | null = null;
@@ -295,11 +304,11 @@ export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
                 startPos = new vscode.Position(linePos, 0);
             } else if (line.includes(ExpressionDataGeneratorSerializer.END_KEYWORD) && startPos) {
                 let range = new vscode.Range(startPos, new vscode.Position(linePos, line.length));
-                codeLensArray.push(new vscode.CodeLens(range));
+                rangesArray.push(range);
             }
             linePos++;
         }
-        return codeLensArray;
+        return rangesArray;
     }
 
     public resolveCodeLens?(codeLens: vscode.CodeLens, token: vscode.CancellationToken):
@@ -318,14 +327,22 @@ export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
             const editor = vscode.window.activeTextEditor;
             if (editor) {
                 await editor.edit(async (edit) => {
-                    try {
-                        let serializer = new ExpressionDataGeneratorSerializer();
-                        let oldText = editor.document.getText(range);
-                        let generator = serializer.parse(oldText);
-                        let newText = serializer.print(generator);
-                        edit.replace(range, newText);
-                    } catch (error) {
-                        reject(error);
+                    let rangesArray = new Array<vscode.Range>();
+                    if (range) {
+                        rangesArray.push(range);
+                    } else {
+                        rangesArray = this.provideCodeLensesRanges(editor.document);
+                    }
+                    for (let rg of rangesArray) {
+                        try {
+                            let serializer = new ExpressionDataGeneratorSerializer();
+                            let oldText = editor.document.getText(rg);
+                            let generator = serializer.parse(oldText);
+                            let newText = serializer.print(generator);
+                            edit.replace(rg, newText);
+                        } catch (error) {
+                            reject(error);
+                        }
                     }
                 }).then(edited => {
                     if (edited) {
