@@ -11,10 +11,11 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 ## New in 0.17.0
 - Stack frame indicating C source files
-- Documentation for core amiga libraries
+- Documentation for core amiga libraries (diskfont, dos, exec, graphics, intuition)
 - Documentation table of contents
 - Set the entry point for vlink linker
 - Completion for variable and library functions in assembly
+- AsmONE AUTO compatibility
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -80,11 +81,12 @@ The assembly language will be formatted with the standard shortcuts :
 ## Release Notes
 ## New in 0.17.0
 - Stack frame indicating C source files
-- Documentation for core amiga libraries
+- Documentation for core amiga libraries (diskfont, dos, exec, graphics, intuition)
 - Registers documentation enhanced
 - Documentation table of contents
 - Set the entry point for vlink linker
 - Completion for variable and library functions in assembly
+- AsmONE AUTO compatibility
 
 ## 0.16.0
 - View an IFF/ILBM file (use of ilbm.js from Matthias Wiesmann)

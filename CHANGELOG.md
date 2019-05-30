@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### [0.17.0]
 - [Issue #68](https://github.com/prb28/vscode-amiga-assembly/issues/68) Presentation of the value set to a register $102 (BPLCON1) is wrong
+- [Feat #67](https://github.com/prb28/vscode-amiga-assembly/issues/67) IncIFF, IncIFFP and CS, AUTO
 - [Feat #66](https://github.com/prb28/vscode-amiga-assembly/issues/66) Debug C source files
 - [Feat #63](https://github.com/prb28/vscode-amiga-assembly/issues/63) IntelliSense for commodore libraries
 - Documentation table of contents
