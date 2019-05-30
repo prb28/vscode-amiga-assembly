@@ -10,6 +10,7 @@ export class ICheckResult {
     line: number = -1;
     col: number = 0;
     msg: string = "";
+    msgData: string = "";
     severity: string = "error";
 }
 

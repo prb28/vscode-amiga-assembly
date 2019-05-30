@@ -49,6 +49,7 @@ export interface Hunk {
     hunkType: HunkType;
     allocSize: number;
     dataSize: number;
+    dataOffset: number;
     codeData?: Uint32Array;
     reloc32?: Array<RelocInfo32>;
     symbols?: Array<Symbol>;
@@ -115,6 +116,7 @@ export class HunkParser {
         let pos = fileOffset + 4;
 
         hunk.dataSize = size;
+        hunk.dataOffset = pos;
         hunk.hunkType = hunkType;
         hunk.memType = memType;
 
