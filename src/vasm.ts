@@ -2,6 +2,7 @@ import { window, workspace, Disposable, DiagnosticSeverity, TextDocument, Uri } 
 import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import { ExtensionState } from './extension';
 import { VLINKLinker } from './vlink';
+import { AsmONE } from './asmONE';
 import * as fs from "fs";
 import * as path from "path";
 
@@ -12,11 +13,13 @@ export class VASMCompiler {
     executor: ExecutorHelper;
     parser: VASMParser;
     linker: VLINKLinker;
+    asmONE: AsmONE;
 
     constructor() {
         this.executor = new ExecutorHelper();
         this.parser = new VASMParser();
         this.linker = new VLINKLinker();
+        this.asmONE = new AsmONE();
     }
 
     /**
@@ -154,7 +157,7 @@ export class VASMCompiler {
         });
     }
 
-    private buildWorkspaceInner(includes: string, excludes: string, exefilename: string, entrypoint: string|undefined): Promise<void> {
+    private buildWorkspaceInner(includes: string, excludes: string, exefilename: string, entrypoint: string | undefined): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const workspaceRootDir = this.getWorkspaceRootDir();
             const buildDir = this.getBuildDir();
@@ -171,7 +174,7 @@ export class VASMCompiler {
                     }
                     await Promise.all(promises).then(async (errorsArray) => {
                         for (let i = 0; i < errorsArray.length; i += 1) {
-                            let errors: ICheckResult[] = errorsArray[i];
+                            let errors: ICheckResult[] = this.asmONE.FilterErrors(errorsArray[i]);
                             if (errors && (errors.length > 0)) {
                                 reject(new Error("Build aborted: there are compile errors"));
                             }
@@ -182,6 +185,7 @@ export class VASMCompiler {
                                 if (errors && errors.length > 0) {
                                     reject(new Error(`Linker error: ${errors[0].msg}`));
                                 } else {
+                                    this.asmONE.Auto(filesURI, path.join(buildDir.fsPath, exefilename));
                                     resolve();
                                 }
                             }).catch(err => {
@@ -226,7 +230,7 @@ export class VASMCompiler {
                     let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
                     let vasmExecutableName: string = conf.file;
                     let extSep = filename.indexOf(".");
-                    let objFilename;
+                    let objFilename: string;
                     if (extSep > 0) {
                         objFilename = path.join(buildDir.fsPath, filename.substr(0, filename.lastIndexOf(".")) + ".o");
                     } else {
@@ -366,6 +370,7 @@ export class VASMParser implements ExecutorParser {
                         error.file = match[4];
                         error.line = parseInt(match[3]);
                         error.msg = match[1] + " " + match[2] + ": " + match[5];
+                        error.msgData = this.collectErrorData(lines, lineIndex + 1);
                         error.severity = match[1];
                     } else {
                         match = /.*error\s([\d]+)\s*:\s*(.*)/.exec(line);
@@ -401,5 +406,21 @@ export class VASMParser implements ExecutorParser {
             errors.push(error);
         }
         return errors;
+    }
+
+    /**
+     * Colects error data from lines below detected error
+     * @param lines output error lines
+     * @param idx index of line to start collectiong data, should be after error
+     */
+    private collectErrorData(lines: string[], idx: number): string {
+        let errData = "";
+        if (idx >= lines.length) {
+            return errData;
+        }
+        while (lines[idx].startsWith(">")) {
+            errData += lines[idx++] + "\n";
+        }
+        return errData;
     }
 }
