@@ -418,7 +418,7 @@ export class VASMParser implements ExecutorParser {
         if (idx >= lines.length) {
             return errData;
         }
-        while (lines[idx].startsWith(">")) {
+        while (idx < lines.length && lines[idx].startsWith(">")) {
             errData += lines[idx++] + "\n";
         }
         return errData;
