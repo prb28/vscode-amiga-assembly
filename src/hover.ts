@@ -30,7 +30,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     keyInstruction = keyInstruction.substr(0, idx);
                 }
                 if (token.isCancellationRequested) {
-                    reject();
+                    resolve();
                 }
                 let hoverInstructionList = this.documentationManager.getInstruction(keyInstruction.toUpperCase());
                 if (hoverInstructionList) {
@@ -118,7 +118,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     }
                 }
             }
-            reject();
+            resolve();
         });
     }
 
