@@ -30,8 +30,10 @@ BEQ;Branch if Equal;BEQ <label>;BW-;*;*;*;*;*
 BGE;Branch if Greater than or Equal;BGE <label>;BW-;*;*;*;*;*
 BGT;Branch if Greater than;BGT <label>;BW-;*;*;*;*;*
 BHI;Branch if Higher;BHI <label>;BW-;*;*;*;*;*
+BHS;Branch if Higher or Same;BHS <label>;BW-;*;*;*;*;*
 BLE;Branch if Less than or Equal;BLE <label>;BW-;*;*;*;*;*
-BLS;Branch if Lower or same;BLS <label>;BW-;*;*;*;*;*
+BLO;Branch if LOwer than;BLO <label>;BW-;*;*;*;*;*
+BLS;Branch if Lower or Same;BLS <label>;BW-;*;*;*;*;*
 BLT;Branch if Less than;BLT <label>;BW-;*;*;*;*;*
 BMI;Branch if Minus;BMI <label>;BW-;*;*;*;*;*
 BNE;Branch if Not Equal;BNE <label>;BW-;*;*;*;*;*
@@ -65,7 +67,8 @@ DBEQ;Decrement and Branch if Equal;DBEQ Dn,<label>;-W-;*;*;*;*;*
 DBF;Decrement and Branch if False;DBF Dn,<label>;-W-;*;*;*;*;*
 DBGE;Decrement and Branch if Greater than or Equal;DBGE Dn,<label>;-W-;*;*;*;*;*
 DBGT;Decrement and Branch if Greater than;DBGT Dn,<label>;-W-;*;*;*;*;*
-DBHI;Decrement and Branch if Higher;DBHI Dn,<label>;-W-;*;*;*;*;*
+DBHI;Decrement and Branch if HIgher;DBHI Dn,<label>;-W-;*;*;*;*;*
+DBHS;Decrement and Branch if Higher or Same;DBHS Dn,<label>;-W-;*;*;*;*;*
 DBLE;Decrement and Branch if Less than or Equal;DBLE Dn,<label>;-W-;*;*;*;*;*
 DBLS;Decrement and Branch if Lower or Same;DBLS Dn,<label>;-W-;*;*;*;*;*
 DBLT;Decrement and Branch if Less than;DBTL Dn,<label>;-W-;*;*;*;*;*
