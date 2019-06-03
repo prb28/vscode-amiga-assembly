@@ -22,7 +22,7 @@ describe("Documentation Tests", function () {
     context("Hover instruction file parsing", function () {
         it("Should read the file correctly", function () {
             let manager = documentationManger.instructionsManager;
-            expect(manager.instructions.size).to.be.equal(116);
+            expect(manager.instructions.size).to.be.equal(119);
             let list = manager.instructions.get("ADD");
             expect(list).to.not.be.undefined;
             if (list) {
