@@ -10,9 +10,10 @@ const remapIstanbul = require("remap-istanbul");
 
 
 // Will print the stack on promise rejection
-process.on('unhandledRejection', (reason: Error, promise: Promise<any>) => {
-    console.log('unhandledRejection', reason.message);
-    console.log('unhandledRejection', reason.stack);
+process.on('unhandledRejection', (reason, _promise) => {
+    if (reason) {
+        console.log('unhandledRejection', reason);
+    }
 });
 
 // Linux: prevent a weird NPE when mocha on Linux requires the window size from the TTY
