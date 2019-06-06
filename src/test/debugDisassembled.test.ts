@@ -13,9 +13,17 @@ import { GdbProxy } from '../gdbProxy';
 import { StackFrame, Source } from 'vscode-debugadapter';
 import { DebugVariableResolver } from '../debugVariableResolver';
 import { DummyVariableResolver } from './dummyVariableResolver';
+import * as vscode from 'vscode';
 chai.use(chaiAsPromised);
 
 describe("debug disassebled Tests", function () {
+    before(async function () {
+        // activate the extension
+        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
+    });
     context("DebugDisassembledFile Tests", function () {
         // tslint:disable:no-unused-expression
         it("Should parse a correct path", function () {

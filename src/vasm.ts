@@ -188,8 +188,10 @@ export class VASMCompiler {
                             await this.linker.linkFiles(filesURI, exefilename, entrypoint, workspaceRootDir, buildDir).then(errors => {
                                 if (errors && errors.length > 0) {
                                     reject(new Error(`Linker error: ${errors[0].msg}`));
-                                } else if (ASMOneEnabled) {
-                                    this.asmONE.Auto(filesURI, path.join(buildDir.fsPath, exefilename));
+                                } else {
+                                    if (ASMOneEnabled) {
+                                        this.asmONE.Auto(filesURI, path.join(buildDir.fsPath, exefilename));
+                                    }
                                     resolve();
                                 }
                             }).catch(err => {
@@ -326,7 +328,10 @@ export class VASMCompiler {
      */
     isASMOOneEnabled(): boolean {
         let conf = workspace.getConfiguration('amiga-assembly');
-        return conf.get('ASMOneCompatibilityEnabled') === true;
+        if (conf) {
+            return conf.ASMOneCompatibilityEnabled === true;
+        }
+        return false;
     }
 }
 

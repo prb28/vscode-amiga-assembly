@@ -40,7 +40,7 @@ describe("Hover Tests", function () {
             let position: Position = new Position(0, 1);
             let tockenEmitter = new CancellationTokenSource();
             let results = hp.provideHover(document, position, tockenEmitter.token);
-            expect(results).to.be.rejected;
+            return expect(results).to.be.fulfilled;
         });
         it("Should return a hover on an instruction", async function () {
             let hp = new M68kHoverProvider(state.getDocumentationManager());

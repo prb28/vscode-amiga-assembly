@@ -59,6 +59,6 @@ describe("ADFTools test", function () {
         let adfTools = new ADFTools(rootToolsDir);
         adfTools.setTestContext(executor);
         // tslint:disable-next-line:no-unused-expression
-        expect(adfTools.createBootableADFDiskFromDir(adfDiskName, adfRootDir, "**/genc*", "**/.*", ["opts"])).to.be.rejected;
+        return expect(adfTools.createBootableADFDiskFromDir(adfDiskName, adfRootDir, "**/genc*", "**/.*", ["opts"])).to.be.rejected;
     });
 });
