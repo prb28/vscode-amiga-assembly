@@ -55,7 +55,7 @@ export class AsmONE {
 	 * Remove AsmONE related errors and warnings for handled commands
 	 * @param errToFilter list of errors to filter 
 	 */
-	public FilterErrors(errToFilter: ICheckResult[]): ICheckResult[] {
+	public filterErrors(errToFilter: ICheckResult[]): ICheckResult[] {
 		let filtered = new Array<ICheckResult>();
 		for (const err of errToFilter) {
 			switch (err.severity.toUpperCase()) {

@@ -15,7 +15,6 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 - Documentation table of contents
 - Set the entry point for vlink linker
 - Completion for variable and library functions in assembly
-- AsmONE AUTO compatibility (partial)
 
 ### Other features
 ### Run and Debug with FS-UAE
@@ -86,7 +85,6 @@ The assembly language will be formatted with the standard shortcuts :
 - Documentation table of contents
 - Set the entry point for vlink linker
 - Completion for variable and library functions in assembly
-- AsmONE AUTO compatibility (partial)
 - Bug fixes
 
 ## 0.16.0

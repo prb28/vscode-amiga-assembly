@@ -1,4 +1,4 @@
-import { window, workspace, Disposable, DiagnosticSeverity, TextDocument, Uri } from "vscode";
+import { window, workspace, Disposable, DiagnosticSeverity, TextDocument, Uri, WorkspaceConfiguration } from "vscode";
 import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import { ExtensionState } from './extension';
 import { VLINKLinker } from './vlink';
@@ -163,6 +163,7 @@ export class VASMCompiler {
             const buildDir = this.getBuildDir();
             const configuration = workspace.getConfiguration('amiga-assembly');
             const confVLINK: any = configuration.get('vlink');
+            const ASMOneEnabled = this.isASMOOneEnabled();
             if (workspaceRootDir && buildDir) {
                 await workspace.findFiles(includes, excludes).then(async filesURI => {
                     let promises: Thenable<ICheckResult[]>[] = [];
@@ -174,7 +175,10 @@ export class VASMCompiler {
                     }
                     await Promise.all(promises).then(async (errorsArray) => {
                         for (let i = 0; i < errorsArray.length; i += 1) {
-                            let errors: ICheckResult[] = this.asmONE.FilterErrors(errorsArray[i]);
+                            let errors: ICheckResult[] = errorsArray[i];
+                            if (ASMOneEnabled) {
+                                errors = this.asmONE.filterErrors(errors);
+                            }
                             if (errors && (errors.length > 0)) {
                                 reject(new Error("Build aborted: there are compile errors"));
                             }
@@ -184,7 +188,7 @@ export class VASMCompiler {
                             await this.linker.linkFiles(filesURI, exefilename, entrypoint, workspaceRootDir, buildDir).then(errors => {
                                 if (errors && errors.length > 0) {
                                     reject(new Error(`Linker error: ${errors[0].msg}`));
-                                } else {
+                                } else if (ASMOneEnabled) {
                                     this.asmONE.Auto(filesURI, path.join(buildDir.fsPath, exefilename));
                                     resolve();
                                 }
@@ -313,8 +317,16 @@ export class VASMCompiler {
      * Useful for mocking
      * @param conf Configuration
      */
-    mayCompile(conf: any) {
+    mayCompile(conf: WorkspaceConfiguration) {
         return (conf && conf.enabled);
+    }
+
+    /**
+     * Checks if ASMOne compatibility is enabled.
+     */
+    isASMOOneEnabled(): boolean {
+        let conf = workspace.getConfiguration('amiga-assembly');
+        return conf.get('ASMOneCompatibilityEnabled') === true;
     }
 }
 

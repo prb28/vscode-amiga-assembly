@@ -190,6 +190,12 @@
                     },
                     "description": "ADFFile generation from the destination build dir"
                 },
+                "amiga-assembly.ASMOneCompatibilityEnabled": {
+                    "type": "boolean",
+                    "scope": "window",
+                    "default": false,
+                    "description": "Enables the ASMOne source compatiblity commands."
+                },
                 "amiga-assembly.vasm": {
                     "type": "object",
                     "scope": "window",
