@@ -421,14 +421,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected customRequest(command: string, response: DebugProtocol.Response, args: any): void {
         if (command === 'disassemble') {
-            this.disassembleRequest(response, args);
+            this.disassembleRequestInner(response, args);
         } else {
             response.body = { error: 'Invalid command.' };
             this.sendResponse(response);
         }
     }
 
-    protected disassembleRequest(response: DebugProtocol.Response, args: DisassembleAddressArguments): Promise<void> {
+    protected disassembleRequestInner(response: DebugProtocol.Response, args: DisassembleAddressArguments): Promise<void> {
         return new Promise(async (resolve, reject) => {
             await this.debugDisassembledMananger.disassembleRequest(args).then(variables => {
                 response.body = {
