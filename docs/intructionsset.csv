@@ -70,6 +70,7 @@ DBGT;Decrement and Branch if Greater than;DBGT Dn,<label>;-W-;*;*;*;*;*
 DBHI;Decrement and Branch if HIgher;DBHI Dn,<label>;-W-;*;*;*;*;*
 DBHS;Decrement and Branch if Higher or Same;DBHS Dn,<label>;-W-;*;*;*;*;*
 DBLE;Decrement and Branch if Less than or Equal;DBLE Dn,<label>;-W-;*;*;*;*;*
+DBLO;Decrement and Branch if Lower;DBLO Dn,<label>;-W-;*;*;*;*;*
 DBLS;Decrement and Branch if Lower or Same;DBLS Dn,<label>;-W-;*;*;*;*;*
 DBLT;Decrement and Branch if Less than;DBTL Dn,<label>;-W-;*;*;*;*;*
 DBMI;Decrement and Branch if Minus;DBcc MI,<label>;-W-;*;*;*;*;*
@@ -90,6 +91,24 @@ EORI;Exclusive OR Immediate;#<data>,Dn;BWL;-;*;*;0;0
 EORI;Exclusive OR Immediate;<data>,<ea>;BWL;-;*;*;0;0
 EXG;Exchange any two registers;Rx,Ry;--L;*;*;*;*;*
 EXT;Sign EXTend;Dn;-WL;-;*;*;0;0
+FTRAPCC;Execute FTRAP Exception if Carry Clear;#<vector>;;*;*;*;*;*
+FTRAPCS;Execute FTRAP Exception if Carry Set;#<vector>;;*;*;*;*;*
+FTRAPEQ;Execute FTRAP Exception if Equal;#<vector>;;*;*;*;*;*
+FTRAPF;Execute FTRAP Exception if False;#<vector>;;*;*;*;*;*
+FTRAPGE;Execute FTRAP Exception if Greater than or Equal;#<vector>;;*;*;*;*;*
+FTRAPGT;Execute FTRAP Exception if Greater than;#<vector>;;*;*;*;*;*
+FTRAPHI;Execute FTRAP Exception if HIgher;#<vector>;;*;*;*;*;*
+FTRAPHS;Execute FTRAP Exception if Higher or Same;#<vector>;;*;*;*;*;*
+FTRAPLE;Execute FTRAP Exception if Less than or Equal;#<vector>;;*;*;*;*;*
+FTRAPLO;Execute FTRAP Exception if Lower;#<vector>;;*;*;*;*;*
+FTRAPLS;Execute FTRAP Exception if Lower or Same;#<vector>;;*;*;*;*;*
+FTRAPLT;Execute FTRAP Exception if Less than;#<vector>;;*;*;*;*;*
+FTRAPMI;Execute FTRAP Exception if Minus;FTRAPcc MI,<label>;-W-;*;*;*;*;*
+FTRAPNE;Execute FTRAP Exception if Not Equal;#<vector>;;*;*;*;*;*
+FTRAPPL;Execute FTRAP Exception if Plus;#<vector>;;*;*;*;*;*
+FTRAPT;Execute FTRAP Exception if True;#<vector>;;*;*;*;*;*
+FTRAPVC;Execute FTRAP Exception if Overflow Clear;#<vector>;;*;*;*;*;*
+FTRAPVS;Execute FTRAP Exception if Overflow Set;#<vector>;;*;*;*;*;*
 ILLEGAL;Take Illegal Trap Instruction;;---;-;-;-;-;-
 JMP;JuMP to Affective Address;<ea>;;*;*;*;*;*
 JSR;Jump to SubRoutine;<ea>;;*;*;*;*;*
@@ -158,7 +177,9 @@ SF;Set Conditionally if False;SF <ea>;B--;*;*;*;*;*
 SGE;Set Conditionally if Greater than or Equal;SGE <ea>;B--;*;*;*;*;*
 SGT;Set Conditionally if Greater than;SGT <ea>;B--;*;*;*;*;*
 SHI;Set Conditionally if High;SHI <ea>;B--;*;*;*;*;*
+SHS;Set Conditionally if Higher os Same;SHS <ea>;B--;*;*;*;*;*
 SLE;Set Conditionally if Less than or Equal;SLE <ea>;B--;*;*;*;*;*
+SLO;Set Conditionally if Lower;SLO <ea>;B--;*;*;*;*;*
 SLS;Set Conditionally if Low or Same;SLS <ea>;B--;*;*;*;*;*
 SMI;Set Conditionally if Minus;SMI <ea>;B--;*;*;*;*;*
 SNE;Set Conditionally if Not Equal;SNE <ea>;B--;*;*;*;*;*
@@ -183,7 +204,25 @@ SUBX;SUB eXtended;-(Ay),-(Ax);BWL;*;*;*;*;*
 SWAP;SWAP words of Dn;Dn;-W-;-;*;*;0;0
 TAS;Test And Set operand;<ea>;B--;-;1;*;0;0
 TRAP;Execute TRAP Exception;#<vector>;;*;*;*;*;*
+TRAPCC;Execute TRAP Exception if Carry Clear;#<vector>;;*;*;*;*;*
+TRAPCS;Execute TRAP Exception if Carry Set;#<vector>;;*;*;*;*;*
+TRAPEQ;Execute TRAP Exception if Equal;#<vector>;;*;*;*;*;*
+TRAPF;Execute TRAP Exception if False;#<vector>;;*;*;*;*;*
+TRAPGE;Execute TRAP Exception if Greater than or Equal;#<vector>;;*;*;*;*;*
+TRAPGT;Execute TRAP Exception if Greater than;#<vector>;;*;*;*;*;*
+TRAPHI;Execute TRAP Exception if HIgher;#<vector>;;*;*;*;*;*
+TRAPHS;Execute TRAP Exception if Higher or Same;#<vector>;;*;*;*;*;*
+TRAPLE;Execute TRAP Exception if Less than or Equal;#<vector>;;*;*;*;*;*
+TRAPLO;Execute TRAP Exception if Lower;#<vector>;;*;*;*;*;*
+TRAPLS;Execute TRAP Exception if Lower or Same;#<vector>;;*;*;*;*;*
+TRAPLT;Execute TRAP Exception if Less than;#<vector>;;*;*;*;*;*
+TRAPMI;Execute TRAP Exception if Minus;TRAPcc MI,<label>;-W-;*;*;*;*;*
+TRAPNE;Execute TRAP Exception if Not Equal;#<vector>;;*;*;*;*;*
+TRAPPL;Execute TRAP Exception if Plus;#<vector>;;*;*;*;*;*
+TRAPT;Execute TRAP Exception if True;#<vector>;;*;*;*;*;*
 TRAPV;TRAPV Exception if V-bit Set;TRAPV;;*;*;*;*;*
+TRAPVC;Execute TRAP Exception if Overflow Clear;#<vector>;;*;*;*;*;*
+TRAPVS;Execute TRAP Exception if Overflow Set;#<vector>;;*;*;*;*;*
 TST;TeST for negative or zero;<ea>;BWL;-;*;*;0;0
 TST;TeST for negative or zero;Dn;BWL;-;*;*;0;0
 UNLK;Unlink;An;---;-;-;-;-;-
