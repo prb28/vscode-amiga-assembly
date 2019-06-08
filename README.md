@@ -10,7 +10,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases) or the [VBCC workspace](https://github.com/prb28/vscode-amiga-vbcc-example).
 
 ## New in 0.17.0
-- Stack frame indicating C source files
+- Stack frame indicating C source files (basic implementation)
 - Documentation for core amiga libraries (diskfont, dos, exec, graphics, intuition)
 - Documentation table of contents
 - Set the entry point for vlink linker
@@ -79,7 +79,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 ## Release Notes
 ## New in 0.17.0
-- Stack frame indicating C source files
+- Stack frame indicating C source files (basic implementation)
 - Documentation for core amiga libraries (diskfont, dos, exec, graphics, intuition)
 - Registers documentation enhanced
 - Documentation table of contents
