@@ -420,7 +420,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected customRequest(command: string, response: DebugProtocol.Response, args: any): void {
-        if (command === 'disassemble') {
+        if (command === 'disassembleInner') {
             this.disassembleRequestInner(response, args);
         } else {
             response.body = { error: 'Invalid command.' };

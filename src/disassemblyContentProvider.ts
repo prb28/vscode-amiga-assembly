@@ -25,14 +25,14 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                 if (DebugDisassembledFile.isDebugAsmFile(path)) {
                     let dAsmFile = DebugDisassembledFile.fromPath(path);
                     if (dAsmFile.isSegment()) {
-                        debugSession.customRequest('disassemble', <DisassembleAddressArguments>{ segmentId: dAsmFile.getSegmentId() }).then((response) => {
+                        debugSession.customRequest('disassembleInner', <DisassembleAddressArguments>{ segmentId: dAsmFile.getSegmentId() }).then((response) => {
                             resolve(this.printVariables(response.variables));
                         }, (error) => {
                             vscode.window.showErrorMessage(error.message);
                             reject(error);
                         });
                     } else if (dAsmFile.isCopper()) {
-                        await debugSession.customRequest('disassemble', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), length: dAsmFile.getLength(), copper: true }).then((response) => {
+                        await debugSession.customRequest('disassembleInner', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), length: dAsmFile.getLength(), copper: true }).then((response) => {
                             const variables: Array<DebugProtocol.Variable> = response.variables;
                             let output = '';
                             let isFirst = true;
@@ -54,7 +54,7 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                             reject(error);
                         });
                     } else {
-                        await debugSession.customRequest('disassemble', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), stackFrameIndex: dAsmFile.getStackFrameIndex(), length: dAsmFile.getLength() }).then((response) => {
+                        await debugSession.customRequest('disassembleInner', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), stackFrameIndex: dAsmFile.getStackFrameIndex(), length: dAsmFile.getLength() }).then((response) => {
                             resolve(this.printVariables(response.variables));
                         }, (error) => {
                             vscode.window.showErrorMessage(error.message);

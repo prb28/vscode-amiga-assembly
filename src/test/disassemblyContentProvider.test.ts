@@ -33,7 +33,7 @@ describe("debug disassebly content provider", function () {
         let response = {
             variables: variables
         };
-        when(mockedDebugSession.customRequest('disassemble', anything())).thenReturn(Promise.resolve(response));
+        when(mockedDebugSession.customRequest('disassembleInner', anything())).thenReturn(Promise.resolve(response));
         dcp.setTestContext(debugSession);
 
         // empty path
@@ -67,7 +67,7 @@ describe("debug disassebly content provider", function () {
         expect(args2.length).to.be.equal(dAsmFileAddress.getLength());
 
         // rejection
-        when(mockedDebugSession.customRequest('disassemble', anything())).thenReturn(Promise.reject(new Error("nope")));
+        when(mockedDebugSession.customRequest('disassembleInner', anything())).thenReturn(Promise.reject(new Error("nope")));
         await expect(dcp.provideTextDocumentContent(Uri.file(dAsmFileSeg.toString()), tockenEmitter.token)).to.be.rejected;
         await expect(dcp.provideTextDocumentContent(Uri.file(dAsmFileAddress.toString()), tockenEmitter.token)).to.be.rejected;
     });
