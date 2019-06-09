@@ -25,15 +25,18 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                 if (DebugDisassembledFile.isDebugAsmFile(path)) {
                     let dAsmFile = DebugDisassembledFile.fromPath(path);
                     if (dAsmFile.isSegment()) {
-                        debugSession.customRequest('disassembleInner', <DisassembleAddressArguments>{ segmentId: dAsmFile.getSegmentId() }).then((response) => {
-                            resolve(this.printVariables(response.variables));
+                        let args = new DisassembleAddressArguments();
+                        args.segmentId = dAsmFile.getSegmentId();
+                        debugSession.customRequest('disassembleInner', args).then((response) => {
+                            resolve(this.printVariables(response.instructions));
                         }, (error) => {
                             vscode.window.showErrorMessage(error.message);
                             reject(error);
                         });
                     } else if (dAsmFile.isCopper()) {
-                        await debugSession.customRequest('disassembleInner', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), length: dAsmFile.getLength(), copper: true }).then((response) => {
-                            const variables: Array<DebugProtocol.Variable> = response.variables;
+                        let args = new DisassembleAddressArguments(dAsmFile.getAddressExpression(), dAsmFile.getLength(), true);
+                        await debugSession.customRequest('disassembleInner', args).then((response) => {
+                            const variables: Array<DebugProtocol.DisassembledInstruction> = response.instructions;
                             let output = '';
                             let isFirst = true;
                             for (let v of variables) {
@@ -42,7 +45,7 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                                 } else {
                                     isFirst = false;
                                 }
-                                output += `${v.name}: ${v.value}`;
+                                output += `${v.address}: ${v.instruction}`;
                             }
                             if (token.isCancellationRequested) {
                                 reject(new Error("Cancelled"));
@@ -54,8 +57,10 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                             reject(error);
                         });
                     } else {
-                        await debugSession.customRequest('disassembleInner', <DisassembleAddressArguments>{ addressExpression: dAsmFile.getAddressExpression(), stackFrameIndex: dAsmFile.getStackFrameIndex(), length: dAsmFile.getLength() }).then((response) => {
-                            resolve(this.printVariables(response.variables));
+                        let args = new DisassembleAddressArguments(dAsmFile.getAddressExpression(), dAsmFile.getLength(), false);
+                        args.stackFrameIndex = dAsmFile.getStackFrameIndex();
+                        await debugSession.customRequest('disassembleInner', args).then((response) => {
+                            resolve(this.printVariables(response.instructions));
                         }, (error) => {
                             vscode.window.showErrorMessage(error.message);
                             reject(error);
@@ -74,10 +79,10 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
      * Print variables to stirng
      * @param variables to b printed/
      */
-    private printVariables(variables: Array<DebugProtocol.Variable>): string {
+    private printVariables(variables: Array<DebugProtocol.DisassembledInstruction>): string {
         let output = '';
         for (let v of variables) {
-            output += `${v.name}: ${v.value}\n`;
+            output += `${v.address}: ${v.instruction}\n`;
         }
         return output;
     }

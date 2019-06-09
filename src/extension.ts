@@ -24,7 +24,7 @@ import { DocumentationManager } from './documentation';
 import { M68kLanguage } from './language';
 import { ASMLine } from './parser';
 import { DisassembledMemoryDataProvider } from './viewDisassembled';
-import { DisassembledLine } from './debugExpressionHelper';
+import { DisassembledInstructionAdapter } from './debugExpressionHelper';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -314,7 +314,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Views
     const disassembledMemoryDataProvider = new DisassembledMemoryDataProvider();
     vscode.window.registerTreeDataProvider('disassembledMemory', disassembledMemoryDataProvider);
-    vscode.commands.registerCommand('disassembledMemory.setDisassembledMemory', (memory: DisassembledLine[]) => disassembledMemoryDataProvider.setDisassembledMemory(memory));
+    vscode.commands.registerCommand('disassembledMemory.setDisassembledMemory', (memory: DisassembledInstructionAdapter[]) => disassembledMemoryDataProvider.setDisassembledMemory(memory));
 
     // Debug configuration
     context.subscriptions.push(vscode.commands.registerCommand('amiga-assembly.getProgramName', config => {

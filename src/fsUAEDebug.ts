@@ -237,6 +237,12 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         // Conditionnal breakpoints not supported
         response.body.supportsConditionalBreakpoints = false;
 
+        // Read memory
+        response.body.supportsReadMemoryRequest = true;
+
+        // Disassemble
+        response.body.supportsDisassembleRequest = true;
+
         // Set expression is accepted - TODO : Try it later
         //response.body.supportsSetExpression = true;
 
@@ -428,11 +434,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected disassembleRequestInner(response: DebugProtocol.Response, args: DisassembleAddressArguments): Promise<void> {
+    protected disassembleRequestInner(response: DebugProtocol.DisassembleResponse, args: DisassembleAddressArguments): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            await this.debugDisassembledMananger.disassembleRequest(args).then(variables => {
+            await this.debugDisassembledMananger.disassembleRequest(args).then(instructions => {
                 response.body = {
-                    variables: variables,
+                    instructions: instructions,
                 };
                 this.sendResponse(response);
                 resolve();
@@ -441,6 +447,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 reject(err);
             });
         });
+    }
+
+    protected disassembleRequest(response: DebugProtocol.DisassembleResponse, args: DebugProtocol.DisassembleArguments): Promise<void> {
+        let dArgs = DisassembleAddressArguments.copy(args, false);
+        return this.disassembleRequestInner(response, dArgs);
     }
 
     protected terminateEmulator() {

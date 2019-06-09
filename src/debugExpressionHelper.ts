@@ -94,20 +94,24 @@ export class DebugExpressionHelper {
 
     public processVariablesFromDisassembler(code: string, startAddress: number): [string, Array<DebugProtocol.Variable>] {
         let variables = new Array<DebugProtocol.Variable>();
-        let [firstRow, disassembledLines] = this.processOutputFromDisassembler(code, startAddress);
-        for (let dl of disassembledLines) {
+        let [firstRow, instructions] = this.processOutputFromDisassembler(code, startAddress);
+        for (let isntr of instructions) {
+            let ib = isntr.instructionBytes;
+            if (!ib) {
+                ib = "";
+            }
             variables.push({
-                value: dl.hexDump + StringUtils.getEndPad(dl.hexDump, 26) + dl.instruction,
-                name: dl.address.toString(16),
+                value: ib + StringUtils.getEndPad(ib, 26) + isntr.instruction,
+                name: isntr.address,
                 variablesReference: 0
             });
         }
         return [firstRow, variables];
     }
 
-    public processOutputFromDisassembler(code: string, startAddress: number): [string, Array<DisassembledLine>] {
+    public processOutputFromDisassembler(code: string, startAddress: number): [string, Array<DisassembledInstructionAdapter>] {
         let firstRow = "";
-        let disassembledLines = new Array<DisassembledLine>();
+        let disassembledLines = new Array<DisassembledInstructionAdapter>();
         let lines = code.split(/\r\n|\r|\n/g);
         let i = 0;
         for (let l of lines) {
@@ -116,18 +120,26 @@ export class DebugExpressionHelper {
                 let elms = l.split("  ");
                 if (elms.length > 2) {
                     let instructionElms = elms[2].split('\t');
-                    let instuction = elms[2];
+                    let instruction = elms[2];
                     if (instructionElms.length > 1) {
-                        instuction = instructionElms[0] + StringUtils.getEndPad(instructionElms[0], 10) + instructionElms[1];
+                        instruction = instructionElms[0] + StringUtils.getEndPad(instructionElms[0], 10) + instructionElms[1];
                     }
                     let offset = parseInt(elms[0], 16);
                     let addOffset = startAddress + offset;
-                    disassembledLines.push(new DisassembledLine(addOffset, instuction, elms[1]));
+                    let dInstr = DisassembledInstructionAdapter.createNumerical(addOffset, instruction);
+                    dInstr.line = i;
+                    dInstr.instructionBytes = elms[1];
+                    dInstr.column = 0;
+                    disassembledLines.push(dInstr);
                     if (firstRow.length <= 0) {
                         firstRow = elms[2].replace("\t", " ");
                     }
                 } else {
-                    disassembledLines.push(new DisassembledLine(i, l, l));
+                    let dInstr = DisassembledInstructionAdapter.createNumerical(i, l);
+                    dInstr.line = i;
+                    dInstr.instructionBytes = l;
+                    dInstr.column = 0;
+                    disassembledLines.push(dInstr);
                     if (firstRow.length <= 0) {
                         firstRow = l;
                     }
@@ -139,13 +151,36 @@ export class DebugExpressionHelper {
     }
 }
 
-export class DisassembledLine {
-    public address: number;
+
+export class DisassembledInstructionAdapter implements DebugProtocol.DisassembledInstruction {
+    public address: string;
+    public instructionBytes?: string | undefined;
     public instruction: string;
-    public hexDump: string;
-    constructor(address: number, instruction: string, hexDump: string) {
+    public symbol?: string | undefined;
+    public location?: DebugProtocol.Source | undefined;
+    public line?: number | undefined;
+    public column?: number | undefined;
+    public endLine?: number | undefined;
+    public endColumn?: number | undefined;
+    private constructor(address: string, instruction: string) {
         this.address = address;
-        this.hexDump = hexDump;
         this.instruction = instruction;
+    }
+    public static createNumerical(address: number, instruction: string): DisassembledInstructionAdapter {
+        let addr = DisassembledInstructionAdapter.getAddressString(address);
+        return new DisassembledInstructionAdapter(addr, instruction);
+    }
+    public static createString(address: string, instruction: string): DisassembledInstructionAdapter {
+        return new DisassembledInstructionAdapter(address, instruction);
+    }
+    public getNumericalAddress(): number {
+        if (this.address.startsWith("0x")) {
+            return parseInt(this.address.substring(2), 16)
+        } else {
+            return parseInt(this.address)
+        }
+    }
+    public static getAddressString(address: number): string {
+        return "0x" + StringUtils.padStartWith0(address.toString(16), 8);
     }
 }

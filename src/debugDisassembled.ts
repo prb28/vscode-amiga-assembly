@@ -1,6 +1,6 @@
 import { Capstone } from "./capstone";
 import { GdbProxy } from "./gdbProxy";
-import { DebugExpressionHelper, DisassembledLine } from "./debugExpressionHelper";
+import { DebugExpressionHelper } from "./debugExpressionHelper";
 import { StackFrame, Source } from "vscode-debugadapter";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { CopperDisassembler } from "./copperDisassembler";
@@ -126,12 +126,41 @@ export class DebugDisassembledFile {
     }
 }
 
-export interface DisassembleAddressArguments {
-    segmentId: number | undefined;
-    stackFrameIndex: number | undefined;
-    addressExpression: string | undefined;
-    length: number | undefined;
+export class DisassembleAddressArguments implements DebugProtocol.DisassembleArguments {
+    memoryReference: string;
+    offset?: number | undefined;
+    instructionOffset?: number | undefined;
+    instructionCount: number;
+    resolveSymbols?: boolean | undefined;
+    segmentId?: number | undefined;
+    stackFrameIndex?: number | undefined;
+    addressExpression?: string | undefined;
     copper: boolean;
+    constructor(addressExpression?: string | undefined, instructionCount?: number | undefined, isCopper?: boolean | undefined) {
+        this.addressExpression = addressExpression;
+        if (addressExpression) {
+            this.memoryReference = addressExpression;
+        } else {
+            this.memoryReference = "";
+        }
+        if (instructionCount) {
+            this.instructionCount = instructionCount;
+        } else {
+            this.instructionCount = 100;
+        }
+        if (isCopper) {
+            this.copper = isCopper;
+        } else {
+            this.copper = false;
+        }
+    }
+
+    public static copy(args: DebugProtocol.DisassembleArguments, isCopper: boolean) {
+        let newArgs = new DisassembleAddressArguments(args.memoryReference, args.instructionCount, isCopper);
+        newArgs.offset = args.offset;
+        newArgs.instructionOffset = args.instructionOffset;
+        return newArgs;
+    }
 }
 
 export class DebugDisassembledMananger {
@@ -230,11 +259,10 @@ export class DebugDisassembledMananger {
                 if (memory) {
                     // disassemble the code 
                     await this.capstone.disassemble(memory).then((code) => {
-                        let [, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, 0);
-                        let offsetString = offset.toString(16);
+                        let [, instructions] = this.debugExpressionHelper.processOutputFromDisassembler(code, 0);
                         let line = 1;
-                        for (let v of variables) {
-                            if (v.name === offsetString) {
+                        for (let instr of instructions) {
+                            if (instr.getNumericalAddress() === offset) {
                                 resolve(line);
                                 return;
                             }
@@ -250,7 +278,7 @@ export class DebugDisassembledMananger {
             }
         });
     }
-    public disassembleSegment(segmentId: number): Promise<DebugProtocol.Variable[]> {
+    public disassembleSegment(segmentId: number): Promise<DebugProtocol.DisassembledInstruction[]> {
         return new Promise(async (resolve, reject) => {
             if (this.capstone) {
                 const localCapstone = this.capstone;
@@ -259,7 +287,7 @@ export class DebugDisassembledMananger {
                     let startAddress = this.gdbProxy.toAbsoluteOffset(segmentId, 0);
                     // disassemble the code 
                     localCapstone.disassemble(memory).then((code) => {
-                        let [, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, startAddress);
+                        let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
                         resolve(variables);
                     }).catch((err) => {
                         reject(err);
@@ -273,7 +301,7 @@ export class DebugDisassembledMananger {
         });
     }
 
-    public disassembleAddress(addressExpression: string, length: number, isCopper: boolean): Promise<DebugProtocol.Variable[]> {
+    public disassembleAddress(addressExpression: string, length: number, isCopper: boolean): Promise<DebugProtocol.DisassembledInstruction[]> {
         return new Promise(async (resolve, reject) => {
             let searchedAddress: number | void;
             if ((isCopper) && ((addressExpression === '1') || (addressExpression === '2'))) {
@@ -298,7 +326,7 @@ export class DebugDisassembledMananger {
         });
     }
 
-    public disassembleNumericalAddress(searchedAddress: number, length: number, isCopper: boolean): Promise<DebugProtocol.Variable[]> {
+    public disassembleNumericalAddress(searchedAddress: number, length: number, isCopper: boolean): Promise<DebugProtocol.DisassembledInstruction[]> {
         return new Promise(async (resolve, reject) => {
             const address = searchedAddress;
             if (isCopper) {
@@ -306,14 +334,13 @@ export class DebugDisassembledMananger {
                     let startAddress = address;
                     let copDis = new CopperDisassembler(memory);
                     let instructions = copDis.disassemble();
-                    let variables = new Array<DebugProtocol.Variable>();
+                    let variables = new Array<DebugProtocol.DisassembledInstruction>();
                     let offset = 0;
                     for (let i of instructions) {
                         let addOffset = startAddress + offset;
                         variables.push({
-                            value: i.toString(),
-                            name: addOffset.toString(16),
-                            variablesReference: 0
+                            address: addOffset.toString(16),
+                            instruction: i.toString()
                         });
                         // 4 iadresses : 32b / address
                         offset += 4;
@@ -329,7 +356,7 @@ export class DebugDisassembledMananger {
                     let startAddress = address;
                     // disassemble the code 
                     await localCapstone.disassemble(memory).then((code) => {
-                        let [, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, startAddress);
+                        let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
                         resolve(variables);
                     }).catch((err) => {
                         reject(err);
@@ -343,7 +370,7 @@ export class DebugDisassembledMananger {
         });
     }
 
-    public disassembleNumericalAddressCPU(searchedAddress: number, length: number): Promise<Array<DisassembledLine>> {
+    public disassembleNumericalAddressCPU(searchedAddress: number, length: number): Promise<Array<DebugProtocol.DisassembledInstruction>> {
         return new Promise(async (resolve, reject) => {
             const address = searchedAddress;
             if (this.capstone) {
@@ -367,11 +394,11 @@ export class DebugDisassembledMananger {
         });
     }
 
-    public disassembleRequest(args: DisassembleAddressArguments): Promise<DebugProtocol.Variable[]> {
+    public disassembleRequest(args: DisassembleAddressArguments): Promise<DebugProtocol.DisassembledInstruction[]> {
         return new Promise(async (resolve, reject) => {
             if (args.copper) {
-                if (args.addressExpression && args.length) {
-                    await this.disassembleAddress(args.addressExpression, args.length, args.copper).then(code => {
+                if (args.addressExpression && args.instructionCount) {
+                    await this.disassembleAddress(args.addressExpression, args.instructionCount, args.copper).then(code => {
                         resolve(code);
                     }).catch((err) => {
                         reject(err);
@@ -386,8 +413,8 @@ export class DebugDisassembledMananger {
                     }).catch((err) => {
                         reject(err);
                     });
-                } else if (args.addressExpression && args.length) {
-                    await this.disassembleAddress(args.addressExpression, args.length, args.copper).then(code => {
+                } else if (args.addressExpression && args.instructionCount) {
+                    await this.disassembleAddress(args.addressExpression, args.instructionCount, args.copper).then(code => {
                         resolve(code);
                     }).catch((err) => {
                         reject(err);
@@ -408,12 +435,12 @@ export class DebugDisassembledMananger {
                 if (dAsmFile.isSegment()) {
                     let segmentId = dAsmFile.getSegmentId();
                     if (segmentId !== undefined) {
-                        await this.disassembleSegment(segmentId).then(variables => {
+                        await this.disassembleSegment(segmentId).then(instructions => {
                             let searchedLN = lineNumber - 1;
-                            if (searchedLN < variables.length) {
-                                resolve(parseInt(variables[searchedLN].name, 16));
+                            if (searchedLN < instructions.length) {
+                                resolve(parseInt(instructions[searchedLN].address, 16));
                             } else {
-                                reject(new Error(`Searched line ${searchedLN} greater than file "${filePath}" length: ${variables.length}`));
+                                reject(new Error(`Searched line ${searchedLN} greater than file "${filePath}" length: ${instructions.length}`));
                             }
                         }).catch((err) => {
                             reject(err);
@@ -426,12 +453,12 @@ export class DebugDisassembledMananger {
                     let address = dAsmFile.getAddressExpression();
                     let length = dAsmFile.getLength();
                     if ((address !== undefined) && (length !== undefined)) {
-                        await this.disassembleAddress(address, length, dAsmFile.isCopper()).then(variables => {
+                        await this.disassembleAddress(address, length, dAsmFile.isCopper()).then(instructions => {
                             let searchedLN = lineNumber - 1;
-                            if (searchedLN < variables.length) {
-                                resolve(parseInt(variables[searchedLN].name, 16));
+                            if (searchedLN < instructions.length) {
+                                resolve(parseInt(instructions[searchedLN].address, 16));
                             } else {
-                                reject(new Error(`Searched line ${searchedLN} greater than file "${filePath}" length: ${variables.length}`));
+                                reject(new Error(`Searched line ${searchedLN} greater than file "${filePath}" length: ${instructions.length}`));
                             }
                         }).catch((err) => {
                             reject(err);

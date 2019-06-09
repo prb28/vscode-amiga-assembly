@@ -3,7 +3,7 @@
 //
 
 import { expect } from 'chai';
-import { DebugExpressionHelper } from '../debugExpressionHelper';
+import { DebugExpressionHelper, DisassembledInstructionAdapter } from '../debugExpressionHelper';
 import { mock, instance, when } from 'ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
 
@@ -118,7 +118,7 @@ describe("debug expression helper Tests", function () {
         let code = " 0  90 91  sub.l\t(a1), d0";
         let startAddress = 1;
         let variables = [<DebugProtocol.Variable>{
-            "name": "1",
+            "name": DisassembledInstructionAdapter.getAddressString(1),
             "value": "90 91                     sub.l     (a1), d0",
             "variablesReference": 0,
         }];
@@ -126,11 +126,11 @@ describe("debug expression helper Tests", function () {
         expect(helper.processVariablesFromDisassembler("\n" + code + "\n" + "\n", startAddress)).to.be.eql(["sub.l (a1), d0", variables]);
         code = " 0  90 91  sub.l\t(a1), d0\n1  90 91  move.l\t(a1), d0";
         variables = [<DebugProtocol.Variable>{
-            "name": "1",
+            "name": DisassembledInstructionAdapter.getAddressString(1),
             "value": "90 91                     sub.l     (a1), d0",
             "variablesReference": 0,
         }, <DebugProtocol.Variable>{
-            "name": "2",
+            "name": DisassembledInstructionAdapter.getAddressString(2),
             "value": "90 91                     move.l    (a1), d0",
             "variablesReference": 0,
         }];

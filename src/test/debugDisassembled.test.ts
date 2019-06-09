@@ -14,6 +14,7 @@ import { StackFrame, Source } from 'vscode-debugadapter';
 import { DebugVariableResolver } from '../debugVariableResolver';
 import { DummyVariableResolver } from './dummyVariableResolver';
 import * as vscode from 'vscode';
+import { DisassembledInstructionAdapter } from '../debugExpressionHelper';
 chai.use(chaiAsPromised);
 
 describe("debug disassebled Tests", function () {
@@ -187,12 +188,12 @@ describe("debug disassebled Tests", function () {
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n4: 00 00     move.l a2,a6\n");
             let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
-            let variables = await manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 });
-            expect(variables.length).to.be.equal(2);
-            expect(variables[0].name).to.be.equal('0');
-            expect(variables[0].value).to.contain('move.l a0,a1');
-            expect(variables[1].name).to.be.equal('4');
-            expect(variables[1].value).to.contain('move.l a2,a6');
+            let instructions = await manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 });
+            expect(instructions.length).to.be.equal(2);
+            expect(instructions[0].address).to.be.equal(DisassembledInstructionAdapter.getAddressString(0));
+            expect(instructions[0].instruction).to.contain('move.l a0,a1');
+            expect(instructions[1].address).to.be.equal(DisassembledInstructionAdapter.getAddressString(4));
+            expect(instructions[1].instruction).to.contain('move.l a2,a6');
             // Reject get memory
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenReject(new Error("no no"));
             await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 })).to.be.rejected;
@@ -205,34 +206,34 @@ describe("debug disassebled Tests", function () {
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n4: 00 00     move.l a2,a6\n");
             let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
-            let variables = await manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8 });
-            expect(variables.length).to.be.equal(2);
-            expect(variables[0].name).to.be.equal('0');
-            expect(variables[0].value).to.contain('move.l a0,a1');
-            expect(variables[1].name).to.be.equal('4');
-            expect(variables[1].value).to.contain('move.l a2,a6');
+            let instructions = await manager.disassembleRequest(new DisassembleAddressArguments("$0", 8));
+            expect(instructions.length).to.be.equal(2);
+            expect(instructions[0].address).to.be.equal(DisassembledInstructionAdapter.getAddressString(0));
+            expect(instructions[0].instruction).to.contain('move.l a0,a1');
+            expect(instructions[1].address).to.be.equal(DisassembledInstructionAdapter.getAddressString(4));
+            expect(instructions[1].instruction).to.contain('move.l a2,a6');
             // Reject get memory
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReject(new Error("no no"));
-            await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8 })).to.be.rejected;
+            await expect(manager.disassembleRequest(new DisassembleAddressArguments("$0", 8))).to.be.rejected;
             // reject disassemble
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenReject("no no");
-            await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8 })).to.be.rejected;
+            await expect(manager.disassembleRequest(new DisassembleAddressArguments("$0", 8))).to.be.rejected;
         });
         it("Should disassemble a copper address", async function () {
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("018005023fd3fffe6401ff01");
             let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
-            let variables = await manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8, copper: true });
-            expect(variables.length).to.be.equal(3);
-            expect(variables[0].name).to.be.equal('0');
-            expect(variables[0].value).to.contain('COLOR');
-            expect(variables[1].name).to.be.equal('4');
-            expect(variables[1].value).to.contain('Wait');
-            expect(variables[2].name).to.be.equal('8');
-            expect(variables[2].value).to.contain('Skip');
+            let instructions = await manager.disassembleRequest(new DisassembleAddressArguments("$0", 8, true));
+            expect(instructions.length).to.be.equal(3);
+            expect(instructions[0].address).to.be.equal('0');
+            expect(instructions[0].instruction).to.contain('COLOR');
+            expect(instructions[1].address).to.be.equal('4');
+            expect(instructions[1].instruction).to.contain('Wait');
+            expect(instructions[2].address).to.be.equal('8');
+            expect(instructions[2].instruction).to.contain('Skip');
             // Reject get memory
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReject(new Error("no no"));
-            await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ addressExpression: "$0", length: 8, copper: true })).to.be.rejected;
+            await expect(manager.disassembleRequest(new DisassembleAddressArguments("$0", 8, true))).to.be.rejected;
         });
         it("Should get an address for a line in an asmdebug editor", async function () {
             let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
