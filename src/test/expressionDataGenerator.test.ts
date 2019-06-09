@@ -31,6 +31,19 @@ describe("Expression data generator", function () {
             expect(values[x]).to.be.equal(v);
         }
     });
+    it("should pad generate numbers", function () {
+        let expVar = new ExpressionDataVariable("x", 1, 2, 1);
+        let expDGen = new ExpressionDataGenerator("x", expVar);
+        expDGen.setOutputDataType(OutputDataType.BYTE);
+        expDGen.setOutputInHex(true);
+        expect(expDGen.evalString()).to.be.equal("dc.b $01, $02");
+        expDGen.setOutputDataType(OutputDataType.WORD);
+        expDGen.setOutputInHex(true);
+        expect(expDGen.evalString()).to.be.equal("dc.w $0001, $0002");
+        expDGen.setOutputDataType(OutputDataType.LONG);
+        expDGen.setOutputInHex(true);
+        expect(expDGen.evalString()).to.be.equal("dc.l $00000001, $00000002");
+    });
     it("should generate negative numbers", function () {
         let expVar = new ExpressionDataVariable("x", 1, 2, 1);
         let expDGen = new ExpressionDataGenerator("-x", expVar);
@@ -116,7 +129,7 @@ describe("Expression data generator", function () {
         expDGen.setOutputInHex(true);
         expDGen.setValuesPerLine(2);
         let output = expDGen.evalString();
-        let expected = "dc.b $a, $b";
+        let expected = "dc.b $0a, $0b";
         expect(output).to.be.equal(expected);
     });
     it("should throw an exception on override", function () {

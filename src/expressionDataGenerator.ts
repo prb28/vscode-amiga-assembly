@@ -1,5 +1,6 @@
 import { MathCalc } from "./mathcalc";
 import * as vscode from "vscode";
+import { StringUtils } from "./stringUtils";
 
 export class ExpressionDataVariable {
     name: string;
@@ -115,6 +116,7 @@ export class ExpressionDataGenerator {
         return value;
     }
     public decimalToHexString(n: number) {
+        let padSize = 0;
         if (n < 0) {
             if (this.outputDataType === OutputDataType.BYTE) {
                 if (n < -0x7f) {
@@ -133,7 +135,14 @@ export class ExpressionDataGenerator {
                 n = (n >>> 0);
             }
         }
-        return n.toString(16);
+        if (this.outputDataType === OutputDataType.BYTE) {
+            padSize = 2;
+        } else if (this.outputDataType === OutputDataType.WORD) {
+            padSize = 4;
+        } else {
+            padSize = 8;
+        }
+        return StringUtils.padStartWith0(n.toString(16), padSize);
     }
     public setOutputInHex(outputInHex: boolean) {
         this.outputInHex = outputInHex;
