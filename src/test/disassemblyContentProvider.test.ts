@@ -5,7 +5,6 @@ import * as chaiAsPromised from 'chai-as-promised';
 import { DisassemblyContentProvider } from '../disassemblyContentProvider';
 import { CancellationTokenSource, Uri } from 'vscode';
 import * as vscode from 'vscode';
-import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebugDisassembledFile } from '../debugDisassembled';
 import { DisassembledInstructionAdapter } from '../debugExpressionHelper';
 chai.use(chaiAsPromised);
