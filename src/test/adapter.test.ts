@@ -692,6 +692,15 @@ describe('Node Debug Adapter', () => {
 			});
 			expect(evaluateResponse.body.result).to.equal('1234                            | .4');
 		});
+		it('should respond to a memory read', async function () {
+			let args = <DebugProtocol.ReadMemoryArguments>{
+				memoryReference: "0",
+				count: 10
+			};
+			let readMemoryResponse = await dc.customRequest("readMemory", args);
+			expect(readMemoryResponse.body.address).to.be.equal("0");
+			expect(readMemoryResponse.body.data).to.be.equal("AAAAAADACwAA+A==");
+		});
 		it('should evaluate a set memory command', async function () {
 			this.timeout(defaultTimeout);
 			let evaluateResponse = await dc.evaluateRequest({

@@ -66,4 +66,36 @@ export class StringUtils {
         }
         return asciiContents;
     }
+
+    /** 
+     * Convert a hex string to a byte array
+     **/
+    public static hexToBytes(hex: string): Array<number> {
+        let bytes = new Array<number>();
+        for (let c = 0; c < hex.length; c += 2)
+            bytes.push(parseInt(hex.substr(c, 2), 16));
+        return bytes;
+    }
+
+    /** 
+     * Convert a byte array to a hex string
+     **/
+    public static bytesToHex(bytes: Array<number>): string {
+        let hex = Array<string>();
+        for (let i = 0; i < bytes.length; i++) {
+            var current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+            hex.push((current >>> 4).toString(16));
+            hex.push((current & 0xF).toString(16));
+        }
+        return hex.join("");
+    }
+
+    /** 
+     * Convert a hex string to a base64 string
+     **/
+    static hexToBase64(hexString: string): string {
+        // Conversion to bytes
+        let buffer = Buffer.from(StringUtils.hexToBytes(hexString));
+        return buffer.toString('base64');
+    }
 }

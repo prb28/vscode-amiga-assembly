@@ -776,6 +776,26 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         });
     }
 
+    protected readMemoryRequest(response: DebugProtocol.ReadMemoryResponse, args: DebugProtocol.ReadMemoryArguments): Promise<void> {
+        return new Promise(async (resolve, _reject) => {
+            let address = parseInt(args.memoryReference);
+            if (args.offset) {
+                address += args.offset;
+            }
+            let memory = await this.gdbProxy.getMemory(address, args.count).catch(err => {
+                this.sendStringErrorResponse(response, err.message);
+            });
+            if (memory) {
+                response.body = {
+                    address: address.toString(),
+                    data: StringUtils.hexToBase64(memory)
+                }
+                this.sendResponse(response);
+            }
+            resolve();
+        });
+    }
+
     public getMemory(address: number, size: number): Promise<string> {
         return this.gdbProxy.getMemory(address, size);
     }
