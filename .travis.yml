@@ -5,6 +5,7 @@ dist: trusty
 os:
   - osx
   - linux
+  - windows
 
 node_js:
   - "10"
