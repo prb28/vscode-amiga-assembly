@@ -5,9 +5,17 @@
 import { expect } from 'chai';
 import { ASMLine, NumberParser } from '../parser';
 import { Position, Range } from 'vscode';
+import * as vscode from 'vscode';
 
 // tslint:disable:no-unused-expression
 describe("Parser Tests", function () {
+    before(async function () {
+        // activate the extension
+        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
+    });
     context("ASM Line parsing", function () {
         it("Should split a comment line", function () {
             let asmLine = new ASMLine("  ;My Comment ");
@@ -186,10 +194,11 @@ describe("Parser Tests", function () {
             asmLine = new ASMLine("\t\taddq.l	#6,Cycles");
             expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 2), new Position(0, 8)));
             expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 9), new Position(0, 18)));
-            asmLine = new ASMLine(".Save12Msg\tdc.b	\"Save disk from\",10,\"drive 1  or           2 ? \",0");
+            asmLine = new ASMLine(".Save12Msg\tdc.b	\"Save disk;from\",10,\"drive#1* or           2 ? \",0   ;Test");
             expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 10)));
             expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 11), new Position(0, 15)));
             expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 16), new Position(0, 66)));
+            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 69), new Position(0, 74)));
             asmLine = new ASMLine("	beq.b\t.rts	\t\t;mem is same so video is same; don't change anything");
             expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 1), new Position(0, 6)));
             expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 7), new Position(0, 11)));

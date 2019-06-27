@@ -93,7 +93,17 @@ export class ASMLine {
         } else {
             // Extract comments
             let searchAsignmentString = line;
-            let commentPosInInputLine = line.indexOf(";");
+            let inQuotes = false;
+            let commentPosInInputLine = -1;
+            for (let i = 0; i < line.length; i++) {
+                let c = line.charAt(i);
+                if (c === "\"") {
+                    inQuotes = !inQuotes;
+                } else if (!inQuotes && (c === ";")) {
+                    commentPosInInputLine = i;
+                    break;
+                }
+            }
             if (commentPosInInputLine >= 0) {
                 this.comment = line.substring(commentPosInInputLine).trim();
                 searchAsignmentString = line.substring(0, commentPosInInputLine);
