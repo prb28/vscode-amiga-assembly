@@ -1074,17 +1074,23 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Returns the current CPU thread...
+     * Returns the thread with an amiga sys tipe
      */
-    public getCurrentCpuThread(): GdbThread | undefined {
+    public getThreadFromSysThreadId(sysThreadId: GdbAmigaSysThreadId): GdbThread | undefined {
         for (let t of this.threads.values()) {
-            if (t.getThreadId() === GdbAmigaSysThreadId.CPU) {
+            if (t.getThreadId() === sysThreadId) {
                 return t;
             }
         }
         return undefined;
     }
 
+    /**
+     * Returns the current CPU thread...
+     */
+    public getCurrentCpuThread(): GdbThread | undefined {
+        return this.getThreadFromSysThreadId(GdbAmigaSysThreadId.CPU);
+    }
 
     /**
      * Returns the current array of segments

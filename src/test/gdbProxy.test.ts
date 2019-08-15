@@ -314,6 +314,35 @@ describe("GdbProxy Tests", function () {
                     }
                 }
             });
+            it("Should get the copper stack frame", async function () {
+                when(spiedProxy.sendPacketString("QTFrame:-1")).thenResolve("00000001");
+                let rIdx = proxy.getRegisterIndex("copper");
+                expect(rIdx).not.to.be.equal(null);
+                if (rIdx !== null) {
+                    let pcGetRegisterMessage = "p" + rIdx.toString(16);
+                    when(spiedProxy.sendPacketString(pcGetRegisterMessage)).thenResolve("0000000a");
+                    when(spiedProxy.sendPacketString("QTFrame:1")).thenResolve("00000001");
+                    const regIndex = GdbProxy.REGISTER_COPPER_ADDR_INDEX.toString(16);
+                    when(spiedProxy.sendPacketString(`p${regIndex}`)).thenResolve("00000001");
+                    when(spiedProxy.sendPacketString('?')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`);
+                    when(spiedProxy.sendPacketString('vStopped')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`).thenResolve(RESPONSE_OK);
+                    let thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadId.COP);
+                    if (thread) {
+                        return expect(proxy.stack(thread)).to.eventually.eql(<GdbStackFrame>{
+                            frames: [<GdbStackPosition>{
+                                index: -1000,
+                                offset: 0,
+                                pc: 1,
+                                segmentId: -10,
+                                stackFrameIndex: 0,
+                            }],
+                            count: 1
+                        });
+                    } else {
+                        fail("Thread not found");
+                    }
+                }
+            });
             it("Should remove an existing breakpoint", async function () {
                 // Set a breakpoint
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
