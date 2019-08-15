@@ -139,7 +139,7 @@ describe("GdbProxy Tests", function () {
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
             when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString(vRunRequest)).thenResolve(dummyStopResponse);
-            when(spiedProxy.sendPacketString('qOffsets')).thenResolve("TextSeg=aef");
+            when(spiedProxy.sendPacketString('qOffsets')).thenResolve("TextSeg=aef;DataSeg=1000");
             when(spiedProxy.sendPacketString(vContCRequest)).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('g')).thenResolve(RESPONSE_REGISTERS);
             // callback for all pending breakpoint send function
