@@ -45,7 +45,7 @@ export class GdbProxy extends EventEmitter {
         intervalMs: 100,
     });
     /** Trace protocol for tests */
-    private traceProtocol = true;
+    private traceProtocol = false;
     /** vCont commands are supported */
     private supportVCont = false;
     /** Created threads */
