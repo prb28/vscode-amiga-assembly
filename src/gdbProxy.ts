@@ -29,6 +29,10 @@ export class GdbProxy extends EventEmitter {
     static readonly DEFAULT_FRAME_INDEX = -1;
     /** Supported functions */
     static readonly SUPPORT_STRING = 'qSupported:QStartNoAckMode+;multiprocess+;vContSupported+;QNonStop+';
+    /** Install new binaries exception message */
+    static readonly BINARIES_ERROR = "Please install latest binaries from FS-UAE custom build https://github.com/prb28/vscode-amiga-assembly/releases";
+    /** Unexpected return message */
+    static readonly UNEXPECTED_RETURN_ERROR = "Unexpected return message for program lauch command";
     /** Socket to connect */
     private socket: Socket;
     /** Current source file */
@@ -88,7 +92,7 @@ export class GdbProxy extends EventEmitter {
                     if (returnedData.indexOf("multiprocess+") >= 0) {
                         GdbThread.setSupportMultiprocess(true);
                     } else {
-                        reject(new Error("Please install latest binaries from FS-UAE custom build https://github.com/prb28/vscode-amiga-wks-example/releases"));
+                        reject(new Error(GdbProxy.BINARIES_ERROR));
                     }
                     if (returnedData.indexOf("vContSupported+") >= 0) {
                         this.supportVCont = true;
@@ -170,21 +174,6 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Check if the reponse has an error
-     * @param data The data to check
-     * @return True if it has an error
-     */
-    protected responseHasNoError(data: any): boolean {
-        let packets = GdbPacket.parseData(data);
-        for (let packet of packets) {
-            if (packet.getType() === GdbPacketType.ERROR) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Message to load the program
      * @param programFilename Filename of the program with the local path
      * @param stopOnEntry If true we will stop on entry
@@ -202,7 +191,9 @@ export class GdbProxy extends EventEmitter {
                     let encodedProgramName = StringUtils.convertStringToHex("dh0:" + elms[elms.length - 1]);
                     await self.sendPacketString("vRun;" + encodedProgramName + ";").then(async (message) => {
                         let type = GdbPacket.parseType(message);
-                        if (type === GdbPacketType.STOP) {
+                        if (type === GdbPacketType.SEGMENT) {
+                            reject(new Error(GdbProxy.BINARIES_ERROR));
+                        } else if (type === GdbPacketType.STOP) {
                             // Call for segments
                             await self.getQOffsets().then(async () => {
                                 // Call for thread dump
@@ -222,7 +213,7 @@ export class GdbProxy extends EventEmitter {
                                 reject(err);
                             });
                         } else {
-                            reject(new Error("Unexpected return message for program lauch command"));
+                            reject(new Error(GdbProxy.UNEXPECTED_RETURN_ERROR));
                         }
                     }).catch(err => {
                         reject(err);

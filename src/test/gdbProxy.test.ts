@@ -60,13 +60,12 @@ describe("GdbProxy Tests", function () {
 
     context('Communication', function () {
         const RESPONSE_OK = "OK";
-        const RESPONSE_ERROR = "E1";
         const RESPONSE_REGISTERS = getRegistersString();
         let socket: Socket;
         let proxy: GdbProxy;
         let spiedProxy: GdbProxy;
         let mockedSocket: Socket;
-        let error = new GdbError(RESPONSE_ERROR);
+        const error = new GdbError("E1");
         let mockedOnData: (data: Buffer) => void;
 
         beforeEach(function () {
@@ -89,6 +88,18 @@ describe("GdbProxy Tests", function () {
             when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString("QStartNoAckMode")).thenResolve(RESPONSE_OK);
             await proxy.connect('localhost', 6860);
+            verify(mockedSocket.connect(6860, 'localhost')).once();
+        });
+        it("Should generate an error with an very old fs-uae protocol", async function () {
+            when(spiedProxy.sendPacketString(supportRequest)).thenResolve("vContSupported");
+            when(spiedProxy.sendPacketString("QStartNoAckMode")).thenResolve(RESPONSE_OK);
+            await expect(proxy.connect('localhost', 6860)).to.be.rejectedWith(GdbProxy.BINARIES_ERROR);
+            verify(mockedSocket.connect(6860, 'localhost')).once();
+        });
+        it.only("Should generate an error on support request", async function () {
+            when(spiedProxy.sendPacketString(supportRequest)).thenReject(error);
+            when(spiedProxy.sendPacketString("QStartNoAckMode")).thenResolve(RESPONSE_OK);
+            await expect(proxy.connect('localhost', 6860)).to.be.rejectedWith(error);
             verify(mockedSocket.connect(6860, 'localhost')).once();
         });
         it("Should send an error on QStartNoAckMode not active", async function () {
@@ -142,6 +153,31 @@ describe("GdbProxy Tests", function () {
             await mockedOnData(proxy.formatString("S5;0"));
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.continueExecution(anything())).once();
+        });
+        it("Should generate an error with an old fs-uae protocol", async function () {
+            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
+            when(spiedProxy.sendPacketString(vRunRequest)).thenResolve("AS;aef;20");
+            await expect(proxy.load("/home/myh\\myprog", true)).to.be.rejectedWith(GdbProxy.BINARIES_ERROR);
+            verify(spiedProxy.sendPacketString(vRunRequest)).once();
+        });
+        it("Should generate an error with on expected return message", async function () {
+            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
+            when(spiedProxy.sendPacketString(vRunRequest)).thenResolve("notexpected");
+            await expect(proxy.load("/home/myh\\myprog", true)).to.be.rejectedWith(GdbProxy.UNEXPECTED_RETURN_ERROR);
+            verify(spiedProxy.sendPacketString(vRunRequest)).once();
+        });
+        it.only("Should generate an error with on threadInfo error", async function () {
+            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
+            when(spiedProxy.sendPacketString(vRunRequest)).thenResolve(dummyStopResponse);
+            when(spiedProxy.sendPacketString('qOffsets')).thenReject(error);
+            await expect(proxy.load("/home/myh\\myprog", true)).to.be.rejectedWith(error);
+            verify(spiedProxy.sendPacketString(vRunRequest)).once();
         });
         it("Should load a program and reject if there is an error during run command", async function () {
             when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
