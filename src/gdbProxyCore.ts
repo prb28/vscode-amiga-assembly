@@ -26,12 +26,14 @@ export interface GdbRegister {
 
 /** Memory segment */
 export interface Segment {
+    name: string;
     address: number;
     size: number;
 }
 
 /** Information for threads in emulator */
 export class GdbThread {
+    public static readonly DEFAULT_PROCESS_ID = 1;
     private static supportMultiprocess = false;
     private static nextId = 0;
     private id: number;
@@ -45,14 +47,15 @@ export class GdbThread {
         this.state = GdbThreadState.RUNNING;
     }
     public marshall(): string {
-        return this.processId.toString(16) + '.' + this.threadId.toString(16);
+        return 'p' + this.processId.toString(16) + '.' + this.threadId.toString(16);
     }
     public static parse(value: string): GdbThread {
+        // Thread id has the form : "p<process id in hex>.<thread id in hex>"
         let pth = value.split('.');
         let pId = 0;
         let tId = 0;
         if (pth.length > 1) {
-            pId = parseInt(pth[0], 16);
+            pId = parseInt(pth[0].substring(1), 16);
             tId = parseInt(pth[1], 16);
         } else {
             tId = parseInt(pth[0], 16);
@@ -64,7 +67,7 @@ export class GdbThread {
      */
     public getDisplayName(): string {
         let name: string;
-        if (this.processId === 0) {
+        if (this.processId === GdbThread.DEFAULT_PROCESS_ID) {
             switch (this.threadId) {
                 case GdbAmigaSysThreadId.AUD0:
                     name = 'audio 0';
@@ -142,9 +145,6 @@ export class GdbError extends Error {
     }
     private createMessage() {
         switch (this.errorType) {
-            case 'E09':
-                this.message = "Packet not supported";
-                break;
             case 'E0F':
                 this.message = "Error during the packet parse for command send memory";
                 break;
@@ -177,6 +177,12 @@ export class GdbError extends Error {
                 break;
             case 'E31':
                 this.message = "Error during the vCont packet parse";
+                break;
+            case 'E40':
+                this.message = "Unable to load segments";
+                break;
+            case 'E41':
+                this.message = "Thread command parse error";
                 break;
             default:
                 this.message = "Error code recieved: '" + this.errorType + "'";

@@ -789,7 +789,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 response.body = {
                     address: address.toString(),
                     data: StringUtils.hexToBase64(memory)
-                }
+                };
                 this.sendResponse(response);
             }
             resolve();
@@ -1049,24 +1049,31 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 	 */
     public updateSegments(segments: Array<Segment>) {
         if (this.debugInfo) {
-            for (let posSegment = 0; posSegment < segments.length; posSegment++) {
-                let segment = segments[posSegment];
-                let address = segment.address;
-                for (let hunk of this.debugInfo.hunks) {
-                    if (posSegment >= this.debugInfo.hunks.length) {
-                        break;
-                    }
-                    // Really not a good way to match ...
-                    if (segment.size === hunk.allocSize) {
-                        hunk.segmentsId = posSegment;
-                        hunk.segmentsAddress = address;
-                        // Retrieve the symbols
-                        if (hunk.symbols) {
-                            for (let s of hunk.symbols) {
-                                this.symbolsMap.set(s.name, s.offset + address);
-                            }
-                        }
-                        break;
+            let lastPos = this.debugInfo.hunks.length;
+            for (let posSegment = 0; posSegment < lastPos; posSegment++) {
+                // Segments in order of file
+                let hunk = this.debugInfo.hunks[posSegment];
+                let segment;
+                let address;
+                if (posSegment >= segments.length) {
+                    // Segment not declared by the protocol
+                    segment = <Segment>{
+                        address: 0,
+                        name: "",
+                        size: hunk.allocSize
+                    };
+                    address = this.gdbProxy.addSegment(segment);
+                } else {
+                    segment = segments[posSegment];
+                    address = segment.address;
+                    segment.size = hunk.allocSize;
+                }
+                hunk.segmentsId = posSegment;
+                hunk.segmentsAddress = address;
+                // Retrieve the symbols
+                if (hunk.symbols) {
+                    for (let s of hunk.symbols) {
+                        this.symbolsMap.set(s.name, s.offset + address);
                     }
                 }
             }

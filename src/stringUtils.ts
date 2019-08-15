@@ -53,6 +53,7 @@ export class StringUtils {
         }
         return ret;
     }
+
     public static convertToASCII(memory: string): string {
         let asciiContents = "";
         var chunks = this.chunk(memory, 2);
@@ -65,6 +66,14 @@ export class StringUtils {
             }
         }
         return asciiContents;
+    }
+
+    public static convertStringToHex(asciiString: string): string {
+        let result = "";
+        for (var i = 0; i < asciiString.length; ++i) {
+            result += ('00' + asciiString.charCodeAt(i).toString(16)).slice(-2);
+        }
+        return result;
     }
 
     /** 

@@ -23,4 +23,8 @@ describe("String Utils tests", function () {
         let str = StringUtils.bytesToHex(buffer);
         expect(str).to.be.eql("0a0f");
     });
+    it("Should convert a ascii string to hex buffer", function () {
+        let str = "abc";
+        expect(StringUtils.convertStringToHex(str)).to.be.equal("616263");
+    });
 });
