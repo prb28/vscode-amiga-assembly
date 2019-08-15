@@ -9,9 +9,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { spy, verify, when, anything, resetCalls, mock, instance } from 'ts-mockito/lib/ts-mockito';
-import { ExtensionState } from '../extension';
-import { Capstone } from '../capstone';
-import { IFFViewerPanel } from '../iffImageViewer';
+import { ExtensionState } from '../../extension';
+import { Capstone } from '../../capstone';
+import { IFFViewerPanel } from '../../iffImageViewer';
 import { fail } from 'assert';
 
 // Defines a Mocha test suite to group tests of similar kind together

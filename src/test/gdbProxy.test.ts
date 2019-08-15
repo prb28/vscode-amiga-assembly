@@ -352,7 +352,7 @@ describe("GdbProxy Tests", function () {
                     when(spiedProxy.sendPacketString(pcGetRegisterMessage)).thenResolve("0000000a");
                     when(spiedProxy.sendPacketString("QTFrame:1")).thenResolve("00000001");
                     const regIndex = GdbProxy.REGISTER_COPPER_ADDR_INDEX.toString(16);
-                    when(spiedProxy.sendPacketString(`p${regIndex}`)).thenReject("nope");
+                    when(spiedProxy.sendPacketString(`p${regIndex}`)).thenReject(new Error("nope"));
                     when(spiedProxy.sendPacketString('?')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`);
                     when(spiedProxy.sendPacketString('vStopped')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`).thenResolve(RESPONSE_OK);
                     let thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadId.COP);

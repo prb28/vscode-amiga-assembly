@@ -160,7 +160,7 @@ describe("debug disassebled Tests", function () {
             expect(stack.source).to.be.undefined;
             // Reject disassemble
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
-            when(mockedCapstone.disassemble(anyString())).thenReject("no no");
+            when(mockedCapstone.disassemble(anyString())).thenReject(new Error("no no"));
             stack = await manager.getStackFrame(0, 2, "my label", false);
             expect(stack.column).to.be.equal(0);
             expect(stack.id).to.be.equal(0);
@@ -199,7 +199,7 @@ describe("debug disassebled Tests", function () {
             await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 })).to.be.rejected;
             // reject disassemble
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
-            when(mockedCapstone.disassemble(anyString())).thenReject("no no");
+            when(mockedCapstone.disassemble(anyString())).thenReject(new Error("no no"));
             await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 })).to.be.rejected;
         });
         it("Should disassemble a memory address", async function () {
@@ -217,7 +217,7 @@ describe("debug disassebled Tests", function () {
             await expect(manager.disassembleRequest(new DisassembleAddressArguments("$0", 8))).to.be.rejected;
             // reject disassemble
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("00000");
-            when(mockedCapstone.disassemble(anyString())).thenReject("no no");
+            when(mockedCapstone.disassemble(anyString())).thenReject(new Error("no no"));
             await expect(manager.disassembleRequest(new DisassembleAddressArguments("$0", 8))).to.be.rejected;
         });
         it("Should disassemble a copper address", async function () {
