@@ -96,7 +96,7 @@ describe("GdbProxy Tests", function () {
             await expect(proxy.connect('localhost', 6860)).to.be.rejectedWith(GdbProxy.BINARIES_ERROR);
             verify(mockedSocket.connect(6860, 'localhost')).once();
         });
-        it.only("Should generate an error on support request", async function () {
+        it("Should generate an error on support request", async function () {
             when(spiedProxy.sendPacketString(supportRequest)).thenReject(error);
             when(spiedProxy.sendPacketString("QStartNoAckMode")).thenResolve(RESPONSE_OK);
             await expect(proxy.connect('localhost', 6860)).to.be.rejectedWith(error);
@@ -170,7 +170,7 @@ describe("GdbProxy Tests", function () {
             await expect(proxy.load("/home/myh\\myprog", true)).to.be.rejectedWith(GdbProxy.UNEXPECTED_RETURN_ERROR);
             verify(spiedProxy.sendPacketString(vRunRequest)).once();
         });
-        it.only("Should generate an error with on threadInfo error", async function () {
+        it("Should generate an error with on threadInfo error", async function () {
             when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
