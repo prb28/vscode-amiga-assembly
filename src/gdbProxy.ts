@@ -488,14 +488,16 @@ export class GdbProxy extends EventEmitter {
                 if (haltStatus) {
                     for (let hs of haltStatus) {
                         if ((hs.thread) && (hs.thread.getThreadId() === thread.getThreadId())) {
-                            let copperAddress = hs.registers.get(GdbProxy.REGISTER_COPPER_ADDR_INDEX);
-                            if (copperAddress) {
+                            let copperValues = await this.getRegisterNumerical('copper', frameIndex).catch(err => {
+                                reject(err);
+                            });
+                            if (copperValues) {
                                 resolve(<GdbStackPosition>{
                                     index: frameIndex * 1000,
                                     stackFrameIndex: 0,
                                     segmentId: -10,
                                     offset: 0,
-                                    pc: copperAddress
+                                    pc: copperValues[0]
                                 });
                             } else {
                                 reject("No stack frame returned");
@@ -1028,7 +1030,7 @@ export class GdbProxy extends EventEmitter {
      * Gets the register index from it's name
      */
     public getRegisterIndex(name: string): number | null {
-        if (name.length === 2) {
+        if (name.length > 1) {
             let type = name.charAt(0);
             let idx = parseInt(name.charAt(1));
             if (type === 'd') {
