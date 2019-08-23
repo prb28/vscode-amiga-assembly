@@ -343,16 +343,12 @@ export class GdbProxy extends EventEmitter {
                 if (this.segments && (segmentId !== undefined) && (segmentId >= this.segments.length)) {
                     reject(new Error("Invalid breakpoint segment id: " + segmentId));
                     return;
-                } else if (offset >= 0) {
+                } else if ((offset >= 0) || exceptionMask) {
                     let message: string;
                     if (exceptionMask) {
                         let expMskHex = GdbProxy.formatNumber(exceptionMask);
                         let expMskHexSz = GdbProxy.formatNumber(expMskHex.length);
-                        let segStr = "";
-                        if (segmentId !== undefined) {
-                            segStr = ',' + GdbProxy.formatNumber(segmentId);
-                        }
-                        message = 'Z1,' + GdbProxy.formatNumber(offset) + segStr + ";X" + expMskHexSz + "," + expMskHex;
+                        message = "Z1,0,0;X" + expMskHexSz + "," + expMskHex;
                     } else {
                         let segStr = "";
                         if ((segmentId !== undefined) && (segmentId >= 0)) {

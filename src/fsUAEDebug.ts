@@ -181,7 +181,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.updateSegments(segments);
         });
         this.gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
-            this.sendEvent(new BreakpointEvent('changed', bp));
+            // Dirty workaround to issue https://github.com/microsoft/vscode/issues/65993
+            setTimeout(async () => {
+                this.sendEvent(new BreakpointEvent('changed', bp));
+            }, 100);
         });
         this.gdbProxy.on('threadStarted', (threadId: number) => {
             let event = <DebugProtocol.ThreadEvent>{
@@ -482,6 +485,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             };
             response.success = true;
             this.sendResponse(response);
+            resolve();
         });
 
     }

@@ -234,10 +234,10 @@ describe("GdbProxy Tests", function () {
                 verify(spiedProxy.sendPacketString('Z0,4,0')).once();
             });
             it("Should set an exception breakpoint", async function () {
-                when(spiedProxy.sendPacketString('Z1,0;X1,a')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('Z1,0,0;X1,a')).thenResolve(RESPONSE_OK);
                 let bp = createBreakpoint(0, undefined, 0, 10);
                 await expect(proxy.setBreakpoint(bp)).to.not.be.rejected;
-                verify(spiedProxy.sendPacketString('Z1,0;X1,a')).once();
+                verify(spiedProxy.sendPacketString('Z1,0,0;X1,a')).once();
             });
             it("Should reject breakpoint when has invalid values", async function () {
                 let bp = createBreakpoint(0, undefined, -1);
@@ -375,7 +375,7 @@ describe("GdbProxy Tests", function () {
             });
             it("Should remove an existing exception breakpoint", async function () {
                 // Set a breakpoint
-                when(spiedProxy.sendPacketString('Z1,0;X1,a')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('Z1,0,0;X1,a')).thenResolve(RESPONSE_OK);
                 let bp = createBreakpoint(0, undefined, 0, 10);
                 await proxy.setBreakpoint(bp);
                 // Remove
