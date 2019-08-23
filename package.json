@@ -93,7 +93,6 @@
             }
         },
         "configuration": {
-            "type": "object",
             "title": "Amiga Assembly",
             "properties": {
                 "amiga-assembly.format.labelToInstructionDistance": {
@@ -367,6 +366,12 @@
             },
             {
                 "language": "amiga-assembly-debug.disassembly"
+            },
+            {
+                "language": "c"
+            },
+            {
+                "language": "cpp"
             }
         ],
         "debuggers": [
@@ -375,14 +380,6 @@
                 "label": "FS-UAE Debug",
                 "program": "./out/debugAdapter.js",
                 "runtime": "node",
-                "enableBreakpointsFor": {
-                    "languageIds": [
-                        "m68k",
-                        "amiga-assembly-debug.disassembly",
-                        "c",
-                        "cpp"
-                    ]
-                },
                 "configurationAttributes": {
                     "launch": {
                         "required": [
