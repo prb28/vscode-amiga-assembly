@@ -55,7 +55,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @return edits
      */
     format(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken, range?: vscode.Range, position?: vscode.Position): vscode.ProviderResult<vscode.TextEdit[]> {
-        let configuration = DocumentFormatterConfiguration.create(document.uri);
+        let configuration = DocumentFormatterConfiguration.create(document.uri, options.tabSize);
         let asmDocument = new ASMDocument();
         asmDocument.parse(document, configuration, token, range, position);
         // Compute the edits
@@ -116,11 +116,11 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                                 commentSpaceSize += additionToComments;
                             }
                         }
-                        s = this.getEndPad(asmLine.data, commentSpaceSize);
+                        s = this.getEndPad(asmLine.data, commentSpaceSize, configuration);
                         range = new vscode.Range(asmLine.dataRange.end, asmLine.commentRange.start);
                         edits.push(vscode.TextEdit.replace(range, s));
                     }
-                    s = this.getEndPad(asmLine.instruction, asmDocument.maxInstructionSize + configuration.instructionToDataDistance);
+                    s = this.getEndPad(asmLine.instruction, asmDocument.maxInstructionSize + configuration.instructionToDataDistance, configuration);
                     range = new vscode.Range(asmLine.instructionRange.end, asmLine.dataRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 } else if (asmLine.comment.length > 0) {
@@ -130,13 +130,13 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                     } else {
                         commentSpaceSize = asmDocument.maxInstructionSize + configuration.instructionToDataDistance + asmDocument.maxDataSize + configuration.dataToCommentsDistance;
                     }
-                    s = this.getEndPad(asmLine.instruction, commentSpaceSize);
+                    s = this.getEndPad(asmLine.instruction, commentSpaceSize, configuration);
                     range = new vscode.Range(asmLine.instructionRange.end, asmLine.commentRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 }
                 if (asmLine.label.length > 0) {
                     if ((asmLine.labelRange.end.character - asmLine.instructionRange.start.character) > 0) {
-                        s = this.getEndPad(asmLine.label, asmDocument.maxLabelSize + configuration.labelToInstructionDistance);
+                        s = this.getEndPad(asmLine.label, asmDocument.maxLabelSize + configuration.labelToInstructionDistance, configuration);
                         range = new vscode.Range(asmLine.labelRange.end, asmLine.instructionRange.start);
                         edits.push(vscode.TextEdit.replace(range, s));
                         if (!asmLine.spacesBeforeLabelRange.isEmpty) {
@@ -149,7 +149,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                         } else {
                             labelSpacesSize = asmDocument.maxLabelSize + configuration.labelToInstructionDistance;
                         }
-                        s = this.getEndPad(asmLine.label, labelSpacesSize);
+                        s = this.getEndPad(asmLine.label, labelSpacesSize, configuration);
                         range = new vscode.Range(asmLine.labelRange.end, asmLine.instructionRange.start);
                         edits.push(vscode.TextEdit.replace(range, s));
                         if (!asmLine.spacesBeforeLabelRange.isEmpty) {
@@ -163,7 +163,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                     } else {
                         labelSpacesSize = asmDocument.maxLabelSize + configuration.labelToInstructionDistance;
                     }
-                    s = this.getEndPad("", labelSpacesSize);
+                    s = this.getEndPad("", labelSpacesSize, configuration);
                     range = new vscode.Range(asmLine.start, asmLine.instructionRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 }
@@ -179,16 +179,16 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                             commentSpaceSize += additionToComments;
                         }
                     }
-                    s = this.getEndPad(asmLine.value, commentSpaceSize);
+                    s = this.getEndPad(asmLine.value, commentSpaceSize, configuration);
                     range = new vscode.Range(asmLine.valueRange.end, asmLine.commentRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 }
-                s = this.getEndPad(asmLine.operator, asmLine.operator.length + configuration.operatorToValueDistance);
+                s = this.getEndPad(asmLine.operator, asmLine.operator.length + configuration.operatorToValueDistance, configuration);
                 if (asmLine.valueRange.start.character - asmLine.operatorRange.end.character !== s.length) {
                     range = new vscode.Range(asmLine.operatorRange.end, asmLine.valueRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 }
-                s = this.getEndPad(asmLine.variable, asmDocument.maxVariableSize + configuration.variableToOperatorDistance + (asmDocument.maxOperatorSize - asmLine.operator.length));
+                s = this.getEndPad(asmLine.variable, asmDocument.maxVariableSize + configuration.variableToOperatorDistance + (asmDocument.maxOperatorSize - asmLine.operator.length), configuration);
                 if (asmLine.operatorRange.start.character - asmLine.variableRange.end.character !== s.length) {
                     range = new vscode.Range(asmLine.variableRange.end, asmLine.operatorRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
@@ -204,7 +204,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @param targetLength Length targetted
      * @return Padding string
      */
-    public getEndPad(stringToPad: string, targetLength: number): string {
+    public getEndPad(stringToPad: string, targetLength: number, configuration: DocumentFormatterConfiguration): string {
         let result = ' ';
         targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
         let padString = ' ';
@@ -216,6 +216,17 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
             result = padString.slice(0, targetLength);
             if (result.length <= 0) {
                 result = ' ';
+            }
+        }
+        if (configuration.useTabs && (result.length > 0)) {
+            // Transform to tabs
+            let remain = result.length % configuration.tabSize;
+            let tabsCount = (result.length - remain) / configuration.tabSize;
+            if (tabsCount > 0) {
+                if (remain > 0) {
+                    tabsCount += 1;
+                }
+                result = "\t".repeat(tabsCount);
             }
         }
         return result;
@@ -235,7 +246,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
             let s: string;
             if (position.isAfter(asmLine.instructionRange.end)) {
                 if (asmLine.data.length <= 0) {
-                    s = this.getEndPad(asmLine.instruction, asmDocument.maxInstructionSize + configuration.instructionToDataDistance - 1);
+                    s = this.getEndPad(asmLine.instruction, asmDocument.maxInstructionSize + configuration.instructionToDataDistance - 1, configuration);
                     edits.push(vscode.TextEdit.insert(asmLine.instructionRange.end, s));
                     return edits;
                 }

@@ -137,6 +137,12 @@
                     "default": 0,
                     "description": "Specifies the prefered comment position for a line with instruction (if the size is small enough)"
                 },
+                "amiga-assembly.format.useTabs": {
+                    "type": "boolean",
+                    "scope": "resource",
+                    "default": false,
+                    "description": "Format document with tabs and not with spaces"
+                },
                 "amiga-assembly.cstool": {
                     "type": "string",
                     "scope": "window",

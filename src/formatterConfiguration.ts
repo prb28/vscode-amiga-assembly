@@ -15,13 +15,17 @@ export class DocumentFormatterConfiguration {
     preferedIntructionPosition: number;
     /** Prefered position to the comments after an instruction */
     preferedCommentPosition: number;
+    /** Use tabs */
+    useTabs: boolean;
+    /** Tab size */
+    tabSize: number;
 
     /**
      * Constructor
      */
     public constructor(labelToInstructionDistance: number, instructionToDataDistance: number, dataToCommentsDistance: number,
         variableToOperatorDistance: number, operatorToValueDistance: number, preferedIntructionPosition: number,
-        preferedCommentPosition: number) {
+        preferedCommentPosition: number, useTabs: boolean, tabSize: number) {
         this.labelToInstructionDistance = labelToInstructionDistance;
         this.instructionToDataDistance = instructionToDataDistance;
         this.dataToCommentsDistance = dataToCommentsDistance;
@@ -30,6 +34,8 @@ export class DocumentFormatterConfiguration {
         this.dataToCommentsDistance = dataToCommentsDistance;
         this.preferedIntructionPosition = preferedIntructionPosition;
         this.preferedCommentPosition = preferedCommentPosition;
+        this.useTabs = useTabs;
+        this.tabSize = tabSize;
     }
 
     /**
@@ -37,7 +43,7 @@ export class DocumentFormatterConfiguration {
      * @param documentUri Uri of the document to select the vscode settings
      * @return new configuration
      */
-    public static create(documentUri: vscode.Uri): DocumentFormatterConfiguration {
+    public static create(documentUri: vscode.Uri, tabSize: number): DocumentFormatterConfiguration {
         let configuration = vscode.workspace.getConfiguration('amiga-assembly', documentUri);
         let labelToInstructionDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.labelToInstructionDistance', 2);
         let instructionToDataDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.instructionToDataDistance', 4);
@@ -46,7 +52,8 @@ export class DocumentFormatterConfiguration {
         let operatorToValueDistance = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.operatorToValueDistance', 1);
         let preferedIntructionPosition = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.preferedIntructionPosition', 0);
         let preferedCommentPosition = DocumentFormatterConfiguration.retrieveProperty(configuration, 'format.preferedCommentPosition', 0);
-        return new DocumentFormatterConfiguration(labelToInstructionDistance, instructionToDataDistance, dataToCommentsDistance, variableToOperatorDistance, operatorToValueDistance, preferedIntructionPosition, preferedCommentPosition);
+        let useTabs = DocumentFormatterConfiguration.retrieveBooleanProperty(configuration, 'format.useTabs', false);
+        return new DocumentFormatterConfiguration(labelToInstructionDistance, instructionToDataDistance, dataToCommentsDistance, variableToOperatorDistance, operatorToValueDistance, preferedIntructionPosition, preferedCommentPosition, useTabs, tabSize);
     }
 
     /**
@@ -64,6 +71,22 @@ export class DocumentFormatterConfiguration {
             if (value < 1) {
                 value = 1;
             }
+        }
+        return value;
+    }
+
+    /**
+     * Retrieve a boolean configuration value
+     * @param configuration Configuration
+     * @param key Keyword for property
+     * @param defaultValue Default value to be affected
+     * @return New value
+     */
+    public static retrieveBooleanProperty(configuration: vscode.WorkspaceConfiguration, key: string, defaultValue: boolean): boolean {
+        let value = defaultValue;
+        let confValue = configuration.get(key);
+        if (confValue) {
+            value = Boolean(confValue);
         }
         return value;
     }
