@@ -100,7 +100,7 @@ export class VASMCompiler {
             let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
             errorDiagnosticCollection.clear();
             warningDiagnosticCollection.clear();
-            let configuration = workspace.getConfiguration('amiga-assembly');
+            let configuration = workspace.getConfiguration('amiga-assembly', null);
             let conf: any = configuration.get('vasm');
             if (this.mayCompile(conf)) {
                 let confVLINK: any = configuration.get('vlink');
@@ -135,7 +135,7 @@ export class VASMCompiler {
             statusManager.outputChannel.appendLine('Cleaning workspace');
             errorDiagnosticCollection.clear();
             warningDiagnosticCollection.clear();
-            let configuration = workspace.getConfiguration('amiga-assembly');
+            let configuration = workspace.getConfiguration('amiga-assembly', null);
             let conf: any = configuration.get('vasm');
             if (this.mayCompile(conf)) {
                 const workspaceRootDir = this.getWorkspaceRootDir();
@@ -161,7 +161,7 @@ export class VASMCompiler {
         return new Promise(async (resolve, reject) => {
             const workspaceRootDir = this.getWorkspaceRootDir();
             const buildDir = this.getBuildDir();
-            const configuration = workspace.getConfiguration('amiga-assembly');
+            const configuration = workspace.getConfiguration('amiga-assembly', null);
             const confVLINK: any = configuration.get('vlink');
             const ASMOneEnabled = this.isASMOOneEnabled();
             if (workspaceRootDir && buildDir) {
@@ -224,7 +224,7 @@ export class VASMCompiler {
             const buildDir = this.getBuildDir();
             if (workspaceRootDir && buildDir) {
                 let filename = path.basename(fileUri.fsPath);
-                let configuration = workspace.getConfiguration('amiga-assembly');
+                let configuration = workspace.getConfiguration('amiga-assembly', null);
                 let conf: any = configuration.get('vasm');
                 if (this.mayCompile(conf)) {
                     await this.mkdirSync(buildDir.fsPath).catch(err => {
@@ -327,7 +327,7 @@ export class VASMCompiler {
      * Checks if ASMOne compatibility is enabled.
      */
     isASMOOneEnabled(): boolean {
-        let conf = workspace.getConfiguration('amiga-assembly');
+        let conf = workspace.getConfiguration('amiga-assembly', null);
         if (conf) {
             return conf.ASMOneCompatibilityEnabled === true;
         }
