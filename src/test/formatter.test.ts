@@ -10,7 +10,7 @@ import { TextEdit, Range, Position, CancellationTokenSource } from 'vscode';
 import { DummyFormattingOptions, DummyTextDocument, DummyWorkspaceConfiguration } from './dummy';
 import { DocumentFormatterConfiguration } from '../formatterConfiguration';
 
-function getEditsForLine(line: string): TextEdit[] {
+function getEditsForLine(line: string, enableTabs: boolean = false): TextEdit[] {
     let f = new M68kFormatter();
     let document = new DummyTextDocument();
     document.addLine(line);
@@ -39,13 +39,21 @@ function getEditsForLineOnType(line: string): TextEdit[] {
 
 // tslint:disable:no-unused-expression
 describe("Formatter Tests", function () {
-    it("Should format a full line", function () {
+    it.only("Should format a full line", function () {
         let edits = getEditsForLine("\t.mylabel\t   move.l #mempos,d1        ; mycomment   ");
         let i = 0;
         expect(edits.length).to.be.equal(4);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 30), new Position(0, 38)), " ".repeat(5)));
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 19), new Position(0, 20)), " ".repeat(5)));
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 9), new Position(0, 13)), " ".repeat(3)));
+        expect(edits[i++]).to.be.eql(TextEdit.delete(new Range(new Position(0, 0), new Position(0, 1))));
+        // With tabs enabled
+        edits = getEditsForLine("\t.mylabel\t   move.l #mempos,d1        ; mycomment   ", true);
+        i = 0;
+        expect(edits.length).to.be.equal(4);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 30), new Position(0, 38)), "\t"));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 19), new Position(0, 20)), "\t"));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 9), new Position(0, 13)), "\t"));
         expect(edits[i++]).to.be.eql(TextEdit.delete(new Range(new Position(0, 0), new Position(0, 1))));
     });
     it("Should format a full line without comment", function () {
