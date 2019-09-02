@@ -27,4 +27,11 @@ describe("String Utils tests", function () {
         let str = "abc";
         expect(StringUtils.convertStringToHex(str)).to.be.equal("616263");
     });
+    it("Should pad a string", function () {
+        let str = "abc";
+        expect(StringUtils.padEnd(str, 5)).to.be.equal("abc  ");
+        expect(StringUtils.padStart(str, 5)).to.be.equal("  abc");
+        expect(StringUtils.padEnd(str, 5, "X")).to.be.equal("abcXX");
+        expect(StringUtils.padStart(str, 5, "X")).to.be.equal("XXabc");
+    });
 });

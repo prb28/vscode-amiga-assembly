@@ -12,7 +12,7 @@ export class DocumentFormatterConfiguration {
     /** Distance between the operator and the value */
     operatorToValueDistance: number;
     /** Prefered position to the instructions (if the label is not too big) */
-    preferedIntructionPosition: number;
+    preferedInstructionPosition: number;
     /** Prefered position to the comments after an instruction */
     preferedCommentPosition: number;
     /** Use tabs */
@@ -32,7 +32,7 @@ export class DocumentFormatterConfiguration {
         this.variableToOperatorDistance = variableToOperatorDistance;
         this.operatorToValueDistance = operatorToValueDistance;
         this.dataToCommentsDistance = dataToCommentsDistance;
-        this.preferedIntructionPosition = preferedIntructionPosition;
+        this.preferedInstructionPosition = preferedIntructionPosition;
         this.preferedCommentPosition = preferedCommentPosition;
         this.useTabs = useTabs;
         this.tabSize = tabSize;

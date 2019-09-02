@@ -3,32 +3,22 @@ export class StringUtils {
      * Padding on start of string
      * @param stringToPad String to pad
      * @param targetLength Length targetted
+     * @param padString Char as string to fill default to space
      * @return Padding string
      */
-    public static padStartWith0(stringToPad: string, targetLength: number): string {
-        targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
-        let padString = '0';
-        if (stringToPad.length > targetLength) {
-            return stringToPad;
-        }
-        else {
-            targetLength = targetLength - stringToPad.length;
-            if (targetLength > padString.length) {
-                padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
-            }
-            return padString.slice(0, targetLength) + stringToPad;
-        }
+    public static padStart(stringToPad: string, targetLength: number, padString: string = " "): string {
+        return StringUtils.createPad(stringToPad, targetLength, padString) + stringToPad;
     }
 
     /**
-	 * Getting the pad of the good size at the end of string
+	 * Create pad of the good size for string
 	 * @param stringToPad String to pad
 	 * @param targetLength Length targetted
+     * @param padString Char as string to fill default to space
 	 * @return Padding string
 	 */
-    public static getEndPad(stringToPad: string, targetLength: number): string {
+    public static createPad(stringToPad: string, targetLength: number, padString: string = " "): string {
         targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
-        let padString = ' ';
         if (stringToPad.length > targetLength) {
             return '';
         }
@@ -39,6 +29,17 @@ export class StringUtils {
             }
             return padString.slice(0, targetLength);
         }
+    }
+
+    /**
+	 * Getting a padded string
+	 * @param stringToPad String to pad
+	 * @param targetLength Length targetted
+     * @param padString Char as string to fill default to space
+	 * @return Padded string
+	 */
+    public static padEnd(stringToPad: string, targetLength: number, padString: string = " "): string {
+        return stringToPad + StringUtils.createPad(stringToPad, targetLength, padString);
     }
 
     public static chunk(str: string, n: number): string[] {

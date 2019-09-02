@@ -75,7 +75,7 @@ export class DebugExpressionHelper {
                 }
                 variables.push({
                     value: row,
-                    name: StringUtils.padStartWith0(lineAddress.toString(16), 8),
+                    name: StringUtils.padStart(lineAddress.toString(16), 8, "0"),
                     variablesReference: 0
                 });
                 if (firstRow.length <= 0) {
@@ -101,7 +101,7 @@ export class DebugExpressionHelper {
                 ib = "";
             }
             variables.push({
-                value: ib + StringUtils.getEndPad(ib, 26) + isntr.instruction,
+                value: ib + StringUtils.createPad(ib, 26) + isntr.instruction,
                 name: isntr.address,
                 variablesReference: 0
             });
@@ -122,7 +122,7 @@ export class DebugExpressionHelper {
                     let instructionElms = elms[2].split('\t');
                     let instruction = elms[2];
                     if (instructionElms.length > 1) {
-                        instruction = instructionElms[0] + StringUtils.getEndPad(instructionElms[0], 10) + instructionElms[1];
+                        instruction = instructionElms[0] + StringUtils.createPad(instructionElms[0], 10) + instructionElms[1];
                     }
                     let offset = parseInt(elms[0], 16);
                     let addOffset = startAddress + offset;
@@ -175,12 +175,12 @@ export class DisassembledInstructionAdapter implements DebugProtocol.Disassemble
     }
     public getNumericalAddress(): number {
         if (this.address.startsWith("0x")) {
-            return parseInt(this.address.substring(2), 16)
+            return parseInt(this.address.substring(2), 16);
         } else {
-            return parseInt(this.address)
+            return parseInt(this.address);
         }
     }
     public static getAddressString(address: number): string {
-        return "0x" + StringUtils.padStartWith0(address.toString(16), 8);
+        return "0x" + StringUtils.padStart(address.toString(16), 8, "0");
     }
 }

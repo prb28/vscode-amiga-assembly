@@ -646,7 +646,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             variables.push({
                                 name: r.name,
                                 type: "register",
-                                value: StringUtils.padStartWith0(r.value.toString(16), 8),
+                                value: StringUtils.padStart(r.value.toString(16), 8, "0"),
                                 variablesReference: 0
                             });
                         }
