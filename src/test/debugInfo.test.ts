@@ -47,7 +47,7 @@ describe("Debug Info", function () {
     it("Should normalize paths", function () {
         let di = new DebugInfo();
         if (Path.sep === '\\') {
-            expect(di.normalize("\\\\a//b//c/D")).to.be.equal("\\\\A\\B\\C\\D");
+            expect(di.normalize("\\\\a//b//c/D")).to.be.equal("/a//b//c/D");
         } else {
             expect(di.normalize("\\\\a//b\\c/d")).to.be.equal("/a//b/c/d");
         }
