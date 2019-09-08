@@ -27,6 +27,11 @@ describe("String Utils tests", function () {
         let str = "abc";
         expect(StringUtils.convertStringToHex(str)).to.be.equal("616263");
     });
+    it("Should convert a number to ascii string", function () {
+        expect(StringUtils.convertInt32ToASCII(0x0)).to.be.equal("....");
+        expect(StringUtils.convertInt32ToASCII(0x60006162)).to.be.equal("`.ab");
+        expect(StringUtils.convertInt32ToASCII(0x6385FF00)).to.be.equal("c.ÿ.");
+    });
     it("Should pad a string", function () {
         let str = "abc";
         expect(StringUtils.padEnd(str, 5)).to.be.equal("abc  ");

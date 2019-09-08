@@ -143,6 +143,12 @@
                     "default": false,
                     "description": "Format document with tabs and not with spaces"
                 },
+                "amiga-assembly.hover.numberDisplayFormat": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "#`@dec@` - $`@hex@` - %`@bin@` @ascii@",
+                    "description": "Format of the detailed number display use @dec@, @hex@, @bin@, @oct@ and @ascii@ as values replacements"
+                },
                 "amiga-assembly.cstool": {
                     "type": "string",
                     "scope": "window",

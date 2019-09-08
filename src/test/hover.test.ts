@@ -72,7 +72,7 @@ describe("Hover Tests", function () {
                 let elm = result.contents[0];
                 expect(elm instanceof MarkdownString).to.be.true;
                 if (elm instanceof MarkdownString) {
-                    expect(elm.value).to.be.equal("#`32` - $`20` - %`100000` - @`40`");
+                    expect(elm.value).to.be.equal("#`32` - $`20` - %`100000` ... ");
                 }
             }
         });
@@ -153,7 +153,7 @@ describe("Hover Tests", function () {
             let elm = result.contents[0];
             expect(elm instanceof MarkdownString).to.be.true;
             if (elm instanceof MarkdownString) {
-                expect(elm.value).to.be.equal("#`4096000` - $`3e.8000` - %`111110.10000000.00000000` - @`1750.0000`");
+                expect(elm.value).to.be.equal("#`4096000` - $`3e.8000` - %`111110.10000000.00000000` .>..");
             }
         }
     });
@@ -186,30 +186,31 @@ describe("Hover Tests", function () {
     });
     it("Should render a number", function () {
         let hp = new M68kHoverProvider(state.getDocumentationManager());
-        let mdStr = hp.renderNumberForWord("#10");
+        let format = "#`@dec@` - $`@hex@` - %`@bin@` - @`@oct@` @ascii@";
+        let mdStr = hp.renderNumberForWord("#10", format);
         expect(mdStr).to.not.be.null;
         if (mdStr) {
-            expect(mdStr.value).to.be.equal("#`10` - $`a` - %`1010` - @`12`");
+            expect(mdStr.value).to.be.equal("#`10` - $`a` - %`1010` - @`12` ....");
         }
-        mdStr = hp.renderNumberForWord("$10");
+        mdStr = hp.renderNumberForWord("$10", format);
         expect(mdStr).to.not.be.null;
         if (mdStr) {
-            expect(mdStr.value).to.be.equal("#`16` - $`10` - %`10000` - @`20`");
+            expect(mdStr.value).to.be.equal("#`16` - $`10` - %`10000` - @`20` ....");
         }
-        mdStr = hp.renderNumberForWord("%10");
+        mdStr = hp.renderNumberForWord("%10", format);
         expect(mdStr).to.not.be.null;
         if (mdStr) {
-            expect(mdStr.value).to.be.equal("#`2` - $`2` - %`10` - @`2`");
+            expect(mdStr.value).to.be.equal("#`2` - $`2` - %`10` - @`2` ....");
         }
-        mdStr = hp.renderNumberForWord("@10");
+        mdStr = hp.renderNumberForWord("@10", format);
         expect(mdStr).to.not.be.null;
         if (mdStr) {
-            expect(mdStr.value).to.be.equal("#`8` - $`8` - %`1000` - @`10`");
+            expect(mdStr.value).to.be.equal("#`8` - $`8` - %`1000` - @`10` ....");
         }
-        mdStr = hp.renderNumberForWord("#$83f0");
+        mdStr = hp.renderNumberForWord("#$83f0", format);
         expect(mdStr).to.not.be.null;
         if (mdStr) {
-            expect(mdStr.value).to.be.equal("#`33776` - $`83f0` - %`10000011.11110000` - @`10.1760`");
+            expect(mdStr.value).to.be.equal("#`33776` - $`83f0` - %`10000011.11110000` - @`10.1760` ...ð");
         }
     });
     it("Should render a register value", function () {

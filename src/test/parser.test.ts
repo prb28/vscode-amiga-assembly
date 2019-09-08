@@ -318,7 +318,7 @@ describe("Parser Tests", function () {
             expect(np.tranformToDecimal("$1000+$100")).to.be.equal("4096+256");
             expect(np.tranformToDecimal("$1000+($100-%10)/12+$100+@12")).to.be.equal("4096+(256-2)/12+256+10");
         });
-        it("Should display a binarry correctly", function () {
+        it("Should display a binary correctly", function () {
             let np = new NumberParser();
             expect(np.binaryToString(3840, true)).to.be.equal("1111.00000000");
             expect(np.binaryToString(3840, false)).to.be.equal("111100000000");
@@ -327,6 +327,11 @@ describe("Parser Tests", function () {
             let np = new NumberParser();
             expect(np.hexToString(703710, true)).to.be.equal("a.bcde");
             expect(np.hexToString(703710, false)).to.be.equal("abcde");
+        });
+        it("Should display an ascii correctly", function () {
+            let np = new NumberParser();
+            expect(np.asciiToString(40, true)).to.be.equal("...(");
+            expect(np.asciiToString(0x41424344, false)).to.be.equal("ABCD");
         });
     });
     context("ASMDocument asmDocumentiters parsing", function () {

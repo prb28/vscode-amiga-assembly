@@ -1,6 +1,7 @@
 import { Position, Range, TextLine, TextDocument, CancellationToken } from 'vscode';
 import { M68kLanguage } from './language';
 import { DocumentFormatterConfiguration } from './formatterConfiguration';
+import { StringUtils } from './stringUtils';
 
 export enum ASMLineType {
     ASIGNMENT, // Line containing an asignment with or without comment
@@ -417,6 +418,14 @@ export class NumberParser {
         } else {
             return bin;
         }
+    }
+
+    public asciiToString(num: number, chunk: boolean): string {
+        let asciiContents = StringUtils.convertInt32ToASCII(num);
+        if (chunk) {
+            asciiContents = this.chunk(asciiContents, 4).join(' ');
+        }
+        return asciiContents;
     }
 
     public octalToString(num: number, chunk: boolean): string {

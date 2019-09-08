@@ -42,6 +42,11 @@ export class StringUtils {
         return stringToPad + StringUtils.createPad(stringToPad, targetLength, padString);
     }
 
+    /**
+     * Chunks a string
+     * @param str String to chunk
+     * @param n Array of chek elements
+     */
     public static chunk(str: string, n: number): string[] {
         let ret = [];
         let maxCount = str.length - n - 1;
@@ -55,20 +60,68 @@ export class StringUtils {
         return ret;
     }
 
-    public static convertToASCII(memory: string): string {
-        let asciiContents = "";
-        var chunks = this.chunk(memory, 2);
-        for (let c of chunks) {
-            let i = parseInt(c, 16);
-            if ((i < 32) || (i > 176)) {
-                asciiContents += ".";
-            } else {
-                asciiContents += String.fromCharCode(i);
-            }
+    /**
+     * Converts a byte to a character
+     * @param byte byte to convert
+     * @return character in string
+     */
+    public static convertByteToASCII(byte: number): string {
+        let asciiContents;
+        if ((byte < 32) || ((byte > 127) && (byte < 161)) || (byte > 255)) {
+            asciiContents = ".";
+        } else {
+            asciiContents = String.fromCharCode(byte);
         }
         return asciiContents;
     }
 
+    /**
+     * Converts a string containing hex values to an ascii string
+     * @param value string to convert
+     * @return ascii string
+     */
+    public static convertHexStringToASCII(value: string): string {
+        let asciiContents = "";
+        var chunks = this.chunk(value, 2);
+        for (let c of chunks) {
+            let i = parseInt(c, 16);
+            asciiContents += StringUtils.convertByteToASCII(i);
+        }
+        return asciiContents;
+    }
+
+    /**
+     * Converts a int32 in an array of bytes
+     * @param num Number to convert
+     * @return array of bytes
+     */
+    public static toBytesInt32(num: number): Array<number> {
+        return [(num & 0xff000000) >> 24,
+        (num & 0x00ff0000) >> 16,
+        (num & 0x0000ff00) >> 8,
+        (num & 0x000000ff)
+        ];
+    }
+
+    /**
+     * Converts a int 32 to an ascii string
+     * @param value integer to convert
+     * @return ascii string
+     */
+    public static convertInt32ToASCII(value: number): string {
+        let asciiContents = "";
+        let bytes = StringUtils.toBytesInt32(value);
+        for (let i of bytes) {
+            asciiContents += StringUtils.convertByteToASCII(i);
+        }
+        return asciiContents;
+    }
+
+    /**
+     * Converts a string to a string of hex values
+     * @param asciiString ascii string to convert
+     * @return string of hex values
+     */
     public static convertStringToHex(asciiString: string): string {
         let result = "";
         for (var i = 0; i < asciiString.length; ++i) {

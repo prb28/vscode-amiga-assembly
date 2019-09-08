@@ -58,7 +58,7 @@ export class DebugExpressionHelper {
             nextAddress += chunks[i].length / 2;
             if ((rowCount >= rowLength - 1) || (i === chunks.length - 1)) {
                 if (mode.indexOf('a') >= 0) {
-                    let asciiText = StringUtils.convertToASCII(row.replace(/\s+/g, ''));
+                    let asciiText = StringUtils.convertHexStringToASCII(row.replace(/\s+/g, ''));
                     if (mode.indexOf('b') >= 0) {
                         if ((i === chunks.length - 1) && (rowCount < rowLength - 1)) {
                             let chuksMissing = rowLength - 1 - rowCount;

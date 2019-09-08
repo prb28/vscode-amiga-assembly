@@ -11,6 +11,7 @@ import { TextEdit, Range, Position, CancellationTokenSource } from 'vscode';
 import { DummyFormattingOptions, DummyTextDocument, DummyWorkspaceConfiguration } from './dummy';
 import { DocumentFormatterConfiguration } from '../formatterConfiguration';
 import { fail } from 'assert';
+import { ConfigurationHelper } from '../configurationHelper';
 
 function getEditsForLine(line: string, enableTabs: boolean = false): TextEdit[] {
     let f = new M68kFormatter();
@@ -143,12 +144,12 @@ describe("Formatter Tests", function () {
     });
     it("Should retrieve 1 for a negative property", function () {
         let conf = new DummyWorkspaceConfiguration();
-        expect(DocumentFormatterConfiguration.retrieveProperty(conf, 'testconf', 12)).to.be.equal(12);
+        expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(12);
         conf.update('testconf', -1);
         expect(conf.has('testconf')).to.be.true;
-        expect(DocumentFormatterConfiguration.retrieveProperty(conf, 'testconf', 12)).to.be.equal(1);
+        expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(1);
         conf.update('testconf', 5);
-        expect(DocumentFormatterConfiguration.retrieveProperty(conf, 'testconf', 12)).to.be.equal(5);
+        expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(5);
     });
     describe("OnTypeFormattingEditProvider", function () {
         it("Should return no editing command on a empty document", function () {

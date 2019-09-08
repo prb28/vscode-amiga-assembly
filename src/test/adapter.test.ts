@@ -673,12 +673,12 @@ describe('Node Debug Adapter', () => {
 				expression: "m0,10"
 			});
 			expect(evaluateResponse.body.type).to.equal('array');
-			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | ..........');
+			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | .....À...ø');
 			// Test variable replacement
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "m ${a0},10"
 			});
-			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª.........');
+			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª....À...ø');
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "m ${copperlist},10"
 			});
@@ -686,7 +686,7 @@ describe('Node Debug Adapter', () => {
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "m #{copperlist},10"
 			});
-			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
+			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | »....À...ø');
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "m ${color00},1"
 			});
@@ -709,20 +709,20 @@ describe('Node Debug Adapter', () => {
 			verify(this.mockedGdbProxy.setMemory(0, anyString())).once();
 			resetCalls(this.mockedGdbProxy);
 			expect(evaluateResponse.body.type).to.equal('array');
-			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | ..........');
+			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | .....À...ø');
 			// Test variable replacement
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "M${a0}=10"
 			});
 			verify(this.mockedGdbProxy.setMemory(10, anyString())).once();
 			resetCalls(this.mockedGdbProxy);
-			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª.........');
+			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª....À...ø');
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "M #{copperlist}=10"
 			});
 			verify(this.mockedGdbProxy.setMemory(11, anyString())).once();
 			resetCalls(this.mockedGdbProxy);
-			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
+			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | »....À...ø');
 		});
 		it('should evaluate a memory disassemble', async function () {
 			this.timeout(defaultTimeout);
