@@ -4,7 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### [0.17.0]
+### [0.18.0]
+- [Feat #91](https://github.com/prb28/vscode-amiga-assembly/issues/91) Add ascii representation in popups
+- [Feat #89](https://github.com/prb28/vscode-amiga-assembly/issues/89) Gdb remote protocol review
+- [Feat #88](https://github.com/prb28/vscode-amiga-assembly/issues/88) Check for GUI settings edit
+- [Feat #86](https://github.com/prb28/vscode-amiga-assembly/issues/86) Migrate vscode testing api to vscode-test
+- [Issue #83](https://github.com/prb28/vscode-amiga-assembly/issues/83) "Format Document" indent character ; in dc.b "strings"
+- [Issue #80](https://github.com/prb28/vscode-amiga-assembly/issues/80) Source file names always upper case on windows when debugging
+- [Feat #78](https://github.com/prb28/vscode-amiga-assembly/issues/78) Implement supportsReadMemoryRequest and supportsDisassembleRequest
+- [Feat #73](https://github.com/prb28/vscode-amiga-assembly/issues/73) Format ASM files with tabs
+- [Feat #72](https://github.com/prb28/vscode-amiga-assembly/issues/72) Enhance formating for generated data #72
+
+### [0.17.0] - 2019-05-15
 - [Issue #74](https://github.com/prb28/vscode-amiga-assembly/issues/74) Contextual documentation: not all mnemonics are recognized
 - [Issue #68](https://github.com/prb28/vscode-amiga-assembly/issues/68) Presentation of the value set to a register $102 (BPLCON1) is wrong
 - [Feat #66](https://github.com/prb28/vscode-amiga-assembly/issues/66) Debug C source files
