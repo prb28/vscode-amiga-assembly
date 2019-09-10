@@ -15,12 +15,12 @@ import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
 import { DebugDisassembledFile } from '../debugDisassembled';
 
 describe('Node Debug Adapter', () => {
-	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
-	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js');
-	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug');
-	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae');
-	const UAE_DRIVE = Path.join(FSUAE_ROOT, 'hd0');
-	const SOURCE_FILE_NAME = Path.join(DATA_ROOT, 'gencop.s');
+	const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
+	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
+	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug').replace(/\\+/g, '/');
+	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae').replace(/\\+/g, '/');
+	const UAE_DRIVE = Path.join(FSUAE_ROOT, 'hd0').replace(/\\+/g, '/');
+	const SOURCE_FILE_NAME = Path.join(DATA_ROOT, 'gencop.s').replace(/\\+/g, '/');
 	let launchArgs = <LaunchRequestArguments>{
 		program: Path.join(UAE_DRIVE, 'hello'),
 		stopOnEntry: false,
@@ -519,7 +519,7 @@ describe('Node Debug Adapter', () => {
 					expect(src.name.toUpperCase()).to.be.equal("GENCOP.S");
 				}
 				if (src.path) {
-					let pathToTest = Path.join("test_files", "debug", "gencop.s");
+					let pathToTest = Path.join("test_files", "debug", "gencop.s").replace(/\\+/g, '/');
 					expect(src.path.toUpperCase().endsWith(pathToTest.toUpperCase())).to.be.equal(true);
 				}
 			}
