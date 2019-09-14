@@ -134,7 +134,12 @@ export class ExecutorHelper {
                 if (error.line <= 0) {
                     vscode.window.showErrorMessage(error.msg);
                 } else {
-                    let canonicalFile = vscode.Uri.file(error.file).toString();
+                    let canonicalFile;
+                    if (document && document.fileName.endsWith(error.file)) {
+                        canonicalFile = document.uri.toString();
+                    } else {
+                        canonicalFile = vscode.Uri.file(error.file).toString();
+                    }
                     let startColumn = 0;
                     let endColumn = 1;
                     if ((document) && ((document.uri.toString() === canonicalFile) || error.parentFile)) {
