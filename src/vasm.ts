@@ -163,7 +163,7 @@ export class VASMCompiler {
             const buildDir = this.getBuildDir();
             const configuration = workspace.getConfiguration('amiga-assembly', null);
             const confVLINK: any = configuration.get('vlink');
-            const ASMOneEnabled = this.isASMOOneEnabled();
+            const ASMOneEnabled = this.isASMOneEnabled();
             if (workspaceRootDir && buildDir) {
                 await workspace.findFiles(includes, excludes).then(async filesURI => {
                     let promises: Thenable<ICheckResult[]>[] = [];
@@ -285,7 +285,7 @@ export class VASMCompiler {
     }
 
     /**
-     * Reads the workspace forlder dir
+     * Reads the workspace folder dir
      */
     getWorkspaceRootDir(): Uri | null {
         if (workspace.workspaceFolders && (workspace.workspaceFolders.length > 0)) {
@@ -326,7 +326,7 @@ export class VASMCompiler {
     /**
      * Checks if ASMOne compatibility is enabled.
      */
-    isASMOOneEnabled(): boolean {
+    isASMOneEnabled(): boolean {
         let conf = workspace.getConfiguration('amiga-assembly', null);
         if (conf) {
             return conf.ASMOneCompatibilityEnabled === true;
@@ -426,9 +426,9 @@ export class VASMParser implements ExecutorParser {
     }
 
     /**
-     * Colects error data from lines below detected error
+     * Collects error data from lines below detected error
      * @param lines output error lines
-     * @param idx index of line to start collectiong data, should be after error
+     * @param idx index of line to start collecting data, should be after error
      */
     private collectErrorData(lines: string[], idx: number): string {
         let errData = "";
