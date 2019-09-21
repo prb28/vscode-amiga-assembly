@@ -3,32 +3,22 @@ export class StringUtils {
      * Padding on start of string
      * @param stringToPad String to pad
      * @param targetLength Length targetted
+     * @param padString Char as string to fill default to space
      * @return Padding string
      */
-    public static padStartWith0(stringToPad: string, targetLength: number): string {
-        targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
-        let padString = '0';
-        if (stringToPad.length > targetLength) {
-            return stringToPad;
-        }
-        else {
-            targetLength = targetLength - stringToPad.length;
-            if (targetLength > padString.length) {
-                padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
-            }
-            return padString.slice(0, targetLength) + stringToPad;
-        }
+    public static padStart(stringToPad: string, targetLength: number, padString: string = " "): string {
+        return StringUtils.createPad(stringToPad, targetLength, padString) + stringToPad;
     }
 
     /**
-	 * Getting the pad of the good size at the end of string
+	 * Create pad of the good size for string
 	 * @param stringToPad String to pad
 	 * @param targetLength Length targetted
+     * @param padString Char as string to fill default to space
 	 * @return Padding string
 	 */
-    public static getEndPad(stringToPad: string, targetLength: number): string {
+    public static createPad(stringToPad: string, targetLength: number, padString: string = " "): string {
         targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
-        let padString = ' ';
         if (stringToPad.length > targetLength) {
             return '';
         }
@@ -41,6 +31,22 @@ export class StringUtils {
         }
     }
 
+    /**
+	 * Getting a padded string
+	 * @param stringToPad String to pad
+	 * @param targetLength Length targetted
+     * @param padString Char as string to fill default to space
+	 * @return Padded string
+	 */
+    public static padEnd(stringToPad: string, targetLength: number, padString: string = " "): string {
+        return stringToPad + StringUtils.createPad(stringToPad, targetLength, padString);
+    }
+
+    /**
+     * Chunks a string
+     * @param str String to chunk
+     * @param n Array of chek elements
+     */
     public static chunk(str: string, n: number): string[] {
         let ret = [];
         let maxCount = str.length - n - 1;
@@ -53,18 +59,75 @@ export class StringUtils {
         }
         return ret;
     }
-    public static convertToASCII(memory: string): string {
-        let asciiContents = "";
-        var chunks = this.chunk(memory, 2);
-        for (let c of chunks) {
-            let i = parseInt(c, 16);
-            if ((i < 32) || (i > 176)) {
-                asciiContents += ".";
-            } else {
-                asciiContents += String.fromCharCode(i);
-            }
+
+    /**
+     * Converts a byte to a character
+     * @param byte byte to convert
+     * @return character in string
+     */
+    public static convertByteToASCII(byte: number): string {
+        let asciiContents;
+        if ((byte < 32) || ((byte > 127) && (byte < 161)) || (byte > 255)) {
+            asciiContents = ".";
+        } else {
+            asciiContents = String.fromCharCode(byte);
         }
         return asciiContents;
+    }
+
+    /**
+     * Converts a string containing hex values to an ascii string
+     * @param value string to convert
+     * @return ascii string
+     */
+    public static convertHexStringToASCII(value: string): string {
+        let asciiContents = "";
+        var chunks = this.chunk(value, 2);
+        for (let c of chunks) {
+            let i = parseInt(c, 16);
+            asciiContents += StringUtils.convertByteToASCII(i);
+        }
+        return asciiContents;
+    }
+
+    /**
+     * Converts a int32 in an array of bytes
+     * @param num Number to convert
+     * @return array of bytes
+     */
+    public static toBytesInt32(num: number): Array<number> {
+        return [(num & 0xff000000) >> 24,
+        (num & 0x00ff0000) >> 16,
+        (num & 0x0000ff00) >> 8,
+        (num & 0x000000ff)
+        ];
+    }
+
+    /**
+     * Converts a int 32 to an ascii string
+     * @param value integer to convert
+     * @return ascii string
+     */
+    public static convertInt32ToASCII(value: number): string {
+        let asciiContents = "";
+        let bytes = StringUtils.toBytesInt32(value);
+        for (let i of bytes) {
+            asciiContents += StringUtils.convertByteToASCII(i);
+        }
+        return asciiContents;
+    }
+
+    /**
+     * Converts a string to a string of hex values
+     * @param asciiString ascii string to convert
+     * @return string of hex values
+     */
+    public static convertStringToHex(asciiString: string): string {
+        let result = "";
+        for (var i = 0; i < asciiString.length; ++i) {
+            result += ('00' + asciiString.charCodeAt(i).toString(16)).slice(-2);
+        }
+        return result;
     }
 
     /** 

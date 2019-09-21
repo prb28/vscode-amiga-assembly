@@ -1,6 +1,15 @@
 import { Position, Range, TextLine, TextDocument, CancellationToken } from 'vscode';
 import { M68kLanguage } from './language';
 import { DocumentFormatterConfiguration } from './formatterConfiguration';
+import { StringUtils } from './stringUtils';
+
+export enum ASMLineType {
+    ASIGNMENT, // Line containing an asignment with or without comment
+    INSTRUCTION, // Line containg with or without comment and data
+    COMMENT, // Line containing only a comment
+    LABEL, // Line containg a label with or without comment
+    OTHER
+}
 
 /**
  * Formatter class for le assemble language
@@ -30,6 +39,7 @@ export class ASMLine {
     variableRange: Range;
     operatorRange: Range;
     valueRange: Range;
+    lineType: ASMLineType;
 
     vscodeTextLine?: TextLine;
 
@@ -47,6 +57,7 @@ export class ASMLine {
      * @param vscodeTextLine Line for vscode
      */
     constructor(line: string, vscodeTextLine?: TextLine) {
+        this.lineType = ASMLineType.OTHER;
         this.raw = line;
         this.vscodeTextLine = vscodeTextLine;
         let lineNumber = 0;
@@ -90,6 +101,7 @@ export class ASMLine {
         if ((l.charAt(0) === ';') || (l.charAt(0) === '*')) {
             this.comment = l;
             this.commentRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + l.length));
+            this.lineType = ASMLineType.COMMENT;
         } else {
             // Extract comments
             let searchAsignmentString = line;
@@ -112,6 +124,7 @@ export class ASMLine {
             }
             // Find if it is an asignment
             if (this.parseAsignment(searchAsignmentString, lineNumber)) {
+                this.lineType = ASMLineType.ASIGNMENT;
                 return;
             }
             // find a keywork
@@ -146,6 +159,7 @@ export class ASMLine {
             if (keyword) {
                 // A keyword has been found
                 // set the keyword
+                this.lineType = ASMLineType.INSTRUCTION;
                 this.instruction = keyword[0];
                 keywordIndex += keyword.index;
                 let startInInputLine = leadingSpacesCount + keywordIndex;
@@ -178,6 +192,7 @@ export class ASMLine {
             } else {
                 // no keyword
                 // Consider it is a label
+                this.lineType = ASMLineType.LABEL;
                 this.label = l;
                 this.labelRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + this.label.length));
             }
@@ -405,6 +420,14 @@ export class NumberParser {
         }
     }
 
+    public asciiToString(num: number, chunk: boolean): string {
+        let asciiContents = StringUtils.convertInt32ToASCII(num);
+        if (chunk) {
+            asciiContents = this.chunk(asciiContents, 4).join(' ');
+        }
+        return asciiContents;
+    }
+
     public octalToString(num: number, chunk: boolean): string {
         let oct;
         if (num < 0) {
@@ -444,6 +467,16 @@ export class ASMDocument {
     public maxOperatorSize = 0;
     public maxValueSize = 0;
     public onTypeAsmLine?: ASMLine;
+    public useTabs = false;
+    public tabSize = 4;
+    public labelColumn = 0;
+    public instructionColumn = 0;
+    public dataColumn = 0;
+    public commentColumn = 0;
+    public variableColumn = 0;
+    public operatorColumn = 0;
+    public valueColumn = 0;
+    public asignmentCommentColumn = 0;
 
     /**
      * Main range parse function
@@ -454,6 +487,7 @@ export class ASMDocument {
      * @param position in case of on type format
      */
     public parse(document: TextDocument, formatterConfiguration: DocumentFormatterConfiguration, token?: CancellationToken, range?: Range, position?: Position) {
+        this.useTabs = formatterConfiguration.useTabs;
         let localRange = range;
         if (document.lineCount <= 0) {
             return;
@@ -474,12 +508,12 @@ export class ASMDocument {
             } else {
                 this.asmLinesArray.push(asmLine);
             }
-            if ((formatterConfiguration.preferedCommentPosition > 0) || (formatterConfiguration.preferedIntructionPosition > 0)) {
+            if ((formatterConfiguration.preferedCommentPosition > 0) || (formatterConfiguration.preferedInstructionPosition > 0)) {
                 // Check if it is a ovesized line
                 let endOfLineCommentPositionInst = asmLine.label.length + asmLine.instruction.length + asmLine.data.length +
                     formatterConfiguration.labelToInstructionDistance + formatterConfiguration.instructionToDataDistance + formatterConfiguration.dataToCommentsDistance;
                 if (((formatterConfiguration.preferedCommentPosition > 0) && (endOfLineCommentPositionInst > formatterConfiguration.preferedCommentPosition)) ||
-                    ((formatterConfiguration.preferedIntructionPosition > 0) && (asmLine.label.length + formatterConfiguration.labelToInstructionDistance >= formatterConfiguration.preferedIntructionPosition))) {
+                    ((formatterConfiguration.preferedInstructionPosition > 0) && (asmLine.label.length + formatterConfiguration.labelToInstructionDistance >= formatterConfiguration.preferedInstructionPosition))) {
                     this.ovesizedCommentLine.push(asmLine);
                     isOversized = true;
                 }
@@ -507,6 +541,38 @@ export class ASMDocument {
                     }
                 }
             }
+        }
+        this.tabSize = formatterConfiguration.tabSize;
+        if (formatterConfiguration.preferedInstructionPosition > 0) {
+            this.instructionColumn = formatterConfiguration.preferedInstructionPosition;
+        } else {
+            this.instructionColumn = this.maxLabelSize + formatterConfiguration.labelToInstructionDistance;
+        }
+        this.instructionColumn = this.fitToTabColumn(this.instructionColumn);
+        this.dataColumn = this.instructionColumn + this.maxInstructionSize + formatterConfiguration.instructionToDataDistance;
+        this.dataColumn = this.fitToTabColumn(this.dataColumn);
+        if (formatterConfiguration.preferedCommentPosition > 0) {
+            this.commentColumn = formatterConfiguration.preferedCommentPosition;
+        } else {
+            this.commentColumn = this.dataColumn + this.maxDataSize + formatterConfiguration.dataToCommentsDistance;
+        }
+        this.commentColumn = this.fitToTabColumn(this.commentColumn);
+        this.operatorColumn = this.maxVariableSize + formatterConfiguration.variableToOperatorDistance;
+        this.operatorColumn = this.fitToTabColumn(this.operatorColumn);
+        this.valueColumn = this.operatorColumn + this.maxOperatorSize + formatterConfiguration.operatorToValueDistance;
+        this.valueColumn = this.fitToTabColumn(this.valueColumn);
+        if (formatterConfiguration.preferedCommentPosition > 0) {
+            this.asignmentCommentColumn = formatterConfiguration.preferedCommentPosition;
+        } else {
+            this.asignmentCommentColumn = this.valueColumn + this.maxValueSize + formatterConfiguration.dataToCommentsDistance;
+        }
+        this.asignmentCommentColumn = this.fitToTabColumn(this.asignmentCommentColumn);
+    }
+    fitToTabColumn(column: number): number {
+        if (this.useTabs) {
+            return Math.ceil(column / this.tabSize) * this.tabSize;
+        } else {
+            return column;
         }
     }
     isOversized(asmLine: ASMLine): boolean {

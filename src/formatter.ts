@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ASMLine, ASMDocument } from './parser';
 import { DocumentFormatterConfiguration } from './formatterConfiguration';
+import { StringUtils } from './stringUtils';
 
 
 /**
@@ -55,7 +56,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @return edits
      */
     format(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken, range?: vscode.Range, position?: vscode.Position): vscode.ProviderResult<vscode.TextEdit[]> {
-        let configuration = DocumentFormatterConfiguration.create(document.uri);
+        let configuration = DocumentFormatterConfiguration.create(document.uri, options.tabSize);
         let asmDocument = new ASMDocument();
         asmDocument.parse(document, configuration, token, range, position);
         // Compute the edits
@@ -96,103 +97,52 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
         if (!asmDocument.isOversized(asmLine)) {
             let range: vscode.Range;
             let s: string;
-            let endOfLineDataPosition = asmDocument.maxLabelSize + asmDocument.maxInstructionSize + asmDocument.maxDataSize + configuration.labelToInstructionDistance + configuration.instructionToDataDistance;
-            let endOfLineValuePosition = asmDocument.maxVariableSize + asmDocument.maxOperatorSize + asmDocument.maxValueSize + configuration.variableToOperatorDistance + configuration.operatorToValueDistance;
-            if (configuration.preferedIntructionPosition > 0) {
-                endOfLineDataPosition = (configuration.preferedIntructionPosition - 1) + asmDocument.maxInstructionSize + configuration.instructionToDataDistance + asmDocument.maxDataSize;
-            }
-            let endOfLineCommentPositionInst = endOfLineDataPosition + configuration.dataToCommentsDistance;
-            let endOfLineCommentPositionAsgn = endOfLineValuePosition + configuration.dataToCommentsDistance;
             if (asmLine.instruction.length > 0) {
                 if (asmLine.data.length > 0) {
                     if (asmLine.comment.length > 0) {
-                        let commentSpaceSize: number;
-                        if (configuration.preferedCommentPosition > 0) {
-                            commentSpaceSize = asmDocument.maxDataSize + (configuration.preferedCommentPosition - 1) - endOfLineDataPosition;
-                        } else {
-                            commentSpaceSize = asmDocument.maxDataSize + configuration.dataToCommentsDistance;
-                            let additionToComments = endOfLineCommentPositionAsgn - endOfLineCommentPositionInst;
-                            if (additionToComments > 0) {
-                                commentSpaceSize += additionToComments;
-                            }
-                        }
-                        s = this.getEndPad(asmLine.data, commentSpaceSize);
+                        s = this.getEndPad(asmLine.data, asmDocument.dataColumn, asmDocument.commentColumn, asmDocument.useTabs, asmDocument.tabSize);
                         range = new vscode.Range(asmLine.dataRange.end, asmLine.commentRange.start);
                         edits.push(vscode.TextEdit.replace(range, s));
                     }
-                    s = this.getEndPad(asmLine.instruction, asmDocument.maxInstructionSize + configuration.instructionToDataDistance);
+                    s = this.getEndPad(asmLine.instruction, asmDocument.instructionColumn, asmDocument.dataColumn, asmDocument.useTabs, asmDocument.tabSize);
                     range = new vscode.Range(asmLine.instructionRange.end, asmLine.dataRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 } else if (asmLine.comment.length > 0) {
-                    let commentSpaceSize: number;
-                    if (configuration.preferedCommentPosition > 0) {
-                        commentSpaceSize = asmDocument.maxInstructionSize + configuration.instructionToDataDistance + asmDocument.maxDataSize + (configuration.preferedCommentPosition - 1) - endOfLineDataPosition;
-                    } else {
-                        commentSpaceSize = asmDocument.maxInstructionSize + configuration.instructionToDataDistance + asmDocument.maxDataSize + configuration.dataToCommentsDistance;
-                    }
-                    s = this.getEndPad(asmLine.instruction, commentSpaceSize);
+                    s = this.getEndPad(asmLine.instruction, asmDocument.instructionColumn, asmDocument.commentColumn, asmDocument.useTabs, asmDocument.tabSize);
                     range = new vscode.Range(asmLine.instructionRange.end, asmLine.commentRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 }
                 if (asmLine.label.length > 0) {
-                    if ((asmLine.labelRange.end.character - asmLine.instructionRange.start.character) > 0) {
-                        s = this.getEndPad(asmLine.label, asmDocument.maxLabelSize + configuration.labelToInstructionDistance);
-                        range = new vscode.Range(asmLine.labelRange.end, asmLine.instructionRange.start);
-                        edits.push(vscode.TextEdit.replace(range, s));
-                        if (!asmLine.spacesBeforeLabelRange.isEmpty) {
-                            edits.push(vscode.TextEdit.delete(asmLine.spacesBeforeLabelRange));
-                        }
-                    } else {
-                        let labelSpacesSize: number;
-                        if (configuration.preferedIntructionPosition > 0) {
-                            labelSpacesSize = configuration.preferedIntructionPosition - 1;
-                        } else {
-                            labelSpacesSize = asmDocument.maxLabelSize + configuration.labelToInstructionDistance;
-                        }
-                        s = this.getEndPad(asmLine.label, labelSpacesSize);
-                        range = new vscode.Range(asmLine.labelRange.end, asmLine.instructionRange.start);
-                        edits.push(vscode.TextEdit.replace(range, s));
-                        if (!asmLine.spacesBeforeLabelRange.isEmpty) {
-                            edits.push(vscode.TextEdit.delete(asmLine.spacesBeforeLabelRange));
-                        }
+                    s = this.getEndPad(asmLine.label, asmDocument.labelColumn, asmDocument.instructionColumn, asmDocument.useTabs, asmDocument.tabSize);
+                    range = new vscode.Range(asmLine.labelRange.end, asmLine.instructionRange.start);
+                    edits.push(vscode.TextEdit.replace(range, s));
+                    if (!asmLine.spacesBeforeLabelRange.isEmpty) {
+                        edits.push(vscode.TextEdit.delete(asmLine.spacesBeforeLabelRange));
                     }
                 } else {
-                    let labelSpacesSize: number;
-                    if (configuration.preferedIntructionPosition > 0) {
-                        labelSpacesSize = configuration.preferedIntructionPosition - 1;
-                    } else {
-                        labelSpacesSize = asmDocument.maxLabelSize + configuration.labelToInstructionDistance;
-                    }
-                    s = this.getEndPad("", labelSpacesSize);
+                    s = this.getEndPad("", asmDocument.labelColumn, asmDocument.instructionColumn, asmDocument.useTabs, asmDocument.tabSize);
                     range = new vscode.Range(asmLine.start, asmLine.instructionRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 }
             } else if (asmLine.variable.length > 0) {
                 if (asmLine.comment.length > 0) {
-                    let commentSpaceSize: number;
-                    if (configuration.preferedCommentPosition > 0) {
-                        commentSpaceSize = asmDocument.maxValueSize + (configuration.preferedCommentPosition - 1) - endOfLineValuePosition;
-                    } else {
-                        let additionToComments = endOfLineCommentPositionInst - endOfLineCommentPositionAsgn;
-                        commentSpaceSize = asmDocument.maxValueSize + configuration.dataToCommentsDistance;
-                        if (additionToComments > 0) {
-                            commentSpaceSize += additionToComments;
-                        }
-                    }
-                    s = this.getEndPad(asmLine.value, commentSpaceSize);
+                    s = this.getEndPad(asmLine.value, asmDocument.valueColumn, asmDocument.commentColumn, asmDocument.useTabs, asmDocument.tabSize);
                     range = new vscode.Range(asmLine.valueRange.end, asmLine.commentRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 }
-                s = this.getEndPad(asmLine.operator, asmLine.operator.length + configuration.operatorToValueDistance);
-                if (asmLine.valueRange.start.character - asmLine.operatorRange.end.character !== s.length) {
-                    range = new vscode.Range(asmLine.operatorRange.end, asmLine.valueRange.start);
-                    edits.push(vscode.TextEdit.replace(range, s));
+                let operatorLeftPadSize = asmDocument.maxOperatorSize - asmLine.operator.length;
+                s = this.getEndPad(asmLine.operator, asmDocument.operatorColumn, asmDocument.valueColumn, asmDocument.useTabs, asmDocument.tabSize);
+                if (!asmDocument.useTabs && operatorLeftPadSize > 0 && s.length > operatorLeftPadSize) {
+                    s = s.substring(operatorLeftPadSize);
                 }
-                s = this.getEndPad(asmLine.variable, asmDocument.maxVariableSize + configuration.variableToOperatorDistance + (asmDocument.maxOperatorSize - asmLine.operator.length));
-                if (asmLine.operatorRange.start.character - asmLine.variableRange.end.character !== s.length) {
-                    range = new vscode.Range(asmLine.variableRange.end, asmLine.operatorRange.start);
-                    edits.push(vscode.TextEdit.replace(range, s));
+                range = new vscode.Range(asmLine.operatorRange.end, asmLine.valueRange.start);
+                edits.push(vscode.TextEdit.replace(range, s));
+                s = this.getEndPad(asmLine.variable, asmDocument.variableColumn, asmDocument.operatorColumn, asmDocument.useTabs, asmDocument.tabSize);
+                if (!asmDocument.useTabs && operatorLeftPadSize > 0) {
+                    s = StringUtils.padStart(s, s.length + operatorLeftPadSize);
                 }
+                range = new vscode.Range(asmLine.variableRange.end, asmLine.operatorRange.start);
+                edits.push(vscode.TextEdit.replace(range, s));
             }
         }
         return edits;
@@ -204,18 +154,21 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @param targetLength Length targetted
      * @return Padding string
      */
-    public getEndPad(stringToPad: string, targetLength: number): string {
-        let result = ' ';
-        targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
-        let padString = ' ';
-        if (stringToPad.length <= targetLength) {
-            targetLength = targetLength - stringToPad.length;
-            if (targetLength > padString.length) {
-                padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+    public getEndPad(stringToPad: string, startColumn: number, endColumn: number, useTabs: boolean, tabSize: number): string {
+        let result;
+        if (useTabs) {
+            let padStartColumnTabIndex = Math.floor((startColumn + stringToPad.length) / tabSize);
+            let padEndColumnTabIndex = Math.ceil(endColumn / tabSize);
+            let tabsCount = padEndColumnTabIndex - padStartColumnTabIndex;
+            if (tabsCount > 0) {
+                result = "\t".repeat(tabsCount);
+            } else {
+                result = "\t";
             }
-            result = padString.slice(0, targetLength);
+        } else {
+            result = StringUtils.createPad(stringToPad, endColumn - startColumn);
             if (result.length <= 0) {
-                result = ' ';
+                result = " ";
             }
         }
         return result;
@@ -235,7 +188,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
             let s: string;
             if (position.isAfter(asmLine.instructionRange.end)) {
                 if (asmLine.data.length <= 0) {
-                    s = this.getEndPad(asmLine.instruction, asmDocument.maxInstructionSize + configuration.instructionToDataDistance - 1);
+                    s = this.getEndPad(asmLine.instruction, asmDocument.instructionColumn, asmDocument.dataColumn, asmDocument.useTabs, asmDocument.tabSize);
                     edits.push(vscode.TextEdit.insert(asmLine.instructionRange.end, s));
                     return edits;
                 }

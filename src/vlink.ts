@@ -25,7 +25,7 @@ export class VLINKLinker {
      */
     public linkFiles(filesURI: Uri[], exeFilepathname: string, entrypoint: string | undefined, workspaceRootDir: Uri, buildDir: Uri): Promise<ICheckResult[]> {
         return new Promise(async (resolve, reject) => {
-            let configuration = workspace.getConfiguration('amiga-assembly');
+            let configuration = workspace.getConfiguration('amiga-assembly', null);
             let conf: any = configuration.get('vlink');
             if (this.mayLink(conf)) {
                 let vlinkExecutableName: string = conf.file;

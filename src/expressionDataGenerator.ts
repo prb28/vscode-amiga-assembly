@@ -142,7 +142,7 @@ export class ExpressionDataGenerator {
         } else {
             padSize = 8;
         }
-        return StringUtils.padStartWith0(n.toString(16), padSize);
+        return StringUtils.padStart(n.toString(16), padSize, "0");
     }
     public setOutputInHex(outputInHex: boolean) {
         this.outputInHex = outputInHex;

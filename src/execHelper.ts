@@ -26,7 +26,7 @@ export class ExecutorHelper {
      * @param severity error or warning
      * @param useStdErr If true, the stderr of the output of the given tool will be used, else stdout will be used
      * @param cmd The path and name of the tool to run
-     * @param printUnexpectedOutput If true, then output that doesnt match expected format is printed to the output channel
+     * @param printUnexpectedOutput If true, then output that doesn't match expected format is printed to the output channel
      * @param parser Parser for the output
      */
     runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken): Promise<ICheckResult[]> {
@@ -70,16 +70,16 @@ export class ExecutorHelper {
                     reject(e);
                 }
             });
-            this.addKillToCancellationTocken(p, token);
+            this.addKillToCancellationToken(p, token);
         });
     }
 
     /**
      * Add a kill call when cancellation token is called
-     * @param p: Childprocess
+     * @param p Child process
      * @param token Cancellation token
      */
-    private addKillToCancellationTocken(p: cp.ChildProcess, token?: vscode.CancellationToken) {
+    private addKillToCancellationToken(p: cp.ChildProcess, token?: vscode.CancellationToken) {
         if (token) {
             token.onCancellationRequested(() => {
                 if (p) {
@@ -123,7 +123,7 @@ export class ExecutorHelper {
                     reject(e);
                 }
             });
-            this.addKillToCancellationTocken(p, token);
+            this.addKillToCancellationToken(p, token);
         });
     }
 
@@ -134,7 +134,12 @@ export class ExecutorHelper {
                 if (error.line <= 0) {
                     vscode.window.showErrorMessage(error.msg);
                 } else {
-                    let canonicalFile = vscode.Uri.file(error.file).toString();
+                    let canonicalFile;
+                    if (document && document.fileName.endsWith(error.file)) {
+                        canonicalFile = document.uri.toString();
+                    } else {
+                        canonicalFile = vscode.Uri.file(error.file).toString();
+                    }
                     let startColumn = 0;
                     let endColumn = 1;
                     if ((document) && ((document.uri.toString() === canonicalFile) || error.parentFile)) {
@@ -200,7 +205,7 @@ export class ExecutorHelper {
                     let existingWarnings = warningDiagnosticCollection.get(fileUri);
                     errorDiagnosticCollection.set(fileUri, newErrors);
 
-                    // If there are warnings on current file, remove the ones co-inciding with the new errors
+                    // If there are warnings on current file, remove the ones equal to new errors
                     if (newErrors && existingWarnings) {
                         const errorLines = newErrors.map(x => x.range.start.line);
                         existingWarnings = existingWarnings.filter(x => errorLines.indexOf(x.range.start.line) === -1);
@@ -213,7 +218,7 @@ export class ExecutorHelper {
                     const existingErrors = errorDiagnosticCollection.get(fileUri);
                     let newWarnings = diagMap.get(vscode.DiagnosticSeverity.Warning);
 
-                    // If there are errors on current file, ignore the new warnings co-inciding with them
+                    // If there are errors on current file, ignore the new warnings similar with them
                     if (existingErrors && newWarnings) {
                         const errorLines = existingErrors.map(x => x.range.start.line);
                         newWarnings = newWarnings.filter(x => errorLines.indexOf(x.range.start.line) === -1);

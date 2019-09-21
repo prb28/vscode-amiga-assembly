@@ -42,7 +42,7 @@ export class ADFTools {
      */
     public createBootableADFDisk(cancellationToken?: CancellationToken): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            const rootConf = workspace.getConfiguration('amiga-assembly');
+            const rootConf = workspace.getConfiguration('amiga-assembly', null);
             const conf: any = rootConf.get('adfgenerator');
             if (conf) {
                 this.setToolsRootPath(conf.ADFToolsParentDir);
@@ -283,7 +283,7 @@ export class ADFTools {
      * Create a new ADFTools class with vscode configuration
      */
     public static create(): ADFTools {
-        const rootConf = workspace.getConfiguration('amiga-assembly');
+        const rootConf = workspace.getConfiguration('amiga-assembly', null);
         const conf: any = rootConf.get('adfgenerator');
         let rootToolsDir = "";
         if (conf && conf.ADFToolsParentDir) {

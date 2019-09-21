@@ -46,7 +46,7 @@ export class CopperInstruction {
         return inst + pad;
     }
     protected format(value: number): string {
-        return StringUtils.padStartWith0(value.toString(16), 4);
+        return StringUtils.padStart(value.toString(16), 4, "0");
     }
 }
 

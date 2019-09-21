@@ -9,9 +9,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { spy, verify, when, anything, resetCalls, mock, instance } from 'ts-mockito/lib/ts-mockito';
-import { ExtensionState } from '../extension';
-import { Capstone } from '../capstone';
-import { IFFViewerPanel } from '../iffImageViewer';
+import { ExtensionState } from '../../extension';
+import { Capstone } from '../../capstone';
+import { IFFViewerPanel } from '../../iffImageViewer';
 import { fail } from 'assert';
 
 // Defines a Mocha test suite to group tests of similar kind together
@@ -50,7 +50,7 @@ describe("Global Extension Tests", function () {
         it("Should format another simple file with sprite", async () => {
             this.timeout(2000);
             // Creating the relative path to find the test file
-            const testFilesPath = path.join(__dirname, "..", "..", "test_files");
+            const testFilesPath = path.join(__dirname, "..", "..", "..", "test_files");
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw2-toform.s"));
             // Read the expected file
@@ -64,6 +64,26 @@ describe("Global Extension Tests", function () {
                 // Editor openned
                 // Call the formatting command
                 await vscode.commands.executeCommand("editor.action.formatDocument");
+                expect(editor.document.getText()).to.be.equal(expectedFileContents);
+            }
+        });
+        it("Should format a file with tabs", async () => {
+            this.timeout(2000);
+            // Simple test file
+            const uri = vscode.Uri.file(path.join(testFilesPath, "hw-tabs-toform.s"));
+            // Read the expected file
+            let expectedFileContents = fs.readFileSync(path.join(testFilesPath, "hw-tabs-exp.s"), 'utf8');
+            // Opens the file in the editor
+            await vscode.window.showTextDocument(uri);
+            let editor = vscode.window.activeTextEditor;
+            // tslint:disable-next-line:no-unused-expression
+            expect(editor).to.not.be.undefined;
+            if (editor) {
+                // Editor openned
+                // Call the formatting command
+                await vscode.workspace.getConfiguration('amiga-assembly', uri).update('format.useTabs', true, true);
+                await vscode.commands.executeCommand("editor.action.formatDocument");
+                await vscode.workspace.getConfiguration('amiga-assembly', uri).update('format.useTabs', false, true);
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
         });

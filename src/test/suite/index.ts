@@ -1,39 +1,11 @@
-"use strict";
-
-import * as fs from "fs";
-import * as glob from "glob";
+import * as path from 'path';
+import * as Mocha from 'mocha';
+import * as glob from 'glob';
 import * as paths from "path";
+import * as fs from "fs";
 
 const istanbul = require("istanbul");
-const Mocha = require("mocha");
 const remapIstanbul = require("remap-istanbul");
-
-
-// Will print the stack on promise rejection
-process.on('unhandledRejection', (reason, _promise) => {
-    if (reason) {
-        console.log('unhandledRejection', reason);
-    }
-});
-
-// Linux: prevent a weird NPE when mocha on Linux requires the window size from the TTY
-// Since we are not running in a tty environment, we just implementt he method statically
-const tty = require("tty");
-if (!tty.getWindowSize) {
-    tty.getWindowSize = (): number[] => {
-        return [80, 75];
-    };
-}
-
-let mocha = new Mocha({
-    ui: "bdd",
-    useColors: true,
-});
-
-function configure(mochaOpts: any): void {
-    mocha = new Mocha(mochaOpts);
-}
-exports.configure = configure;
 
 function _mkDirIfExists(dir: string): void {
     if (!fs.existsSync(dir)) {
@@ -51,45 +23,47 @@ function _readCoverOptions(testsRoot: string): ITestRunnerOptions | undefined {
     return coverConfig;
 }
 
-function run(testsRoot: any, clb: any): any {
-    // Enable source map support
-    require("source-map-support").install();
+export function run(_testsRoot: string, clb: any): Promise<void> {
+    // Create the mocha test
+    const mocha = new Mocha({
+        ui: 'bdd',
+    });
+    mocha.useColors(true);
 
-    // Read configuration for the coverage file
-    let coverOptions: ITestRunnerOptions | undefined = _readCoverOptions(testsRoot);
-    if (coverOptions && coverOptions.enabled) {
-        // Setup coverage pre-test, including post-test hook to report
-        let coverageRunner = new CoverageRunner(coverOptions, testsRoot, clb);
-        coverageRunner.setupCoverage();
-    }
+    const testsRoot = path.resolve(__dirname, '..');
 
-    // Glob test files
-    glob("**/**.test.js", { cwd: testsRoot }, (error, files): any => {
-        if (error) {
-            return clb(error);
+    return new Promise((c, e) => {
+        // Read configuration for the coverage file
+        let coverOptions: ITestRunnerOptions | undefined = _readCoverOptions(testsRoot);
+        if (coverOptions && coverOptions.enabled) {
+            // Setup coverage pre-test, including post-test hook to report
+            let coverageRunner = new CoverageRunner(coverOptions, testsRoot, clb);
+            coverageRunner.setupCoverage();
         }
-        try {
-            // Fill into Mocha
-            files.forEach((f): Mocha => {
-                return mocha.addFile(paths.join(testsRoot, f));
-            });
-            // Run the tests
-            let failureCount = 0;
 
-            mocha.run()
-                .on("fail", (test: any, err: any): void => {
-                    failureCount++;
-                })
-                .on("end", (): void => {
-                    clb(undefined, failureCount);
+        glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
+            if (err) {
+                return e(err);
+            }
+
+            // Add files to the test suite
+            files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)));
+
+            try {
+                // Run the mocha test
+                mocha.run(failures => {
+                    if (failures > 0) {
+                        e(new Error(`${failures} tests failed.`));
+                    } else {
+                        c();
+                    }
                 });
-        } catch (error) {
-            return clb(error);
-        }
+            } catch (err) {
+                e(err);
+            }
+        });
     });
 }
-exports.run = run;
-
 interface ITestRunnerOptions {
     enabled?: boolean;
     relativeCoverageDir: string;

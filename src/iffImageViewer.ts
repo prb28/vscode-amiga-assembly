@@ -67,7 +67,7 @@ export class IFFViewerPanel {
         this.update();
 
         // Listen for when the panel is disposed
-        // This happens when the user closes the panel or when the panel is closed programatically
+        // This happens when the user closes the panel or when the panel is closed programmatically
         this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
 
         // Handle messages from the webview

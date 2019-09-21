@@ -6,6 +6,7 @@ import { GdbBreakpoint } from './breakpointManager';
 import { GdbRecievedDataManager, GdbPacketHandler } from './gdbEvents';
 import { GdbPacket, GdbPacketType } from './gdbPacket';
 import { resolve } from 'path';
+import { StringUtils } from './stringUtils';
 
 /**
  * Class to contact the fs-UAE GDB server.
@@ -21,11 +22,17 @@ export class GdbProxy extends EventEmitter {
     static readonly REGISTER_FP0_INDEX = 18; // -> 18 to 25
     static readonly REGISTER_CTRL_INDEX = 26;
     static readonly REGISTER_IAR_INDEX = 27;
-    static readonly REGISTER_COPPER_ADDR_INDEX = 30;
+    static readonly REGISTER_COPPER_ADDR_INDEX = 28;
     /** Kind of breakpoints */
     static readonly BREAKPOINT_KIND_ABSOLUTE_ADDR = 100;
     /** Code to set the debugger to the current frame index */
     static readonly DEFAULT_FRAME_INDEX = -1;
+    /** Supported functions */
+    static readonly SUPPORT_STRING = 'qSupported:QStartNoAckMode+;multiprocess+;vContSupported+;QNonStop+';
+    /** Install new binaries exception message */
+    static readonly BINARIES_ERROR = "Please install latest binaries from FS-UAE custom build https://github.com/prb28/vscode-amiga-assembly/releases";
+    /** Unexpected return message */
+    static readonly UNEXPECTED_RETURN_ERROR = "Unexpected return message for program lauch command";
     /** Socket to connect */
     private socket: Socket;
     /** Current source file */
@@ -80,12 +87,12 @@ export class GdbProxy extends EventEmitter {
         return new Promise((resolve, reject) => {
             self.socket.connect(port, host);
             self.socket.once('connect', async () => {
-                await self.sendPacketString('qSupportedQStartNoAckMode;multiprocess;vContSupported;QNonStop').then(async data => {
+                await self.sendPacketString(GdbProxy.SUPPORT_STRING).then(async data => {
                     const returnedData = data;
                     if (returnedData.indexOf("multiprocess+") >= 0) {
                         GdbThread.setSupportMultiprocess(true);
                     } else {
-                        reject(new Error("Please install latest binaries from FS-UAE custom build https://github.com/prb28/vscode-amiga-wks-example/releases"));
+                        reject(new Error(GdbProxy.BINARIES_ERROR));
                     }
                     if (returnedData.indexOf("vContSupported+") >= 0) {
                         this.supportVCont = true;
@@ -167,21 +174,6 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Check if the reponse has an error
-     * @param data The data to check
-     * @return True if it has an error
-     */
-    protected responseHasNoError(data: any): boolean {
-        let packets = GdbPacket.parseData(data);
-        for (let packet of packets) {
-            if (packet.getType() === GdbPacketType.ERROR) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Message to load the program
      * @param programFilename Filename of the program with the local path
      * @param stopOnEntry If true we will stop on entry
@@ -191,38 +183,72 @@ export class GdbProxy extends EventEmitter {
             if (this.programFilename !== programFilename) {
                 this.programFilename = programFilename;
                 let elms = this.programFilename.replace(/\\/g, '/').split('/');
-                this.sendPacketString("Z0,0,0").then(async data => {
-                    const self = this;
-                    // Let fs-uae terminate before sending the run command
-                    // TODO : check if this is necessary
-                    setTimeout(async function () {
-                        self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
-                        await self.sendPacketString("vRun;dh0:" + elms[elms.length - 1] + ";").then(async (message) => {
-                            let type = GdbPacket.parseType(message);
-                            if (type === GdbPacketType.SEGMENT) {
-                                self.parseSegments(message);
-                            } else {
-                                console.error("Unexpected return message for program lauch command");
-                            }
-                            // Call for thread dump
-                            await self.getThreadIds().then((threads) => {
-                                for (let th of threads) {
-                                    self.sendEvent('threadStarted', th.getId());
-                                }
-                                resolve();
+                const self = this;
+                // Let fs-uae terminate before sending the run command
+                // TODO : check if this is necessary
+                setTimeout(async function () {
+                    self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
+                    let encodedProgramName = StringUtils.convertStringToHex("dh0:" + elms[elms.length - 1]);
+                    await self.sendPacketString("vRun;" + encodedProgramName + ";").then(async (message) => {
+                        let type = GdbPacket.parseType(message);
+                        if (type === GdbPacketType.SEGMENT) {
+                            reject(new Error(GdbProxy.BINARIES_ERROR));
+                        } else if (type === GdbPacketType.STOP) {
+                            // Call for segments
+                            await self.getQOffsets().then(async () => {
+                                // Call for thread dump
+                                await self.getThreadIds().then((threads) => {
+                                    for (let th of threads) {
+                                        self.sendEvent('threadStarted', th.getId());
+                                    }
+                                    self.parseStop(message).then(async (threads) => {
+                                        resolve();
+                                    }).catch(err => {
+                                        reject(err);
+                                    });
+                                }).catch(err => {
+                                    reject(err);
+                                });
                             }).catch(err => {
                                 reject(err);
                             });
-                        }).catch(err => {
-                            reject(err);
-                        });
-                    }, 100);
-                }).catch(err => {
-                    reject(err);
-                });
+                        } else {
+                            reject(new Error(GdbProxy.UNEXPECTED_RETURN_ERROR));
+                        }
+                    }).catch(err => {
+                        reject(err);
+                    });
+                }, 100);
             } else {
                 resolve();
             }
+        });
+    }
+
+    public getQOffsets(): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            await this.sendPacketString('qOffsets').then(segmentReply => {
+                // expected return message : TextSeg=00c03350;DataSeg=00c03350
+                let segs = segmentReply.split(";");
+                this.segments = new Array<Segment>();
+                // The segments message begins with the keyword AS
+                for (let seg of segs) {
+                    let segElms = seg.split("=");
+                    if (segElms.length > 1) {
+                        let name = segElms[0];
+                        let address = segElms[1];
+                        this.segments.push(<Segment>{
+                            name: name,
+                            address: parseInt(address, 16),
+                            size: 0,
+                        });
+                    }
+                }
+                resolve();
+                this.sendEvent("segmentsUpdated", this.segments);
+            }).catch(err => {
+                reject(err);
+            });
         });
     }
 
@@ -317,16 +343,12 @@ export class GdbProxy extends EventEmitter {
                 if (this.segments && (segmentId !== undefined) && (segmentId >= this.segments.length)) {
                     reject(new Error("Invalid breakpoint segment id: " + segmentId));
                     return;
-                } else if (offset >= 0) {
+                } else if ((offset >= 0) || exceptionMask) {
                     let message: string;
                     if (exceptionMask) {
                         let expMskHex = GdbProxy.formatNumber(exceptionMask);
                         let expMskHexSz = GdbProxy.formatNumber(expMskHex.length);
-                        let segStr = "";
-                        if (segmentId !== undefined) {
-                            segStr = ',' + GdbProxy.formatNumber(segmentId);
-                        }
-                        message = 'Z1,' + GdbProxy.formatNumber(offset) + segStr + ";X" + expMskHexSz + "," + expMskHex;
+                        message = "Z1,0,0;X" + expMskHexSz + "," + expMskHex;
                     } else {
                         let segStr = "";
                         if ((segmentId !== undefined) && (segmentId >= 0)) {
@@ -453,14 +475,16 @@ export class GdbProxy extends EventEmitter {
                 if (haltStatus) {
                     for (let hs of haltStatus) {
                         if ((hs.thread) && (hs.thread.getThreadId() === thread.getThreadId())) {
-                            let copperAddress = hs.registers.get(GdbProxy.REGISTER_COPPER_ADDR_INDEX);
-                            if (copperAddress) {
+                            let copperValues = await this.getRegisterNumerical('copper', frameIndex).catch(err => {
+                                reject(err);
+                            });
+                            if (copperValues) {
                                 resolve(<GdbStackPosition>{
                                     index: frameIndex * 1000,
                                     stackFrameIndex: 0,
                                     segmentId: -10,
                                     offset: 0,
-                                    pc: copperAddress
+                                    pc: copperValues[0]
                                 });
                             } else {
                                 reject("No stack frame returned");
@@ -776,7 +800,6 @@ export class GdbProxy extends EventEmitter {
             let address = segs[i];
             let size = segs[i + 1];
             this.segments.push(<Segment>{
-                // TODO the segments should be in hex --- modify in fs-uae
                 address: parseInt(address, 16),
                 size: parseInt(size, 16),
             });
@@ -845,10 +868,12 @@ export class GdbProxy extends EventEmitter {
         let elms = parameters.trim().split(';');
         for (let elm of elms) {
             let kv = elm.split(':');
-            if ("thread" === kv[0]) {
-                thread = this.threadsNative.get(kv[1]);
-            } else if (kv.length > 0) {
-                map.set(parseInt(kv[0], 16), parseInt(kv[1], 16));
+            if (kv.length > 1) {
+                if ("thread" === kv[0]) {
+                    thread = this.threadsNative.get(kv[1]);
+                } else if (kv.length > 0) {
+                    map.set(parseInt(kv[0], 16), parseInt(kv[1], 16));
+                }
             }
         }
         return [thread, map];
@@ -992,7 +1017,7 @@ export class GdbProxy extends EventEmitter {
      * Gets the register index from it's name
      */
     public getRegisterIndex(name: string): number | null {
-        if (name.length === 2) {
+        if (name.length > 1) {
             let type = name.charAt(0);
             let idx = parseInt(name.charAt(1));
             if (type === 'd') {
@@ -1045,17 +1070,23 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Returns the current CPU thread...
+     * Returns the thread with an amiga sys tipe
      */
-    public getCurrentCpuThread(): GdbThread | undefined {
+    public getThreadFromSysThreadId(sysThreadId: GdbAmigaSysThreadId): GdbThread | undefined {
         for (let t of this.threads.values()) {
-            if (t.getThreadId() === GdbAmigaSysThreadId.CPU) {
+            if (t.getThreadId() === sysThreadId) {
                 return t;
             }
         }
         return undefined;
     }
 
+    /**
+     * Returns the current CPU thread...
+     */
+    public getCurrentCpuThread(): GdbThread | undefined {
+        return this.getThreadFromSysThreadId(GdbAmigaSysThreadId.CPU);
+    }
 
     /**
      * Returns the current array of segments
@@ -1063,6 +1094,21 @@ export class GdbProxy extends EventEmitter {
      */
     public getSegments(): Segment[] | undefined {
         return this.segments;
+    }
+
+    /**
+     * Adds a segment retrieved from the hunk file
+     * @param segment Segment to add
+     * @return the start address of the segment
+     */
+    public addSegment(segment: Segment): number {
+        if (this.segments) {
+            let lastSegment = this.segments[this.segments.length - 1];
+            segment.address = lastSegment.address + lastSegment.size;
+            this.segments.push(segment);
+            return segment.size;
+        }
+        return -1;
     }
 
     /**

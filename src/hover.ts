@@ -2,11 +2,13 @@ import * as vscode from 'vscode';
 import { ASMLine, NumberParser } from './parser';
 import { DocumentationManager, DocumentationInstruction } from './documentation';
 import { ExtensionState } from './extension';
+import { ConfigurationHelper } from './configurationHelper';
 
 /**
  * Hover provider class for le assembly language
  */
 export class M68kHoverProvider implements vscode.HoverProvider {
+    static readonly DEFAULT_NUMBER_DISPLAY_FORMAT = "#`@dec@` - $`@hex@` - %`@bin@` @ascii@";
     documentationManager: DocumentationManager;
     numberParser = new NumberParser();
     constructor(documentationManager: DocumentationManager) {
@@ -18,6 +20,8 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @return Hover results
      */
     public async provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> {
+        let configuration = vscode.workspace.getConfiguration('amiga-assembly', document.uri);
+        let numberDisplayFormat = ConfigurationHelper.retrieveStringProperty(configuration, 'hover.numberDisplayFormat', M68kHoverProvider.DEFAULT_NUMBER_DISPLAY_FORMAT);
         return new Promise(async (resolve, reject) => {
             // Parse the line
             let line = document.lineAt(position.line);
@@ -48,7 +52,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     if (!rendered) {
                         // Translate to get the control character
                         text = document.getText(word.with(word.start.translate(undefined, -1)));
-                        rendered = this.renderNumberForWord(text);
+                        rendered = this.renderNumberForWord(text, numberDisplayFormat);
                     } else {
                         // Is there a value next to the register ?
                         let elms = asmLine.data.split(",");
@@ -87,7 +91,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                             let variable = match[0];
                             let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                             await definitionHandler.evaluateVariable(variable).then(value => {
-                                let rendered = this.renderNumber(value);
+                                let rendered = this.renderNumber(value, numberDisplayFormat);
                                 if (rendered) {
                                     resolve(new vscode.Hover(rendered));
                                 }
@@ -108,7 +112,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                         let variable = match[0];
                         let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                         await definitionHandler.evaluateVariable(variable).then(value => {
-                            let rendered = this.renderNumber(value);
+                            let rendered = this.renderNumber(value, numberDisplayFormat);
                             if (rendered) {
                                 resolve(new vscode.Hover(rendered));
                             }
@@ -166,12 +170,13 @@ export class M68kHoverProvider implements vscode.HoverProvider {
     /**
      * Render a number if it is present
      * @param text Text to be examined
+     * @param format Display format
      * @return Rendered string
      */
-    public renderNumberForWord(text: string): vscode.MarkdownString | null {
+    public renderNumberForWord(text: string, format: string): vscode.MarkdownString | null {
         let value = this.numberParser.parse(text);
         if (value) {
-            return this.renderNumber(value);
+            return this.renderNumber(value, format);
         }
         return null;
     }
@@ -179,9 +184,10 @@ export class M68kHoverProvider implements vscode.HoverProvider {
     /**
      * Render a number if it is present
      * @param value Number to be rendered
+     * @param format Display format
      * @return Rendered string
      */
-    public renderNumber(value: number): vscode.MarkdownString | null {
+    public renderNumber(value: number, format: string): vscode.MarkdownString | null {
         // Transform to hex
         let dec = value.toString(10);
         // Transform to hex
@@ -190,7 +196,10 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         let bin = this.numberParser.binaryToString(value, true);
         // Transform to octal
         let oct = this.numberParser.octalToString(value, true);
-        return new vscode.MarkdownString("#`" + dec + "` - $`" + hex + "` - %`" + bin + "` - @`" + oct + "`");
+        // transform to ascii
+        let ascii = this.numberParser.asciiToString(value, false);
+        let str = format.replace("@dec@", dec).replace("@hex@", hex).replace("@bin@", bin).replace("@oct@", oct).replace("@ascii@", ascii);
+        return new vscode.MarkdownString(str);
     }
 
     /**

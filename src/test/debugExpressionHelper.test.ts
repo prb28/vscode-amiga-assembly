@@ -81,12 +81,12 @@ describe("debug expression helper Tests", function () {
         },
         <DebugProtocol.Variable>{
             "name": "00000006",
-            "value": "00c0 0b00 | ....",
+            "value": "00c0 0b00 | .À..",
             "variablesReference": 0,
         },
         <DebugProtocol.Variable>{
             "name": "0000000a",
-            "value": "00f8      | ..",
+            "value": "00f8      | .ø",
             "variablesReference": 0,
         }];
         expect(helper.processOutputFromMemoryDump(memory, startAddress, mode, wordLength, rowLength)).to.be.eql(["aa00 0000 | ª...", variables]);
@@ -94,17 +94,17 @@ describe("debug expression helper Tests", function () {
         rowLength = 4;
         variables = [<DebugProtocol.Variable>{
             "name": "00000002",
-            "value": "aa000000 00c00b00 00f8          | ª.........",
+            "value": "aa000000 00c00b00 00f8          | ª....À...ø",
             "variablesReference": 0,
         }];
-        expect(helper.processOutputFromMemoryDump(memory, startAddress, mode, wordLength, rowLength)).to.be.eql(["aa000000 00c00b00 00f8          | ª.........", variables]);
+        expect(helper.processOutputFromMemoryDump(memory, startAddress, mode, wordLength, rowLength)).to.be.eql(["aa000000 00c00b00 00f8          | ª....À...ø", variables]);
         mode = "a";
         variables = [<DebugProtocol.Variable>{
             "name": "00000002",
-            "value": "ª.........",
+            "value": "ª....À...ø",
             "variablesReference": 0,
         }];
-        expect(helper.processOutputFromMemoryDump(memory, startAddress, mode, wordLength, rowLength)).to.be.eql(["ª.........", variables]);
+        expect(helper.processOutputFromMemoryDump(memory, startAddress, mode, wordLength, rowLength)).to.be.eql(["ª....À...ø", variables]);
         mode = "b";
         variables = [<DebugProtocol.Variable>{
             "name": "00000002",

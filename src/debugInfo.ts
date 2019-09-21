@@ -236,10 +236,6 @@ export class DebugInfo {
     }
 
     public normalize(dirName: string): string {
-        if (path.sep === '/') {
-            return dirName.replace(/\\+/g, path.sep);
-        } else {
-            return dirName.replace(/\/+/g, path.sep).toUpperCase();
-        }
+        return dirName.replace(/\\+/g, '/');
     }
 }

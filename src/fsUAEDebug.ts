@@ -181,7 +181,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.updateSegments(segments);
         });
         this.gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
-            this.sendEvent(new BreakpointEvent('changed', bp));
+            // Dirty workaround to issue https://github.com/microsoft/vscode/issues/65993
+            setTimeout(async () => {
+                this.sendEvent(new BreakpointEvent('changed', bp));
+            }, 100);
         });
         this.gdbProxy.on('threadStarted', (threadId: number) => {
             let event = <DebugProtocol.ThreadEvent>{
@@ -258,7 +261,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         response.body.supportsSetVariable = true;
 
         // Sets the capstone path
-        let conf: any = workspace.getConfiguration('amiga-assembly').get('cstool');
+        let conf: any = workspace.getConfiguration('amiga-assembly', null).get('cstool');
         if (!this.capstone && conf && (conf.length > 5)) {
             this.capstone = new Capstone(conf);
         }
@@ -482,6 +485,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             };
             response.success = true;
             this.sendResponse(response);
+            resolve();
         });
 
     }
@@ -642,7 +646,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             variables.push({
                                 name: r.name,
                                 type: "register",
-                                value: StringUtils.padStartWith0(r.value.toString(16), 8),
+                                value: StringUtils.padStart(r.value.toString(16), 8, "0"),
                                 variablesReference: 0
                             });
                         }
@@ -789,7 +793,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 response.body = {
                     address: address.toString(),
                     data: StringUtils.hexToBase64(memory)
-                }
+                };
                 this.sendResponse(response);
             }
             resolve();
@@ -1049,24 +1053,31 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 	 */
     public updateSegments(segments: Array<Segment>) {
         if (this.debugInfo) {
-            for (let posSegment = 0; posSegment < segments.length; posSegment++) {
-                let segment = segments[posSegment];
-                let address = segment.address;
-                for (let hunk of this.debugInfo.hunks) {
-                    if (posSegment >= this.debugInfo.hunks.length) {
-                        break;
-                    }
-                    // Really not a good way to match ...
-                    if (segment.size === hunk.allocSize) {
-                        hunk.segmentsId = posSegment;
-                        hunk.segmentsAddress = address;
-                        // Retrieve the symbols
-                        if (hunk.symbols) {
-                            for (let s of hunk.symbols) {
-                                this.symbolsMap.set(s.name, s.offset + address);
-                            }
-                        }
-                        break;
+            let lastPos = this.debugInfo.hunks.length;
+            for (let posSegment = 0; posSegment < lastPos; posSegment++) {
+                // Segments in order of file
+                let hunk = this.debugInfo.hunks[posSegment];
+                let segment;
+                let address;
+                if (posSegment >= segments.length) {
+                    // Segment not declared by the protocol
+                    segment = <Segment>{
+                        address: 0,
+                        name: "",
+                        size: hunk.allocSize
+                    };
+                    address = this.gdbProxy.addSegment(segment);
+                } else {
+                    segment = segments[posSegment];
+                    address = segment.address;
+                    segment.size = hunk.allocSize;
+                }
+                hunk.segmentsId = posSegment;
+                hunk.segmentsAddress = address;
+                // Retrieve the symbols
+                if (hunk.symbols) {
+                    for (let s of hunk.symbols) {
+                        this.symbolsMap.set(s.name, s.offset + address);
                     }
                 }
             }

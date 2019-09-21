@@ -15,12 +15,12 @@ import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
 import { DebugDisassembledFile } from '../debugDisassembled';
 
 describe('Node Debug Adapter', () => {
-	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
-	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js');
-	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug');
-	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae');
-	const UAE_DRIVE = Path.join(FSUAE_ROOT, 'hd0');
-	const SOURCE_FILE_NAME = Path.join(DATA_ROOT, 'gencop.s');
+	const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
+	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
+	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug').replace(/\\+/g, '/');
+	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae').replace(/\\+/g, '/');
+	const UAE_DRIVE = Path.join(FSUAE_ROOT, 'hd0').replace(/\\+/g, '/');
+	const SOURCE_FILE_NAME = Path.join(DATA_ROOT, 'gencop.s').replace(/\\+/g, '/');
 	let launchArgs = <LaunchRequestArguments>{
 		program: Path.join(UAE_DRIVE, 'hello'),
 		stopOnEntry: false,
@@ -519,7 +519,7 @@ describe('Node Debug Adapter', () => {
 					expect(src.name.toUpperCase()).to.be.equal("GENCOP.S");
 				}
 				if (src.path) {
-					let pathToTest = Path.join("test_files", "debug", "gencop.s");
+					let pathToTest = Path.join("test_files", "debug", "gencop.s").replace(/\\+/g, '/');
 					expect(src.path.toUpperCase().endsWith(pathToTest.toUpperCase())).to.be.equal(true);
 				}
 			}
@@ -673,12 +673,12 @@ describe('Node Debug Adapter', () => {
 				expression: "m0,10"
 			});
 			expect(evaluateResponse.body.type).to.equal('array');
-			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | ..........');
+			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | .....À...ø');
 			// Test variable replacement
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "m ${a0},10"
 			});
-			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª.........');
+			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª....À...ø');
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "m ${copperlist},10"
 			});
@@ -686,7 +686,7 @@ describe('Node Debug Adapter', () => {
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "m #{copperlist},10"
 			});
-			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
+			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | »....À...ø');
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "m ${color00},1"
 			});
@@ -709,20 +709,20 @@ describe('Node Debug Adapter', () => {
 			verify(this.mockedGdbProxy.setMemory(0, anyString())).once();
 			resetCalls(this.mockedGdbProxy);
 			expect(evaluateResponse.body.type).to.equal('array');
-			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | ..........');
+			expect(evaluateResponse.body.result).to.equal('00000000 00c00b00 00f8          | .....À...ø');
 			// Test variable replacement
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "M${a0}=10"
 			});
 			verify(this.mockedGdbProxy.setMemory(10, anyString())).once();
 			resetCalls(this.mockedGdbProxy);
-			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª.........');
+			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª....À...ø');
 			evaluateResponse = await dc.evaluateRequest({
 				expression: "M #{copperlist}=10"
 			});
 			verify(this.mockedGdbProxy.setMemory(11, anyString())).once();
 			resetCalls(this.mockedGdbProxy);
-			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | ..........');
+			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | »....À...ø');
 		});
 		it('should evaluate a memory disassemble', async function () {
 			this.timeout(defaultTimeout);

@@ -10,6 +10,8 @@ import { DisassembledInstructionAdapter } from '../debugExpressionHelper';
 chai.use(chaiAsPromised);
 
 class DummyDebugSession implements vscode.DebugSession {
+    workspaceFolder: vscode.WorkspaceFolder | undefined;
+    configuration = <vscode.DebugConfiguration>{};
     id: string = "1";
     type: string = "debug";
     name: string = "mydebug";

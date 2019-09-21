@@ -23,4 +23,18 @@
     "python.linting.pylintEnabled": false,
     "python.linting.pep8Enabled": true,
     "python.linting.enabled": false,
+    "cSpell.words": [
+        "TASKKILL",
+        "VASM",
+        "entrypoint",
+        "exefilename",
+        "filepathname",
+        "iffjs",
+        "iffviewer",
+        "jdataview",
+        "jdataviewjs",
+        "linedebug",
+        "webview's",
+        "webviews"
+    ],
 }
