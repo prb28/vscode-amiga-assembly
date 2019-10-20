@@ -184,7 +184,7 @@ export class DebugInfo {
         return resolvedFileName;
     }
 
-    private areSameSourceFileNames(sourcea: string, sourceb: string): boolean {
+    public areSameSourceFileNames(sourcea: string, sourceb: string): boolean {
         if (path.isAbsolute(sourcea) && path.isAbsolute(sourceb)) {
             return sourcea === sourceb;
         }
@@ -236,6 +236,12 @@ export class DebugInfo {
     }
 
     public normalize(dirName: string): string {
-        return dirName.replace(/\\+/g, '/');
+        let newDName = dirName.replace(/\\+/g, '/');
+        // Testing Windows derive letter -> to uppercase
+        if ((newDName.length > 0) && (newDName.charAt(1) === ":")) {
+            let fChar = newDName.charAt(0).toUpperCase();
+            newDName = fChar + ":" + newDName.substring(2);
+        }
+        return newDName;
     }
 }

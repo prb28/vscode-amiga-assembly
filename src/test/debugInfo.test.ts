@@ -51,6 +51,19 @@ describe("Debug Info", function () {
         } else {
             expect(di.normalize("\\\\a//b\\c/d")).to.be.equal("/a//b/c/d");
         }
+        expect(di.normalize("c:/d")).to.be.equal("C:/d");
+        expect(di.normalize("c:\\d")).to.be.equal("C:/d");
+        expect(di.normalize("c:")).to.be.equal("C:");
+        expect(di.normalize("C:/b")).to.be.equal("C:/b");
+    });
+    it("Should compare filenames", function () {
+        let di = new DebugInfo();
+        // tslint:disable-next-line:no-unused-expression
+        expect(di.areSameSourceFileNames("b", "b")).to.be.true;
+        // tslint:disable-next-line:no-unused-expression
+        expect(di.areSameSourceFileNames("/b/c", "/b/C")).to.be.false;
+        // tslint:disable-next-line:no-unused-expression       
+        expect(di.areSameSourceFileNames("./c", "/b/c")).to.be.true;
     });
     it("Should resolve the line number of a C file", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
