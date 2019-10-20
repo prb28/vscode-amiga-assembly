@@ -183,7 +183,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.gdbProxy.on('breakpointValidated', (bp: GdbBreakpoint) => {
             // Dirty workaround to issue https://github.com/microsoft/vscode/issues/65993
             setTimeout(async () => {
-                this.sendEvent(new BreakpointEvent('changed', bp));
+                try {
+                    this.sendEvent(new BreakpointEvent('changed', bp));
+                } catch (error) {
+                    // forget it
+                }
             }, 100);
         });
         this.gdbProxy.on('threadStarted', (threadId: number) => {
