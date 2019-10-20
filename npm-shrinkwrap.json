@@ -1,6 +1,6 @@
 {
     "name": "amiga-assembly",
-    "version": "0.18.0",
+    "version": "0.19.0",
     "lockfileVersion": 1,
     "requires": true,
     "dependencies": {
@@ -101,9 +101,9 @@
             "dev": true
         },
         "@types/vscode": {
-            "version": "1.37.0",
-            "resolved": "https://registry.npmjs.org/@types/vscode/-/vscode-1.37.0.tgz",
-            "integrity": "sha512-PRfeuqYuzk3vjf+puzxltIUWC+AhEGYpFX29/37w30DQSQnpf5AgMVf7GDBAdmTbWTBou+EMFz/Ne6XCM/KxzQ==",
+            "version": "1.39.0",
+            "resolved": "https://registry.npmjs.org/@types/vscode/-/vscode-1.39.0.tgz",
+            "integrity": "sha512-rlg0okXDt7NjAyHXbZ2nO1I/VY/8y9w67ltLRrOxXQ46ayvrYZavD4A6zpYrGbs2+ZOEQzcUs+QZOqcVGQIxXQ==",
             "dev": true
         },
         "abbrev": {
@@ -1768,8 +1768,7 @@
                 "ansi-regex": {
                     "version": "2.1.1",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 },
                 "aproba": {
                     "version": "1.2.0",
@@ -1790,14 +1789,12 @@
                 "balanced-match": {
                     "version": "1.0.0",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 },
                 "brace-expansion": {
                     "version": "1.1.11",
                     "bundled": true,
                     "dev": true,
-                    "optional": true,
                     "requires": {
                         "balanced-match": "^1.0.0",
                         "concat-map": "0.0.1"
@@ -1812,20 +1809,17 @@
                 "code-point-at": {
                     "version": "1.1.0",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 },
                 "concat-map": {
                     "version": "0.0.1",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 },
                 "console-control-strings": {
                     "version": "1.1.0",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 },
                 "core-util-is": {
                     "version": "1.0.2",
@@ -1942,8 +1936,7 @@
                 "inherits": {
                     "version": "2.0.3",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 },
                 "ini": {
                     "version": "1.3.5",
@@ -1955,7 +1948,6 @@
                     "version": "1.0.0",
                     "bundled": true,
                     "dev": true,
-                    "optional": true,
                     "requires": {
                         "number-is-nan": "^1.0.0"
                     }
@@ -1970,7 +1962,6 @@
                     "version": "3.0.4",
                     "bundled": true,
                     "dev": true,
-                    "optional": true,
                     "requires": {
                         "brace-expansion": "^1.1.7"
                     }
@@ -1978,14 +1969,12 @@
                 "minimist": {
                     "version": "0.0.8",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 },
                 "minipass": {
                     "version": "2.3.5",
                     "bundled": true,
                     "dev": true,
-                    "optional": true,
                     "requires": {
                         "safe-buffer": "^5.1.2",
                         "yallist": "^3.0.0"
@@ -2004,7 +1993,6 @@
                     "version": "0.5.1",
                     "bundled": true,
                     "dev": true,
-                    "optional": true,
                     "requires": {
                         "minimist": "0.0.8"
                     }
@@ -2085,8 +2073,7 @@
                 "number-is-nan": {
                     "version": "1.0.1",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 },
                 "object-assign": {
                     "version": "4.1.1",
@@ -2098,7 +2085,6 @@
                     "version": "1.4.0",
                     "bundled": true,
                     "dev": true,
-                    "optional": true,
                     "requires": {
                         "wrappy": "1"
                     }
@@ -2184,8 +2170,7 @@
                 "safe-buffer": {
                     "version": "5.1.2",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 },
                 "safer-buffer": {
                     "version": "2.1.2",
@@ -2221,7 +2206,6 @@
                     "version": "1.0.2",
                     "bundled": true,
                     "dev": true,
-                    "optional": true,
                     "requires": {
                         "code-point-at": "^1.0.0",
                         "is-fullwidth-code-point": "^1.0.0",
@@ -2241,7 +2225,6 @@
                     "version": "3.0.1",
                     "bundled": true,
                     "dev": true,
-                    "optional": true,
                     "requires": {
                         "ansi-regex": "^2.0.0"
                     }
@@ -2285,14 +2268,12 @@
                 "wrappy": {
                     "version": "1.0.2",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 },
                 "yallist": {
                     "version": "3.0.3",
                     "bundled": true,
-                    "dev": true,
-                    "optional": true
+                    "dev": true
                 }
             }
         },
@@ -4031,7 +4012,7 @@
         },
         "os-tmpdir": {
             "version": "1.0.2",
-            "resolved": "https://registry.npmjs.org/os-tmpdir/-/os-tmpdir-1.0.2.tgz",
+            "resolved": "http://registry.npmjs.org/os-tmpdir/-/os-tmpdir-1.0.2.tgz",
             "integrity": "sha1-u+Z0BseaqFxc/sdm/lc0VV36EnQ=",
             "dev": true
         },
@@ -5485,27 +5466,27 @@
             }
         },
         "vscode-debugadapter": {
-            "version": "1.35.0",
-            "resolved": "https://registry.npmjs.org/vscode-debugadapter/-/vscode-debugadapter-1.35.0.tgz",
-            "integrity": "sha512-Au90Iowj6TuD5uDMaTnxOjl/9hQN0Yoky1TV1Cjjr7jPdxTQpALBRW09Y2LzkIXUVICXlAqxWL9zL8BpzI30jg==",
+            "version": "1.37.1",
+            "resolved": "https://registry.npmjs.org/vscode-debugadapter/-/vscode-debugadapter-1.37.1.tgz",
+            "integrity": "sha512-g/xNsUdkrd0DifaoRJ4+wypSMsMbK47fGpetpmIOnOQiDFjtYKvqxsgyUZ4BOj2jKP2Xa40B4YXfUUJpqreWJg==",
             "requires": {
                 "mkdirp": "^0.5.1",
-                "vscode-debugprotocol": "1.35.0"
+                "vscode-debugprotocol": "1.37.0"
             }
         },
         "vscode-debugadapter-testsupport": {
-            "version": "1.35.0",
-            "resolved": "https://registry.npmjs.org/vscode-debugadapter-testsupport/-/vscode-debugadapter-testsupport-1.35.0.tgz",
-            "integrity": "sha512-4emLt6JOk4iKqC2aWNJupOtrK6JwYAZ6KppqvKASN6B1s063VoqI18QhUB1CeoKwNaN1LIG3VPv2xM8HKOjyDA==",
+            "version": "1.37.1",
+            "resolved": "https://registry.npmjs.org/vscode-debugadapter-testsupport/-/vscode-debugadapter-testsupport-1.37.1.tgz",
+            "integrity": "sha512-CJy1GzggMhK7uyHmOtc/wW91LRgbUGUb70mp/XWhR5/WTfFglt1zhRnkZ2VXUAhdBDtloY3fI5PhgtT8DG0M2Q==",
             "dev": true,
             "requires": {
-                "vscode-debugprotocol": "1.35.0"
+                "vscode-debugprotocol": "1.37.0"
             }
         },
         "vscode-debugprotocol": {
-            "version": "1.35.0",
-            "resolved": "https://registry.npmjs.org/vscode-debugprotocol/-/vscode-debugprotocol-1.35.0.tgz",
-            "integrity": "sha512-+OMm11R1bGYbpIJ5eQIkwoDGFF4GvBz3Ztl6/VM+/RNNb2Gjk2c0Ku+oMmfhlTmTlPCpgHBsH4JqVCbUYhu5bA=="
+            "version": "1.37.0",
+            "resolved": "https://registry.npmjs.org/vscode-debugprotocol/-/vscode-debugprotocol-1.37.0.tgz",
+            "integrity": "sha512-ppZLEBbFRVNsK0YpfgFi/x2CDyihx0F+UpdKmgeJcvi05UgSXYdO0n9sDVYwoGvvYQPvlpDQeWuY0nloOC4mPA=="
         },
         "vscode-test": {
             "version": "1.2.0",

@@ -100,24 +100,25 @@ export class IFFViewerPanel {
     private update() {
         this.panel.title = path.basename(this.image.fsPath);
         this.panel.webview.html = this.getHtmlForWebview();
-        this.panel.webview.postMessage({ command: 'showImage', image: this.image.with({ scheme: 'vscode-resource' }).toString(), animate: this.animate });
+        const imageUri = this.panel.webview.asWebviewUri(this.image);
+        this.panel.webview.postMessage({ command: 'showImage', image: imageUri.toString(), animate: this.animate });
     }
 
     private getHtmlForWebview() {
         // Local path to main script run in the webview
-        let scriptPathOnDisk = vscode.Uri.file(
+        let pathOnDisk = vscode.Uri.file(
             path.join(this.extensionPath, IFFViewerPanel.SCRIPTS_PATH, 'jdataview.min.js')
         );
-        const jdataviewjsUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
-        scriptPathOnDisk = vscode.Uri.file(
+        const jdataviewjsUri = this.panel.webview.asWebviewUri(pathOnDisk);
+        pathOnDisk = vscode.Uri.file(
             path.join(this.extensionPath, IFFViewerPanel.SCRIPTS_PATH, 'iff.min.js')
         );
-        const iffjsUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
-        scriptPathOnDisk = vscode.Uri.file(
+        const iffjsUri = this.panel.webview.asWebviewUri(pathOnDisk);
+        pathOnDisk = vscode.Uri.file(
             path.join(this.extensionPath, IFFViewerPanel.SCRIPTS_PATH, 'main.js')
         );
         // And the uri we use to load this script in the webview
-        const mainUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
+        const mainUri = this.panel.webview.asWebviewUri(pathOnDisk);
         // Use a nonce to whitelist which scripts can be run
         const nonce = getNonce();
 

@@ -12,7 +12,7 @@
         "type": "git",
         "url": "https://github.com/prb28/vscode-amiga-assembly"
     },
-    "version": "0.18.0",
+    "version": "0.19.0",
     "publisher": "prb28",
     "engines": {
         "vscode": "^1.37.0"
@@ -656,7 +656,7 @@
         "@types/glob": "^7.1.1",
         "@types/mocha": "^5.2.7",
         "@types/node": "<11",
-        "@types/vscode": "^1.37.0",
+        "@types/vscode": "^1.39.0",
         "chai": "^4.2.0",
         "chai-as-promised": "^7.1.1",
         "coveralls": "^3.0.6",
@@ -672,13 +672,13 @@
         "tslint": "^5.18.0",
         "typescript": "^3.5.3",
         "vscode-test": "^1.2.0",
-        "vscode-debugadapter-testsupport": "^1.35.0"
+        "vscode-debugadapter-testsupport": "^1.37.0"
     },
     "dependencies": {
         "glob": "^7.1.4",
         "await-notify": "^1.0.1",
         "ts-simple-mutex": "0.0.4",
-        "vscode-debugadapter": "^1.35.0",
-        "vscode-debugprotocol": "^1.35.0"
+        "vscode-debugadapter": "^1.37.0",
+        "vscode-debugprotocol": "^1.37.0"
     }
 }
