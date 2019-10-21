@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [0.18.1] - 2019-10-21
+- [Issue #97](https://github.com/prb28/vscode-amiga-assembly/issues/87) Code builded outside the application can't be debugged 
+- [Feat #87](https://github.com/prb28/vscode-amiga-assembly/issues/87) Use of Webview.toWebviewResource
+
 ### [0.18.0] - 2019-09-21
 - [Feat #91](https://github.com/prb28/vscode-amiga-assembly/issues/91) Add ascii representation in popups
 - [Feat #89](https://github.com/prb28/vscode-amiga-assembly/issues/89) Gdb remote protocol review
@@ -82,38 +86,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Disassemble a file
 
 ### [0.6.2] - 2018-06-28
-### Fixed
 - [Issue #3](https://github.com/prb28/vscode-amiga-assembly/issues/3) Language Packs category is for display language extensions
 
 ### [0.6.0] - 2018-06-01
-### Added
 - Integration of VASM : build and diagnostics in the editor
 - Integration of VLINK : linking the executable
-### Updated
 - m68k instruction set documentation (contribution from [Stephen Moody](https://github.com/SteveMoody73))
-### Fixed
 - [Issue #1](https://github.com/prb28/vscode-amiga-assembly/issues/1) Parsing error in calculator
 
 ### [0.5.0] - 2018-05-20
-### Added
 - Color provider
 - Added documentation for CIAA and CIAB
 - Shows the values set to the registers
 - Show values in decimal / hexadecimal and binary
 - Calculator
 
-## [0.4.0] - 2018-05-15
-### Added
+### [0.4.0] - 2018-05-15
 - Format selection of document
 - Format on typing
 - Configurable default spacings
 
-## [0.3.0] - 2018-05-14
-### Added
+### [0.3.0] - 2018-05-14
 - Documentation hover keywords (instructions and register)
 
-## [0.2.0] - 2018-05-11
-### Added
+### [0.2.0] - 2018-05-11
 - Initial release of Amiga Assembly
 - Editor Highlights
 - Document Formatting
