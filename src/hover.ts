@@ -91,9 +91,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                             let variable = match[0];
                             let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                             await definitionHandler.evaluateVariable(variable).then(value => {
-                                let rendered = this.renderNumber(value, numberDisplayFormat);
-                                if (rendered) {
-                                    resolve(new vscode.Hover(rendered));
+                                let renderedNumber = this.renderNumber(value, numberDisplayFormat);
+                                if (renderedNumber) {
+                                    resolve(new vscode.Hover(renderedNumber));
                                 }
                             }).catch(err => {
                                 // nothing to do

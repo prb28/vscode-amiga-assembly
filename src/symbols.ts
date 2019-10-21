@@ -41,8 +41,8 @@ export class SymbolFile {
                 this.definedSymbols.push(new Symbol(symbol, this, range));
             } else {
                 let results = asmLine.getSymbolFromData();
-                for (let i = 0; i < results.length; i++) {
-                    [symbol, range] = results[i];
+                for (let k = 0; k < results.length; k++) {
+                    [symbol, range] = results[k];
                     if ((symbol !== undefined) && (range !== undefined)) {
                         this.referedSymbols.push(new Symbol(symbol, this, range));
                     }

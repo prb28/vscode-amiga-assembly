@@ -97,7 +97,7 @@ export class GdbProxy extends EventEmitter {
                         this.supportVCont = true;
                     }
                     if (returnedData.indexOf("QStartNoAckMode+") >= 0) {
-                        await self.sendPacketString('QStartNoAckMode').then(data => {
+                        await self.sendPacketString('QStartNoAckMode').then(_ => {
                             resolve();
                         }).catch(error => {
                             reject(error);
@@ -200,7 +200,7 @@ export class GdbProxy extends EventEmitter {
                                     for (let th of threads) {
                                         self.sendEvent('threadStarted', th.getId());
                                     }
-                                    self.parseStop(message).then(async (threads) => {
+                                    self.parseStop(message).then(async (_) => {
                                         resolve();
                                     }).catch(err => {
                                         reject(err);
@@ -955,12 +955,12 @@ export class GdbProxy extends EventEmitter {
                     returnedHaltStatus.push(this.parseHaltStatus(response));
                     let finished = false;
                     while (!finished && !rejected) {
-                        let response = await this.sendPacketString('vStopped').catch(err => {
+                        let vStoppedResponse = await this.sendPacketString('vStopped').catch(err => {
                             reject(err);
                             rejected = true;
                         });
-                        if (response && response.indexOf("OK") < 0) {
-                            returnedHaltStatus.push(this.parseHaltStatus(response));
+                        if (vStoppedResponse && vStoppedResponse.indexOf("OK") < 0) {
+                            returnedHaltStatus.push(this.parseHaltStatus(vStoppedResponse));
                         } else {
                             finished = true;
                         }
