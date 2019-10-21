@@ -143,7 +143,7 @@ export class ExecutorHelper {
                     let startColumn = 0;
                     let endColumn = 1;
                     if ((document) && ((document.uri.toString() === canonicalFile) || error.parentFile)) {
-                        let range = new vscode.Range(error.line - 1, 0, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
+                        let newRange = new vscode.Range(error.line - 1, 0, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
                         let text = "";
                         // Processing path of included files
                         if (error.parentFile) {
@@ -161,10 +161,10 @@ export class ExecutorHelper {
                             // Open the document to get the text
                             let sourceDocument = await workspace.openTextDocument(Uri.parse(canonicalFile));
                             if (sourceDocument) {
-                                text = sourceDocument.getText(range);
+                                text = sourceDocument.getText(newRange);
                             }
                         } else {
-                            text = document.getText(range);
+                            text = document.getText(newRange);
                         }
                         let match = /^(\s*).*(\s*)$/.exec(text);
                         if (match) {
@@ -179,9 +179,9 @@ export class ExecutorHelper {
                         }
 
                     }
-                    let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
+                    let errorRange = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
                     let severity = this.mapSeverityToVSCodeSeverity(error.severity);
-                    let diagnostic = new vscode.Diagnostic(range, error.msg, severity);
+                    let diagnostic = new vscode.Diagnostic(errorRange, error.msg, severity);
                     let diagnostics = diagnosticMap.get(canonicalFile);
                     if (!diagnostics) {
                         diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
@@ -242,9 +242,9 @@ export class ExecutorHelper {
 
     getWorkspaceFolderPath(fileUri: vscode.Uri): string {
         if (fileUri) {
-            let workspace = vscode.workspace.getWorkspaceFolder(fileUri);
-            if (workspace) {
-                return workspace.uri.fsPath;
+            let wFolder = vscode.workspace.getWorkspaceFolder(fileUri);
+            if (wFolder) {
+                return wFolder.uri.fsPath;
             }
         }
         // fall back to the first workspace

@@ -300,10 +300,10 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         let variables = this.findVariablesInFormula(newFormula);
         for (let i = 0; i < variables.length; i++) {
             let vn = variables[i];
-            let formula = this.evaluateVariableFormula(vn);
-            if (formula !== undefined) {
+            let evaluatedFormula = this.evaluateVariableFormula(vn);
+            if (evaluatedFormula !== undefined) {
                 // replace all
-                newFormula = newFormula.split(vn).join('(' + formula + ')');
+                newFormula = newFormula.split(vn).join('(' + evaluatedFormula + ')');
             }
         }
         return newFormula;
