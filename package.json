@@ -15,7 +15,7 @@
     "version": "0.18.1",
     "publisher": "prb28",
     "engines": {
-        "vscode": "^1.37.0"
+        "vscode": "^1.39.0"
     },
     "categories": [
         "Formatters",
