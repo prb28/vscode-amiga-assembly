@@ -49,8 +49,6 @@ describe("Global Extension Tests", function () {
         });
         it("Should format another simple file with sprite", async () => {
             this.timeout(2000);
-            // Creating the relative path to find the test file
-            const testFilesPath = path.join(__dirname, "..", "..", "..", "test_files");
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw2-toform.s"));
             // Read the expected file

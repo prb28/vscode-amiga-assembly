@@ -78,10 +78,10 @@ export class VASMCompiler {
                 let match = /.*[<](.*)+[>]/.exec(error.msg);
                 if (match) {
                     let regexp = new RegExp("^[\\s]+include[\\s]+\"" + match[1].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), "i");
-                    for (let i = 0; i < document.lineCount; i += 1) {
-                        let line = document.lineAt(i).text;
+                    for (let k = 0; k < document.lineCount; k += 1) {
+                        let line = document.lineAt(k).text;
                         if (line.match(regexp)) {
-                            error.line = i + 1;
+                            error.line = k + 1;
                             break;
                         }
                     }
@@ -401,13 +401,13 @@ export class VASMParser implements ExecutorParser {
                             error.msg = line;
                         } else if (error !== undefined) {
                             // Errors details parse
-                            let match = /\s*called from line\s([\d]+)\sof\s[\"](.+)[\"]/.exec(line);
+                            match = /\s*called from line\s([\d]+)\sof\s[\"](.+)[\"]/.exec(line);
                             if (match) {
                                 error.file = match[2];
                                 error.line = parseInt(match[1]);
                                 error.msg = lastHeaderLine;
                             } else {
-                                let match = /\s*included from line\s([\d]+)\sof\s[\"](.+)[\"]/.exec(line);
+                                match = /\s*included from line\s([\d]+)\sof\s[\"](.+)[\"]/.exec(line);
                                 if (match) {
                                     // It's an included file
                                     error.parentFile = match[2];

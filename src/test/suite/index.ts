@@ -58,8 +58,8 @@ export function run(_testsRoot: string, clb: any): Promise<void> {
                         c();
                     }
                 });
-            } catch (err) {
-                e(err);
+            } catch (error) {
+                e(error);
             }
         });
     });
