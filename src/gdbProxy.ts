@@ -5,7 +5,6 @@ import { GdbAmigaSysThreadId, GdbError, GdbHaltStatus, GdbRegister, GdbSignal, G
 import { GdbBreakpoint } from './breakpointManager';
 import { GdbRecievedDataManager, GdbPacketHandler } from './gdbEvents';
 import { GdbPacket, GdbPacketType } from './gdbPacket';
-import { resolve } from 'path';
 import { StringUtils } from './stringUtils';
 
 /**
@@ -564,7 +563,6 @@ export class GdbProxy extends EventEmitter {
         thread.setState(GdbThreadState.STEPPING);
         return this.sendPacketString(message, GdbPacketType.STOP).then(data => {
             this.sendStopOnStepEvent(thread);
-            resolve();
         });
     }
 
@@ -582,7 +580,6 @@ export class GdbProxy extends EventEmitter {
         thread.setState(GdbThreadState.STEPPING);
         return this.sendPacketString(message, GdbPacketType.STOP).then(data => {
             this.sendStopOnStepEvent(thread);
-            resolve();
         });
     }
 
@@ -992,7 +989,6 @@ export class GdbProxy extends EventEmitter {
         thread.setState(GdbThreadState.STEPPING);
         return this.sendPacketString(message).then(data => {
             this.sendEvent('stopOnPause', thread.getId());
-            resolve();
         });
     }
 

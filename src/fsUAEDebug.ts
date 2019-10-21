@@ -644,10 +644,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     //Gets the frameId
                     let frameId = parseInt(id.substring(10));
                     this.gdbProxy.registers(frameId).then((registers: Array<GdbRegister>) => {
-                        const variables = new Array<DebugProtocol.Variable>();
+                        const variablesArray = new Array<DebugProtocol.Variable>();
                         for (let i = 0; i < registers.length; i++) {
                             let r = registers[i];
-                            variables.push({
+                            variablesArray.push({
                                 name: r.name,
                                 type: "register",
                                 value: StringUtils.padStart(r.value.toString(16), 8, "0"),
@@ -655,19 +655,19 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             });
                         }
                         response.body = {
-                            variables: variables
+                            variables: variablesArray
                         };
                         this.sendResponse(response);
                     }).catch(err => {
                         this.sendStringErrorResponse(response, err.message);
                     });
                 } else if (id.startsWith("segments_")) {
-                    const variables = new Array<DebugProtocol.Variable>();
+                    const variablesArray = new Array<DebugProtocol.Variable>();
                     const segments = this.gdbProxy.getSegments();
                     if (segments) {
                         for (let i = 0; i < segments.length; i++) {
                             let s = segments[i];
-                            variables.push({
+                            variablesArray.push({
                                 name: "Segment #" + i,
                                 type: "segment",
                                 value: s.address.toString(16) + " {size:" + s.size + "}",
@@ -675,7 +675,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             });
                         }
                         response.body = {
-                            variables: variables
+                            variables: variablesArray
                         };
                     } else {
                         response.success = false;
@@ -683,11 +683,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     }
                     this.sendResponse(response);
                 } else if (id.startsWith("symbols_")) {
-                    const variables = new Array<DebugProtocol.Variable>();
+                    const variablesArray = new Array<DebugProtocol.Variable>();
                     for (let entry of Array.from(this.symbolsMap.entries())) {
                         let key = entry[0];
                         let value = entry[1];
-                        variables.push({
+                        variablesArray.push({
                             name: key,
                             type: "symbol",
                             value: value.toString(16),
@@ -695,7 +695,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         });
                     }
                     response.body = {
-                        variables: variables
+                        variables: variablesArray
                     };
                     this.sendResponse(response);
                 }

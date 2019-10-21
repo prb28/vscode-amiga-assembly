@@ -338,8 +338,8 @@ export function activate(context: vscode.ExtensionContext) {
     if (vscode.window.registerWebviewPanelSerializer) {
         // Make sure we register a serializer in activation event
         vscode.window.registerWebviewPanelSerializer(IFFViewerPanel.VIEW_TYPE, {
-            async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: any) {
-                IFFViewerPanel.revive(webviewPanel, context.extensionPath, state);
+            async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, wVState: any) {
+                IFFViewerPanel.revive(webviewPanel, context.extensionPath, wVState);
             }
         });
     }
