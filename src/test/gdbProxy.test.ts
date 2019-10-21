@@ -129,7 +129,7 @@ describe("GdbProxy Tests", function () {
             await proxy.load("/home/myh\\myprog", true);
             verify(spiedProxy.sendPacketString(vRunRequest)).once();
             // the stop command arrives  - should send pending breakpoints
-            await mockedOnData(proxy.formatString("S5;0"));
+            mockedOnData(proxy.formatString("S5;0"));
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.continueExecution(anything())).never();
         });

@@ -21,8 +21,8 @@ export class DocumentationInstructionsManager {
         // Read the instructions file
         // Creating the relative path to find the test file
         const filePath = path.join(extensionPath, "docs", "intructionsset.csv");
-        var lines = fs.readFileSync(filePath, 'utf8').split(/\r\n|\r|\n/g);
-        var lineIndex = 0;
+        let lines = fs.readFileSync(filePath, 'utf8').split(/\r\n|\r|\n/g);
+        let lineIndex = 0;
         for (let line of lines) {
             if (line.length > 0) {
                 let hi = DocumentationInstruction.parse(line);

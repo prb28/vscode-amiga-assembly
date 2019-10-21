@@ -39,7 +39,7 @@ export class ExpressionDataGenerator {
     }
     public eval(): Array<number> {
         let values = new Array<number>();
-        var expr = this.calc.parse(this.expression);
+        let expr = this.calc.parse(this.expression);
         if (expr.error) {
             throw new Error('Parsing error at ' + expr.error.pos + ': ' + expr.error.text);
         } else {

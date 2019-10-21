@@ -73,8 +73,8 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                     }
                 }
             } else if ((lastChar === ".") && asmLine.instructionRange.contains(position.translate(undefined, -1))) {
-                let range = document.getWordRangeAtPosition(position.translate(undefined, -1));
-                let word = document.getText(range);
+                let localRange = document.getWordRangeAtPosition(position.translate(undefined, -1));
+                let word = document.getText(localRange);
                 let extensions = this.language.getExtensions(word);
                 if (extensions) {
                     for (let ext of extensions) {

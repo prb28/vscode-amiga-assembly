@@ -258,7 +258,7 @@ export class GdbProxy extends EventEmitter {
      */
     public static calculateChecksum(text: string): string {
         let cs = 0;
-        var buffer = Buffer.alloc(text.length, text);
+        let buffer = Buffer.alloc(text.length, text);
         for (let i = 0; i < buffer.length; ++i) {
             cs += buffer[i];
         }
@@ -276,7 +276,7 @@ export class GdbProxy extends EventEmitter {
      * @param text Text to be sent
      */
     public formatString(text: string): Buffer {
-        var data = Buffer.alloc(text.length + 5);
+        let data = Buffer.alloc(text.length + 5);
         let offset = 0;
         data.write('$', offset++);
         data.write(text, offset);
@@ -296,7 +296,7 @@ export class GdbProxy extends EventEmitter {
      */
     public sendPacketString(text: string, expectedType?: GdbPacketType): Promise<string> {
         return new Promise(async (resolve, reject) => {
-            var dataToSend = this.formatString(text);
+            let dataToSend = this.formatString(text);
             const unlock = await this.mutex.capture('sendPacketString');
             if (this.socket.writable) {
                 let p = this.recievedDataManager.waitData(<GdbPacketHandler>{

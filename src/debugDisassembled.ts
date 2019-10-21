@@ -430,19 +430,13 @@ export class DebugDisassembledMananger {
 
     public getAddressForFileEditorLine(filePath: string, lineNumber: number): Promise<number> {
         return new Promise(async (resolve, reject) => {
+            let instructions: void | DebugProtocol.DisassembledInstruction[];
             if (lineNumber > 0) {
                 let dAsmFile = DebugDisassembledFile.fromPath(filePath);
                 if (dAsmFile.isSegment()) {
                     let segmentId = dAsmFile.getSegmentId();
                     if (segmentId !== undefined) {
-                        await this.disassembleSegment(segmentId).then(instructions => {
-                            let searchedLN = lineNumber - 1;
-                            if (searchedLN < instructions.length) {
-                                resolve(parseInt(instructions[searchedLN].address, 16));
-                            } else {
-                                reject(new Error(`Searched line ${searchedLN} greater than file "${filePath}" length: ${instructions.length}`));
-                            }
-                        }).catch((err) => {
+                        instructions = await this.disassembleSegment(segmentId).catch((err) => {
                             reject(err);
                         });
                     } else {
@@ -453,16 +447,17 @@ export class DebugDisassembledMananger {
                     let address = dAsmFile.getAddressExpression();
                     let length = dAsmFile.getLength();
                     if ((address !== undefined) && (length !== undefined)) {
-                        await this.disassembleAddress(address, length, dAsmFile.isCopper()).then(instructions => {
-                            let searchedLN = lineNumber - 1;
-                            if (searchedLN < instructions.length) {
-                                resolve(parseInt(instructions[searchedLN].address, 16));
-                            } else {
-                                reject(new Error(`Searched line ${searchedLN} greater than file "${filePath}" length: ${instructions.length}`));
-                            }
-                        }).catch((err) => {
+                        instructions = await this.disassembleAddress(address, length, dAsmFile.isCopper()).catch((err) => {
                             reject(err);
                         });
+                    }
+                }
+                if (instructions) {
+                    let searchedLN = lineNumber - 1;
+                    if (searchedLN < instructions.length) {
+                        resolve(parseInt(instructions[searchedLN].address, 16));
+                    } else {
+                        reject(new Error(`Searched line ${searchedLN} greater than file "${filePath}" length: ${instructions.length}`));
                     }
                 }
             } else {

@@ -82,7 +82,7 @@ export class StringUtils {
      */
     public static convertHexStringToASCII(value: string): string {
         let asciiContents = "";
-        var chunks = this.chunk(value, 2);
+        let chunks = this.chunk(value, 2);
         for (let c of chunks) {
             let i = parseInt(c, 16);
             asciiContents += StringUtils.convertByteToASCII(i);
@@ -124,7 +124,7 @@ export class StringUtils {
      */
     public static convertStringToHex(asciiString: string): string {
         let result = "";
-        for (var i = 0; i < asciiString.length; ++i) {
+        for (let i = 0; i < asciiString.length; ++i) {
             result += ('00' + asciiString.charCodeAt(i).toString(16)).slice(-2);
         }
         return result;
@@ -147,7 +147,7 @@ export class StringUtils {
     public static bytesToHex(bytes: Array<number>): string {
         let hex = Array<string>();
         for (let i = 0; i < bytes.length; i++) {
-            var current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+            let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
             hex.push((current >>> 4).toString(16));
             hex.push((current & 0xF).toString(16));
         }

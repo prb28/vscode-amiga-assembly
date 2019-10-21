@@ -94,9 +94,9 @@ export class HunkParser {
     }
 
     private toArrayBuffer(buf: Buffer): ArrayBuffer {
-        var ab = new ArrayBuffer(buf.length);
-        var view = new Uint8Array(ab);
-        for (var i = 0; i < buf.length; ++i) {
+        let ab = new ArrayBuffer(buf.length);
+        let view = new Uint8Array(ab);
+        for (let i = 0; i < buf.length; ++i) {
             view[i] = buf[i];
         }
         return ab;

@@ -58,13 +58,11 @@ export class AsmONE {
 	public filterErrors(errToFilter: ICheckResult[]): ICheckResult[] {
 		let filtered = new Array<ICheckResult>();
 		for (const err of errToFilter) {
-			switch (err.severity.toUpperCase()) {
-				case "WARNING":
-					// remove auto warning message
-					if (err.msgData.match(this.rxAuto)) {
-						continue;
-					}
-					break;
+			if (err.severity.toUpperCase() === "WARNING") {
+				// remove auto warning message
+				if (err.msgData.match(this.rxAuto)) {
+					continue;
+				}
 			}
 			filtered.push(err);
 		}
@@ -123,13 +121,9 @@ export class AsmONE {
 	}
 
 	private execCommand(cmd: string, args: string[], exeFile: string, symbols: Symbol[]) {
-		switch (cmd.toUpperCase()) {
-			case "CS":
-				let data = this.CS(Number(args[1]), Number(args[2]), Number(args[3]), Number(args[4]), Number(args[5]), args[6], args[7]);
-				this.writeInFile(args[0], data, exeFile, symbols);
-				break;
-			default:
-				break;
+		if (cmd.toUpperCase() === "CS") {
+			let data = this.CS(Number(args[1]), Number(args[2]), Number(args[3]), Number(args[4]), Number(args[5]), args[6], args[7]);
+			this.writeInFile(args[0], data, exeFile, symbols);
 		}
 	}
 

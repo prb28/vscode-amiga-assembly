@@ -103,7 +103,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 const selections = editor.selections;
                 for (const selection of selections) {
                     if (!selection.isEmpty) {
-                        for (var i = selection.start.line; i <= selection.end.line; i++) {
+                        for (let i = selection.start.line; i <= selection.end.line; i++) {
                             const line = document.lineAt(i);
                             let asmLine = new ASMLine(line.text, line);
                             // get the registers

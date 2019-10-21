@@ -496,7 +496,7 @@ export class ASMDocument {
             localRange = new Range(new Position(0, 0), new Position(document.lineCount - 1, 0));
         }
         // Parse all the lines
-        for (var i = localRange.start.line; i <= localRange.end.line; i++) {
+        for (let i = localRange.start.line; i <= localRange.end.line; i++) {
             let isOversized = false;
             if (token && token.isCancellationRequested) {
                 return;
