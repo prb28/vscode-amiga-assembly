@@ -12,10 +12,10 @@ export class DocumentFormatterConfiguration {
     variableToOperatorDistance: number;
     /** Distance between the operator and the value */
     operatorToValueDistance: number;
-    /** Prefered position to the instructions (if the label is not too big) */
-    preferedInstructionPosition: number;
-    /** Prefered position to the comments after an instruction */
-    preferedCommentPosition: number;
+    /** Preferred position to the instructions (if the label is not too big) */
+    preferredInstructionPosition: number;
+    /** Preferred position to the comments after an instruction */
+    preferredCommentPosition: number;
     /** Use tabs */
     useTabs: boolean;
     /** Tab size */
@@ -25,16 +25,16 @@ export class DocumentFormatterConfiguration {
      * Constructor
      */
     public constructor(labelToInstructionDistance: number, instructionToDataDistance: number, dataToCommentsDistance: number,
-        variableToOperatorDistance: number, operatorToValueDistance: number, preferedIntructionPosition: number,
-        preferedCommentPosition: number, useTabs: boolean, tabSize: number) {
+        variableToOperatorDistance: number, operatorToValueDistance: number, preferredInstructionPosition: number,
+        preferredCommentPosition: number, useTabs: boolean, tabSize: number) {
         this.labelToInstructionDistance = labelToInstructionDistance;
         this.instructionToDataDistance = instructionToDataDistance;
         this.dataToCommentsDistance = dataToCommentsDistance;
         this.variableToOperatorDistance = variableToOperatorDistance;
         this.operatorToValueDistance = operatorToValueDistance;
         this.dataToCommentsDistance = dataToCommentsDistance;
-        this.preferedInstructionPosition = preferedIntructionPosition;
-        this.preferedCommentPosition = preferedCommentPosition;
+        this.preferredInstructionPosition = preferredInstructionPosition;
+        this.preferredCommentPosition = preferredCommentPosition;
         this.useTabs = useTabs;
         this.tabSize = tabSize;
     }
@@ -51,9 +51,9 @@ export class DocumentFormatterConfiguration {
         let dataToCommentsDistance = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.dataToCommentsDistance', 4);
         let variableToOperatorDistance = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.variableToOperatorDistance', 1);
         let operatorToValueDistance = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.operatorToValueDistance', 1);
-        let preferedIntructionPosition = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.preferedIntructionPosition', 0);
-        let preferedCommentPosition = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.preferedCommentPosition', 0);
+        let preferredInstructionPosition = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.preferredInstructionPosition', 0);
+        let preferredCommentPosition = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.preferredCommentPosition', 0);
         let useTabs = ConfigurationHelper.retrieveBooleanProperty(configuration, 'format.useTabs', false);
-        return new DocumentFormatterConfiguration(labelToInstructionDistance, instructionToDataDistance, dataToCommentsDistance, variableToOperatorDistance, operatorToValueDistance, preferedIntructionPosition, preferedCommentPosition, useTabs, tabSize);
+        return new DocumentFormatterConfiguration(labelToInstructionDistance, instructionToDataDistance, dataToCommentsDistance, variableToOperatorDistance, operatorToValueDistance, preferredInstructionPosition, preferredCommentPosition, useTabs, tabSize);
     }
 }

@@ -4,10 +4,10 @@ import { DocumentFormatterConfiguration } from './formatterConfiguration';
 import { StringUtils } from './stringUtils';
 
 export enum ASMLineType {
-    ASIGNMENT, // Line containing an asignment with or without comment
-    INSTRUCTION, // Line containg with or without comment and data
+    ASSIGNMENT, // Line containing an assignment with or without comment
+    INSTRUCTION, // Line containing with or without comment and data
     COMMENT, // Line containing only a comment
-    LABEL, // Line containg a label with or without comment
+    LABEL, // Line containing a label with or without comment
     OTHER
 }
 
@@ -104,7 +104,7 @@ export class ASMLine {
             this.lineType = ASMLineType.COMMENT;
         } else {
             // Extract comments
-            let searchAsignmentString = line;
+            let searchAssignmentString = line;
             let inQuotes = false;
             let commentPosInInputLine = -1;
             for (let i = 0; i < line.length; i++) {
@@ -118,13 +118,13 @@ export class ASMLine {
             }
             if (commentPosInInputLine >= 0) {
                 this.comment = line.substring(commentPosInInputLine).trim();
-                searchAsignmentString = line.substring(0, commentPosInInputLine);
-                l = searchAsignmentString.trim();
+                searchAssignmentString = line.substring(0, commentPosInInputLine);
+                l = searchAssignmentString.trim();
                 this.commentRange = new Range(new Position(lineNumber, commentPosInInputLine), new Position(lineNumber, commentPosInInputLine + this.comment.length));
             }
-            // Find if it is an asignment
-            if (this.parseAsignment(searchAsignmentString, lineNumber)) {
-                this.lineType = ASMLineType.ASIGNMENT;
+            // Find if it is an assignment
+            if (this.parseAssignment(searchAssignmentString, lineNumber)) {
+                this.lineType = ASMLineType.ASSIGNMENT;
                 return;
             }
             // find a keywork
@@ -239,10 +239,10 @@ export class ASMLine {
     }
 
     /**
-     * Check if it is an asignment and parses it
-     * @return true if it is an asignment
+     * Check if it is an assignment and parses it
+     * @return true if it is an assignment
      */
-    public parseAsignment(line: string, lineNumber: number): boolean {
+    public parseAssignment(line: string, lineNumber: number): boolean {
         let regexp = /^([a-z0-9\-_]*)[\s]*(\=|[\s][a-z]?equ(\.[a-z])?[\s])[\s]*(.*)/gi;
         let match = regexp.exec(line);
         if (match !== null) {
@@ -476,7 +476,7 @@ export class ASMDocument {
     public variableColumn = 0;
     public operatorColumn = 0;
     public valueColumn = 0;
-    public asignmentCommentColumn = 0;
+    public assignmentCommentColumn = 0;
 
     /**
      * Main range parse function
@@ -508,12 +508,12 @@ export class ASMDocument {
             } else {
                 this.asmLinesArray.push(asmLine);
             }
-            if ((formatterConfiguration.preferedCommentPosition > 0) || (formatterConfiguration.preferedInstructionPosition > 0)) {
+            if ((formatterConfiguration.preferredCommentPosition > 0) || (formatterConfiguration.preferredInstructionPosition > 0)) {
                 // Check if it is a ovesized line
                 let endOfLineCommentPositionInst = asmLine.label.length + asmLine.instruction.length + asmLine.data.length +
                     formatterConfiguration.labelToInstructionDistance + formatterConfiguration.instructionToDataDistance + formatterConfiguration.dataToCommentsDistance;
-                if (((formatterConfiguration.preferedCommentPosition > 0) && (endOfLineCommentPositionInst > formatterConfiguration.preferedCommentPosition)) ||
-                    ((formatterConfiguration.preferedInstructionPosition > 0) && (asmLine.label.length + formatterConfiguration.labelToInstructionDistance >= formatterConfiguration.preferedInstructionPosition))) {
+                if (((formatterConfiguration.preferredCommentPosition > 0) && (endOfLineCommentPositionInst > formatterConfiguration.preferredCommentPosition)) ||
+                    ((formatterConfiguration.preferredInstructionPosition > 0) && (asmLine.label.length + formatterConfiguration.labelToInstructionDistance >= formatterConfiguration.preferredInstructionPosition))) {
                     this.ovesizedCommentLine.push(asmLine);
                     isOversized = true;
                 }
@@ -543,16 +543,16 @@ export class ASMDocument {
             }
         }
         this.tabSize = formatterConfiguration.tabSize;
-        if (formatterConfiguration.preferedInstructionPosition > 0) {
-            this.instructionColumn = formatterConfiguration.preferedInstructionPosition;
+        if (formatterConfiguration.preferredInstructionPosition > 0) {
+            this.instructionColumn = formatterConfiguration.preferredInstructionPosition;
         } else {
             this.instructionColumn = this.maxLabelSize + formatterConfiguration.labelToInstructionDistance;
         }
         this.instructionColumn = this.fitToTabColumn(this.instructionColumn);
         this.dataColumn = this.instructionColumn + this.maxInstructionSize + formatterConfiguration.instructionToDataDistance;
         this.dataColumn = this.fitToTabColumn(this.dataColumn);
-        if (formatterConfiguration.preferedCommentPosition > 0) {
-            this.commentColumn = formatterConfiguration.preferedCommentPosition;
+        if (formatterConfiguration.preferredCommentPosition > 0) {
+            this.commentColumn = formatterConfiguration.preferredCommentPosition;
         } else {
             this.commentColumn = this.dataColumn + this.maxDataSize + formatterConfiguration.dataToCommentsDistance;
         }
@@ -561,12 +561,12 @@ export class ASMDocument {
         this.operatorColumn = this.fitToTabColumn(this.operatorColumn);
         this.valueColumn = this.operatorColumn + this.maxOperatorSize + formatterConfiguration.operatorToValueDistance;
         this.valueColumn = this.fitToTabColumn(this.valueColumn);
-        if (formatterConfiguration.preferedCommentPosition > 0) {
-            this.asignmentCommentColumn = formatterConfiguration.preferedCommentPosition;
+        if (formatterConfiguration.preferredCommentPosition > 0) {
+            this.assignmentCommentColumn = formatterConfiguration.preferredCommentPosition;
         } else {
-            this.asignmentCommentColumn = this.valueColumn + this.maxValueSize + formatterConfiguration.dataToCommentsDistance;
+            this.assignmentCommentColumn = this.valueColumn + this.maxValueSize + formatterConfiguration.dataToCommentsDistance;
         }
-        this.asignmentCommentColumn = this.fitToTabColumn(this.asignmentCommentColumn);
+        this.assignmentCommentColumn = this.fitToTabColumn(this.assignmentCommentColumn);
     }
     fitToTabColumn(column: number): number {
         if (this.useTabs) {

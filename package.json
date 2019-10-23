@@ -5,8 +5,7 @@
     "license": "SEE LICENSE IN FILE LICENSE",
     "homepage": "https://github.com/prb28/vscode-amiga-assembly",
     "bugs": {
-        "url": "https://github.com/prb28/vscode-amiga-assembly/issues",
-        "email": "smcbreen@microsoft.com"
+        "url": "https://github.com/prb28/vscode-amiga-assembly/issues"
     },
     "repository": {
         "type": "git",
@@ -117,25 +116,25 @@
                     "type": "integer",
                     "scope": "resource",
                     "default": 1,
-                    "description": "Specifies the distance between the variable and the asignment operator."
+                    "description": "Specifies the distance between the variable and the assignment operator."
                 },
                 "amiga-assembly.format.operatorToValueDistance": {
                     "type": "integer",
                     "scope": "resource",
                     "default": 1,
-                    "description": "Specifies the distance between the asignment operator and the value."
+                    "description": "Specifies the distance between the assignment operator and the value."
                 },
-                "amiga-assembly.format.preferedIntructionPosition": {
+                "amiga-assembly.format.preferredInstructionPosition": {
                     "type": "integer",
                     "scope": "resource",
                     "default": 0,
-                    "description": "Specifies the prefered instruction position (if the label size is small enough)"
+                    "description": "Specifies the preferred instruction position (if the label size is small enough)"
                 },
-                "amiga-assembly.format.preferedCommentPosition": {
+                "amiga-assembly.format.preferredCommentPosition": {
                     "type": "integer",
                     "scope": "resource",
                     "default": 0,
-                    "description": "Specifies the prefered comment position for a line with instruction (if the size is small enough)"
+                    "description": "Specifies the preferred comment position for a line with instruction (if the size is small enough)"
                 },
                 "amiga-assembly.format.useTabs": {
                     "type": "boolean",
@@ -205,7 +204,7 @@
                     "type": "boolean",
                     "scope": "window",
                     "default": false,
-                    "description": "Enables the ASMOne source compatiblity commands."
+                    "description": "Enables the ASMOne source compatibility commands."
                 },
                 "amiga-assembly.vasm": {
                     "type": "object",
@@ -217,7 +216,7 @@
                         },
                         "file": {
                             "type": "string",
-                            "description": "File with absolute path to the VASM copiler"
+                            "description": "File with absolute path to the VASM compiler"
                         },
                         "options": {
                             "type": "array",
@@ -238,7 +237,7 @@
                             "-linedebug"
                         ]
                     },
-                    "description": "VASM copiler configuration"
+                    "description": "VASM compiler configuration"
                 },
                 "amiga-assembly.vlink": {
                     "type": "object",

@@ -181,7 +181,7 @@ describe("Formatter Tests", function () {
             }
         });
     });
-    it("Should format an asignment", function () {
+    it("Should format an assignment", function () {
         let f = new M68kFormatter();
         let document = new DummyTextDocument();
         document.addLine("myvar2  equ 28  ;comment");
@@ -234,11 +234,11 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(2, 13), new Position(2, 14)), "\t"));
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(2, 6), new Position(2, 12)), "\t"));
     });
-    it("Should format with prefered sizes", function () {
+    it("Should format with preferred sizes", function () {
         let f = new M68kFormatter();
         let document = new DummyTextDocument();
         document.addLine("label: move #1,a0 ;comment");
-        document.addLine("labelbiggerthanprefered dc.b #2,#3,#4,#5,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6 ;comment too far");
+        document.addLine("labelbiggerthanpreferred dc.b #2,#3,#4,#5,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6 ;comment too far");
         document.addLine(" rts ; my comment");
         document.addLine("labelbiggert: dc.b #2 ; my comment");
         document.addLine("labelxxxxx: move #1,a0 ;comment");
@@ -246,7 +246,7 @@ describe("Formatter Tests", function () {
         document.addLine("V = 3 ;comment");
         // expected
         //label:     move    #1,a0     ;comment
-        //labelbiggerthanprefered dc.b #2,#3,#4,#5,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6 ;comment too far
+        //labelbiggerthanpreferred dc.b #2,#3,#4,#5,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6 ;comment too far
         //           rts               ; my comment
         //labelbiggert: dc.b #2 ; my comment
         //labelxxxxx: move #1,a0 ;comment
@@ -310,5 +310,30 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(6, 3), new Position(6, 4)), "\t"));
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(6, 1), new Position(6, 2)), "\t"));
     });
+    // it.only("Should format a macro", function () {
+    //     let f = new M68kFormatter();
+    //     let document = new DummyTextDocument();
+    //     document.addLine("        macro         some_macro");
+    //     document.addLine("        \\1.b          \\2,d0");
+    //     document.addLine("        endm");
+    //     document.addLine("some_label:");
+    //     document.addLine("        some_macro    or,d1");
+    //     // expected
+    //     //        macro         some_macro
+    //     //        \1.b          \2,d0
+    //     //        endm
+    //     //some_label:
+    //     //        some_macro    or,d1
+    //     let asmDocument = new ASMDocument();
+    //     let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 12, 30, false, 4);
+    //     asmDocument.parse(document, conf);
+    //     let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[4], conf);
+    //     let i = 0;
+    //     expect(edits.length).to.be.equal(2);
+    //     expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 17), new Position(0, 18)), " ".repeat(5)));
+    //     expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 11), new Position(0, 12)), " ".repeat(4)));
+    //     expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 6), new Position(0, 7)), " ".repeat(6)));
+    // });
+
 });
 
