@@ -164,7 +164,7 @@ describe("Parser Tests", function () {
             expect(asmLine.lineType).to.be.equal(ASMLineType.INSTRUCTION);
         });
         it("Should parse an entire line", function () {
-            let asmLine = new ASMLine("\t.mylabel\t\tmove.l #mempos,d1     ; mycomment");
+            let asmLine = new ASMLine(".mylabel\t\tmove.l #mempos,d1     ; mycomment");
             expect(asmLine.label).to.be.equal(".mylabel");
             expect(asmLine.instruction).to.be.equal("move.l");
             expect(asmLine.data).to.be.equal("#mempos,d1");
@@ -191,15 +191,14 @@ describe("Parser Tests", function () {
             expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 12), new Position(0, 26)));
             expect(asmLine.spacesDataToCommentRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 0)));
             expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 0)));
-            asmLine = new ASMLine("\t.mylabel\t   move.l #mempos,d1     ; mycomment   ");
-            expect(asmLine.spacesBeforeLabelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 1)));
-            expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 1), new Position(0, 9)));
-            expect(asmLine.spacesLabelToInstructionRange).to.be.eql(new Range(new Position(0, 9), new Position(0, 13)));
-            expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 13), new Position(0, 19)));
-            expect(asmLine.spacesInstructionToDataRange).to.be.eql(new Range(new Position(0, 19), new Position(0, 20)));
-            expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 20), new Position(0, 30)));
-            expect(asmLine.spacesDataToCommentRange).to.be.eql(new Range(new Position(0, 30), new Position(0, 35)));
-            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 35), new Position(0, 46)));
+            asmLine = new ASMLine(".mylabel\t   move.l #mempos,d1     ; mycomment   ");
+            expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 8)));
+            expect(asmLine.spacesLabelToInstructionRange).to.be.eql(new Range(new Position(0, 8), new Position(0, 12)));
+            expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 12), new Position(0, 18)));
+            expect(asmLine.spacesInstructionToDataRange).to.be.eql(new Range(new Position(0, 18), new Position(0, 19)));
+            expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 19), new Position(0, 29)));
+            expect(asmLine.spacesDataToCommentRange).to.be.eql(new Range(new Position(0, 29), new Position(0, 34)));
+            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 34), new Position(0, 45)));
             asmLine = new ASMLine("mylabel");
             expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 7)));
             asmLine = new ASMLine("Pdl0Wait	dc.l\t0	\t;# of cycles until paddle timer is done");
@@ -283,6 +282,10 @@ describe("Parser Tests", function () {
             expect(asmLine.label).to.be.empty;
             expect(asmLine.instruction).to.be.equal("WAIT_BLITTER2");
             expect(asmLine.data).to.be.equal("$FFF");
+            asmLine = new ASMLine("       some_macro    or,d1");
+            expect(asmLine.label).to.be.empty;
+            expect(asmLine.instruction).to.be.equal("some_macro");
+            expect(asmLine.data).to.be.equal("or,d1");
         });
         it("Should parse compiler option as instruction", function () {
             let asmLine = new ASMLine("\t\tOPT O+,OW-,OW1+,OW6+,P=68000    ; mycomment");
@@ -367,7 +370,7 @@ describe("Parser Tests", function () {
         });
         context("Insctructions document with all elements", function () {
             before(() => {
-                document.addLine(`\t${label}\t   ${instruction} ${data}        ${comment}`);
+                document.addLine(`${label}\t   ${instruction} ${data}        ${comment}`);
                 document.addLine(`.lab jmp fff ;C`);
             });
             it("Should fit to tab columns", async () => {

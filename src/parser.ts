@@ -127,7 +127,7 @@ export class ASMLine {
                 this.lineType = ASMLineType.ASSIGNMENT;
                 return;
             }
-            // find a keywork
+            // find a keyword
             // remove quotes
             let searchInstructionString = l;
             let keywordIndex = 0;
@@ -151,7 +151,7 @@ export class ASMLine {
             if (ASMLine.keywordsRegExps) {
                 keyword = this.search(ASMLine.keywordsRegExps, searchInstructionString);
             }
-            if (!keyword && leadingSpacesCount !== 0 && ASMLine.macrosRegExps) {
+            if ((!keyword || !searchInstructionString.startsWith(keyword[0])) && leadingSpacesCount !== 0 && ASMLine.macrosRegExps) {
                 // it's not a keyword - this could be a macro if there are leading spaces
                 // Consider it is a label if there are no leading spaces
                 keyword = this.search(ASMLine.macrosRegExps, searchInstructionString);

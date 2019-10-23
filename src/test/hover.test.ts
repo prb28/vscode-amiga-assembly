@@ -47,7 +47,7 @@ describe("Hover Tests", function () {
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 15);
             let tockenEmitter = new CancellationTokenSource();
-            document.addLine("\t.mylabel\t   move.l #mempos,d1        ; mycomment   ");
+            document.addLine(".mylabel\t   move.l #mempos,d1        ; mycomment   ");
             let result = await hp.provideHover(document, position, tockenEmitter.token);
             expect(result).to.not.be.undefined;
             expect(result instanceof Hover).to.be.true;
@@ -64,7 +64,7 @@ describe("Hover Tests", function () {
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 23);
             let tockenEmitter = new CancellationTokenSource();
-            document.addLine("\t.mylabel\t   move.l #$20,d1        ; mycomment   ");
+            document.addLine(".mylabel\t   move.l #$20,d1        ; mycomment   ");
             let result = await hp.provideHover(document, position, tockenEmitter.token);
             expect(result).to.not.be.undefined;
             expect(result instanceof Hover).to.be.true;
@@ -82,7 +82,7 @@ describe("Hover Tests", function () {
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 30);
         let tockenEmitter = new CancellationTokenSource();
-        document.addLine("\t.mylabel\t   move.l #$ff5,$dff180        ; mycomment   ");
+        document.addLine(".mylabel\t   move.l #$ff5,$dff180        ; mycomment   ");
         let result = await hp.provideHover(document, position, tockenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
@@ -99,7 +99,7 @@ describe("Hover Tests", function () {
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 25);
         let tockenEmitter = new CancellationTokenSource();
-        document.addLine("\t.mylabel\t   jsr AllocMem(a6)        ; mycomment   ");
+        document.addLine(".mylabel\t   jsr AllocMem(a6)        ; mycomment   ");
         let result = await hp.provideHover(document, position, tockenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
@@ -111,7 +111,7 @@ describe("Hover Tests", function () {
             }
         }
         // LVOprefix is accepted
-        document.addLine("\t.mylabel\t   jsr _LVOAllocMem(a6)        ; mycomment   ");
+        document.addLine(".mylabel\t   jsr _LVOAllocMem(a6)        ; mycomment   ");
         result = await hp.provideHover(document, position, tockenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
@@ -128,7 +128,7 @@ describe("Hover Tests", function () {
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 51);
         let tockenEmitter = new CancellationTokenSource();
-        document.addLine("\t.mylabel\t   move.l #(BPLSIZE+COPPER_WAIT)/2,$dff180        ; mycomment   ");
+        document.addLine(".mylabel\t   move.l #(BPLSIZE+COPPER_WAIT)/2,$dff180        ; mycomment   ");
         let result = await hp.provideHover(document, position, tockenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;

@@ -52,27 +52,25 @@ describe("Formatter Tests", function () {
         }
     });
     it("Should format a full line", function () {
-        let lineToFormat = "\t.mylabel\t   move.l #mempos,d1        ; mycomment   ";
+        let lineToFormat = ".mylabel\t   move.l #mempos,d1        ; mycomment   ";
         let edits = getEditsForLine(lineToFormat);
         let i = 0;
         // Expected : ".mylabel  move.l    #mempos,d1    ; mycomment"
         // Expected : "0         10        20            34"
-        expect(edits.length).to.be.equal(4);
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 30), new Position(0, 38)), " ".repeat(4)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 19), new Position(0, 20)), " ".repeat(4)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 9), new Position(0, 13)), " ".repeat(2)));
-        expect(edits[i++]).to.be.eql(TextEdit.delete(new Range(new Position(0, 0), new Position(0, 1))));
+        expect(edits.length).to.be.equal(3);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 29), new Position(0, 37)), " ".repeat(4)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 18), new Position(0, 19)), " ".repeat(4)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 8), new Position(0, 12)), " ".repeat(2)));
         // With tabs enabled
         edits = getEditsForLine(lineToFormat, true);
         i = 0;
         // Expected : ".mylabel\tmove.l\t#mempos,d1\t\t; mycomment"
         // Expected : ".mylabel    move.l      #mempos,d1      ; mycomment"
         //            "0   1   2   3   4   5   6   7   8   9   0   1   |   |   "
-        expect(edits.length).to.be.equal(4);
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 30), new Position(0, 38)), "\t\t"));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 19), new Position(0, 20)), "\t\t"));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 9), new Position(0, 13)), "\t"));
-        expect(edits[i++]).to.be.eql(TextEdit.delete(new Range(new Position(0, 0), new Position(0, 1))));
+        expect(edits.length).to.be.equal(3);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 29), new Position(0, 37)), "\t\t"));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 18), new Position(0, 19)), "\t\t"));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 8), new Position(0, 12)), "\t"));
     });
     it("Should format a full line without comment", function () {
         let lineToFormat = "\t   move.l #mempos,d1        ; mycomment   ";
@@ -107,12 +105,11 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 4)), " ".repeat(2)));
     });
     it("Should format a line without data", function () {
-        let edits = getEditsForLine("\t.mylabel\t   rts        ; my comment");
+        let edits = getEditsForLine(".mylabel\t   rts        ; my comment");
         let i = 0;
-        expect(edits.length).to.be.equal(3);
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 16), new Position(0, 24)), " ".repeat(8)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 9), new Position(0, 13)), " ".repeat(2)));
-        expect(edits[i++]).to.be.eql(TextEdit.delete(new Range(new Position(0, 0), new Position(0, 1))));
+        expect(edits.length).to.be.equal(2);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 15), new Position(0, 23)), " ".repeat(8)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 8), new Position(0, 12)), " ".repeat(2)));
     });
     it("Should format a line on typing with a label", function () {
         let edits = getEditsForLineOnType(".mylabel ");
@@ -124,14 +121,12 @@ describe("Formatter Tests", function () {
 
     });
     it("Should format a line on typing with a full", function () {
-        let edits = getEditsForLineOnType("\t.mylabel\t   move.l #mempos,d1        ; my comment");
+        let edits = getEditsForLineOnType(".mylabel\t   move.l #mempos,d1        ; my comment");
         let i = 0;
-        expect(edits.length).to.be.equal(4);
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 30), new Position(0, 38)), " ".repeat(4)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 19), new Position(0, 20)), " ".repeat(4)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 9), new Position(0, 13)), " ".repeat(2)));
-        expect(edits[i++]).to.be.eql(TextEdit.delete(new Range(new Position(0, 0), new Position(0, 1))));
-
+        expect(edits.length).to.be.equal(3);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 29), new Position(0, 37)), " ".repeat(4)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 18), new Position(0, 19)), " ".repeat(4)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 8), new Position(0, 12)), " ".repeat(2)));
     });
     it("Should add pad to the end of a string", function () {
         let f = new M68kFormatter();
@@ -310,30 +305,37 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(6, 3), new Position(6, 4)), "\t"));
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(6, 1), new Position(6, 2)), "\t"));
     });
-    // it.only("Should format a macro", function () {
-    //     let f = new M68kFormatter();
-    //     let document = new DummyTextDocument();
-    //     document.addLine("        macro         some_macro");
-    //     document.addLine("        \\1.b          \\2,d0");
-    //     document.addLine("        endm");
-    //     document.addLine("some_label:");
-    //     document.addLine("        some_macro    or,d1");
-    //     // expected
-    //     //        macro         some_macro
-    //     //        \1.b          \2,d0
-    //     //        endm
-    //     //some_label:
-    //     //        some_macro    or,d1
-    //     let asmDocument = new ASMDocument();
-    //     let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 12, 30, false, 4);
-    //     asmDocument.parse(document, conf);
-    //     let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[4], conf);
-    //     let i = 0;
-    //     expect(edits.length).to.be.equal(2);
-    //     expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 17), new Position(0, 18)), " ".repeat(5)));
-    //     expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 11), new Position(0, 12)), " ".repeat(4)));
-    //     expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 6), new Position(0, 7)), " ".repeat(6)));
-    // });
+    it("Should format a macro", function () {
+        let f = new M68kFormatter();
+        let document = new DummyTextDocument();
+        document.addLine("        macro         some_macro");
+        document.addLine("        \\1.b          \\2,d0");
+        document.addLine("        endm");
+        document.addLine("some_label:");
+        document.addLine("        some_macro    or,d1");
+        // expected
+        //        macro         some_macro
+        //        \1.b          \2,d0
+        //        endm
+        //some_label:
+        //        some_macro    or,d1
+        let asmDocument = new ASMDocument();
+        let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 0, 0, false, 4);
+        asmDocument.parse(document, conf);
+        let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
+        let i = 0;
+        expect(edits.length).to.be.equal(2);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 13), new Position(0, 22)), " ".repeat(9)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 8)), " ".repeat(2)));
+        edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[1], conf);
+        i = 0;
+        expect(edits.length).to.be.equal(0);
+        edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[4], conf);
+        i = 0;
+        expect(edits.length).to.be.equal(2);
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(4, 18), new Position(4, 22)), " ".repeat(4)));
+        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(4, 0), new Position(4, 8)), " ".repeat(2)));
+    });
 
 });
 
