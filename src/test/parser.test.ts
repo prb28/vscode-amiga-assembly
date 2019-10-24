@@ -141,8 +141,7 @@ describe("Parser Tests", function () {
             asmLine = new ASMLine("   move.l D1,A0   ; d0 not selected");
             results = asmLine.getRegistersFromData();
             expect(results.length).to.be.equal(2);
-            expect(results[0]).to.be.equal("d1");
-            expect(results[1]).to.be.equal("a0");
+            expect(results).to.be.eql(["a0", "d1"]);
             asmLine = new ASMLine("   move.l d8,a8 ");
             results = asmLine.getRegistersFromData();
             expect(results.length).to.be.equal(0);
@@ -154,6 +153,29 @@ describe("Parser Tests", function () {
             results = asmLine.getRegistersFromData();
             expect(results.length).to.be.equal(1);
             expect(results[0]).to.be.equal("d7");
+        });
+        it("Should retrieve the registers from a data line with ranges", function () {
+            // Complex results
+            let asmLine = new ASMLine("   move.l (a0)+,d1-d7/a2");
+            let results = asmLine.getRegistersFromData();
+            expect(results).to.be.eql(["a0", "a2", "d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
+            asmLine = new ASMLine("   move.l (a0)+,d1-7/a2/a4");
+            results = asmLine.getRegistersFromData();
+            expect(results).to.be.eql(["a0", "a2", "a4", "d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
+            asmLine = new ASMLine("   movem.l	d1-7/a2,(a1)");
+            results = asmLine.getRegistersFromData();
+            expect(results).to.be.eql(["a1", "a2", "d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
+        });
+        it("Should retrieve the registers from a registers range", function () {
+            let asmLine = new ASMLine("");
+            let results = asmLine.getRegistersFromRegistersRange("d1-d7");
+            expect(results.sort()).to.be.eql(["d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
+            results = asmLine.getRegistersFromRegistersRange("d1-7");
+            expect(results.sort()).to.be.eql(["d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
+            results = asmLine.getRegistersFromRegistersRange("a0-2");
+            expect(results.sort()).to.be.eql(["a0", "a1", "a2"]);
+            results = asmLine.getRegistersFromRegistersRange("d0-a6");
+            expect(results.sort()).to.be.eql(["a0", "a1", "a2", "a3", "a4", "a5", "a6", "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
         });
         it("Should parse a single line instruction", function () {
             let asmLine = new ASMLine(" rts");

@@ -77,17 +77,20 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
-## New in 0.18.1
+## 0.18.2
 - Bug fixes
 
-## New in 0.18.0
+## 0.18.1
+- Bug fixes
+
+## 0.18.0
 - Numerical popups with parametrized format and ASCII representation
 - Format a document with TABs
 - Enhanced formatting for generated data: dc.w $0 -> dc.w $0000
 - Gdb protocol review (new fs-uae binaries)
 - Bug fixes
 
-## New in 0.17.0
+## 0.17.0
 - Stack frame indicating C source files (basic implementation)
 - Documentation for core amiga libraries (diskfont, dos, exec, graphics, intuition)
 - Registers documentation enhanced

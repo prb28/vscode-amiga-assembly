@@ -304,18 +304,70 @@ export class ASMLine {
     /**
      * Returns the registers retrieved from a data.
      * 
+     * @param registersRange range of registers: format d1-d7
+     * @return a list of registers found
+     */
+    public getRegistersFromRegistersRange(registersRange: string): Array<string> {
+        let registers = new Array<string>();
+        let reg = /^([ad][0-7])\-([ad]?[0-7])$/gi;
+        let match = reg.exec(registersRange);
+        if (match) {
+            let start = match[1];
+            let end = match[2];
+            let startKey = start.charAt(0);
+            let startIndex = parseInt(start.charAt(1));
+            let endIndex = 0;
+            let endKey;
+            if (end.length > 1) {
+                endKey = end.charAt(0);
+                endIndex = parseInt(end.charAt(1));
+            } else {
+                endIndex = parseInt(end.charAt(0));
+            }
+            if (endKey && endKey !== startKey) {
+                for (let i = startIndex; i < 8; i++) {
+                    registers.push(`${startKey}${i}`);
+                }
+                for (let i = 0; i <= endIndex; i++) {
+                    registers.push(`${endKey}${i}`);
+                }
+            } else {
+                for (let i = startIndex; i <= endIndex; i++) {
+                    registers.push(`${startKey}${i}`);
+                }
+            }
+        }
+        return registers;
+    }
+
+    /**
+     * Returns the registers retrieved from a data.
+     * 
      * @return a list of registers found
      */
     public getRegistersFromData(): Array<string> {
         let registers = new Array<string>();
         if (this.data.length > 0) {
-            let reg = /(^|[\(,\s])([ad][0-7])/gi;
+            let reg = /(^|[\(,\s\/])([ad][0-7](\-[ad]?[0-7])?)/gi;
             let match;
             while (match = reg.exec(this.data)) {
-                registers.push(match[2].toLowerCase());
+                let value = match[2].toLowerCase();
+                let regRegistersRange = /^[ad][0-7]\-[ad]?[0-7]$/gi;
+                if (value.match(regRegistersRange)) {
+                    let lRegisters = this.getRegistersFromRegistersRange(value);
+                    for (let r of lRegisters) {
+                        if (registers.indexOf(r) < 0) {
+                            registers.push(r);
+                        }
+                    }
+                } else {
+                    if (registers.indexOf(value) < 0) {
+                        registers.push(value);
+                    }
+                }
             }
         }
-        return registers;
+        return registers.sort();
     }
 }
 

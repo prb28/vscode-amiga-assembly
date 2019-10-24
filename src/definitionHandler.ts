@@ -91,6 +91,68 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         });
     }
 
+    public findUsedRegisters(document: TextDocument, selections: vscode.Selection[]): Array<string> {
+        let foundRegisters = Array<string>();
+        for (const selection of selections) {
+            if (!selection.isEmpty) {
+                let endLine = selection.end.line;
+                let text = document.getText(new Range(new Position(endLine, 0), selection.end)).trim();
+                if (text.length <= 0) {
+                    endLine--;
+                }
+                for (let i = selection.start.line; i <= endLine; i++) {
+                    const line = document.lineAt(i);
+                    let asmLine = new ASMLine(line.text, line);
+                    // get the registers
+                    let registers = asmLine.getRegistersFromData();
+                    for (let r of registers) {
+                        if (foundRegisters.indexOf(r) < 0) {
+                            foundRegisters.push(r);
+                        }
+                    }
+                }
+            }
+        }
+        foundRegisters.sort();
+        return foundRegisters;
+    }
+
+    public formatUsedRegistersResponse(registers: Array<string>): string {
+        let used = registers.filter((x, i, a) => !i || x !== a[i - 1]);
+        let aUsed = Array<number>();
+        let dUsed = Array<number>();
+        let aFree = Array<number>();
+        let dFree = Array<number>();
+        for (let i = 0; i < 8; i++) {
+            let ar = "a" + i;
+            let dr = "d" + i;
+            if (used.indexOf(ar) < 0) {
+                aFree.push(i);
+            } else {
+                aUsed.push(i);
+            }
+            if (used.indexOf(dr) < 0) {
+                dFree.push(i);
+            } else {
+                dUsed.push(i);
+            }
+        }
+        let result = "Registers ";
+        let u = this.printRegisters(aUsed, dUsed);
+        if (u.length > 0) {
+            result += "used: " + u;
+        } else {
+            result += "used: none";
+        }
+        let f = this.printRegisters(aFree, dFree);
+        if (f.length > 0) {
+            result += " - free: " + f;
+        } else {
+            result += " - free: none";
+        }
+        return result;
+    }
+
     public provideUsedRegistersSymbols(): Promise<string> {
         return new Promise(async (resolve, reject) => {
             // Get the current text editor
@@ -98,54 +160,8 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             if (editor === undefined) {
                 reject(new Error("Cannot access to editor"));
             } else {
-                let foundRegisters = Array<string>();
-                const document = editor.document;
-                const selections = editor.selections;
-                for (const selection of selections) {
-                    if (!selection.isEmpty) {
-                        for (let i = selection.start.line; i <= selection.end.line; i++) {
-                            const line = document.lineAt(i);
-                            let asmLine = new ASMLine(line.text, line);
-                            // get the registers
-                            let registers = asmLine.getRegistersFromData();
-                            foundRegisters = foundRegisters.concat(registers);
-                        }
-                    }
-                }
-                foundRegisters.sort();
-                let used = foundRegisters.filter((x, i, a) => !i || x !== a[i - 1]);
-                let aused = Array<number>();
-                let dused = Array<number>();
-                let afree = Array<number>();
-                let dfree = Array<number>();
-                for (let i = 0; i < 8; i++) {
-                    let ar = "a" + i;
-                    let dr = "d" + i;
-                    if (used.indexOf(ar) < 0) {
-                        afree.push(i);
-                    } else {
-                        aused.push(i);
-                    }
-                    if (used.indexOf(dr) < 0) {
-                        dfree.push(i);
-                    } else {
-                        dused.push(i);
-                    }
-                }
-                let result = "Registers ";
-                let u = this.printRegisters(aused, dused);
-                if (u.length > 0) {
-                    result += "used: " + u;
-                } else {
-                    result += "used: none";
-                }
-                let f = this.printRegisters(afree, dfree);
-                if (f.length > 0) {
-                    result += " - free: " + f;
-                } else {
-                    result += " - free: none";
-                }
-                resolve(result);
+                let foundRegisters = this.findUsedRegisters(editor.document, editor.selections);
+                resolve(this.formatUsedRegistersResponse(foundRegisters));
             }
         });
     }

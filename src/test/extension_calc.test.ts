@@ -23,7 +23,7 @@ describe("Global Extension Tests", function () {
                         await vscode.window.showTextDocument(document);
                         await vscode.commands.executeCommand("cursorMove", { to: 'right', by: 'character', value: 3, select: true });
                     } else {
-                        expect.fail("Edit not sucessful");
+                        expect.fail("Edit not successful");
                     }
                 });
             });
