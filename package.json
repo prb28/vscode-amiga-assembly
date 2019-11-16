@@ -655,7 +655,7 @@
         "@types/glob": "^7.1.1",
         "@types/mocha": "^5.2.7",
         "@types/node": "<11",
-        "@types/vscode": "^1.40.0",
+        "@types/vscode": "^1.39.0",
         "chai": "^4.2.0",
         "chai-as-promised": "^7.1.1",
         "coveralls": "^3.0.7",
@@ -671,7 +671,7 @@
         "tslint": "^5.20.1",
         "typescript": "^3.7.2",
         "vscode-test": "^1.2.3",
-        "vscode-debugadapter-testsupport": "^1.40.0"
+        "vscode-debugadapter-testsupport": "^1.39.0"
     },
     "dependencies": {
         "glob": "^7.1.6",
