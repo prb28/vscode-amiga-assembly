@@ -89,10 +89,9 @@ describe('Node Debug Adapter', () => {
 	});
 
 	afterEach(function () {
-		this.session.terminate();
+		reset(this.spiedSession);
 		reset(this.mockedExecutor);
 		reset(this.mockedGdbProxy);
-		reset(this.spiedSession);
 		return dc.stop();
 	});
 

@@ -718,6 +718,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     public terminate() {
+        this.gdbProxy.destroy();
         this.terminateEmulator();
     }
 
