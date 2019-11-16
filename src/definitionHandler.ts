@@ -1,4 +1,4 @@
-import { Definition, SymbolInformation, DocumentSymbolProvider, DefinitionProvider, TextDocument, Position, CancellationToken, Location, Uri, FileSystemWatcher, ReferenceProvider, ReferenceContext, ProviderResult, Range, window } from 'vscode';
+import { Definition, SymbolInformation, DocumentSymbolProvider, DefinitionProvider, TextDocument, Position, CancellationToken, Location, Uri, ReferenceProvider, ReferenceContext, ProviderResult, Range, window } from 'vscode';
 import * as vscode from 'vscode';
 import { SymbolFile, Symbol } from './symbols';
 import { Calc } from './calc';

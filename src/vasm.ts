@@ -77,7 +77,7 @@ export class VASMCompiler {
           if (errors) {
             resolve(errors);
           } else {
-            resolve([]);
+            resolve(new Array<ICheckResult>());
           }
         })
         .catch(err => {
@@ -100,7 +100,7 @@ export class VASMCompiler {
         if (match) {
           let regexp = new RegExp(
             '^[\\s]+include[\\s]+"' +
-              match[1].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"),
+            match[1].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"),
             "i"
           );
           for (let k = 0; k < document.lineCount; k += 1) {
@@ -344,7 +344,7 @@ export class VASMCompiler {
         } else if (!this.disabledInConf(conf)) {
           reject(VASMCompiler.CONFIGURE_VASM_ERROR);
         } else {
-          resolve();
+          resolve(new Array<ICheckResult>());
         }
       } else {
         reject(new Error("Root workspace path not found"));
