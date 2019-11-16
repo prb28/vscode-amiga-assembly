@@ -72,10 +72,10 @@ describe("Documentation Tests", function () {
     context("Hover register file parsing", function () {
         it("Should read the files correctly", function () {
             let manager = documentationManger.registersManager;
-            expect(manager.registersByName.size).to.be.equal(280);
-            expect(manager.registersByAddress.size).to.be.equal(266);
-            let registerByName = manager.registersByName.get("ADKCONR");
-            let registerByAddress = manager.registersByAddress.get("DFF010");
+            expect(manager.getRegistersByNameCount()).to.be.equal(280);
+            expect(manager.getRegistersByAddressCount()).to.be.equal(266);
+            let registerByName = manager.getRegistersByName("ADKCONR");
+            let registerByAddress = manager.getRegistersByAddress("DFF010");
             expect(registerByName).to.not.be.undefined;
             expect(registerByAddress).to.not.be.undefined;
             if (registerByName) {

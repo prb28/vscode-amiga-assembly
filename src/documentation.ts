@@ -88,8 +88,8 @@ export class DocumentationInstruction extends DocumentationElement {
  * Class to manage the registers
  */
 export class DocumentationRegistersManager {
-    registersByName = new Map<string, DocumentationRegister>();
-    registersByAddress = new Map<string, DocumentationRegister>();
+    private registersByName = new Map<string, DocumentationRegister>();
+    private registersByAddress = new Map<string, DocumentationRegister>();
     constructor(extensionPath: string) {
         // Read the registers file
         // Creating the relative path to find the test file
@@ -101,13 +101,84 @@ export class DocumentationRegistersManager {
                     let filePath = path.join(dirPath, filename);
                     let name = elms[1].toUpperCase();
                     let address = elms[0].toUpperCase();
-                    let description = this.modifyDescription(fs.readFileSync(filePath, 'utf8'), address);
-                    let hr = new DocumentationRegister(address, name, description);
+                    let hr = new DocumentationRegister(address, name, filePath);
                     this.registersByAddress.set(address, hr);
                     this.registersByName.set(name, hr);
                 }
             }
         });
+    }
+
+    /**
+     * Retrieves a register by it's address
+     * @param address Address of the register
+     */
+    public getRegistersByAddress(address: string): DocumentationRegister | undefined {
+        let register = this.registersByAddress.get(address);
+        if (register) {
+            register.loadDescription();
+        }
+        return register;
+    }
+
+    /**
+     * Retrieves a register by it's name
+     * @param name Name of the register
+     */
+    public getRegistersByName(name: string): DocumentationRegister | undefined {
+        let register = this.registersByName.get(name);
+        if (register) {
+            register.loadDescription();
+        }
+        return register;
+    }
+
+    /**
+     * Iterate on all entries by name.
+     */
+    public entriesByName(): IterableIterator<[string, DocumentationRegister]> {
+        return this.registersByName.entries();
+    }
+
+    public getRegistersByNameCount(): number {
+        return this.registersByName.size;
+    }
+    public getRegistersByAddressCount(): number {
+        return this.registersByAddress.size;
+    }
+}
+
+/**
+ * Class representing a register
+ */
+export class DocumentationRegister extends DocumentationElement {
+    filename: string;
+    loaded: boolean;
+    address: string;
+    /**
+     * Constructor
+     * @param address address of the register 
+     * @param name Name
+     * @param filename filename of the documentation
+     */
+    constructor(address: string, name: string, filename: string) {
+        super();
+        this.loaded = false;
+        this.address = address;
+        this.name = name;
+        this.filename = filename;
+        this.description = "";
+        this.type = DocumentationType.REGISTER;
+    }
+
+    /**
+     * Lazy loading for descriptions
+     */
+    public loadDescription() {
+        if (!this.loaded) {
+            this.description = this.modifyDescription(fs.readFileSync(this.filename, 'utf8'), this.address);
+            this.loaded = true;
+        }
     }
 
     /**
@@ -124,26 +195,6 @@ export class DocumentationRegistersManager {
         } else {
             return description
         }
-    }
-}
-
-/**
- * Class representing a register
- */
-export class DocumentationRegister extends DocumentationElement {
-    address: string;
-    /**
-     * Constructor
-     * @param address address of the register 
-     * @param name Name
-     * @param description description in markdown
-     */
-    constructor(address: string, name: string, description: string) {
-        super();
-        this.address = address;
-        this.name = name;
-        this.description = description;
-        this.type = DocumentationType.REGISTER;
     }
 }
 
@@ -236,7 +287,7 @@ export class DocumentationManager {
         for (const [key, value] of this.instructionsManager.instructions.entries()) {
             this.addRelevantKeywordElements(key, value[0]);
         }
-        for (const [key, value] of this.registersManager.registersByName.entries()) {
+        for (const [key, value] of this.registersManager.entriesByName()) {
             this.addRelevantKeywordElements(key, value);
         }
         for (const [key, value] of this.libraryManager.functionsByName.entries()) {
@@ -259,10 +310,10 @@ export class DocumentationManager {
         return this.instructionsManager.instructions.get(instruction.toUpperCase());
     }
     public getRegisterByAddress(address: string): DocumentationRegister | undefined {
-        return this.registersManager.registersByAddress.get(address);
+        return this.registersManager.getRegistersByAddress(address);
     }
     public getRegisterByName(name: string): DocumentationRegister | undefined {
-        return this.registersManager.registersByName.get(name);
+        return this.registersManager.getRegistersByName(name);
     }
     public getFunction(functionName: string): DocumentationLibraryFunction | undefined {
         return this.libraryManager.loadDescription(functionName);
