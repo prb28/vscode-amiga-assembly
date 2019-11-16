@@ -41,15 +41,28 @@ describe('Node Debug Adapter', () => {
 	let th = new GdbThread(0, GdbAmigaSysThreadId.CPU);
 	let thCop = new GdbThread(1, GdbAmigaSysThreadId.COP);
 
-	before(function () {
+	before(async function () {
 		if (testWithRealEmulator) {
 			defaultTimeout = 60000;
 		}
 		// Opening file to activate the extension
 		this.timeout(this.defaultTimeout);
 		const newFile = vscode.Uri.parse("untitled://./debug.s");
-		return vscode.window.showTextDocument(newFile);
+		await vscode.window.showTextDocument(newFile);
+		// start listening on a random port
+		this.server = Net.createServer(socket => {
+			this.session = new FsUAEDebugSession();
+			if (!testWithRealEmulator) {
+				this.session.setTestContext(this.gdbProxy, this.executor, this.capstone);
+			}
+			this.session.setRunAsServer(true);
+			this.session.start(<NodeJS.ReadableStream>socket, socket);
+			this.spiedSession = spy(this.session);
+			when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
+			when(this.spiedSession.updateDisassemblebView(anything(), anything())).thenReturn(Promise.resolve());
+		}).listen(0);
 	});
+
 
 	beforeEach(function () {
 		this.mockedExecutor = mock(ExecutorHelper);
@@ -65,18 +78,6 @@ describe('Node Debug Adapter', () => {
 		this.timeout(this.defaultTimeout);
 		// start port listener on launch of first debug this.session
 		if (!this.server) {
-			// start listening on a random port
-			this.server = Net.createServer(socket => {
-				this.session = new FsUAEDebugSession();
-				if (!testWithRealEmulator) {
-					this.session.setTestContext(this.gdbProxy, this.executor, this.capstone);
-				}
-				this.session.setRunAsServer(true);
-				this.session.start(<NodeJS.ReadableStream>socket, socket);
-				this.spiedSession = spy(this.session);
-				when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
-				when(this.spiedSession.updateDisassemblebView(anything(), anything())).thenReturn(Promise.resolve());
-			}).listen(0);
 		}
 		// make VS Code connect to debug server instead of launching debug adapter
 		dc = new DebugClient('node', DEBUG_ADAPTER, 'fs-uae');
@@ -96,7 +97,6 @@ describe('Node Debug Adapter', () => {
 	});
 
 	after(function () {
-		this.session.removeAllListeners();
 		this.session.shutdown();
 		this.server.close();
 	});
