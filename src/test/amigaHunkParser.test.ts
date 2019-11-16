@@ -43,7 +43,9 @@ describe("AmigaHunkFile", function () {
         expect(hunk.hunkType).to.be.equal(HunkType.Code);
         if (hunk.symbols) {
             expect(hunk.symbols.length).to.be.equal(13);
-            expect(hunk.symbols[0].name).to.be.equal("start");
+            // OSOff and start are at the same offset
+            let name = hunk.symbols[0].name;
+            expect((name === "start") || (name === "OSOff")).to.be.true;
             expect(hunk.symbols[0].offset).to.be.equal(0);
         } else {
             expect.fail("hunk has no symbol");
