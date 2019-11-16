@@ -49,6 +49,7 @@ export class ExtensionState {
     private dataGenerator: DataGeneratorCodeLensProvider | undefined;
     private documentationManager: DocumentationManager | undefined;
     private language: M68kLanguage | undefined;
+    private watcher: vscode.FileSystemWatcher | undefined;
 
     private extensionPath: string = path.join(__dirname, "..");
 
@@ -105,8 +106,18 @@ export class ExtensionState {
     public getDefinitionHandler(): M68kDefinitionHandler {
         if (this.definitionHandler === undefined) {
             this.definitionHandler = new M68kDefinitionHandler();
+            this.definitionHandler.scanWorkspace();
+            this.watcher = vscode.workspace.createFileSystemWatcher(
+                M68kDefinitionHandler.SOURCE_FILES_GLOB
+            );
+            this.watcher.onDidChange(this.scanFileWatcher);
         }
         return this.definitionHandler;
+    }
+    public scanFileWatcher(uri: vscode.Uri) {
+        if (this.definitionHandler) {
+            this.definitionHandler.scanFile(uri);
+        }
     }
     public getDataGenerator(): DataGeneratorCodeLensProvider {
         if (this.dataGenerator === undefined) {

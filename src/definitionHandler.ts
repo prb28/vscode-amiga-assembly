@@ -6,19 +6,12 @@ import { ASMLine } from './parser';
 
 export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvider, DocumentSymbolProvider {
     static readonly SOURCE_FILES_GLOB = "**/*.{asm,s,i,ASM,S,I}";
-    private watcher: FileSystemWatcher;
     private files = new Map<string, SymbolFile>();
     private definedSymbols = new Map<string, Symbol>();
-    private referedSymbols = new Map<string, Map<string, Array<Symbol>>>();
+    private referredSymbols = new Map<string, Map<string, Array<Symbol>>>();
     private variables = new Map<string, Symbol>();
     private labels = new Map<string, Symbol>();
     private sortedVariablesNames = new Array<string>();
-
-    constructor() {
-        this.watcher = vscode.workspace.createFileSystemWatcher(M68kDefinitionHandler.SOURCE_FILES_GLOB);
-        this.watcher.onDidChange(this.scanFile);
-        this.scanWorkspace();
-    }
 
     public provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<SymbolInformation[]> {
         return new Promise(async (resolve, reject) => {
@@ -76,7 +69,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 await this.scanFile(document.uri, document);
                 let label = this.getLabel(document, rg);
                 let locations = new Array<Location>();
-                for (let refs of this.referedSymbols) {
+                for (let refs of this.referredSymbols) {
                     let symbs = refs[1].get(label);
                     if (symbs !== undefined) {
                         for (let i = 0; i < symbs.length; i++) {
@@ -255,7 +248,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 let s = symb[i];
                 this.definedSymbols.set(s.getLabel(), s);
             }
-            this.referedSymbols.delete(uri.fsPath);
+            this.referredSymbols.delete(uri.fsPath);
             let refs = new Map<string, Array<Symbol>>();
             let refSymb = file.getReferedSymbols();
             for (let i = 0; i < refSymb.length; i++) {
@@ -268,7 +261,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 }
                 lst.push(s);
             }
-            this.referedSymbols.set(uri.fsPath, refs);
+            this.referredSymbols.set(uri.fsPath, refs);
             symb = file.getVariables();
             for (let i = 0; i < symb.length; i++) {
                 let s = symb[i];
