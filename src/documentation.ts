@@ -193,7 +193,7 @@ export class DocumentationRegister extends DocumentationElement {
             let lAddress = address.toLocaleLowerCase();
             return description.replace("**", `**\$${lAddress} - `);
         } else {
-            return description
+            return description;
         }
     }
 }
