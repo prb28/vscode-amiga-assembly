@@ -8,11 +8,9 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases) or the [VBCC workspace](https://github.com/prb28/vscode-amiga-vbcc-example).
 
-## New in 0.18.0
-- Format a document with TABs
-- Numerical popups with parametrized format and ASCII representation
-- Enhanced formatting for generated data: dc.w $0 -> dc.w $0000
-- Gdb remote protocol review (modified fs-uae binaries)
+## New in 0.19.0
+- Vasm can be completely disabled
+- Register addresses in hover data
 - Bug fixes
 
 ### Other features
@@ -77,6 +75,11 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## 0.19.0
+- Vasm can be completely disabled
+- Register addresses in hover data
+- Bug fixes
+
 ## 0.18.2
 - Bug fixes
 
