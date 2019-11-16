@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export enum DocumentationType {
-    UNKNHOWN,
+    UNKNOWN,
     INSTRUCTION,
     REGISTER,
     FUNCTION
@@ -10,7 +10,7 @@ export enum DocumentationType {
 export class DocumentationElement {
     name: string = "";
     description: string = "";
-    type: DocumentationType = DocumentationType.UNKNHOWN;
+    type: DocumentationType = DocumentationType.UNKNOWN;
 }
 /**
  * Class to manage the instructions
@@ -44,7 +44,7 @@ export class DocumentationInstructionsManager {
 }
 
 /**
- * Class reprensenting an instruction
+ * Class representing an instruction
  */
 export class DocumentationInstruction extends DocumentationElement {
     syntax: string = "";
@@ -62,7 +62,7 @@ export class DocumentationInstruction extends DocumentationElement {
      * Function to parse a line and create a HoverInstruction
      * 
      * @param cvsLine The line to parse
-     * @return HoverInstruction if the parse succeded or null
+     * @return HoverInstruction if the parse succeeded or null
      */
     static parse(csvLine: string): any {
         let hi = new DocumentationInstruction();
@@ -96,12 +96,12 @@ export class DocumentationRegistersManager {
         const dirPath = path.join(extensionPath, "docs", "hardware");
         fs.readdirSync(dirPath).forEach(filename => {
             if (filename.endsWith(".md")) {
-                let filePath = path.join(dirPath, filename);
-                let description = fs.readFileSync(filePath, 'utf8');
                 let elms = filename.replace(".md", "").split("_");
                 if (elms.length === 2) {
+                    let filePath = path.join(dirPath, filename);
                     let name = elms[1].toUpperCase();
                     let address = elms[0].toUpperCase();
+                    let description = this.modifyDescription(fs.readFileSync(filePath, 'utf8'), address);
                     let hr = new DocumentationRegister(address, name, description);
                     this.registersByAddress.set(address, hr);
                     this.registersByName.set(name, hr);
@@ -109,15 +109,31 @@ export class DocumentationRegistersManager {
             }
         });
     }
+
+    /**
+     * Modifies the description to add the address
+     * @param description description to modify
+     * @param address Address to be added
+     * @return modified string
+     */
+    private modifyDescription(description: string, address: string): string {
+        // Retrieve the first line
+        if (description.trim().startsWith("**")) {
+            let lAddress = address.toLocaleLowerCase();
+            return description.replace("**", `**\$${lAddress} - `);
+        } else {
+            return description
+        }
+    }
 }
 
 /**
- * Class reprensenting a register
+ * Class representing a register
  */
 export class DocumentationRegister extends DocumentationElement {
     address: string;
     /**
-     * Contructor
+     * Constructor
      * @param address address of the register 
      * @param name Name
      * @param description description in markdown
@@ -182,13 +198,13 @@ export class DocumentationLibraryManager {
 }
 
 /**
- * Class reprensenting a library function
+ * Class representing a library function
  */
 export class DocumentationLibraryFunction extends DocumentationElement {
     libraryName: string;
     filepathname: string;
     /**
-     * Contructor
+     * Constructor
      * @param libraryName Name of the library
      * @param name Name
      * @param description description in markdown
@@ -229,13 +245,13 @@ export class DocumentationManager {
     }
 
     private addRelevantKeywordElements(key: string, element: DocumentationElement) {
-        let lkey = key.toUpperCase();
-        let lelements = this.relevantKeywordsMap.get(lkey);
-        if (!lelements) {
-            this.relevantKeywordsMap.set(lkey, [element]);
+        let lKey = key.toUpperCase();
+        let lElements = this.relevantKeywordsMap.get(lKey);
+        if (!lElements) {
+            this.relevantKeywordsMap.set(lKey, [element]);
         } else {
-            lelements.push(element);
-            this.relevantKeywordsMap.set(lkey, lelements);
+            lElements.push(element);
+            this.relevantKeywordsMap.set(lKey, lElements);
         }
     }
 

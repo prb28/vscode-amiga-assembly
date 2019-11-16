@@ -81,6 +81,7 @@ describe("Documentation Tests", function () {
             if (registerByName) {
                 expect(registerByName.name).to.be.equals("ADKCONR");
                 expect(registerByName.address).to.be.equals("DFF010");
+                expect(registerByName.description.startsWith("**$dff010 - Audio, Disk, UART Control Read**")).to.be.true;
                 expect(registerByName.description).to.contains("control bit.determines");
             }
             expect(registerByName).to.be.eql(registerByAddress);
