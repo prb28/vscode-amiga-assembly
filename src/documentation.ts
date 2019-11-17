@@ -176,7 +176,7 @@ export class DocumentationRegister extends DocumentationElement {
      */
     public loadDescription() {
         if (!this.loaded) {
-            this.description = this.modifyDescription(fs.readFileSync(this.filename, 'utf8'), this.address);
+            this.description = this.modifyDescription(fs.readFileSync(this.filename, 'utf8'), this.address, this.name);
             this.loaded = true;
         }
     }
@@ -187,11 +187,11 @@ export class DocumentationRegister extends DocumentationElement {
      * @param address Address to be added
      * @return modified string
      */
-    private modifyDescription(description: string, address: string): string {
+    private modifyDescription(description: string, address: string, name: string): string {
         // Retrieve the first line
         if (description.trim().startsWith("**")) {
             let lAddress = address.toLocaleLowerCase();
-            return description.replace("**", `**\$${lAddress} - `);
+            return description.replace("**", `**${name}(\$${lAddress}) - `);
         } else {
             return description;
         }
