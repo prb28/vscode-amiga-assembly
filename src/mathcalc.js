@@ -249,6 +249,7 @@ var MathCalc = (function (module) {
             switch (op.id) {
                 case 'Plus': return function () { return right.apply(this, arguments); };
                 case 'Minus': return function () { return -right.apply(this, arguments); };
+                case 'Not': return function () { return ~right.apply(this, arguments); };
             }
             logger.warn('No emitter for %o', op);
             return function () { };
@@ -264,7 +265,14 @@ var MathCalc = (function (module) {
                 return op(left.apply(this, args), right.apply(this, args));
             }
 
+            // misc operators
             switch (op.id) {
+                case 'And': return bifunc.bind(self, function (x, y) { return x & y; });
+                case 'Or': return bifunc.bind(self, function (x, y) { return x | y; });
+                case 'Xor': return bifunc.bind(self, function (x, y) { return x ^ y; });
+                case 'Lshift': return bifunc.bind(self, function (x, y) { return x << y; });
+                case 'Rshift': return bifunc.bind(self, function (x, y) { return x >> y; });
+                case 'Zrshift': return bifunc.bind(self, function (x, y) { return x >>> y; });
                 case 'Plus': return bifunc.bind(self, function (x, y) { return +x + y; });
                 case 'Minus': return bifunc.bind(self, function (x, y) { return x - y; });
                 case 'Mul': return bifunc.bind(self, function (x, y) { return x * y; });
@@ -292,15 +300,15 @@ var MathCalc = (function (module) {
         // parens: variable ( tuple ) | ( expr ) | value
         // value: number | variable
 
-        add(SHIFT, ['(empty)', 'Plus', 'Minus', 'Mul', 'Div', 'Mod', 'Pow', 'LParen', 'Eq', 'Comma'], ['Plus', 'Minus', 'LParen', 'Number', 'Var']);
+        add(SHIFT, ['(empty)', 'Not', 'And', 'Or', 'Xor', 'Lshift', 'Rshift', 'Zrshift', 'Plus', 'Minus', 'Mul', 'Div', 'Mod', 'Pow', 'LParen', 'Eq', 'Comma'], ['Not', 'And', 'Or', 'Xor', 'Lshift', 'Rshift', 'Zrshift', 'Plus', 'Minus', 'LParen', 'Number', 'Var']);
         add(SHIFT, ['Var'], ['LParen', 'Eq']);
-        add(SHIFT, ['Sums'], ['Plus', 'Minus']);
+        add(SHIFT, ['Sums'], ['And', 'Or', 'Xor', 'Lshift', 'Rshift', 'Zrshift', 'Plus', 'Minus']);
         add(SHIFT, ['Prod'], ['Mul', 'Div', 'Mod']);
         add(SHIFT, ['Unary'], ['Pow']);
         add(SHIFT, ['OpenTuple', 'Tuple'], ['Comma']);
         add(SHIFT, ['LParen', 'Expr'], ['RParen']);
         add(REDUCE, ['Number', 'Var', 'Value', 'RParen', 'Parens', 'Call', 'Unary', 'Power', 'Prod', 'Sums', 'Assign'], ['Comma']);
-        add(REDUCE, ['Number', 'Var', 'Value', 'RParen', 'Parens', 'Call', 'Unary', 'Power', 'Prod'], ['Plus', 'Minus']);
+        add(REDUCE, ['Number', 'Var', 'Value', 'RParen', 'Parens', 'Call', 'Unary', 'Power', 'Prod'], ['Not', 'And', 'Or', 'Xor', 'Lshift', 'Rshift', 'Zrshift', 'Plus', 'Minus']);
         add(REDUCE, ['Number', 'Var', 'Value', 'RParen', 'Parens', 'Call', 'Unary', 'Power'], ['Mul', 'Div', 'Mod']);
         add(REDUCE, ['Number', 'Var', 'Value', 'RParen', 'Parens', 'Call'], ['Pow']);
         add(REDUCE, ['Number', 'Var', 'Value', 'RParen', 'Parens', 'Call', 'Unary', 'Power', 'Prod', 'Sums', 'Assign', 'Comma', 'OpenTuple', 'Tuple'], ['RParen', '(eof)']);
@@ -486,7 +494,7 @@ var MathCalc = (function (module) {
         }
 
         function parser_reduce_sums(state) {
-            return parser_reduce_binary_op(state, ['Plus', 'Minus'], 'Sums');
+            return parser_reduce_binary_op(state, ['And', 'Or', 'Xor', 'Lshift', 'Rshift', 'Zrshift', 'Plus', 'Minus'], 'Sums');
         }
 
         function parser_reduce_product(state) {
@@ -529,7 +537,7 @@ var MathCalc = (function (module) {
             return parser_reduce_product(state);
         }
 
-        var UNARY_LEFT_TERMS = ['Pow', 'Mul', 'Div', 'Mod', 'Plus', 'Minus', 'Eq', 'Comma', 'LParen'];
+        var UNARY_LEFT_TERMS = ['Not', 'Pow', 'Mul', 'Div', 'Mod', 'Plus', 'Minus', 'Eq', 'Comma', 'LParen'];
 
         function parser_reduce_unary_op(state, optional) {
             var left = getTop(state, 2);
@@ -537,7 +545,7 @@ var MathCalc = (function (module) {
             var right = getTop(state, 0);
             var expr = { id: 'Unary' };
 
-            if (oper !== undefined && (oper.id === 'Minus' || oper.id === 'Plus') &&
+            if (oper !== undefined && (oper.id === 'Minus' || oper.id === 'Plus' || oper.id === 'Not') &&
                 (left === undefined || UNARY_LEFT_TERMS.indexOf(left.id) !== -1)) {
                 expr.op = oper;
                 expr.right = right;
@@ -622,8 +630,8 @@ var MathCalc = (function (module) {
             };
         }
 
-        var Tokens = /^(?:(\s+)|((?:\d+e[-+]?\d+|\d+(?:\.\d*)?|\d*\.\d+))|(\+)|(\-)|(\*)|(\/)|(%)|(\^)|(\()|(\))|(=)|(,)|([a-zA-Z]\w*))/i;
-        var TokenIds = ['Space', 'Number', 'Plus', 'Minus', 'Mul', 'Div', 'Mod', 'Pow', 'LParen', 'RParen', 'Eq', 'Comma', 'Var'];
+        var Tokens = /^(?:(\s+)|((?:\d+e[-+]?\d+|\d+(?:\.\d*)?|\d*\.\d+))|(\&)|(\|)|(\^\|)|(<<)|(>>)|(>>>)|(\~)|(\+)|(\-)|(\*)|(\/)|(%)|(\^)|(\()|(\))|(=)|(,)|([a-zA-Z]\w*))/i;
+        var TokenIds = ['Space', 'Number', 'And', 'Or', 'Xor', 'Lshift', 'Rshift', 'Zrshift', 'Not', 'Plus', 'Minus', 'Mul', 'Div', 'Mod', 'Pow', 'LParen', 'RParen', 'Eq', 'Comma', 'Var'];
 
         function tokenizer(content, pos) {
             var s = content.slice(pos);

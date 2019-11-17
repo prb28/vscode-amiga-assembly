@@ -29,6 +29,17 @@ describe("Calc Tests", function () {
         await expect(c.calculate("3+2")).to.be.eventually.equal(5);
         await expect(c.calculate("3+#2+$a+%100")).to.be.eventually.equal(19);
     });
+    it.only("Should calculate an expression with binary operations", async function () {
+        let c = new CalcComponent();
+        await expect(c.calculate("5&1")).to.be.eventually.equal(1);
+        await expect(c.calculate("4|1")).to.be.eventually.equal(5);
+        await expect(c.calculate("5 << 1")).to.be.eventually.equal(10);
+        await expect(c.calculate("5 ^| 1")).to.be.eventually.equal(4);
+        await expect(c.calculate("5 >> 1")).to.be.eventually.equal(2);
+        await expect(c.calculate("5 >>> 1")).to.be.eventually.equal(2);
+        await expect(c.calculate("~5")).to.be.eventually.equal(-6);
+        await expect(c.calculate("~5&$000f")).to.be.eventually.equal(10);
+    });
     it("Should format a result", function () {
         let c = new CalcComponent();
         expect(c.formatResult("3+2", 5)).to.be.equal("#5/$5/%101");
