@@ -29,7 +29,7 @@ describe("Calc Tests", function () {
         await expect(c.calculate("3+2")).to.be.eventually.equal(5);
         await expect(c.calculate("3+#2+$a+%100")).to.be.eventually.equal(19);
     });
-    it.only("Should calculate an expression with binary operations", async function () {
+    it("Should calculate an expression with binary operations", async function () {
         let c = new CalcComponent();
         await expect(c.calculate("5&1")).to.be.eventually.equal(1);
         await expect(c.calculate("4|1")).to.be.eventually.equal(5);
