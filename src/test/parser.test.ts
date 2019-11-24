@@ -3,7 +3,7 @@
 //
 
 import { expect } from 'chai';
-import { ASMLine, NumberParser, ASMDocument, ASMLineType } from '../parser';
+import { ASMLine, NumberParser, ASMDocument, ASMLineType, NumberType } from '../parser';
 import { Position, Range } from 'vscode';
 import * as vscode from 'vscode';
 import { DummyTextDocument } from './dummy';
@@ -323,6 +323,23 @@ describe("Parser Tests", function () {
             expect(asmLine.data).to.be.equal("AllocMem(a6)");
             expect(asmLine.comment).to.be.empty;
         });
+        it("Should find all numbers", function () {
+            let asmLine = new ASMLine(" jsr $010");
+            expect(asmLine.getNumbersFromData()).to.be.eql([['$010', new Range(new Position(0, 5), new Position(0, 9))]]);
+            asmLine = new ASMLine(" dc.b $1, #10, $a, %1010, @-12");
+            let numbers = asmLine.getNumbersFromData()
+            expect(numbers.length).to.be.equal(5);
+            let pos = 6;
+            expect(numbers[0]).to.be.eql(['$1', new Range(new Position(0, pos), new Position(0, pos + 2))]);
+            pos += 2 + 2; // 2 length + 2 for ', '
+            expect(numbers[1]).to.be.eql(['#10', new Range(new Position(0, pos), new Position(0, pos + 3))]);
+            pos += 3 + 2;
+            expect(numbers[2]).to.be.eql(['$a', new Range(new Position(0, pos), new Position(0, pos + 2))]);
+            pos += 2 + 2;
+            expect(numbers[3]).to.be.eql(['%1010', new Range(new Position(0, pos), new Position(0, pos + 5))]);
+            pos += 5 + 2;
+            expect(numbers[4]).to.be.eql(['@-12', new Range(new Position(0, pos), new Position(0, pos + 4))]);
+        });
     });
     context("Number parsing", function () {
         it("Should parse a number", function () {
@@ -357,6 +374,22 @@ describe("Parser Tests", function () {
             let np = new NumberParser();
             expect(np.asciiToString(40, true)).to.be.equal("...(");
             expect(np.asciiToString(0x41424344, false)).to.be.equal("ABCD");
+        });
+        it("Should parse the type of a number", function () {
+            let np = new NumberParser();
+            expect(np.parseWithType("#10")).to.be.eql([10, NumberType.DEC]);
+            expect(np.parseWithType("$10")).to.be.eql([16, NumberType.HEX]);
+            expect(np.parseWithType("%10")).to.be.eql([2, NumberType.BIN]);
+            expect(np.parseWithType("@10")).to.be.eql([8, NumberType.OCT]);
+            expect(np.parseWithType("#$10")).to.be.eql([16, NumberType.REF]);
+        });
+        it("Should transform a number to a typed string", function () {
+            let np = new NumberParser();
+            expect(np.numberToTypedString(10, NumberType.DEC)).to.be.equal('#10');
+            expect(np.numberToTypedString(10, NumberType.HEX)).to.be.equal('$a');
+            expect(np.numberToTypedString(10, NumberType.BIN)).to.be.equal('%1010');
+            expect(np.numberToTypedString(10, NumberType.OCT)).to.be.equal('@12');
+            expect(np.numberToTypedString(10, NumberType.REF)).to.be.equal('#$a');
         });
     });
     context("ASMDocument asmDocumentiters parsing", function () {

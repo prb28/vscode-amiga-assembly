@@ -11,8 +11,8 @@ import { ExtensionState } from '../extension';
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
-    context("Calc commands", function () {
-        let state: ExtensionState | undefined;
+    let state: ExtensionState | undefined;
+    context("Simple calc commands", function () {
         before(async () => {
             const newFile = vscode.Uri.parse("untitled://./myfile.s");
             await vscode.workspace.openTextDocument(newFile).then(async document => {
@@ -96,7 +96,7 @@ describe("Global Extension Tests", function () {
         it("Should evaluate a selection and replace with the result", async () => {
             const editor = vscode.window.activeTextEditor;
             if (editor) {
-                await vscode.commands.executeCommand("amiga-assembly.evaluate-selection");
+                await vscode.commands.executeCommand("amiga-assembly.evaluate-selection-replace");
                 expect(editor.document.getText()).to.be.equal("3+2");
             } else {
                 expect.fail("Editor not available");
@@ -108,6 +108,34 @@ describe("Global Extension Tests", function () {
             when(spiedWindow.showInputBox(anything())).thenReturn(promise);
             await vscode.commands.executeCommand("amiga-assembly.calculator");
             verify(spiedWindow.showInputBox(anything())).once();
+        });
+    });
+    context("Apply formula commands", function () {
+        before(async () => {
+            const newFile = vscode.Uri.parse("untitled://./myfileform.s");
+            await vscode.workspace.openTextDocument(newFile).then(async document => {
+                const edit = new vscode.WorkspaceEdit();
+                edit.insert(newFile, new vscode.Position(0, 0), " dc.b $1, #10, #-1, $a, %1010, @1\n");
+                edit.insert(newFile, new vscode.Position(1, 0), " move.l #$80,d7");
+                await vscode.workspace.applyEdit(edit).then(async (success) => {
+                    if (success) {
+                        await vscode.window.showTextDocument(document);
+                        await vscode.commands.executeCommand("cursorMove", { to: 'right', by: 'character', value: 12, select: true });
+                        await vscode.commands.executeCommand("cursorMove", { to: 'down', by: 'line', value: 1, select: true });
+                    } else {
+                        expect.fail("Edit not successful");
+                    }
+                });
+            });
+        });
+        it("Should apply a formula to a selection and replace with the result", async () => {
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                await vscode.commands.executeCommand("amiga-assembly.apply-formula", { formula: "x+3" });
+                expect(editor.document.getText()).to.be.equal(" dc.b $4, #13, #2, $d, %1101, @4\n move.l #$83,d7");
+            } else {
+                expect.fail("Editor not available");
+            }
         });
     });
 });

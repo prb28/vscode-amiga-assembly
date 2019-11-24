@@ -369,8 +369,35 @@ export class ASMLine {
         }
         return registers.sort();
     }
+
+    /**
+     * Returns the numbers retrieved from a data.
+     * 
+     * @return a list of registers found
+     */
+    public getNumbersFromData(): Array<[string, Range]> {
+        let numbers = new Array<[string, Range]>();
+        if (this.data.length > 0) {
+            let numberParser = new NumberParser();
+            let reg = /([\w$#%@\-]+)/g;
+            let match;
+            // Match all words
+            while (match = reg.exec(this.data)) {
+                let value = match[0];
+                if (numberParser.parse(value) !== null) {
+                    let startPos = this.dataRange.start.character + match.index;
+                    let range = new Range(new Position(this.dataRange.start.line, startPos), new Position(this.dataRange.end.line, startPos + value.length));
+                    numbers.push([value, range]);
+                }
+            }
+        }
+        return numbers;
+    }
 }
 
+export enum NumberType {
+    HEX, DEC, OCT, BIN, REF
+}
 
 export class NumberParser {
     /**
@@ -378,29 +405,58 @@ export class NumberParser {
      * @param word Word to parse
      */
     public parse(word: string): number | null {
-        let hexValueRegExp = /\$([\da-z]+)/i;
+        let parsedValue = this.parseWithType(word);
+        if (parsedValue) {
+            return parsedValue[0];
+        }
+        return null;
+    }
+
+    /**
+     * Parses a number in a word
+     * @param word Word to parse
+     */
+    public parseWithType(word: string): [number, NumberType] | null {
+        let hexValueRegExp = /[#]?\$([\da-z]+)/i;
         let decValueRegExp = /[#]?([-]?[\d]+)/;
         let octValueRegExp = /@(\d+)/;
         let binValueRegExp = /%([01]*)/;
         // look for an hex value
         let match = hexValueRegExp.exec(word);
         if (match) {
-            return parseInt(match[1], 16);
+            if (match[0].startsWith("#")) {
+                return [parseInt(match[1], 16), NumberType.REF];
+            } else {
+                return [parseInt(match[1], 16), NumberType.HEX];
+            }
         }
         // look for an octal value
         match = octValueRegExp.exec(word);
         if (match) {
-            return parseInt(match[1], 8);
+            return [parseInt(match[1], 8), NumberType.OCT];
         }
         // look for a binary value
         match = binValueRegExp.exec(word);
         if (match) {
-            return parseInt(match[1], 2);
+            return [parseInt(match[1], 2), NumberType.BIN];
         }
         // look for a decimal value
         match = decValueRegExp.exec(word);
         if (match) {
-            return parseInt(match[1], 10);
+            return [parseInt(match[1], 10), NumberType.DEC];
+        }
+        return null;
+    }
+
+    /**
+     * Parses the type of a number in string.
+     * @param word Number to parse
+     * @return Type or null
+     */
+    public parseType(word: string): NumberType | null {
+        let parsedValue = this.parseWithType(word);
+        if (parsedValue) {
+            return parsedValue[1];
         }
         return null;
     }
@@ -456,6 +512,21 @@ export class NumberParser {
         let end = startPos + len;
         ret[0] = str.substring(0, end);
         return ret;
+    }
+
+    public numberToTypedString(num: number, numberType: NumberType): string {
+        switch (numberType) {
+            case NumberType.BIN:
+                return "%" + this.binaryToString(num, false);
+            case NumberType.DEC:
+                return "#" + num.toString();
+            case NumberType.HEX:
+                return "$" + this.hexToString(num, false);
+            case NumberType.OCT:
+                return "@" + this.octalToString(num, false);
+            case NumberType.REF:
+                return "#$" + this.hexToString(num, false);
+        }
     }
 
     public binaryToString(num: number, chunk: boolean): string {

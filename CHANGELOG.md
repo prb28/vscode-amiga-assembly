@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### [0.19.0] - 
 - [Feat #101](https://github.com/prb28/vscode-amiga-assembly/issues/101) Do not show the "please configure VASM" message if it is disabled in the settings
 - [Feat #100](https://github.com/prb28/vscode-amiga-assembly/issues/100) Add register addresses to hover data
+- [Feat #95](https://github.com/prb28/vscode-amiga-assembly/issues/95) Generate Boot Block Code
+- [Feat #79](https://github.com/prb28/vscode-amiga-assembly/issues/79) Modify market data with expression or defaults
 
 ### [0.18.2] - 2019-10-27
 - [Issue #99](https://github.com/prb28/vscode-amiga-assembly/issues/99) List used registers sometimes incorrect

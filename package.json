@@ -312,6 +312,11 @@
                 "description": "Evaluates the selection and replaces it by the result"
             },
             {
+                "command": "amiga-assembly.apply-formula",
+                "title": "Amiga Assembly: Apply formula to selected numerical values",
+                "description": "Applies a formulato to selected numerical values"
+            },
+            {
                 "command": "amiga-assembly.build-vasm",
                 "title": "Amiga Assembly: Build current document",
                 "description": "Build all the files with VASM"

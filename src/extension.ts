@@ -242,6 +242,16 @@ export function activate(context: vscode.ExtensionContext) {
         return calc.replaceSelections();
     });
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.apply-formula', async (args: any) => {
+        let formula: string | undefined;
+        if (args) {
+            formula = args.formula;
+        }
+        await calc.applyFormulaToSelections(formula).catch(error => {
+            statusManager.onError(error.message);
+        });
+    });
+    context.subscriptions.push(disposable);
 
     // Show documentation
     disposable = vscode.commands.registerCommand('amiga-assembly.showdoc', async (args: any) => {

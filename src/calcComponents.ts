@@ -1,5 +1,5 @@
-import { StatusBarAlignment, StatusBarItem, window, Disposable } from 'vscode';
-import { NumberParser } from './parser';
+import { StatusBarAlignment, StatusBarItem, window, Disposable, TextDocument, Selection, Range } from 'vscode';
+import { NumberParser, ASMLine } from './parser';
 import { ExtensionState } from './extension';
 
 export class CalcComponent {
@@ -145,8 +145,8 @@ export class CalcComponent {
     /**
      * Shows an input panel to calculate
      */
-    public showInputPanel() {
-        return window.showInputBox({
+    public async showInputPanel() {
+        await window.showInputBox({
             prompt: "Enter a Math Expression to evaluate.",
             placeHolder: "Expression"
         }).then((value) => {
@@ -157,6 +157,78 @@ export class CalcComponent {
                     // do nothing
                 });
             }
+        });
+    }
+
+    /**
+     * Applies a formula to selected numerical values and generates edits
+     */
+    public async getReplaceValuesForFormula(formula: string, document: TextDocument, selections: Selection[]): Promise<Array<[string, Range]>> {
+        return new Promise(async (resolve, reject) => {
+            let numberParser = new NumberParser();
+            let replaceValues = new Array<[string, Range]>();
+            for (const selection of selections) {
+                if (!selection.isEmpty) {
+                    for (let lineIdx = selection.start.line; lineIdx < selection.end.line + 1; lineIdx++) {
+                        const line = document.lineAt(lineIdx);
+                        let asmLine = new ASMLine(line.text, line);
+                        let numbers = asmLine.getNumbersFromData();
+                        for (let i = numbers.length - 1; i >= 0; i--) {
+                            let [value, range] = numbers[i];
+                            if (selection.contains(range)) {
+                                let result = numberParser.parseWithType(value);
+                                if (result !== null) {
+                                    let num = result[0];
+                                    let tp = result[1];
+                                    let modifiedFormula = formula.replace('x', num.toString());
+                                    let resultValue = await this.calculate(modifiedFormula).catch(err => {
+                                        reject(err);
+                                    })
+                                    if (resultValue) {
+                                        replaceValues.push([numberParser.numberToTypedString(resultValue, tp), range]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            resolve(replaceValues);
+        });
+    }
+
+    /**
+     * Applies a formula to selected numerical values
+     */
+    public applyFormulaToSelections(formula?: string): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            let selectedFormula: string | undefined;
+            if (!formula) {
+                selectedFormula = await window.showInputBox({
+                    prompt: "Enter a formula to apply : 'x' is the variable",
+                    placeHolder: "Formula"
+                });
+            } else {
+                selectedFormula = formula;
+            }
+            if (selectedFormula) {
+                // Get the current text editor
+                const editor = window.activeTextEditor;
+                if (editor !== undefined) {
+                    const document = editor.document;
+                    const selections = editor.selections;
+                    // calculate all edits
+                    await this.getReplaceValuesForFormula(selectedFormula, document, selections).then(async (replaceValues) => {
+                        await editor.edit(async (edit) => {
+                            for (let [value, range] of replaceValues) {
+                                edit.replace(range, value);
+                            }
+                        });
+                    })
+
+                }
+            }
+            resolve();
         });
     }
 
