@@ -30,7 +30,7 @@ export class DebugInfo {
         let codeDataArray = new Array<Uint32Array>();
         for (let i = 0; i < this.hunks.length; i++) {
             let hunk = this.hunks[i];
-            if ((hunk.hunkType === HunkType.Code) && hunk.codeData) {
+            if ((hunk.hunkType === HunkType.CODE) && hunk.codeData) {
                 codeDataArray.push(hunk.codeData);
             }
         }

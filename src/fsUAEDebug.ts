@@ -107,6 +107,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     /** Current memory display pc */
     private currentMemoryViewPc = -1;
 
+    /** trace the communication protocol */
+    private trace: boolean = false;
+
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
@@ -200,18 +203,20 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             };
             this.sendEvent(event);
         });
-        this.gdbProxy.on('output', (text: string, filePath?: string, line?: number, column?: number) => {
-            const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
-            if (filePath !== undefined) {
-                e.body.source = this.createSource(filePath);
+        this.gdbProxy.on('output', (text: string, filePath?: string, line?: number, column?: number, level?: string) => {
+            if (this.trace) {
+                const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
+                if (filePath !== undefined) {
+                    e.body.source = this.createSource(filePath);
+                }
+                if (line !== undefined) {
+                    e.body.line = this.convertDebuggerLineToClient(line);
+                }
+                if (column !== undefined) {
+                    e.body.column = this.convertDebuggerColumnToClient(column);
+                }
+                this.sendEvent(e);
             }
-            if (line !== undefined) {
-                e.body.line = this.convertDebuggerLineToClient(line);
-            }
-            if (column !== undefined) {
-                e.body.column = this.convertDebuggerColumnToClient(column);
-            }
-            this.sendEvent(e);
         });
         this.gdbProxy.on('end', () => {
             this.terminate();
@@ -323,6 +328,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
         return new Promise(async (resolve, reject) => {
+            if (args.trace) {
+                this.trace = args.trace;
+            } else {
+                this.trace = false;
+            }
             // Does the program exists ? -> Loads the debug info
             let dInfoLoaded = false;
             try {

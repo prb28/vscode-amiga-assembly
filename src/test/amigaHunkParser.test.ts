@@ -40,7 +40,7 @@ describe("AmigaHunkFile", function () {
         expect(hunks.length).to.be.equal(3);
         // Code hunk
         let hunk = hunks[0];
-        expect(hunk.hunkType).to.be.equal(HunkType.Code);
+        expect(hunk.hunkType).to.be.equal(HunkType.CODE);
         if (hunk.symbols) {
             expect(hunk.symbols.length).to.be.equal(13);
             // OSOff and start are at the same offset
@@ -54,7 +54,7 @@ describe("AmigaHunkFile", function () {
         expect(hunk.lineDebugInfo).to.exist;
         // Data hunk
         hunk = hunks[1];
-        expect(hunk.hunkType).to.be.equal(HunkType.Data);
+        expect(hunk.hunkType).to.be.equal(HunkType.DATA);
         if (hunk.symbols) {
             expect(hunk.symbols.length).to.be.equal(16);
             expect(hunk.symbols[0].name).to.be.equal("Spr");
@@ -64,7 +64,7 @@ describe("AmigaHunkFile", function () {
         }
         // Data hunk
         hunk = hunks[2];
-        expect(hunk.hunkType).to.be.equal(HunkType.Bss);
+        expect(hunk.hunkType).to.be.equal(HunkType.BSS);
         if (hunk.symbols) {
             expect(hunk.symbols.length).to.be.equal(1);
             expect(hunk.symbols[0].name).to.be.equal("Screen");

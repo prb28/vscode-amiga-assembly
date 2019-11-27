@@ -25,6 +25,8 @@ import { M68kLanguage } from './language';
 import { ASMLine } from './parser';
 import { DisassembledMemoryDataProvider } from './viewDisassembled';
 import { DisassembledInstructionAdapter } from './debugExpressionHelper';
+import * as winston from "winston";
+import * as TransportStream from "winston-transport";
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -36,6 +38,21 @@ export const AMIGA_DEBUG_ASM_MODE: vscode.DocumentFilter = { language: 'amiga-as
  * Please note: the test suite does no longer work in this mode.
  */
 const EMBED_DEBUG_ADAPTER = true;
+
+class SimpleConsoleTransport extends TransportStream {
+    private outputChannel: vscode.OutputChannel;
+    constructor(outputChannel: vscode.OutputChannel) {
+        super();
+        this.outputChannel = outputChannel;
+    }
+    public log(info: any, callback: any) {
+        setImmediate(() => this.emit("logged", info));
+        this.outputChannel.appendLine(`[${info.level}] ${info.message}`);
+        if (callback) {
+            callback();
+        }
+    };
+}
 
 export class ExtensionState {
     private compiler: VASMCompiler | undefined;
@@ -50,9 +67,22 @@ export class ExtensionState {
     private documentationManager: DocumentationManager | undefined;
     private language: M68kLanguage | undefined;
     private watcher: vscode.FileSystemWatcher | undefined;
+    private outputChannel: vscode.OutputChannel;
 
     private extensionPath: string = path.join(__dirname, "..");
 
+    public constructor() {
+        this.outputChannel = vscode.window.createOutputChannel('Amiga Assembly');
+        let transport = new SimpleConsoleTransport(this.outputChannel);
+        let level: string | undefined = this.getLogLevel();
+        if (level) {
+            transport.level = level;
+        }
+        winston.add(transport);
+    }
+    public getLogLevel(): string | undefined {
+        return vscode.workspace.getConfiguration('amiga-assembly', null).get('logLevel');
+    }
     public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
         if (this.errorDiagnosticCollection === undefined) {
             this.errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-error');
@@ -144,6 +174,14 @@ export class ExtensionState {
         }
         return this.language;
     }
+    public getOutputChannel(): vscode.OutputChannel {
+        return this.outputChannel;
+    }
+    public dispose() {
+        if (this.outputChannel) {
+            this.outputChannel.dispose();
+        }
+    }
 }
 
 const state = new ExtensionState();
@@ -160,7 +198,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeActiveTextEditor(statusManager.showHideStatus, null, context.subscriptions);
     context.subscriptions.push(statusManager);
 
-    statusManager.outputChannel.appendLine("Starting Amiga Assembly");
+    winston.info("Starting Amiga Assembly");
     let formatter = new M68kFormatter();
     // Declaring the formatter
     let disposable = vscode.languages.registerDocumentFormattingEditProvider(AMIGA_ASM_MODE, formatter);
@@ -352,7 +390,7 @@ export function activate(context: vscode.ExtensionContext) {
     const runProvider = new RunFsUAEConfigurationProvider();
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae-run', runProvider));
     context.subscriptions.push(runProvider);
-    statusManager.outputChannel.appendLine("------> done");
+    winston.info("------> done");
 
     context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('disassembly', new DisassemblyContentProvider()));
     // IFF view
@@ -509,6 +547,9 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
     }
 
     dispose() {
+        if (state) {
+            state.dispose();
+        }
         if (this.runServer) {
             this.runServer.close();
         }

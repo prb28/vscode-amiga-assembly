@@ -31,12 +31,12 @@ export class GdbProxy extends EventEmitter {
     /** Install new binaries exception message */
     static readonly BINARIES_ERROR = "Please install latest binaries from FS-UAE custom build https://github.com/prb28/vscode-amiga-assembly/releases";
     /** Unexpected return message */
-    static readonly UNEXPECTED_RETURN_ERROR = "Unexpected return message for program lauch command";
+    static readonly UNEXPECTED_RETURN_ERROR = "Unexpected return message for program launch command";
     /** Socket to connect */
     private socket: Socket;
     /** Current source file */
     private programFilename?: string;
-    /** Segmentes of memory */
+    /** Segments of memory */
     private segments?: Array<Segment>;
     /** Stop on entry asked */
     private stopOnEntryRequested = false;
@@ -47,8 +47,6 @@ export class GdbProxy extends EventEmitter {
         autoUnlockTimeoutMs: 1200,
         intervalMs: 100,
     });
-    /** Trace protocol for tests */
-    private traceProtocol = false;
     /** vCont commands are supported */
     private supportVCont = false;
     /** Created threads */
@@ -57,7 +55,7 @@ export class GdbProxy extends EventEmitter {
     private threadsNative = new Map<string, GdbThread>();
     /** function from parent to send all pending breakpoints */
     private sendPendingBreakpointsCallback: (() => Promise<void>) | undefined = undefined;
-    /** Manager for the recieved socket data */
+    /** Manager for the received socket data */
     private recievedDataManager: GdbRecievedDataManager;
 
 
@@ -124,11 +122,9 @@ export class GdbProxy extends EventEmitter {
         this.socket.destroy();
     }
 
-    /** Defaut handler for the on data event*/
+    /** Default handler for the on data event*/
     private defaultOnDataHandler = (packet: GdbPacket): boolean => {
-        if (this.traceProtocol) {
-            this.sendEvent("output", `defaultOnDataHandler (notif : ${packet.isNotification()}) : --> ${packet.getMessage()}`);
-        }
+        this.sendEvent("output", `defaultOnDataHandler (notif : ${packet.isNotification()}) : --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
         let consumed = false;
         switch (packet.getType()) {
             case GdbPacketType.STOP:
@@ -304,9 +300,7 @@ export class GdbProxy extends EventEmitter {
                             reject(this.parseError(packet.getMessage()));
                         } else if ((!expectedType) || (expectedType === packet.getType())) {
                             resolve(packet.getMessage());
-                            if (this.traceProtocol) {
-                                this.sendEvent("output", `${dataToSend} --> ${packet.getMessage()}`);
-                            }
+                            this.sendEvent("output", `${dataToSend} --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
                             unlock();
                             return true;
                         }

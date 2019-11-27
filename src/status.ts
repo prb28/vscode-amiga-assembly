@@ -7,9 +7,10 @@ import { AMIGA_ASM_MODE } from "./extension";
 import * as vscode from "vscode";
 
 export class StatusManager {
-    outputChannel = vscode.window.createOutputChannel('Amiga Assembly');
     diagnosticsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     statusBarEntry: vscode.StatusBarItem | null = null;
+    constructor() {
+    }
     public showHideStatus() {
         if (this) {
             if (this.statusBarEntry === null) {
@@ -32,7 +33,6 @@ export class StatusManager {
             this.statusBarEntry = null;
         }
         this.diagnosticsStatusBarItem.dispose();
-        this.outputChannel.dispose();
     }
     public showStatus(message: string, command: string, tooltip?: string) {
         this.statusBarEntry = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);

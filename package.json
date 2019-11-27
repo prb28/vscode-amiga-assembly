@@ -94,6 +94,12 @@
         "configuration": {
             "title": "Amiga Assembly",
             "properties": {
+                "amiga-assembly.logLevel": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "info",
+                    "description": "Specifies the level of the logs."
+                },
                 "amiga-assembly.format.labelToInstructionDistance": {
                     "type": "integer",
                     "scope": "resource",
@@ -679,10 +685,12 @@
         "vscode-debugadapter-testsupport": "^1.39.0"
     },
     "dependencies": {
-        "glob": "^7.1.6",
         "await-notify": "^1.0.1",
+        "glob": "^7.1.6",
         "ts-simple-mutex": "0.0.4",
         "vscode-debugadapter": "^1.37.1",
-        "vscode-debugprotocol": "^1.37.0"
+        "vscode-debugprotocol": "^1.37.0",
+        "winston": "^3.2.1",
+        "winston-transport": "^4.3.0"
     }
 }

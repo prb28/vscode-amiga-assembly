@@ -1,8 +1,8 @@
-import { ExtensionState } from './extension';
 import { Hunk, HunkParser, Symbol } from './amigaHunkParser';
 import { ICheckResult } from "./execHelper";
 import { Uri } from "vscode";
 import * as fs from "fs";
+import * as winston from "winston";
 
 /**
  * Class to mange AsmONE compatibility
@@ -24,7 +24,6 @@ export class AsmONE {
 	 * @param exeFile executable file to patch
 	 */
 	public Auto(filesURI: Uri[], exeFile: string) {
-		let outputChannel = ExtensionState.getCurrent().getStatusManager().outputChannel;
 		try {
 			let symbols = new Array<Symbol>();
 			for (let i = 0; i < filesURI.length; i++) {
@@ -41,13 +40,13 @@ export class AsmONE {
 
 				// Process all autos
 				for (const auto of autos) {
-					outputChannel.appendLine("AsmONE AUTO " + auto + " source:" + src + " exe:" + exeFile);
+					winston.info("AsmONE AUTO " + auto + " source:" + src + " exe:" + exeFile);
 					let command = auto.split("\\");
 					this.execCommand(command[0], command.slice(1), exeFile, symbols);
 				}
 			}
 		} catch (error) {
-			outputChannel.appendLine("AsmONE AUTO " + error);
+			winston.info("AsmONE AUTO " + error);
 		}
 	}
 

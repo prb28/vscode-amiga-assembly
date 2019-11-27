@@ -1,31 +1,24 @@
 import * as fs from 'fs';
+import winston = require('winston');
 
-const HUNK_HEADER: number = 1011; // 0x3f3
-// hunk types
-const HUNK_UNIT: number = 999;
-const HUNK_NAME: number = 1000;
-const HUNK_CODE: number = 1001;
-const HUNK_DATA: number = 1002;
-const HUNK_BSS: number = 1003;
-const HUNK_RELOC32: number = 1004;
-const HUNK_DEBUG: number = 1009;
-const HUNK_SYMBOL: number = 1008;
-const HUNK_END: number = 1010;
 const DEBUG_LINE: number = 0x4c494e45;
 
-const HUNKF_CHIP: number = 1 << 30;
-const HUNKF_FAST: number = 1 << 31;
-
-
 export enum HunkType {
-    Code,
-    Data,
-    Bss,
+    HEADER = 1011, // 0x3f3
+    UNIT = 999,
+    NAME = 1000,
+    CODE = 1001,
+    DATA = 1002,
+    BSS = 1003,
+    RELOC32 = 1004,
+    DEBUG = 1009,
+    SYMBOL = 1008,
+    END = 1010,
 }
 
 export interface RelocInfo32 {
     target: number;
-    data: Array<number>;
+    offsets: Array<number>;
 }
 
 export interface Symbol {
@@ -45,6 +38,8 @@ export interface SourceFile {
 }
 
 export interface Hunk {
+    index: number;
+    fileOffset: number;
     memType: MemoryType;
     hunkType: HunkType;
     allocSize: number;
@@ -59,9 +54,9 @@ export interface Hunk {
 }
 
 export enum MemoryType {
-    Any,
-    Chip,
-    Fast,
+    ANY,
+    CHIP = 1 << 30,
+    FAST = 1 << 31,
 }
 
 export interface SizesTypes {
@@ -80,14 +75,14 @@ export class HunkParser {
         let mem_t = t & 0xf0000000;
         let memType: MemoryType;
         switch (mem_t) {
-            case HUNKF_CHIP:
-                memType = MemoryType.Chip;
+            case MemoryType.CHIP:
+                memType = MemoryType.CHIP;
                 break;
-            case HUNKF_FAST:
-                memType = MemoryType.Fast;
+            case MemoryType.FAST:
+                memType = MemoryType.FAST;
                 break;
             default:
-                memType = MemoryType.Any;
+                memType = MemoryType.ANY;
                 break;
         }
         return [size, memType];
@@ -105,20 +100,19 @@ export class HunkParser {
     public parse_bss(hunk: Hunk, fileData: DataView, fileOffset: number): number {
         let size = fileData.getUint32(fileOffset, false);
         // BSS contains the The number of longwords of zeroed memory to allocate
-        hunk.hunkType = HunkType.Bss;
+        hunk.hunkType = HunkType.BSS;
         hunk.dataSize = size;
         return fileOffset + 4;
     }
 
     public parse_code_or_data(hunkType: HunkType, hunk: Hunk, fileData: DataView, fileOffset: number): number {
-        let [size, memType] = this.get_size_type(fileData.getUint32(fileOffset, false));
+        let [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
         let codeData = new Uint32Array(size / 4);
         let pos = fileOffset + 4;
 
         hunk.dataSize = size;
         hunk.dataOffset = pos;
         hunk.hunkType = hunkType;
-        hunk.memType = memType;
 
         for (let i = 0; i < (size / 4); i += 1) {
             codeData[i] = fileData.getInt32(pos, false);
@@ -240,10 +234,10 @@ export class HunkParser {
             pos += 4;
             let reloc = <RelocInfo32>{
                 target: target,
-                data: Array<number>(count),
+                offsets: Array<number>(),
             };
             for (let i = 0; i < count; i++) {
-                reloc.data.push(fileData.getUint32(pos, false));
+                reloc.offsets.push(fileData.getUint32(pos, false));
                 pos += 4;
             }
             relocs.push(reloc);
@@ -258,32 +252,41 @@ export class HunkParser {
         let pos = fileOffset;
         let hunkType = fileData.getUint32(pos, false);
         pos += 4;
-        while (hunkType !== HUNK_END) {
+        while (hunkType !== HunkType.END) {
             switch (hunkType) {
-                case HUNK_DEBUG:
+                case HunkType.DEBUG:
+                    winston.debug(`Hunk DEBUG ${pos}`);
                     pos = this.parse_debug(hunk, fileData, pos);
                     break;
-                case HUNK_CODE:
-                    pos = this.parse_code_or_data(HunkType.Code, hunk, fileData, pos);
+                case HunkType.CODE:
+                    winston.debug(`Hunk CODE ${pos}`);
+                    pos = this.parse_code_or_data(HunkType.CODE, hunk, fileData, pos);
                     break;
-                case HUNK_DATA:
-                    pos = this.parse_code_or_data(HunkType.Data, hunk, fileData, pos);
+                case HunkType.DATA:
+                    winston.debug(`Hunk DATA ${pos}`);
+                    pos = this.parse_code_or_data(HunkType.DATA, hunk, fileData, pos);
                     break;
-                case HUNK_BSS:
+                case HunkType.BSS:
+                    winston.debug(`Hunk BSS ${pos}`);
                     pos = this.parse_bss(hunk, fileData, pos);
                     break;
-                case HUNK_RELOC32:
+                case HunkType.RELOC32:
+                    winston.debug(`Hunk RELOC32 ${pos}`);
                     pos = this.parse_reloc32(hunk, fileData, pos);
                     break;
-                case HUNK_SYMBOL:
+                case HunkType.SYMBOL:
+                    winston.debug(`Hunk SYMBOL ${pos}`);
                     pos = this.parse_symbols(hunk, fileData, pos);
                     break;
-                case HUNK_UNIT:
-                // continue
-                case HUNK_NAME:
+                case HunkType.UNIT:
+                    winston.debug(`Hunk UNIT ${pos}`);
                     pos = this.skip_hunk(fileData, pos);
                     break;
-                case HUNK_END:
+                case HunkType.NAME:
+                    winston.debug(`Hunk NAME ${pos}`);
+                    break;
+                case HunkType.END:
+                    winston.debug(`Hunk END ${pos}`);
                     break;
                 default:
                     // thrown error : unknown "Unknown hunk type {:x}", hunkType
@@ -299,7 +302,39 @@ export class HunkParser {
         return pos;
     }
 
+    public logHunk(hunk: Hunk) {
+        winston.debug(`Hunk #${hunk.index} offset \$${hunk.fileOffset.toString(16)}`);
+        winston.debug(`    > hunkType   : ${HunkType[hunk.hunkType]}`);
+        winston.debug(`    > memType    : ${MemoryType[hunk.memType]}`);
+        winston.debug(`    > dataSize   : ${hunk.dataSize}`);
+        if (hunk.dataOffset) {
+            winston.debug(`    > dataOffset : \$${hunk.dataOffset.toString(16)}`);
+        }
+        winston.debug(`    > allocSize  : ${hunk.allocSize}`);
+        if (hunk.reloc32) {
+            for (let reloc of hunk.reloc32) {
+                let offsets = Array<string>();
+                for (let relocOffset of reloc.offsets) {
+                    offsets.push(`\$${relocOffset.toString(16)}`);
+                }
+                let s = offsets.join(',');
+                winston.debug(`    > reloc[${reloc.target}] : ${s}`);
+            }
+        }
+        if (hunk.symbols) {
+            for (let symbol of hunk.symbols) {
+                winston.debug(`    > symbol[${symbol.name}] : ${symbol.offset}`);
+            }
+        }
+        if (hunk.lineDebugInfo) {
+            for (let sourceFile of hunk.lineDebugInfo) {
+                winston.debug(`    > lineDebugInfo : ${sourceFile.name}`);
+            }
+        }
+    }
+
     public parse_file(filename: string): Array<Hunk> {
+        winston.debug(`Parsing file "${filename}"`);
         const stats = fs.statSync(filename);
         const fileSizeInBytes = stats.size;
         let buffer = Buffer.alloc(fileSizeInBytes);
@@ -310,7 +345,7 @@ export class HunkParser {
 
         let hunk_header = fileData.getUint32(fileOffset, false);
         fileOffset += 4;
-        if (hunk_header !== HUNK_HEADER) {
+        if (hunk_header !== HunkType.HEADER) {
             throw new Error("Not a valid hunk file : Unable to find correct HUNK_HEADER");
         }
 
@@ -334,6 +369,7 @@ export class HunkParser {
 
         for (let i = 0; i < hunk_count; i++) {
             let [size, memType] = this.get_size_type(fileData.getUint32(fileOffset, false));
+            winston.debug(`Hunk found [${MemoryType[memType]}] size = ${size}`);
             fileOffset += 4;
             hunk_table.push(<SizesTypes>{
                 memType: memType,
@@ -345,10 +381,13 @@ export class HunkParser {
 
         for (let i = 0; i < hunk_count; i++) {
             let hunk = <Hunk>{
+                index: i,
+                fileOffset: fileOffset,
                 memType: hunk_table[i].memType,
                 allocSize: hunk_table[i].size,
             };
             fileOffset = this.fill_hunk(hunk, fileData, fileOffset);
+            this.logHunk(hunk);
             hunks.push(hunk);
         }
         return hunks;

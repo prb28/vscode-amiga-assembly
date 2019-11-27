@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { ExtensionState } from './extension';
 import { workspace, Uri } from 'vscode';
+import * as winston from 'winston';
 
 export class ICheckResult {
     file: string = "";
@@ -30,7 +31,6 @@ export class ExecutorHelper {
      * @param parser Parser for the output
      */
     runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken): Promise<ICheckResult[]> {
-        const outputChannel = ExtensionState.getCurrent().getStatusManager().outputChannel;
         return new Promise((resolve, reject) => {
             let options: any = {
                 env: env
@@ -44,27 +44,27 @@ export class ExecutorHelper {
                         return reject(new Error(`Cannot find ${cmd} : ${err.message}`));
                     }
                     if (stdout) {
-                        outputChannel.appendLine(stdout.toString());
+                        winston.info(stdout.toString());
                         console.log(stdout);
                     }
                     if (stderr) {
-                        outputChannel.appendLine(stderr.toString());
+                        winston.info(stderr.toString());
                     }
                     console.log(stderr);
                     if (err && stderr && !useStdErr) {
                         let errorMessage = ['Error while running tool:', cmd, ...args].join(' ');
-                        outputChannel.appendLine(['Error while running tool:', cmd, ...args].join(' '));
+                        winston.info(['Error while running tool:', cmd, ...args].join(' '));
                         return reject(errorMessage);
                     }
                     let text = (useStdErr ? stderr : stdout).toString();
-                    outputChannel.appendLine([cwd + '>Finished running tool:', cmd, ...args].join(' '));
+                    winston.info([cwd + '>Finished running tool:', cmd, ...args].join(' '));
 
 
                     let ret: ICheckResult[] = [];
                     if (parser) {
                         ret = parser.parse(text);
                     }
-                    outputChannel.appendLine('');
+                    winston.info('');
                     resolve(ret);
                 } catch (e) {
                     reject(e);

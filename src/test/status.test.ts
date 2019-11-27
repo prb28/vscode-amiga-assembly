@@ -5,10 +5,12 @@ import * as vscode from 'vscode';
 
 // tslint:disable:no-unused-expression
 describe("Status Tests", function () {
-    before(() => {
-        // Opening file to activate the extension
-        const newFile = vscode.Uri.parse("untitled://./sta.s");
-        return vscode.window.showTextDocument(newFile);
+    before(async () => {
+        // activate the extension
+        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
     });
     it("Should status show on command", () => {
         let state = ExtensionState.getCurrent();
@@ -29,13 +31,10 @@ describe("Status Tests", function () {
 
             // dispose
             let spiedDiag = spy(statusManager.diagnosticsStatusBarItem);
-            let spiedOutput = spy(statusManager.outputChannel);
             when(spiedDiag.dispose()).thenCall(() => { });
-            when(spiedOutput.dispose()).thenCall(() => { });
             when(spiedStatusBarEntry.dispose()).thenCall(() => { });
             statusManager.dispose();
             verify(spiedDiag.dispose()).once();
-            verify(spiedOutput.dispose()).once();
             verify(spiedStatusBarEntry.dispose()).once();
             expect(statusManager.statusBarEntry).to.be.null;
             // try to toggle

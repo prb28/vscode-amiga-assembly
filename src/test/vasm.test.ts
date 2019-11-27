@@ -17,19 +17,19 @@ import { DummyTextDocument } from "./dummy";
 import { ExtensionState } from "../extension";
 import { VLINKLinker } from "../vlink";
 
-describe("VASM Tests", function() {
-  before(function() {
+describe("VASM Tests", function () {
+  before(function () {
     // Opening file to activate the extension
     const newFile = vscode.Uri.parse("untitled://./vasm.s");
     return vscode.window.showTextDocument(newFile);
   });
-  context("VASMCompiler", function() {
+  context("VASMCompiler", function () {
     let compiler: VASMCompiler;
     let spiedCompiler: VASMCompiler;
     let executorCompiler: ExecutorHelper;
     let executorLinker: ExecutorHelper;
     let spiedLinker: VLINKLinker;
-    before(function() {
+    before(function () {
       compiler = new VASMCompiler();
       // installing a spy
       executorCompiler = spy(compiler.executor);
@@ -61,7 +61,7 @@ describe("VASM Tests", function() {
       spiedLinker = spy(compiler.linker);
       when(spiedLinker.mayLink(anything())).thenReturn(true);
     });
-    beforeEach(function() {
+    beforeEach(function () {
       resetCalls(executorCompiler);
       resetCalls(executorLinker);
       resetCalls(spiedLinker);
@@ -74,13 +74,13 @@ describe("VASM Tests", function() {
         vscode.Uri.parse("file:///workdir")
       );
     });
-    after(function() {
+    after(function () {
       reset(executorCompiler);
       reset(executorLinker);
       reset(spiedLinker);
       reset(spiedCompiler);
     });
-    it("Should call the compiler command", async function() {
+    it("Should call the compiler command", async function () {
       let fileUri = vscode.Uri.file("file1.s");
       await compiler.buildFile(fileUri, false);
       verify(
@@ -106,8 +106,8 @@ describe("VASM Tests", function() {
         Path.sep + "file1.s"
       ]);
     });
-    it("Should build the current editor file", async function() {
-      return compiler.buildCurrentEditorFile().then(function() {
+    it("Should build the current editor file", async function () {
+      return compiler.buildCurrentEditorFile().then(function () {
         verify(
           executorCompiler.runTool(
             anything(),
@@ -132,7 +132,7 @@ describe("VASM Tests", function() {
         ]);
       });
     });
-    it("Should process the global errors to find the line in document", async function() {
+    it("Should process the global errors to find the line in document", async function () {
       let document = new DummyTextDocument();
       document.addLine("First line");
       document.addLine('   include "myfile.i"');
@@ -143,7 +143,7 @@ describe("VASM Tests", function() {
       compiler.processGlobalErrors(document, [error]);
       expect(error.line).to.be.equal(2);
     });
-    it("Should build the all the workspace", async function() {
+    it("Should build the all the workspace", async function () {
       this.timeout(3000);
       let spiedWorkspace = spy(vscode.workspace);
       let file1 = vscode.Uri.parse("file:///file1.s");
@@ -247,7 +247,7 @@ describe("VASM Tests", function() {
         buildPath + "file2.o"
       ]);
     });
-    it("Should return an error if the build dir does not exists", function() {
+    it("Should return an error if the build dir does not exists", function () {
       spiedCompiler = spy(compiler);
       when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
         vscode.Uri.parse("file:///workdir")
@@ -267,7 +267,7 @@ describe("VASM Tests", function() {
           expect(error).to.be.equal(error);
         });
     });
-    it("Should return an error on build document if the compiler is not configured", async function() {
+    it("Should return an error on build document if the compiler is not configured", async function () {
       spiedCompiler = spy(compiler);
       when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
         vscode.Uri.parse("file:///workdir")
@@ -282,7 +282,7 @@ describe("VASM Tests", function() {
         VASMCompiler.CONFIGURE_VASM_ERROR
       );
     });
-    it("Should not return an error on build document if the compiler is not enabled", async function() {
+    it("Should not return an error on build document if the compiler is not enabled", async function () {
       spiedCompiler = spy(compiler);
       when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
         vscode.Uri.parse("file:///workdir")
@@ -295,7 +295,7 @@ describe("VASM Tests", function() {
       let fileUri = vscode.Uri.file("file1.s");
       await expect(compiler.buildFile(fileUri, false)).to.be.fulfilled;
     });
-    it("Should return an error on build workspace if the compiler is not configured", async function() {
+    it("Should return an error on build workspace if the compiler is not configured", async function () {
       spiedCompiler = spy(compiler);
       when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
         vscode.Uri.parse("file:///workdir")
@@ -309,7 +309,7 @@ describe("VASM Tests", function() {
         VASMCompiler.CONFIGURE_VASM_ERROR
       );
     });
-    it("Should not return an error on build workspace if the compiler is not enabled", async function() {
+    it("Should not return an error on build workspace if the compiler is not enabled", async function () {
       spiedCompiler = spy(compiler);
       when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
         vscode.Uri.parse("file:///workdir")
@@ -321,7 +321,7 @@ describe("VASM Tests", function() {
       when(spiedCompiler.disabledInConf(anything())).thenReturn(true);
       await expect(compiler.buildWorkspace()).to.be.fulfilled;
     });
-    it("Should build even if the linker is disable", function() {
+    it("Should build even if the linker is disable", function () {
       this.timeout(3000);
       let spiedWorkspace = spy(vscode.workspace);
       let file1 = vscode.Uri.parse("file:///file1.s");
@@ -350,11 +350,11 @@ describe("VASM Tests", function() {
       when(spiedLinker.mayLink(anything())).thenReturn(false);
       return compiler.buildWorkspace();
     });
-    it("Should clean the workspace", async function() {
+    it("Should clean the workspace", async function () {
       let spiedWorkspace = spy(vscode.workspace);
       let state = ExtensionState.getCurrent();
-      let spiedOutputChannel = spy(state.getStatusManager().outputChannel);
-      when(spiedCompiler.unlink(anything())).thenCall(() => {});
+      let spiedOutputChannel = spy(state.getOutputChannel());
+      when(spiedCompiler.unlink(anything())).thenCall(() => { });
       let file1 = vscode.Uri.parse("file:///build/file1.o");
       let file2 = vscode.Uri.parse("file:///build/file2.o");
       when(spiedWorkspace.findFiles(anything())).thenReturn(
@@ -366,9 +366,9 @@ describe("VASM Tests", function() {
         return Promise.resolve();
       });
     });
-    it("Should get an error when cleaning the workspace", async function() {
+    it("Should get an error when cleaning the workspace", async function () {
       let state = ExtensionState.getCurrent();
-      let spiedOutputChannel = spy(state.getStatusManager().outputChannel);
+      let spiedOutputChannel = spy(state.getOutputChannel());
       spiedCompiler = spy(compiler);
       when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
         vscode.Uri.parse("file:///workdir")
@@ -378,7 +378,7 @@ describe("VASM Tests", function() {
       });
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);
       when(spiedCompiler.disabledInConf(anything())).thenReturn(false);
-      when(spiedCompiler.unlink(anything())).thenCall(() => {});
+      when(spiedCompiler.unlink(anything())).thenCall(() => { });
       await expect(compiler.cleanWorkspace()).to.be.rejectedWith(
         VASMCompiler.CONFIGURE_VASM_ERROR
       );
@@ -386,7 +386,7 @@ describe("VASM Tests", function() {
       verify(spiedOutputChannel.appendLine(anyString())).once();
       resetCalls(spiedOutputChannel);
     });
-    it("Should not get an error when cleaning the workspace and vasm disabled", async function() {
+    it("Should not get an error when cleaning the workspace and vasm disabled", async function () {
       spiedCompiler = spy(compiler);
       when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
         vscode.Uri.parse("file:///workdir")
@@ -396,10 +396,10 @@ describe("VASM Tests", function() {
       });
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);
       when(spiedCompiler.disabledInConf(anything())).thenReturn(true);
-      when(spiedCompiler.unlink(anything())).thenCall(() => {});
+      when(spiedCompiler.unlink(anything())).thenCall(() => { });
       await expect(compiler.cleanWorkspace()).to.be.fulfilled;
     });
-    it("Should get a folder error when cleaning the workspace", async function() {
+    it("Should get a folder error when cleaning the workspace", async function () {
       spiedCompiler = spy(compiler);
       when(spiedCompiler.mkdirSync(anything())).thenCall(() => {
         return Promise.resolve();
@@ -416,7 +416,7 @@ describe("VASM Tests", function() {
         });
     });
   });
-  context("VASMController", function() {
+  context("VASMController", function () {
     it("Should build the current document on save", async () => {
       let compiler = new VASMCompiler();
       const spiedCompiler = spy(compiler);
@@ -445,16 +445,16 @@ describe("VASM Tests", function() {
       verify(spiedStatus.onError("nope")).once();
     });
   });
-  context("VASMParser", function() {
+  context("VASMParser", function () {
     let parser: VASMParser;
-    before(function() {
+    before(function () {
       parser = new VASMParser();
     });
-    it("Should parse an empty string to no errors", async function() {
+    it("Should parse an empty string to no errors", async function () {
       let errors = parser.parse("");
       expect(errors.length).to.be.equal(0);
     });
-    it("Should parse a error", async function() {
+    it("Should parse a error", async function () {
       let errors = parser.parse(
         'error 3 : This is not good\n\nnothing\nerror 5 : This is not good too\nwarning 5 in line 2 of "myfile": oh no'
       );
@@ -472,7 +472,7 @@ describe("VASM Tests", function() {
       expect(error.line).to.be.equal(2);
       expect(error.file).to.be.equal("myfile");
     });
-    it("Should parse a multiline error", async function() {
+    it("Should parse a multiline error", async function () {
       let errStr =
         'error 9 in line 1 of "STAT_SVZC": instruction not supported on selected architecture\n' +
         'called from line 798 of "/myfolder/src/mysource.s"\n' +
@@ -496,7 +496,7 @@ describe("VASM Tests", function() {
       expect(error.file).to.be.equal("/myfolder/src/mysource.s");
       expect(error.line).to.be.equal(646);
     });
-    it("Should parse a included file error", async function() {
+    it("Should parse a included file error", async function () {
       let errStr =
         'error 9 in line 1 of "includedfile.s": instruction not supported on selected architecture\n' +
         'included from line 3 of "/myfolder/src/mysource.s"\n' +

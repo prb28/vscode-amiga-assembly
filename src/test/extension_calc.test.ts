@@ -42,7 +42,7 @@ describe("Global Extension Tests", function () {
             }
             state = ExtensionState.getCurrent();
         });
-        it("Should evaluate the selection in the status bar", async () => {
+        it.only("Should evaluate the selection in the status bar", async () => {
             this.timeout(60000);
             if (state) {
                 let calc = state.getCalc();

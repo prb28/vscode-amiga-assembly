@@ -13,6 +13,7 @@ import { VLINKLinker } from "./vlink";
 import { AsmONE } from "./asmONE";
 import * as fs from "fs";
 import * as path from "path";
+import * as winston from 'winston';
 
 /**
  * Class to manage the VASM compiler
@@ -165,8 +166,7 @@ export class VASMCompiler {
       let state = ExtensionState.getCurrent();
       let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
       let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
-      let statusManager = state.getStatusManager();
-      statusManager.outputChannel.appendLine("Cleaning workspace");
+      winston.info("Cleaning workspace");
       errorDiagnosticCollection.clear();
       warningDiagnosticCollection.clear();
       let configuration = workspace.getConfiguration("amiga-assembly", null);
@@ -177,7 +177,7 @@ export class VASMCompiler {
           await workspace.findFiles("build/**/*.o").then(filesURI => {
             for (let i = 0; i < filesURI.length; i++) {
               const fileUri = filesURI[i];
-              statusManager.outputChannel.appendLine(
+              winston.info(
                 `Deleting ${fileUri.fsPath}`
               );
               this.unlink(fileUri);
@@ -258,11 +258,9 @@ export class VASMCompiler {
               } else {
                 // The linker is not mandatory
                 // show a warning in the output
-                ExtensionState.getCurrent()
-                  .getStatusManager()
-                  .outputChannel.append(
-                    "Warning : the linker vlink is not configured"
-                  );
+                winston.warn(
+                  "Warning : the linker vlink is not configured"
+                );
                 resolve();
               }
             })
