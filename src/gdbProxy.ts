@@ -617,7 +617,6 @@ export class GdbProxy extends EventEmitter {
                     value: parseInt(v, 16)
                 });
                 v = message.slice(pos, pos + 8);
-                pos += 8;
                 let pc = parseInt(v, 16);
                 registers.push({
                     name: "pc",

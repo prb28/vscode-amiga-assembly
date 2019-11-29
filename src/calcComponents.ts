@@ -183,7 +183,7 @@ export class CalcComponent {
                                     let modifiedFormula = formula.replace('x', num.toString());
                                     let resultValue = await this.calculate(modifiedFormula).catch(err => {
                                         reject(err);
-                                    })
+                                    });
                                     if (resultValue) {
                                         replaceValues.push([numberParser.numberToTypedString(resultValue, tp), range]);
                                     }
@@ -224,8 +224,7 @@ export class CalcComponent {
                                 edit.replace(range, value);
                             }
                         });
-                    })
-
+                    });
                 }
             }
             resolve();

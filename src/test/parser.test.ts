@@ -327,7 +327,7 @@ describe("Parser Tests", function () {
             let asmLine = new ASMLine(" jsr $010");
             expect(asmLine.getNumbersFromData()).to.be.eql([['$010', new Range(new Position(0, 5), new Position(0, 9))]]);
             asmLine = new ASMLine(" dc.b $1, #10, $a, %1010, @-12");
-            let numbers = asmLine.getNumbersFromData()
+            let numbers = asmLine.getNumbersFromData();
             expect(numbers.length).to.be.equal(5);
             let pos = 6;
             expect(numbers[0]).to.be.eql(['$1', new Range(new Position(0, pos), new Position(0, pos + 2))]);

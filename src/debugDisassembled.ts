@@ -128,13 +128,13 @@ export class DebugDisassembledFile {
 
 export class DisassembleAddressArguments implements DebugProtocol.DisassembleArguments {
     memoryReference: string;
-    offset?: number | undefined;
-    instructionOffset?: number | undefined;
+    offset?: number;
+    instructionOffset?: number;
     instructionCount: number;
-    resolveSymbols?: boolean | undefined;
-    segmentId?: number | undefined;
-    stackFrameIndex?: number | undefined;
-    addressExpression?: string | undefined;
+    resolveSymbols?: boolean;
+    segmentId?: number;
+    stackFrameIndex?: number;
+    addressExpression?: string;
     copper: boolean;
     constructor(addressExpression?: string | undefined, instructionCount?: number | undefined, isCopper?: boolean | undefined) {
         this.addressExpression = addressExpression;

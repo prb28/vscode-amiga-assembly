@@ -154,14 +154,14 @@ export class DebugExpressionHelper {
 
 export class DisassembledInstructionAdapter implements DebugProtocol.DisassembledInstruction {
     public address: string;
-    public instructionBytes?: string | undefined;
+    public instructionBytes?: string;
     public instruction: string;
-    public symbol?: string | undefined;
-    public location?: DebugProtocol.Source | undefined;
-    public line?: number | undefined;
-    public column?: number | undefined;
-    public endLine?: number | undefined;
-    public endColumn?: number | undefined;
+    public symbol?: string;
+    public location?: DebugProtocol.Source;
+    public line?: number;
+    public column?: number;
+    public endLine?: number;
+    public endColumn?: number;
     private constructor(address: string, instruction: string) {
         this.address = address;
         this.instruction = instruction;

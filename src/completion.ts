@@ -42,9 +42,6 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                                     continue;
                                 } else {
                                     if (value.type === DocumentationType.REGISTER) {
-                                        if (!isInData) {
-                                            continue;
-                                        }
                                         kind = vscode.CompletionItemKind.Variable;
                                     } else if (word.startsWith("_LVO")) {
                                         label = "_LVO" + label;
