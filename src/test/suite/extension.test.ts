@@ -177,7 +177,7 @@ describe("Global Extension Tests", function () {
             const uri = vscode.Uri.file(path.join(testFilesPath, imageName));
             await vscode.commands.executeCommand("amiga-assembly.view-iff", uri);
 
-            expect(IFFViewerPanel.views.size > 1).to.be.true;
+            expect(IFFViewerPanel.views.size >= 1).to.be.true;
             for (let panel of IFFViewerPanel.views.keys()) {
                 expect(panel.title).to.be.equal(imageName);
                 expect(panel.webview.html).to.contain("iff.min.js");
