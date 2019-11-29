@@ -57,10 +57,10 @@ export interface GdbPacketHandler extends ILiteHandler<GdbPacket> {
 }
 
 /**
- * Class to manage the Gdb data recieved.
+ * Class to manage the Gdb data received.
  * The data is consumed by the first handler added tha consumes it.
  */
-export class GdbRecievedDataManager {
+export class GdbReceivedDataManager {
     private readonly onData: LiteConsumerEvent<GdbPacket>;
 
     constructor(defaultHandler?: { (data: GdbPacket): boolean; }) {

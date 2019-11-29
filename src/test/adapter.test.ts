@@ -59,7 +59,7 @@ describe('Node Debug Adapter', () => {
 			this.session.start(<NodeJS.ReadableStream>socket, socket);
 			this.spiedSession = spy(this.session);
 			when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
-			when(this.spiedSession.updateDisassemblebView(anything(), anything())).thenReturn(Promise.resolve());
+			when(this.spiedSession.updateDisassembledView(anything(), anything())).thenReturn(Promise.resolve());
 		}).listen(0);
 	});
 

@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as chai from 'chai';
 import { mock, instance, when, anyNumber } from 'ts-mockito';
 import { DummyVariableResolver } from './dummyVariableResolver';
-import { MemoryLabelsRegistry } from '../customMemoryAdresses';
+import { MemoryLabelsRegistry } from '../customMemoryAddresses';
 import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 

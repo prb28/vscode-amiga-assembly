@@ -20,7 +20,7 @@ export class CalcComponent {
                 this.activate();
             }
             if (this.statusBarItem) {
-                const stbar = this.statusBarItem;
+                const statusBarItemConst = this.statusBarItem;
                 // Get the current text editor
                 let editor = window.activeTextEditor;
                 if (!editor) {
@@ -34,10 +34,10 @@ export class CalcComponent {
                     let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                     await definitionHandler.evaluateFormula(docContent).then(result => {
                         // Update the status bar
-                        stbar.text = this.formatResult(docContent, result);
-                        stbar.show();
+                        statusBarItemConst.text = this.formatResult(docContent, result);
+                        statusBarItemConst.show();
                     }).catch(err => {
-                        stbar.hide();
+                        statusBarItemConst.hide();
                     });
                 }
             }
@@ -47,7 +47,7 @@ export class CalcComponent {
 
     /**
      * Formats the result
-     * @param expression expression evalated
+     * @param expression expression evaluated
      * @param result Result of the calculation
      */
     public formatResult(expression: string | null, result: number): string {

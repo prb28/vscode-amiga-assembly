@@ -1,5 +1,5 @@
 import { DebugProtocol } from "vscode-debugprotocol";
-import { DebugDisassembledFile, DebugDisassembledMananger } from "./debugDisassembled";
+import { DebugDisassembledFile, DebugDisassembledManager } from "./debugDisassembled";
 import { DebugInfo } from "./debugInfo";
 import { GdbProxy } from "./gdbProxy";
 
@@ -13,18 +13,18 @@ export class BreakpointManager {
     private gdbProxy: GdbProxy;
     /** Breakpoints selected */
     private breakpoints = new Array<GdbBreakpoint>();
-    /** Pending breakpoint no yet sent to debuger */
+    /** Pending breakpoint no yet sent to debugger */
     private pendingBreakpoints = new Array<GdbBreakpoint>();
     /** Debug information for the loaded program */
     private debugInfo?: DebugInfo;
     /** Manager of disassembled code */
-    private debugDisassembledMananger: DebugDisassembledMananger;
+    private debugDisassembledManager: DebugDisassembledManager;
     /** Next breakpoint id */
     private nextBreakpointId = 0;
 
-    public constructor(gdbProxy: GdbProxy, debugDisassembledMananger: DebugDisassembledMananger) {
+    public constructor(gdbProxy: GdbProxy, debugDisassembledManager: DebugDisassembledManager) {
         this.gdbProxy = gdbProxy;
-        this.debugDisassembledMananger = debugDisassembledMananger;
+        this.debugDisassembledManager = debugDisassembledManager;
         this.gdbProxy.setSendPendingBreakpointsCallback(this.sendAllPendingBreakpoint);
     }
 
@@ -71,7 +71,7 @@ export class BreakpointManager {
                     }
                 } else {
                     const name = <string>debugBp.source.name;
-                    await this.debugDisassembledMananger.getAddressForFileEditorLine(name, debugBp.line).then(async address => {
+                    await this.debugDisassembledManager.getAddressForFileEditorLine(name, debugBp.line).then(async address => {
                         debugBp.segmentId = undefined;
                         debugBp.offset = address;
                         await this.gdbProxy.setBreakpoint(debugBp).then(() => {

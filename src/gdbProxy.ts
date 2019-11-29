@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { Mutex } from 'ts-simple-mutex/build/lib/mutex';
 import { GdbAmigaSysThreadId, GdbError, GdbHaltStatus, GdbRegister, GdbSignal, GdbStackFrame, GdbStackPosition, GdbThread, Segment, GdbThreadState } from './gdbProxyCore';
 import { GdbBreakpoint } from './breakpointManager';
-import { GdbRecievedDataManager, GdbPacketHandler } from './gdbEvents';
+import { GdbReceivedDataManager as GdbReceivedDataManager, GdbPacketHandler } from './gdbEvents';
 import { GdbPacket, GdbPacketType } from './gdbPacket';
 import { StringUtils } from './stringUtils';
 
@@ -56,8 +56,9 @@ export class GdbProxy extends EventEmitter {
     /** function from parent to send all pending breakpoints */
     private sendPendingBreakpointsCallback: (() => Promise<void>) | undefined = undefined;
     /** Manager for the received socket data */
-    private recievedDataManager: GdbRecievedDataManager;
-
+    private receivedDataManager: GdbReceivedDataManager;
+    /** Lock for sendPacketString function */
+    private sendPacketStringLock?: any;
 
     /**
      * Constructor 
@@ -71,7 +72,7 @@ export class GdbProxy extends EventEmitter {
         } else {
             this.socket = new Socket();
         }
-        this.recievedDataManager = new GdbRecievedDataManager(this.defaultOnDataHandler);
+        this.receivedDataManager = new GdbReceivedDataManager(this.defaultOnDataHandler);
     }
 
     /**
@@ -108,6 +109,10 @@ export class GdbProxy extends EventEmitter {
                 });
             });
             self.socket.on('error', (err) => {
+                if (this.sendPacketStringLock) {
+                    this.sendPacketStringLock();
+                    this.sendPacketStringLock = undefined;
+                }
                 self.sendEvent("error", err);
                 reject(err);
             });
@@ -124,7 +129,7 @@ export class GdbProxy extends EventEmitter {
 
     /** Default handler for the on data event*/
     private defaultOnDataHandler = (packet: GdbPacket): boolean => {
-        this.sendEvent("output", `defaultOnDataHandler (notif : ${packet.isNotification()}) : --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
+        this.sendEvent("output", `defaultOnDataHandler (notification : ${packet.isNotification()}) : --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
         let consumed = false;
         switch (packet.getType()) {
             case GdbPacketType.STOP:
@@ -152,7 +157,7 @@ export class GdbProxy extends EventEmitter {
 
     /**
      * Method to precess the generics messages
-     * @param proxy A GdbProxy istance
+     * @param proxy A GdbProxy instance
      * @param data Data to parse
      */
     private onData(proxy: GdbProxy, data: any): Promise<void> {
@@ -161,7 +166,7 @@ export class GdbProxy extends EventEmitter {
             for (let packet of packets) {
                 // plus packet are acknowledge - to be ignored
                 if (packet.getType() !== GdbPacketType.PLUS) {
-                    this.recievedDataManager.trigger(packet);
+                    this.receivedDataManager.trigger(packet);
                 }
             }
             resolve();
@@ -292,24 +297,23 @@ export class GdbProxy extends EventEmitter {
     public sendPacketString(text: string, expectedType?: GdbPacketType): Promise<string> {
         return new Promise(async (resolve, reject) => {
             let dataToSend = this.formatString(text);
-            const unlock = await this.mutex.capture('sendPacketString');
             if (this.socket.writable) {
-                let p = this.recievedDataManager.waitData(<GdbPacketHandler>{
+                this.sendPacketStringLock = await this.mutex.capture('sendPacketString');
+                let p = this.receivedDataManager.waitData(<GdbPacketHandler>{
                     handle: (packet: GdbPacket): boolean => {
                         if (packet.getType() === GdbPacketType.ERROR) {
                             reject(this.parseError(packet.getMessage()));
                         } else if ((!expectedType) || (expectedType === packet.getType())) {
                             resolve(packet.getMessage());
                             this.sendEvent("output", `${dataToSend} --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
-                            unlock();
+                            if (this.sendPacketStringLock) {
+                                this.sendPacketStringLock();
+                                this.sendPacketStringLock = undefined;
+                            }
                             return true;
                         }
                         return false;
                     }
-                });
-                this.socket.once('error', (err) => {
-                    unlock();
-                    reject(err);
                 });
                 this.socket.write(dataToSend);
                 await p;
@@ -321,7 +325,7 @@ export class GdbProxy extends EventEmitter {
 
     /**
      * Ask for a new breakpoint
-     * @param breakpoint breakpoitn to add
+     * @param breakpoint breakpoint to add
      * @return Promise with a breakpoint
      */
     public setBreakpoint(breakpoint: GdbBreakpoint): Promise<void> {
@@ -381,7 +385,7 @@ export class GdbProxy extends EventEmitter {
 
     /**
      * Ask for a breakpoint removal
-     * @param breakpoint breakpoitn to remove
+     * @param breakpoint breakpoint to remove
      */
     public removeBreakpoint(breakpoint: GdbBreakpoint): Promise<void> {
         return new Promise(async (resolve, reject) => {
@@ -435,7 +439,7 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Retrieves the stack postition for a frame
+     * Retrieves the stack position for a frame
      * 
      * @param threadId Thread identifier
      * @param frameIndex Index of the frame selected
@@ -540,7 +544,7 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Ask the debbuger to step 
+     * Ask the debugger to step 
      * @param thread Thread selected
      */
     public async step(thread: GdbThread): Promise<void> {
@@ -548,7 +552,7 @@ export class GdbProxy extends EventEmitter {
         if (this.supportVCont) {
             let startAddress = 0;
             let endAddress = 0;
-            // TODO: Remove hack to step over... Put real adresses
+            // TODO: Remove hack to step over... Put real addresses
             message = 'vCont;r' + GdbProxy.formatNumber(startAddress) + ',' + GdbProxy.formatNumber(endAddress) + ':' + thread.marshall();
         } else {
             // Not a real GDB command...
@@ -561,7 +565,7 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Ask the debbuger to step in
+     * Ask the debugger to step in
      * @param thread Thread selected
      */
     public async stepIn(thread: GdbThread): Promise<void> {
@@ -1059,7 +1063,7 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Returns the thread with an amiga sys tipe
+     * Returns the thread with an amiga sys type
      */
     public getThreadFromSysThreadId(sysThreadId: GdbAmigaSysThreadId): GdbThread | undefined {
         for (let t of this.threads.values()) {

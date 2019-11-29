@@ -128,7 +128,7 @@ export class MemoryLabelsRegistry {
         <CustomData>{ name: "INTREQR", adr: 0xdff01E, rw: 1 }, /* Interrupt request bits read */
         <CustomData>{ name: "DSKPTH", adr: 0xdff020, rw: 2, special: 1 }, /* Disk pointer (high 5 bits) */
         <CustomData>{ name: "DSKPTL", adr: 0xdff022, rw: 2, special: 2 }, /* Disk pointer (low 15 bits) */
-        <CustomData>{ name: "DSKLEN", adr: 0xdff024, rw: 2, special: 0 }, /* Disk lentgh */
+        <CustomData>{ name: "DSKLEN", adr: 0xdff024, rw: 2, special: 0 }, /* Disk length */
         <CustomData>{ name: "DSKDAT", adr: 0xdff026 }, /* Disk DMA data write */
         <CustomData>{ name: "REFPTR", adr: 0xdff028 }, /* Refresh pointer */
         <CustomData>{ name: "VPOSW", adr: 0xdff02A, rw: 2, special: 0 }, /* Write vert most sig. bits(and frame flop) */
@@ -192,7 +192,7 @@ export class MemoryLabelsRegistry {
         <CustomData>{ name: "ADKCON", adr: 0xdff09E, rw: 2 }, /* Audio,disk,UART,control */
         <CustomData>{ name: "AUD0LCH", adr: 0xdff0A0, rw: 2, special: 1 }, /* Audio channel 0 location (high 5 bits) */
         <CustomData>{ name: "AUD0LCL", adr: 0xdff0A2, rw: 2, special: 2 }, /* Audio channel 0 location (low 15 bits) */
-        <CustomData>{ name: "AUD0LEN", adr: 0xdff0A4, rw: 2 }, /* Audio channel 0 lentgh */
+        <CustomData>{ name: "AUD0LEN", adr: 0xdff0A4, rw: 2 }, /* Audio channel 0 length */
         <CustomData>{ name: "AUD0PER", adr: 0xdff0A6, rw: 2 }, /* Audio channel 0 period */
         <CustomData>{ name: "AUD0VOL", adr: 0xdff0A8, rw: 2 }, /* Audio channel 0 volume */
         <CustomData>{ name: "AUD0DAT", adr: 0xdff0AA, rw: 2 }, /* Audio channel 0 data */
@@ -200,7 +200,7 @@ export class MemoryLabelsRegistry {
         <CustomData>{ name: "Unknown", adr: 0xdff0AE }, /* Unknown or Unused */
         <CustomData>{ name: "AUD1LCH", adr: 0xdff0B0, rw: 2, special: 1 }, /* Audio channel 1 location (high 5 bits) */
         <CustomData>{ name: "AUD1LCL", adr: 0xdff0B2, rw: 2, special: 2 }, /* Audio channel 1 location (low 15 bits) */
-        <CustomData>{ name: "AUD1LEN", adr: 0xdff0B4, rw: 2 }, /* Audio channel 1 lentgh */
+        <CustomData>{ name: "AUD1LEN", adr: 0xdff0B4, rw: 2 }, /* Audio channel 1 length */
         <CustomData>{ name: "AUD1PER", adr: 0xdff0B6, rw: 2 }, /* Audio channel 1 period */
         <CustomData>{ name: "AUD1VOL", adr: 0xdff0B8, rw: 2 }, /* Audio channel 1 volume */
         <CustomData>{ name: "AUD1DAT", adr: 0xdff0BA, rw: 2 }, /* Audio channel 1 data */
@@ -208,7 +208,7 @@ export class MemoryLabelsRegistry {
         <CustomData>{ name: "Unknown", adr: 0xdff0BE }, /* Unknown or Unused */
         <CustomData>{ name: "AUD2LCH", adr: 0xdff0C0, rw: 2, special: 1 }, /* Audio channel 2 location (high 5 bits) */
         <CustomData>{ name: "AUD2LCL", adr: 0xdff0C2, rw: 2, special: 2 }, /* Audio channel 2 location (low 15 bits) */
-        <CustomData>{ name: "AUD2LEN", adr: 0xdff0C4, rw: 2 }, /* Audio channel 2 lentgh */
+        <CustomData>{ name: "AUD2LEN", adr: 0xdff0C4, rw: 2 }, /* Audio channel 2 length */
         <CustomData>{ name: "AUD2PER", adr: 0xdff0C6, rw: 2 }, /* Audio channel 2 period */
         <CustomData>{ name: "AUD2VOL", adr: 0xdff0C8, rw: 2 }, /* Audio channel 2 volume */
         <CustomData>{ name: "AUD2DAT", adr: 0xdff0CA, rw: 2 }, /* Audio channel 2 data */
@@ -216,7 +216,7 @@ export class MemoryLabelsRegistry {
         <CustomData>{ name: "Unknown", adr: 0xdff0CE }, /* Unknown or Unused */
         <CustomData>{ name: "AUD3LCH", adr: 0xdff0D0, rw: 2, special: 1 }, /* Audio channel 3 location (high 5 bits) */
         <CustomData>{ name: "AUD3LCL", adr: 0xdff0D2, rw: 2, special: 2 }, /* Audio channel 3 location (low 15 bits) */
-        <CustomData>{ name: "AUD3LEN", adr: 0xdff0D4, rw: 2 }, /* Audio channel 3 lentgh */
+        <CustomData>{ name: "AUD3LEN", adr: 0xdff0D4, rw: 2 }, /* Audio channel 3 length */
         <CustomData>{ name: "AUD3PER", adr: 0xdff0D6, rw: 2 }, /* Audio channel 3 period */
         <CustomData>{ name: "AUD3VOL", adr: 0xdff0D8, rw: 2 }, /* Audio channel 3 volume */
         <CustomData>{ name: "AUD3DAT", adr: 0xdff0DA, rw: 2 }, /* Audio channel 3 data */

@@ -1,11 +1,11 @@
 import { expect } from 'chai';
-import { CopperInstruction, CopperIntructionType, CopperWait, CopperSkip, CopperMove, CopperDisassembler } from '../copperDisassembler';
+import { CopperInstruction, CopperInstructionType, CopperWait, CopperSkip, CopperMove, CopperDisassembler } from '../copperDisassembler';
 
 describe("Copper Disassembler Tests", function () {
     // tslint:disable:no-unused-expression
     it("Should disassemble a move instruction", function () {
         let i = CopperInstruction.parse("f1800502"); // the first f is just for tests -> not real
-        expect(i.instructionType).to.be.equal(CopperIntructionType.MOVE);
+        expect(i.instructionType).to.be.equal(CopperInstructionType.MOVE);
         expect(i.first).to.be.equal(0xf180);
         expect(i.second).to.be.equal(0x0502);
         expect(i instanceof CopperMove).to.be.true;
@@ -18,7 +18,7 @@ describe("Copper Disassembler Tests", function () {
     });
     it("Should disassemble a wait instruction", function () {
         let i = CopperInstruction.parse("9601ff00");
-        expect(i.instructionType).to.be.equal(CopperIntructionType.WAIT);
+        expect(i.instructionType).to.be.equal(CopperInstructionType.WAIT);
         expect(i.first).to.be.equal(0x9601);
         expect(i.second).to.be.equal(0xff00);
         expect(i instanceof CopperWait).to.be.true;
@@ -53,12 +53,12 @@ describe("Copper Disassembler Tests", function () {
             expect(i.HE).to.be.equal(0xfe);
             expect(i.vertical).to.be.equal(0xff);
             expect(i.horizontal).to.be.equal(0xfe);
-            expect(i.toString()).to.be.equal("dc.w $ffff,$fffe    ; End of Copperlist");
+            expect(i.toString()).to.be.equal("dc.w $ffff,$fffe    ; End of CopperList");
         }
     });
     it("Should disassemble a skip instruction", function () {
         let i = CopperInstruction.parse("6401ff01");
-        expect(i.instructionType).to.be.equal(CopperIntructionType.SKIP);
+        expect(i.instructionType).to.be.equal(CopperInstructionType.SKIP);
         expect(i.first).to.be.equal(0x6401);
         expect(i.second).to.be.equal(0xff01);
         expect(i instanceof CopperSkip).to.be.true;

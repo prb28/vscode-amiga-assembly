@@ -13,10 +13,10 @@ import { DebugInfo } from './debugInfo';
 import { Capstone } from './capstone';
 import { DebugVariableResolver } from './debugVariableResolver';
 import { DebugExpressionHelper } from './debugExpressionHelper';
-import { DebugDisassembledMananger, DisassembleAddressArguments } from './debugDisassembled';
+import { DebugDisassembledManager, DisassembleAddressArguments } from './debugDisassembled';
 import * as fs from 'fs';
 import { StringUtils } from './stringUtils';
-import { MemoryLabelsRegistry } from './customMemoryAdresses';
+import { MemoryLabelsRegistry } from './customMemoryAddresses';
 import { BreakpointManager, GdbBreakpoint } from './breakpointManager';
 import { CopperDisassembler } from './copperDisassembler';
 const { Subject } = require('await-notify');
@@ -99,9 +99,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     private debugExpressionHelper = new DebugExpressionHelper();
 
     /** Manager of disassembled code */
-    private debugDisassembledMananger: DebugDisassembledMananger;
+    private debugDisassembledManager: DebugDisassembledManager;
 
-    /** Breakpoint mamanger */
+    /** Breakpoint manager */
     private breakpointManager: BreakpointManager;
 
     /** Current memory display pc */
@@ -122,8 +122,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.gdbProxy = new GdbProxy(undefined);
         this.initProxy();
         this.executor = new ExecutorHelper();
-        this.debugDisassembledMananger = new DebugDisassembledMananger(this.gdbProxy, undefined, this);
-        this.breakpointManager = new BreakpointManager(this.gdbProxy, this.debugDisassembledMananger);
+        this.debugDisassembledManager = new DebugDisassembledManager(this.gdbProxy, undefined, this);
+        this.breakpointManager = new BreakpointManager(this.gdbProxy, this.debugDisassembledManager);
     }
 
 	/**
@@ -138,8 +138,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.initProxy();
         this.testMode = true;
         this.capstone = capstone;
-        this.debugDisassembledMananger = new DebugDisassembledMananger(gdbProxy, capstone, this);
-        this.breakpointManager = new BreakpointManager(this.gdbProxy, this.debugDisassembledMananger);
+        this.debugDisassembledManager = new DebugDisassembledManager(gdbProxy, capstone, this);
+        this.breakpointManager = new BreakpointManager(this.gdbProxy, this.debugDisassembledManager);
     }
 
     /**
@@ -246,7 +246,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         // Restart frame not supported
         response.body.supportsRestartFrame = false;
 
-        // Conditionnal breakpoints not supported
+        // Conditional breakpoints not supported
         response.body.supportsConditionalBreakpoints = false;
 
         // Read memory
@@ -275,7 +275,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.capstone = new Capstone(conf);
         }
 
-        this.debugDisassembledMananger = new DebugDisassembledMananger(this.gdbProxy, this.capstone, this);
+        this.debugDisassembledManager = new DebugDisassembledManager(this.gdbProxy, this.capstone, this);
 
         this.sendResponse(response);
 
@@ -317,7 +317,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     /**
      * Send a response containing an error.
-     * @param response reponse to send
+     * @param response response to send
      * @param message Error message
      */
     private sendStringErrorResponse(response: DebugProtocol.Response, message: string) {
@@ -366,7 +366,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     "        M ${register|symbol}=bytes\n" +
                     "        M #{register|symbol}=bytes\n" +
                     "            example: M ${mycopperlabel}=0ff534\n" +
-                    "      ${symbol} gives the adress of symbol," +
+                    "      ${symbol} gives the address of symbol," +
                     "      #{symbol} gives the pointed value from the symbol\n";
                 this.sendEvent(new OutputEvent(text));
             }
@@ -409,7 +409,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     public checkEmulator(emulatorPath: string): boolean {
-        // Function usefull for testing - mocking
+        // Function useful for testing - mocking
         return fs.existsSync(emulatorPath);
     }
 
@@ -418,7 +418,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.sendEvent(new OutputEvent(`Starting emulator: ${args.emulator}`));
             const emulatorExe = args.emulator;
             if (emulatorExe) {
-                // Is the emeulator exe present in the filesystem ?
+                // Is the emulator exe present in the filesystem ?
                 if (this.checkEmulator(emulatorExe)) {
                     return new Promise(async (resolve, reject) => {
                         this.cancellationTokenSource = new CancellationTokenSource();
@@ -453,7 +453,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected disassembleRequestInner(response: DebugProtocol.DisassembleResponse, args: DisassembleAddressArguments): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            await this.debugDisassembledMananger.disassembleRequest(args).then(instructions => {
+            await this.debugDisassembledManager.disassembleRequest(args).then(instructions => {
                 response.body = {
                     instructions: instructions,
                 };
@@ -506,9 +506,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected threadsRequest(response: DebugProtocol.ThreadsResponse): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            await this.gdbProxy.getThreadIds().then(tids => {
+            await this.gdbProxy.getThreadIds().then(thIds => {
                 let threads = new Array<Thread>();
-                for (let t of tids) {
+                for (let t of thIds) {
                     threads.push(new Thread(t.getId(), t.getDisplayName()));
                 }
                 response.body = {
@@ -533,7 +533,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     for (let f of stk.frames) {
                         if ((!updatedView) && (thread.getThreadId() === GdbAmigaSysThreadId.CPU)) {
                             // Update the cpu view
-                            this.updateDisassemblebView(f.pc, 100);
+                            this.updateDisassembledView(f.pc, 100);
                             updatedView = true;
                         }
                         let stackFrameDone = false;
@@ -566,7 +566,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                     line += ": ";
                                     if (this.capstone) {
                                         let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
-                                            console.error("Error ingored: " + err.getMessage());
+                                            console.error("Error ignored: " + err.getMessage());
                                         });
                                         if (memory) {
                                             let disassembled = await this.capstone.disassemble(memory);
@@ -595,7 +595,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                     // Get the disassembled line
                                     line += ": ";
                                     let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
-                                        console.error("Error ingored: " + err.getMessage());
+                                        console.error("Error ignored: " + err.getMessage());
                                     });
                                     if (memory) {
                                         let cDis = new CopperDisassembler(memory);
@@ -605,7 +605,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                 }
                             }
                             // The the stack frame from the manager
-                            let stackFrame = await this.debugDisassembledMananger.getStackFrame(f.index, f.pc, line, (thread.getThreadId() === GdbAmigaSysThreadId.COP));
+                            let stackFrame = await this.debugDisassembledManager.getStackFrame(f.index, f.pc, line, (thread.getThreadId() === GdbAmigaSysThreadId.COP));
                             if (stackFrame) {
                                 stackFrames.push(stackFrame);
                             }
@@ -779,7 +779,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
-        this.sendStringErrorResponse(response, "Option not availaible");
+        this.sendStringErrorResponse(response, "Option not available");
     }
 
     private evaluateRequestRegister(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
@@ -915,16 +915,16 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             this.sendResponse(response);
                         } else {
                             if (this.capstone) {
-                                const ckey = key;
+                                const constKey = key;
                                 // disassemble the code 
                                 this.capstone.disassemble(memory).then((code) => {
                                     let [firstRow, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, startAddress);
-                                    this.variableRefMap.set(ckey, variables);
-                                    this.variableExpressionMap.set(args.expression, ckey);
+                                    this.variableRefMap.set(constKey, variables);
+                                    this.variableExpressionMap.set(args.expression, constKey);
                                     response.body = {
                                         result: firstRow,
                                         type: "array",
-                                        variablesReference: ckey,
+                                        variablesReference: constKey,
                                     };
                                     this.sendResponse(response);
                                 }).catch((err) => {
@@ -956,7 +956,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             let addrStr = matches[1];
             let data = matches[2];
             if ((addrStr !== null) && (data !== null) && (data.length > 0)) {
-                // reaplace the address if it is a variable
+                // replace the address if it is a variable
                 this.debugExpressionHelper.getAddressFromExpression(addrStr, args.frameId, this).then((address) => {
                     this.gdbProxy.setMemory(address, data).then(() => {
                         args.expression = 'm' + addrStr + ',' + data.length.toString(16);
@@ -1099,11 +1099,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    private updateDisassemblebView(address: number, length: number): Promise<void> {
+    public updateDisassembledView(address: number, length: number): Promise<void> {
         return new Promise(async (resolve, reject) => {
             if (address !== this.currentMemoryViewPc) {
                 this.currentMemoryViewPc = address;
-                await this.debugDisassembledMananger.disassembleNumericalAddressCPU(address, length).then(async dLines => {
+                await this.debugDisassembledManager.disassembleNumericalAddressCPU(address, length).then(async dLines => {
                     await vscode.commands.executeCommand('disassembledMemory.setDisassembledMemory', dLines);
                     resolve();
                 }).catch((err) => {

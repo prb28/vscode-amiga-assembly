@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import * as chai from 'chai';
 import { mock, instance, when, anyNumber, reset, anyString } from 'ts-mockito';
 //import { DebugProtocol } from 'vscode-debugprotocol';
-import { DebugDisassembledFile, DebugDisassembledMananger, DisassembleAddressArguments } from '../debugDisassembled';
+import { DebugDisassembledFile, DebugDisassembledManager, DisassembleAddressArguments } from '../debugDisassembled';
 import * as chaiAsPromised from 'chai-as-promised';
 import { Capstone } from '../capstone';
 import { GdbProxy } from '../gdbProxy';
@@ -17,7 +17,7 @@ import * as vscode from 'vscode';
 import { DisassembledInstructionAdapter } from '../debugExpressionHelper';
 chai.use(chaiAsPromised);
 
-describe("debug disassebled Tests", function () {
+describe("debug disassembled Tests", function () {
     before(async function () {
         // activate the extension
         let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
@@ -95,7 +95,7 @@ describe("debug disassebled Tests", function () {
             expect(DebugDisassembledFile.isDebugAsmFile("foo.foo")).to.be.false;
         });
     });
-    context("DebugDisassembledMananger Tests", function () {
+    context("DebugDisassembledManager Tests", function () {
         let mockedCapstone: Capstone;
         let mockedGdbProxy: GdbProxy;
         let capstone: Capstone;
@@ -120,7 +120,7 @@ describe("debug disassebled Tests", function () {
             when(mockedGdbProxy.toRelativeOffset(anyNumber())).thenReturn([-1, 12]).thenReturn([0, 2]);
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n2: 00 00     move.l a0,a1\n");
-            let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
+            let manager = new DebugDisassembledManager(gdbProxy, capstone, variableResolver);
             let stack = await manager.getStackFrame(0, 10, "my label", false);
             expect(stack).to.be.eql(<StackFrame>{
                 column: 1,
@@ -142,7 +142,7 @@ describe("debug disassebled Tests", function () {
             when(mockedGdbProxy.toRelativeOffset(anyNumber())).thenReturn([0, 2]);
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n4: 00 00     move.l a0,a1\n");
-            let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
+            let manager = new DebugDisassembledManager(gdbProxy, capstone, variableResolver);
             let stack = await manager.getStackFrame(0, 2, "my label", false);
             expect(stack.column).to.be.equal(0);
             expect(stack.id).to.be.equal(0);
@@ -168,7 +168,7 @@ describe("debug disassebled Tests", function () {
             expect(stack.name).to.be.equal("my label");
             expect(stack.source).to.be.undefined;
             // capstone not defined
-            manager = new DebugDisassembledMananger(gdbProxy, undefined, variableResolver);
+            manager = new DebugDisassembledManager(gdbProxy, undefined, variableResolver);
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n4: 00 00     move.l a0,a1\n");
             stack = await manager.getStackFrame(0, 2, "my label", false);
             expect(stack.column).to.be.equal(0);
@@ -179,15 +179,15 @@ describe("debug disassebled Tests", function () {
         });
         it("Should generate an error if disassemble without capstone or arguments", async function () {
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("00000");
-            let manager = new DebugDisassembledMananger(gdbProxy, undefined, variableResolver);
+            let manager = new DebugDisassembledManager(gdbProxy, undefined, variableResolver);
             await expect(manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 })).to.be.rejected;
-            manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
+            manager = new DebugDisassembledManager(gdbProxy, capstone, variableResolver);
             await expect(manager.disassembleRequest(<DisassembleAddressArguments>{})).to.be.rejected;
         });
         it("Should disassemble a segmentID", async function () {
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n4: 00 00     move.l a2,a6\n");
-            let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
+            let manager = new DebugDisassembledManager(gdbProxy, capstone, variableResolver);
             let instructions = await manager.disassembleRequest(<DisassembleAddressArguments>{ segmentId: 0 });
             expect(instructions.length).to.be.equal(2);
             expect(instructions[0].address).to.be.equal(DisassembledInstructionAdapter.getAddressString(0));
@@ -205,7 +205,7 @@ describe("debug disassebled Tests", function () {
         it("Should disassemble a memory address", async function () {
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("00000");
             when(mockedCapstone.disassemble(anyString())).thenResolve("0: 00 00     move.l a0,a1\n4: 00 00     move.l a2,a6\n");
-            let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
+            let manager = new DebugDisassembledManager(gdbProxy, capstone, variableResolver);
             let instructions = await manager.disassembleRequest(new DisassembleAddressArguments("$0", 8));
             expect(instructions.length).to.be.equal(2);
             expect(instructions[0].address).to.be.equal(DisassembledInstructionAdapter.getAddressString(0));
@@ -222,7 +222,7 @@ describe("debug disassebled Tests", function () {
         });
         it("Should disassemble a copper address", async function () {
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenResolve("018005023fd3fffe6401ff01");
-            let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
+            let manager = new DebugDisassembledManager(gdbProxy, capstone, variableResolver);
             let instructions = await manager.disassembleRequest(new DisassembleAddressArguments("$0", 8, true));
             expect(instructions.length).to.be.equal(3);
             expect(instructions[0].address).to.be.equal('0');
@@ -235,8 +235,8 @@ describe("debug disassebled Tests", function () {
             when(mockedGdbProxy.getMemory(anyNumber(), anyNumber())).thenReject(new Error("no no"));
             await expect(manager.disassembleRequest(new DisassembleAddressArguments("$0", 8, true))).to.be.rejected;
         });
-        it("Should get an address for a line in an asmdebug editor", async function () {
-            let manager = new DebugDisassembledMananger(gdbProxy, capstone, variableResolver);
+        it("Should get an address for a line in an asm debugger editor", async function () {
+            let manager = new DebugDisassembledManager(gdbProxy, capstone, variableResolver);
             let f = new DebugDisassembledFile();
             f.setSegmentId(0);
             when(mockedGdbProxy.getSegmentMemory(anyNumber())).thenResolve("00000");

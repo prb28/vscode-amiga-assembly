@@ -5,7 +5,7 @@ import { StackFrame, Source } from "vscode-debugadapter";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { CopperDisassembler } from "./copperDisassembler";
 import { DebugVariableResolver } from "./debugVariableResolver";
-import { MemoryLabelsRegistry } from "./customMemoryAdresses";
+import { MemoryLabelsRegistry } from "./customMemoryAddresses";
 import { Uri } from "vscode";
 
 export class DebugDisassembledFile {
@@ -163,7 +163,7 @@ export class DisassembleAddressArguments implements DebugProtocol.DisassembleArg
     }
 }
 
-export class DebugDisassembledMananger {
+export class DebugDisassembledManager {
     /** Tool to disassemble */
     private capstone?: Capstone;
 
@@ -173,7 +173,7 @@ export class DebugDisassembledMananger {
     /** Helper class to deal with the debug expressions */
     private debugExpressionHelper = new DebugExpressionHelper();
 
-    /** To evualate adresses and symbols */
+    /** To evaluate addresses and symbols */
     private variableResolver: DebugVariableResolver;
 
     public constructor(gdbProxy: GdbProxy, capstone: Capstone | undefined, variableResolver: DebugVariableResolver) {
@@ -182,7 +182,7 @@ export class DebugDisassembledMananger {
         this.variableResolver = variableResolver;
     }
 
-    public getStackFrame(stackFrameIndex: number, address: number, stackframeLabel: string, isCopper: boolean): Promise<StackFrame> {
+    public getStackFrame(stackFrameIndex: number, address: number, stackFrameLabel: string, isCopper: boolean): Promise<StackFrame> {
         return new Promise(async (resolve, reject) => {
             let dAsmFile = new DebugDisassembledFile();
             let url: string;
@@ -194,7 +194,7 @@ export class DebugDisassembledMananger {
             if ((segmentId >= 0) && !isCopper) {
                 // We have a segment
                 dAsmFile.setSegmentId(segmentId);
-                let returnedLineNumber = await this.getLineNumberInDisassembledSegent(segmentId, offset).catch((err) => {
+                let returnedLineNumber = await this.getLineNumberInDisassembledSegment(segmentId, offset).catch((err) => {
                     // Nothing to do
                     lineNumber = -1;
                 });
@@ -242,14 +242,14 @@ export class DebugDisassembledMananger {
             }
             url = `disassembly:///${dAsmFile}`;
             if (lineNumber >= 0) {
-                resolve(new StackFrame(stackFrameIndex, stackframeLabel, new Source(dAsmFile.toString(), url), lineNumber, 1));
+                resolve(new StackFrame(stackFrameIndex, stackFrameLabel, new Source(dAsmFile.toString(), url), lineNumber, 1));
             } else {
-                resolve(new StackFrame(stackFrameIndex, stackframeLabel));
+                resolve(new StackFrame(stackFrameIndex, stackFrameLabel));
             }
         });
     }
 
-    public getLineNumberInDisassembledSegent(segmentId: number, offset: number): Promise<number> {
+    public getLineNumberInDisassembledSegment(segmentId: number, offset: number): Promise<number> {
         return new Promise(async (resolve, reject) => {
             if (this.capstone) {
                 let memory = await this.gdbProxy.getSegmentMemory(segmentId).catch((err) => {
@@ -268,13 +268,13 @@ export class DebugDisassembledMananger {
                             }
                             line++;
                         }
-                        reject(new Error(`Cannot retrive line for segement ${segmentId}, offset ${offset}: line not found`));
+                        reject(new Error(`Cannot retrieve line for segment ${segmentId}, offset ${offset}: line not found`));
                     }).catch((err) => {
                         reject(err);
                     });
                 }
             } else {
-                reject(new Error(`Cannot retrive line for segement ${segmentId}, offset ${offset} : capstone is not defined`));
+                reject(new Error(`Cannot retrieve line for segment ${segmentId}, offset ${offset} : capstone is not defined`));
             }
         });
     }
@@ -321,7 +321,7 @@ export class DebugDisassembledMananger {
                     reject(err);
                 });
             } else {
-                reject(new Error("Unable to resolve adress expression void returned"));
+                reject(new Error("Unable to resolve address expression void returned"));
             }
         });
     }
@@ -342,7 +342,7 @@ export class DebugDisassembledMananger {
                             address: addOffset.toString(16),
                             instruction: i.toString()
                         });
-                        // 4 iadresses : 32b / address
+                        // 4 addresses : 32b / address
                         offset += 4;
                     }
                     resolve(variables);

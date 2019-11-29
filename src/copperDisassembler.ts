@@ -1,8 +1,8 @@
 import { StringUtils } from "./stringUtils";
-import { MemoryLabelsRegistry } from "./customMemoryAdresses";
+import { MemoryLabelsRegistry } from "./customMemoryAddresses";
 
 /** Type of copper instruction */
-export enum CopperIntructionType {
+export enum CopperInstructionType {
     MOVE,
     WAIT,
     SKIP
@@ -12,10 +12,10 @@ export enum CopperIntructionType {
  * Copper instruction
  */
 export class CopperInstruction {
-    public instructionType: CopperIntructionType;
+    public instructionType: CopperInstructionType;
     public first: number;
     public second: number;
-    public constructor(instructionType: CopperIntructionType, first: number, second: number) {
+    public constructor(instructionType: CopperInstructionType, first: number, second: number) {
         this.instructionType = instructionType;
         this.first = first;
         this.second = second;
@@ -58,7 +58,7 @@ export class CopperMove extends CopperInstruction {
     /** Understandable label */
     public label: string | undefined;
     constructor(first: number, second: number) {
-        super(CopperIntructionType.MOVE, first, second);
+        super(CopperInstructionType.MOVE, first, second);
         this.DA = first & 0x01fe;
         this.RD = second;
         let register = 0xdff000 + this.DA;
@@ -91,7 +91,7 @@ export class CopperCondition extends CopperInstruction {
     public vertical: number;
     /** Horizontal beam position */
     public horizontal: number;
-    constructor(instructionType: CopperIntructionType, first: number, second: number) {
+    constructor(instructionType: CopperInstructionType, first: number, second: number) {
         super(instructionType, first, second);
         this.VP = (first >> 8);
         this.HP = first & 0x00fe;
@@ -104,12 +104,12 @@ export class CopperCondition extends CopperInstruction {
 }
 export class CopperWait extends CopperCondition {
     constructor(first: number, second: number) {
-        super(CopperIntructionType.WAIT, first, second);
+        super(CopperInstructionType.WAIT, first, second);
     }
     public toString(): string {
         let inst = this.getPaddedAsmInstruction();
         if (this.isEnd()) {
-            return `${inst}; End of Copperlist`;
+            return `${inst}; End of CopperList`;
         } else {
             return `${inst}; Wait for vpos >= 0x${this.vertical.toString(16)} and hpos >= 0x${this.horizontal.toString(16)}`;
         }
@@ -120,7 +120,7 @@ export class CopperWait extends CopperCondition {
 }
 export class CopperSkip extends CopperCondition {
     constructor(first: number, second: number) {
-        super(CopperIntructionType.SKIP, first, second);
+        super(CopperInstructionType.SKIP, first, second);
     }
     public toString(): string {
         let inst = this.getPaddedAsmInstruction();

@@ -2,7 +2,7 @@
 // Tests for the gdb data management
 //
 
-import { GdbRecievedDataManager, GdbPacketHandler } from '../gdbEvents';
+import { GdbReceivedDataManager, GdbPacketHandler } from '../gdbEvents';
 import { GdbPacket, GdbPacketType } from '../gdbPacket';
 import { expect } from 'chai';
 import * as chai from 'chai';
@@ -16,7 +16,7 @@ describe("gdbEvents Tests", function () {
         let triggered1 = false;
         let triggered2 = false;
         let packet = new GdbPacket(GdbPacketType.OK, "OK");
-        let manager = new GdbRecievedDataManager();
+        let manager = new GdbReceivedDataManager();
         manager.OnData.on((data): boolean => {
             triggered1 = true;
             return true;
@@ -42,7 +42,7 @@ describe("gdbEvents Tests", function () {
         let triggered1 = false;
         let triggered2 = false;
         let packet = <GdbPacket>{};
-        let manager = new GdbRecievedDataManager((data): boolean => {
+        let manager = new GdbReceivedDataManager((data): boolean => {
             triggered2 = true;
             return true;
         });
@@ -62,7 +62,7 @@ describe("gdbEvents Tests", function () {
         let triggered1 = false;
         let triggered2 = false;
         let packet = new GdbPacket(GdbPacketType.OK, "OK");
-        let manager = new GdbRecievedDataManager();
+        let manager = new GdbReceivedDataManager();
         let handler1 = <GdbPacketHandler>{
             handle: (packet: GdbPacket): boolean => {
                 triggered1 = true;

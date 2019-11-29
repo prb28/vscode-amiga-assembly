@@ -28,7 +28,7 @@ describe("Global Extension Tests", function () {
             fail("Extension no loaded");
         }
     });
-    context("Formatting comand", function () {
+    context("Formatting command", function () {
         it("Should format a simple file", async () => {
             this.timeout(2000);
             // Simple test file
@@ -41,7 +41,7 @@ describe("Global Extension Tests", function () {
             // tslint:disable-next-line:no-unused-expression
             expect(editor).to.not.be.undefined;
             if (editor) {
-                // Editor openned
+                // Editor opened
                 // Call the formatting command
                 await vscode.commands.executeCommand("editor.action.formatDocument");
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
@@ -59,7 +59,7 @@ describe("Global Extension Tests", function () {
             // tslint:disable-next-line:no-unused-expression
             expect(editor).to.not.be.undefined;
             if (editor) {
-                // Editor openned
+                // Editor opened
                 // Call the formatting command
                 await vscode.commands.executeCommand("editor.action.formatDocument");
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
@@ -77,7 +77,7 @@ describe("Global Extension Tests", function () {
             // tslint:disable-next-line:no-unused-expression
             expect(editor).to.not.be.undefined;
             if (editor) {
-                // Editor openned
+                // Editor opened
                 // Call the formatting command
                 await vscode.workspace.getConfiguration('amiga-assembly', uri).update('format.useTabs', true, true);
                 await vscode.commands.executeCommand("editor.action.formatDocument");
@@ -165,7 +165,7 @@ describe("Global Extension Tests", function () {
             // tslint:disable-next-line:no-unused-expression
             expect(editor).to.not.be.undefined;
             if (editor) {
-                // Editor openned
+                // Editor opened
                 expect(editor.document.getText().replace('\r', '')).to.be.equal(expectedFileContents.replace('\r', ''));
             }
         });
