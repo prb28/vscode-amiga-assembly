@@ -49,9 +49,9 @@ class SimpleConsoleTransport extends TransportStream {
         setImmediate(() => this.emit("logged", info));
         this.outputChannel.appendLine(`[${info.level}] ${info.message}`);
         if (callback) {
-            callback();
+            callback()
         }
-    };
+    }
 }
 
 export class ExtensionState {
