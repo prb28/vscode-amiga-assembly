@@ -132,7 +132,8 @@ describe("Global Extension Tests", function () {
             const editor = vscode.window.activeTextEditor;
             if (editor) {
                 await vscode.commands.executeCommand("amiga-assembly.apply-formula", { formula: "x+3" });
-                expect(editor.document.getText()).to.be.equal(" dc.b $4, #13, #2, $d, %1101, @4\n move.l #$83,d7");
+                expect(editor.document.lineAt(0).text).to.be.equal(" dc.b $4, #13, #2, $d, %1101, @4");
+                expect(editor.document.lineAt(1).text).to.be.equal(" move.l #$83,d7");
             } else {
                 expect.fail("Editor not available");
             }
