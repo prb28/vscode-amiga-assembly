@@ -755,7 +755,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
         let thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
-            this.gdbProxy.step(thread).then(() => {
+            this.gdbProxy.stepToRange(thread, 0, 0).then(() => {
                 this.sendResponse(response);
             }).catch(err => {
                 this.sendStringErrorResponse(response, err.message);
@@ -779,7 +779,23 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
-        this.sendStringErrorResponse(response, "Option not available");
+        const thread = this.gdbProxy.getThread(args.threadId);
+        if (thread) {
+            this.gdbProxy.stack(thread).then(async stk => {
+                let frame = stk.frames[1];
+                let startAddress = frame.pc + 1;
+                let endAddress = frame.pc + 10;
+                this.gdbProxy.stepToRange(thread, startAddress, endAddress).then(() => {
+                    this.sendResponse(response);
+                }).catch(err => {
+                    this.sendStringErrorResponse(response, err.message);
+                });
+            }).catch(err => {
+                this.sendStringErrorResponse(response, err.message);
+            });
+        } else {
+            this.sendStringErrorResponse(response, "Unknown thread");
+        }
     }
 
     private evaluateRequestRegister(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {

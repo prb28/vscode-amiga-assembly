@@ -353,7 +353,7 @@ describe('Node Debug Adapter', () => {
 					}],
 					count: 1
 				}));
-				when(this.mockedGdbProxy.step(th)).thenCall(() => {
+				when(this.mockedGdbProxy.stepToRange(th, 0, 0)).thenCall(() => {
 					setTimeout(function () {
 						let cb = callbacks.get('stopOnBreakpoint');
 						if (cb) {

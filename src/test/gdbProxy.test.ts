@@ -391,7 +391,7 @@ describe("GdbProxy Tests", function () {
                 when(spiedProxy.sendPacketString(vContRRequest, anything())).thenResolve(RESPONSE_OK);
                 let thread = proxy.getCurrentCpuThread();
                 if (thread) {
-                    await expect(proxy.step(thread)).to.be.fulfilled;
+                    await expect(proxy.stepToRange(thread, 0, 0)).to.be.fulfilled;
                     verify(spiedProxy.sendPacketString(vContRRequest, anything())).once();
                 } else {
                     fail("Thread not found");
@@ -401,7 +401,7 @@ describe("GdbProxy Tests", function () {
                 let thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     when(spiedProxy.sendPacketString(vContRRequest, anything())).thenReject(error);
-                    await expect(proxy.step(thread)).to.be.rejectedWith(error);
+                    await expect(proxy.stepToRange(thread, 0, 0)).to.be.rejectedWith(error);
                 } else {
                     fail("Thread not found");
                 }

@@ -544,14 +544,14 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Ask the debugger to step 
+     * Ask the debugger to step until the pc is in range
      * @param thread Thread selected
+     * @param startAddress Start address for the stop range included
+     * @param endAddress Start address for the stop range excluded
      */
-    public async step(thread: GdbThread): Promise<void> {
+    public async stepToRange(thread: GdbThread, startAddress: number, endAddress: number): Promise<void> {
         let message: string;
         if (this.supportVCont) {
-            let startAddress = 0;
-            let endAddress = 0;
             // TODO: Remove hack to step over... Put real addresses
             message = 'vCont;r' + GdbProxy.formatNumber(startAddress) + ',' + GdbProxy.formatNumber(endAddress) + ':' + thread.marshall();
         } else {
