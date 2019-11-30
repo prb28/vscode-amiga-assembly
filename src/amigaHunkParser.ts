@@ -99,7 +99,7 @@ export class HunkParser {
 
     public parse_bss(hunk: Hunk, fileData: DataView, fileOffset: number): number {
         let size = fileData.getUint32(fileOffset, false);
-        // BSS contains the The number of longwords of zeroed memory to allocate
+        // BSS contains the The number of long words of zeroed memory to allocate
         hunk.hunkType = HunkType.BSS;
         hunk.dataSize = size;
         return fileOffset + 4;

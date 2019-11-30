@@ -10,7 +10,7 @@ export class Calc {
     public calculate(expression: string): number {
         // call the function to calculate the expression
         var calc = new MathCalc();
-        var expr = calc.parse(this.numberParser.tranformToDecimal(expression));
+        var expr = calc.parse(this.numberParser.transformToDecimal(expression));
         return expr.eval();
     }
 }

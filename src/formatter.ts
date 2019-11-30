@@ -71,7 +71,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * Compute the edits to format the document
      * @param asmDocument Parsed Document
      * @param configuration Configuration for the formatter
-     * @param token Cacellation tocken
+     * @param token Cancellation token
      * @return List of edits
      */
     public computeEdits(asmDocument: ASMDocument, configuration: DocumentFormatterConfiguration, token: vscode.CancellationToken): vscode.TextEdit[] {
@@ -151,7 +151,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
     /**
      * Getting the pad of the good size at the end of string
      * @param stringToPad String to pad
-     * @param targetLength Length targetted
+     * @param targetLength Length targeted
      * @return Padding string
      */
     public getEndPad(stringToPad: string, startColumn: number, endColumn: number, useTabs: boolean, tabSize: number): string {

@@ -167,7 +167,7 @@ describe("Expression data generator", function () {
         comment += `;${ExpressionDataGeneratorSerializer.OUTPUTHEX_KEYWORD}: ${outputHex}\n`;
         comment += `;${ExpressionDataGeneratorSerializer.VALUES_PER_LINE_KEYWORD}: ${valuesPerLine}\n`;
         comment += ";--------------------------------\n";
-        comment += ";- DO NOT MODIFY folowing lines -\n";
+        comment += ";- DO NOT MODIFY following lines -\n";
         comment += " dc.w 0\n dc.w 286\n dc.w 572\n dc.w 857\n";
         comment += `;${ExpressionDataGeneratorSerializer.END_KEYWORD}----------------\n`;
         let serializer = new ExpressionDataGeneratorSerializer();
@@ -223,7 +223,7 @@ describe("Expression data generator", function () {
                 } else {
                     fail("expected elements");
                 }
-                // Editor openned
+                // Editor opened
                 // tslint:disable-next-line: no-unused-expression
                 expect(editor.document.getText().includes("FOOFOO")).to.be.true;
                 await prov.onGenerateData(range);

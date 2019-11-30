@@ -21,7 +21,7 @@ export class M86kColorProvider implements DocumentColorProvider {
     }
 
     /**
-     * Provide the reprentation of the color $ffffff.
+     * Provide the representation of the color $ffffff.
      * @param color Color to represent
      * @param context Context
      * @param token Cancellation token
@@ -37,7 +37,7 @@ export class M86kColorProvider implements DocumentColorProvider {
      * 
      * @param line Text line
      * @param lineNumber Number of the line
-     * @returns Array of colors informations
+     * @returns Array of color's information
      */
     public searchColorsInLine(line: string, lineNumber: number): ColorInformation[] {
         let colors: ColorInformation[] = [];

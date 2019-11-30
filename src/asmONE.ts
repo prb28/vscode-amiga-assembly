@@ -190,13 +190,13 @@ export class AsmONE {
 	 * - Code reference: AsmPRO CS command source, line 31960
 	 * @param beg begin angle in degrees
 	 * @param end end angle in degrees
-	 * @param ammount amount of elements between beg and end
+	 * @param amount amount of elements between beg and end
 	 * @param amplitude sinus amplitude
 	 * @param yOffset offset added after integer conversion
-	 * @param sizeMultiplier size (B,W,L) and multipler for value
-	 * @param correction halfstep correction (Y/N) and round correction (Y/N)
+	 * @param sizeMultiplier size (B,W,L) and multiplier for value
+	 * @param correction half step correction (Y/N) and round correction (Y/N)
 	 */
-	private CS(beg: number, end: number, ammount: number,
+	private CS(beg: number, end: number, amount: number,
 		amplitude: number, yOffset: number, sizeMultiplier: string, correction: string): Uint8Array {
 		let size = this.CSGetSize(sizeMultiplier);
 		let multiplier = this.CSGetMultiplier(sizeMultiplier);
@@ -204,13 +204,13 @@ export class AsmONE {
 		let rcorrection = this.CSIsCorrection(correction.substring(1, 2));
 		let angleBeg = this.CSDegToRad(beg);
 		let angleEnd = this.CSDegToRad(end);
-		let angleStep = (angleEnd - angleBeg) / ammount;
+		let angleStep = (angleEnd - angleBeg) / amount;
 		if (hcorrection) {
 			angleBeg += angleStep / 2;
 		}
 		let dataPos = 0;
-		let data = this.createDataArray(size, ammount);
-		for (let i = 0; i < ammount; i++) {
+		let data = this.createDataArray(size, amount);
+		for (let i = 0; i < amount; i++) {
 			let val = Math.sin(angleBeg) * amplitude;
 			if (rcorrection) {
 				val += val < 0 ? -0.5 : 0.5;

@@ -166,7 +166,7 @@ describe("GdbProxy Tests", function () {
             when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
-            when(spiedProxy.sendPacketString(vRunRequest)).thenResolve("notexpected");
+            when(spiedProxy.sendPacketString(vRunRequest)).thenResolve("notExpected");
             await expect(proxy.load("/home/myh\\myprog", true)).to.be.rejectedWith(GdbProxy.UNEXPECTED_RETURN_ERROR);
             verify(spiedProxy.sendPacketString(vRunRequest)).once();
         });
@@ -197,14 +197,14 @@ describe("GdbProxy Tests", function () {
             await expect(proxy.setBreakpoint(bp)).to.be.rejected;
             verify(spiedProxy.sendPacketString('Z0,4,0')).never();
         });
-        it("Should get an error when removing breakpoint whitout connexion", async function () {
+        it("Should get an error when removing breakpoint without connection", async function () {
             // Remove
             when(spiedProxy.sendPacketString('z0,5,0')).thenResolve(RESPONSE_OK);
             let bp = createBreakpoint(0, 0, 5);
             await expect(proxy.removeBreakpoint(bp)).to.be.rejected;
             verify(spiedProxy.sendPacketString('z0,5,0')).never();
         });
-        context('Connexion established', function () {
+        context('Connection established', function () {
             beforeEach(async function () {
                 when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
                 when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
@@ -520,14 +520,14 @@ describe("GdbProxy Tests", function () {
         });
     });
     context('GdbError', function () {
-        it("Should parse a GDBerror", function () {
+        it("Should parse a GDBError", function () {
             let error = new GdbError("E0f");
             expect(error.errorType).to.be.equal("E0F");
             expect(error.message).to.be.equal("Error during the packet parse for command send memory");
             expect(error.name).to.be.equal("GdbError");
             error = new GdbError("X1");
             expect(error.errorType).to.be.equal("X1");
-            expect(error.message).to.be.equal("Error code recieved: 'X1'");
+            expect(error.message).to.be.equal("Error code received: 'X1'");
             expect(error.name).to.be.equal("GdbError");
         });
     });

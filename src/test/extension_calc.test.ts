@@ -46,7 +46,7 @@ describe("Global Extension Tests", function () {
             this.timeout(60000);
             if (state) {
                 let calc = state.getCalc();
-                // Get the satus value
+                // Get the status value
                 // tslint:disable-next-line:no-unused-expression
                 expect(calc).to.not.be.undefined;
                 let sb = calc.getStatusBar();
@@ -57,7 +57,7 @@ describe("Global Extension Tests", function () {
                 }
             }
         });
-        it("Should hide the status bar if it it not evaluable", async () => {
+        it("Should hide the status bar if it it not valuable", async () => {
             let calc = ExtensionState.getCurrent().getCalc();
             let sb = calc.getStatusBar();
             // tslint:disable-next-line:no-unused-expression
@@ -102,7 +102,7 @@ describe("Global Extension Tests", function () {
                 expect.fail("Editor not available");
             }
         });
-        it("Should open an inputbox as calc", async () => {
+        it("Should open an inputBox as calc", async () => {
             const spiedWindow = spy(vscode.window);
             let promise = new Promise<string>((resolve, reject) => { resolve("3 + 2"); });
             when(spiedWindow.showInputBox(anything())).thenReturn(promise);

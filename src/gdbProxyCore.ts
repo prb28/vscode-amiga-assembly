@@ -1,4 +1,4 @@
-/** Stackframe position */
+/** StackFrame position */
 export interface GdbStackPosition {
     /** Index of the position */
     index: number;
@@ -170,7 +170,7 @@ export class GdbError extends Error {
                 this.message = "Error during the packet parse for command set register";
                 break;
             case 'E26':
-                this.message = "Error during set registed - not supported register name";
+                this.message = "Error during set registered - not supported register name";
                 break;
             case 'E30':
                 this.message = "Error during the packet parse for command get register";
@@ -185,7 +185,7 @@ export class GdbError extends Error {
                 this.message = "Thread command parse error";
                 break;
             default:
-                this.message = "Error code recieved: '" + this.errorType + "'";
+                this.message = "Error code received: '" + this.errorType + "'";
                 break;
         }
     }

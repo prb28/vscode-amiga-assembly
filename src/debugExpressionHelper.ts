@@ -61,8 +61,8 @@ export class DebugExpressionHelper {
                     let asciiText = StringUtils.convertHexStringToASCII(row.replace(/\s+/g, ''));
                     if (mode.indexOf('b') >= 0) {
                         if ((i === chunks.length - 1) && (rowCount < rowLength - 1)) {
-                            let chuksMissing = rowLength - 1 - rowCount;
-                            let padding = chuksMissing * wordLength * 2 + chuksMissing;
+                            let chunksMissing = rowLength - 1 - rowCount;
+                            let padding = chunksMissing * wordLength * 2 + chunksMissing;
                             for (let j = 0; j < padding; j++) {
                                 row += " ";
                             }
@@ -95,14 +95,14 @@ export class DebugExpressionHelper {
     public processVariablesFromDisassembler(code: string, startAddress: number): [string, Array<DebugProtocol.Variable>] {
         let variables = new Array<DebugProtocol.Variable>();
         let [firstRow, instructions] = this.processOutputFromDisassembler(code, startAddress);
-        for (let isntr of instructions) {
-            let ib = isntr.instructionBytes;
+        for (let instruction of instructions) {
+            let ib = instruction.instructionBytes;
             if (!ib) {
                 ib = "";
             }
             variables.push({
-                value: ib + StringUtils.createPad(ib, 26) + isntr.instruction,
-                name: isntr.address,
+                value: ib + StringUtils.createPad(ib, 26) + instruction.instruction,
+                name: instruction.address,
                 variablesReference: 0
             });
         }

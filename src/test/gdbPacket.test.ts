@@ -2,7 +2,7 @@ import { GdbPacket, GdbPacketType } from "../gdbPacket";
 import { expect } from "chai";
 
 describe("GdbPacket Tests", function () {
-    it("Should parse the reponse", function () {
+    it("Should parse the response", function () {
         let expected = [new GdbPacket(GdbPacketType.OK, "OK")];
         expect(GdbPacket.parseData("$OK#9a")).to.be.eql(expected);
         expected = [new GdbPacket(GdbPacketType.FRAME, "F00000013")];

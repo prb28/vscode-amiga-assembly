@@ -110,7 +110,7 @@ class CoverageRunner {
             // On Windows, extension is loaded pre-test hooks and this mean we lose
             // our chance to hook the Require call. In order to instrument the code
             // we have to decache the JS file so on next load it gets instrumented.
-            // This doesn"t impact tests, but is a concern if we had some integration
+            // This doesn't impact tests, but is a concern if we had some integration
             // tests that relied on VSCode accessing our module since there could be
             // some shared global state that we lose.
             decache(fullPath);
@@ -127,8 +127,8 @@ class CoverageRunner {
         istanbul.hook.hookRequire(self.matchFn, self.transformer, hookOpts);
 
         // initialize the global variable to stop mocha from complaining about leaks
-        let lglobal: any = global;
-        lglobal[self.coverageVar] = {};
+        let lGlobal: any = global;
+        lGlobal[self.coverageVar] = {};
 
         // Hook the process exit event to handle reporting
         // Only report coverage if the process is exiting successfully
@@ -148,12 +148,12 @@ class CoverageRunner {
         let self = this;
         istanbul.hook.unhookRequire();
         let cov: any;
-        let lglobal: any = global;
-        if (typeof lglobal[self.coverageVar] === "undefined" || Object.keys(lglobal[self.coverageVar]).length === 0) {
+        let lGlobal: any = global;
+        if (typeof lGlobal[self.coverageVar] === "undefined" || Object.keys(lGlobal[self.coverageVar]).length === 0) {
             console.error("No coverage information was collected, exit without writing coverage information");
             return;
         } else {
-            cov = lglobal[self.coverageVar];
+            cov = lGlobal[self.coverageVar];
         }
 
         // TODO consider putting this under a conditional flag

@@ -234,8 +234,8 @@ export class M68kHoverProvider implements vscode.HoverProvider {
     }
 
     /**
-     * Renders an intruction
-     * @param intruction Intruction hover rendered
+     * Renders an instruction
+     * @param instruction Instruction hover rendered
      * @return String rendered
      */
     renderHover(hoverInstruction: DocumentationInstruction): vscode.MarkdownString {

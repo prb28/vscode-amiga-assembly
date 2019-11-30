@@ -250,7 +250,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             }
             this.referredSymbols.delete(uri.fsPath);
             let refs = new Map<string, Array<Symbol>>();
-            let refSymb = file.getReferedSymbols();
+            let refSymb = file.getReferredSymbols();
             for (let i = 0; i < refSymb.length; i++) {
                 let s = refSymb[i];
                 let label = s.getLabel();

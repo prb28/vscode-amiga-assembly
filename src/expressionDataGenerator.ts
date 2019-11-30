@@ -13,7 +13,7 @@ export class ExpressionDataVariable {
         this.endValue = endValue;
         this.step = step;
         if (step === 0) {
-            throw new Error("Vriable step cannot be 0");
+            throw new Error("Variable step cannot be 0");
         }
     }
 }
@@ -102,14 +102,14 @@ export class ExpressionDataGenerator {
             value += `${outV}`;
             posLine++;
         }
-        // check boudaries
+        // check boundaries
         if (signed) {
             if ((this.outputDataType === OutputDataType.BYTE) && ((max > 0x7f) || (min < -0x7f))) {
-                throw new Error(`The data boudaries ${min} - ${max} does not fit in a signed byte register`);
+                throw new Error(`The data boundaries ${min} - ${max} does not fit in a signed byte register`);
             } else if ((this.outputDataType === OutputDataType.WORD) && ((max > 0x7fff) || (min < -0x7fff))) {
-                throw new Error(`The data boudaries ${min} - ${max} does not fit in a signed word (16bits) register`);
+                throw new Error(`The data boundaries ${min} - ${max} does not fit in a signed word (16bits) register`);
             } else if ((this.outputDataType === OutputDataType.LONG) && ((max > 0x7fffffff) || (min < -0x7fffffff))) {
-                throw new Error(`The data boudaries ${min} - ${max} does not fit in a signed long (32bits) register`);
+                throw new Error(`The data boundaries ${min} - ${max} does not fit in a signed long (32bits) register`);
             }
             value = ExpressionDataGenerator.SIGNED_VALUES_COMMENT + value;
         }
@@ -206,12 +206,12 @@ export class ExpressionDataGeneratorSerializer {
                 } else if (line.includes(ExpressionDataGeneratorSerializer.VARIABLE_STEP_KEYWORD)) {
                     step = this.retrieveNumber(line);
                 } else if (line.includes(ExpressionDataGeneratorSerializer.OUTPUTTYPE_KEYWORD)) {
-                    let outtypestr = this.retrieveString(line).toLocaleLowerCase();
-                    if (outtypestr === 'b') {
+                    let outTypeStr = this.retrieveString(line).toLocaleLowerCase();
+                    if (outTypeStr === 'b') {
                         outputDataType = OutputDataType.BYTE;
-                    } else if (outtypestr === 'w') {
+                    } else if (outTypeStr === 'w') {
                         outputDataType = OutputDataType.WORD;
-                    } else if (outtypestr === 'l') {
+                    } else if (outTypeStr === 'l') {
                         outputDataType = OutputDataType.LONG;
                     }
                 } else if (line.includes(ExpressionDataGeneratorSerializer.OUTPUTHEX_KEYWORD)) {
@@ -282,7 +282,7 @@ export class ExpressionDataGeneratorSerializer {
         output += `;${ExpressionDataGeneratorSerializer.OUTPUTHEX_KEYWORD}: ${expDataGen.outputInHex}\n`;
         output += `;${ExpressionDataGeneratorSerializer.VALUES_PER_LINE_KEYWORD}: ${expDataGen.valuesPerLine}\n`;
         output += ";--------------------------------\n";
-        output += ";- DO NOT MODIFY folowing lines -\n";
+        output += ";- DO NOT MODIFY following lines -\n";
         for (let line of expDataGen.evalString().split('\n')) {
             output += ` ${line}\n`; // keep the fist space
         }

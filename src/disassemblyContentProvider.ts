@@ -76,7 +76,7 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
     }
 
     /**
-     * Print variables to stirng
+     * Print variables to string
      * @param variables to b printed/
      */
     private printVariables(variables: Array<DebugProtocol.DisassembledInstruction>): string {

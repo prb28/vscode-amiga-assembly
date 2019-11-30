@@ -356,9 +356,9 @@ describe("Parser Tests", function () {
         });
         it("Should tranform a text to decimals", function () {
             let np = new NumberParser();
-            expect(np.tranformToDecimal("#10 + $a + %1010 + @12")).to.be.equal("10 + 10 + 10 + 10");
-            expect(np.tranformToDecimal("$1000+$100")).to.be.equal("4096+256");
-            expect(np.tranformToDecimal("$1000+($100-%10)/12+$100+@12")).to.be.equal("4096+(256-2)/12+256+10");
+            expect(np.transformToDecimal("#10 + $a + %1010 + @12")).to.be.equal("10 + 10 + 10 + 10");
+            expect(np.transformToDecimal("$1000+$100")).to.be.equal("4096+256");
+            expect(np.transformToDecimal("$1000+($100-%10)/12+$100+@12")).to.be.equal("4096+(256-2)/12+256+10");
         });
         it("Should display a binary correctly", function () {
             let np = new NumberParser();

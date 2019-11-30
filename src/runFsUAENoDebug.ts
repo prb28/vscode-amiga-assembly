@@ -39,7 +39,7 @@ export class RunFsUAENoDebugSession extends DebugSession {
 	/** Executor to run fs-uae */
 	private executor: ExecutorHelper;
 
-	/** Token to cancle the emulator */
+	/** Token to cancel the emulator */
 	private cancellationTokenSource?: CancellationTokenSource;
 
 	/**
@@ -117,7 +117,7 @@ export class RunFsUAENoDebugSession extends DebugSession {
 	}
 
 	private checkEmulator(emulatorPath: string): boolean {
-		// Function usefull for testing - mocking
+		// Function useful for testing - mocking
 		return fs.existsSync(emulatorPath);
 	}
 
@@ -126,7 +126,7 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		const emulatorExe = args.emulator;
 		const emulatorWorkingDir = args.emulatorWorkingDir || null;
 		if (emulatorExe) {
-			// Is the emeulator exe present in the filesystem ?
+			// Is the emulator exe present in the filesystem ?
 			if (this.checkEmulator(emulatorExe)) {
 				return new Promise(async (resolve, reject) => {
 					this.cancellationTokenSource = new CancellationTokenSource();

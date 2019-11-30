@@ -2,7 +2,7 @@ export class StringUtils {
     /**
      * Padding on start of string
      * @param stringToPad String to pad
-     * @param targetLength Length targetted
+     * @param targetLength Length targeted
      * @param padString Char as string to fill default to space
      * @return Padding string
      */
@@ -13,7 +13,7 @@ export class StringUtils {
     /**
 	 * Create pad of the good size for string
 	 * @param stringToPad String to pad
-	 * @param targetLength Length targetted
+	 * @param targetLength Length targeted
      * @param padString Char as string to fill default to space
 	 * @return Padding string
 	 */
@@ -34,7 +34,7 @@ export class StringUtils {
     /**
 	 * Getting a padded string
 	 * @param stringToPad String to pad
-	 * @param targetLength Length targetted
+	 * @param targetLength Length targeted
      * @param padString Char as string to fill default to space
 	 * @return Padded string
 	 */
@@ -45,7 +45,7 @@ export class StringUtils {
     /**
      * Chunks a string
      * @param str String to chunk
-     * @param n Array of chek elements
+     * @param n Array of check elements
      */
     public static chunk(str: string, n: number): string[] {
         let ret = [];

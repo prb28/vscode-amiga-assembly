@@ -4,11 +4,11 @@ import { ASMLine } from './parser';
 export class SymbolFile {
     private uri: Uri;
     private definedSymbols = new Array<Symbol>();
-    private referedSymbols = new Array<Symbol>();
+    private referredSymbols = new Array<Symbol>();
     private variables = new Array<Symbol>();
     private labels = new Array<Symbol>();
     private subroutines = new Array<string>();
-    private dclabel = new Array<Symbol>();
+    private dcLabel = new Array<Symbol>();
     private includeDir = "";
     private includedFiles = new Array<string>();
 
@@ -44,7 +44,7 @@ export class SymbolFile {
                 for (let k = 0; k < results.length; k++) {
                     [symbol, range] = results[k];
                     if ((symbol !== undefined) && (range !== undefined)) {
-                        this.referedSymbols.push(new Symbol(symbol, this, range));
+                        this.referredSymbols.push(new Symbol(symbol, this, range));
                     }
                 }
             }
@@ -62,7 +62,7 @@ export class SymbolFile {
                 this.subroutines.push(asmLine.data);
             } else if ((instruct.indexOf("dc") === 0) || (instruct.indexOf("ds") === 0) || (instruct.indexOf("incbin") === 0)) {
                 if (lastLabel) {
-                    this.dclabel.push(lastLabel);
+                    this.dcLabel.push(lastLabel);
                 }
             } else if (instruct.indexOf("rts") >= 0) {
                 if (lastLabel) {
@@ -93,11 +93,11 @@ export class SymbolFile {
 
     public clear() {
         this.definedSymbols = new Array<Symbol>();
-        this.referedSymbols = new Array<Symbol>();
+        this.referredSymbols = new Array<Symbol>();
         this.variables = new Array<Symbol>();
         this.labels = new Array<Symbol>();
         this.subroutines = new Array<string>();
-        this.dclabel = new Array<Symbol>();
+        this.dcLabel = new Array<Symbol>();
         this.includeDir = "";
         this.includedFiles = new Array<string>();
     }
@@ -108,8 +108,8 @@ export class SymbolFile {
     public getDefinedSymbols(): Array<Symbol> {
         return this.definedSymbols;
     }
-    public getReferedSymbols(): Array<Symbol> {
-        return this.referedSymbols;
+    public getReferredSymbols(): Array<Symbol> {
+        return this.referredSymbols;
     }
     public getVariables(): Array<Symbol> {
         return this.variables;
@@ -121,7 +121,7 @@ export class SymbolFile {
         return this.subroutines;
     }
     public getDcLabels(): Array<Symbol> {
-        return this.dclabel;
+        return this.dcLabel;
     }
     public getIncludeDir(): string {
         return this.includeDir;

@@ -153,8 +153,8 @@ describe("Formatter Tests", function () {
             let position: Position = new Position(0, 1);
             let ch = "";
             let options = new DummyFormattingOptions();
-            let tockenEmitter = new CancellationTokenSource();
-            let results = f.provideOnTypeFormattingEdits(document, position, ch, options, tockenEmitter.token);
+            let tokenEmitter = new CancellationTokenSource();
+            let results = f.provideOnTypeFormattingEdits(document, position, ch, options, tokenEmitter.token);
             if ((results) && (results instanceof Array)) {
                 expect(results.length).to.be.equal(0);
             }
@@ -164,11 +164,11 @@ describe("Formatter Tests", function () {
             const document = new DummyTextDocument();
             let ch = "";
             let options = new DummyFormattingOptions();
-            let tockenEmitter = new CancellationTokenSource();
+            let tokenEmitter = new CancellationTokenSource();
             document.addLine("\t   move.l #mempos,d1        ; mycomment   ");
             document.addLine("   rts ");
             let position: Position = new Position(1, 7);
-            let edits = f.provideOnTypeFormattingEdits(document, position, ch, options, tockenEmitter.token);
+            let edits = f.provideOnTypeFormattingEdits(document, position, ch, options, tokenEmitter.token);
             expect(edits).to.not.be.undefined;
             if (edits instanceof Array) {
                 expect(edits.length).to.be.equal(1);

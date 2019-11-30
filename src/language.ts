@@ -8,11 +8,11 @@ export class M68kLanguage {
     languageMap: any;
     extensionsMap: Map<string, Array<string>>;
     /**
-     * Contrutor : parses the file
+     * Constructor : parses the file
      */
     constructor(extensionPath: string) {
-        const syntaxeFilePath = path.join(extensionPath, "syntaxes", "M68k-Assembly.tmLanguage.json");
-        let data = fs.readFileSync(syntaxeFilePath, 'utf8');
+        const syntaxFilePath = path.join(extensionPath, "syntaxes", "M68k-Assembly.tmLanguage.json");
+        let data = fs.readFileSync(syntaxFilePath, 'utf8');
         this.languageMap = JSON.parse(data);
         this.extensionsMap = new Map<string, Array<string>>();
         this.createExtensionMap();

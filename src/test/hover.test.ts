@@ -38,17 +38,17 @@ describe("Hover Tests", function () {
             let hp = new M68kHoverProvider(state.getDocumentationManager());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 1);
-            let tockenEmitter = new CancellationTokenSource();
-            let results = hp.provideHover(document, position, tockenEmitter.token);
+            let tokenEmitter = new CancellationTokenSource();
+            let results = hp.provideHover(document, position, tokenEmitter.token);
             return expect(results).to.be.fulfilled;
         });
         it("Should return a hover on an instruction", async function () {
             let hp = new M68kHoverProvider(state.getDocumentationManager());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 15);
-            let tockenEmitter = new CancellationTokenSource();
+            let tokenEmitter = new CancellationTokenSource();
             document.addLine(".mylabel\t   move.l #mempos,d1        ; mycomment   ");
-            let result = await hp.provideHover(document, position, tockenEmitter.token);
+            let result = await hp.provideHover(document, position, tokenEmitter.token);
             expect(result).to.not.be.undefined;
             expect(result instanceof Hover).to.be.true;
             if (result instanceof Hover) {
@@ -63,9 +63,9 @@ describe("Hover Tests", function () {
             let hp = new M68kHoverProvider(state.getDocumentationManager());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 23);
-            let tockenEmitter = new CancellationTokenSource();
+            let tokenEmitter = new CancellationTokenSource();
             document.addLine(".mylabel\t   move.l #$20,d1        ; mycomment   ");
-            let result = await hp.provideHover(document, position, tockenEmitter.token);
+            let result = await hp.provideHover(document, position, tokenEmitter.token);
             expect(result).to.not.be.undefined;
             expect(result instanceof Hover).to.be.true;
             if (result instanceof Hover) {
@@ -81,9 +81,9 @@ describe("Hover Tests", function () {
         let hp = new M68kHoverProvider(state.getDocumentationManager());
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 30);
-        let tockenEmitter = new CancellationTokenSource();
+        let tokenEmitter = new CancellationTokenSource();
         document.addLine(".mylabel\t   move.l #$ff5,$dff180        ; mycomment   ");
-        let result = await hp.provideHover(document, position, tockenEmitter.token);
+        let result = await hp.provideHover(document, position, tokenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
@@ -98,9 +98,9 @@ describe("Hover Tests", function () {
         let hp = new M68kHoverProvider(state.getDocumentationManager());
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 25);
-        let tockenEmitter = new CancellationTokenSource();
+        let tokenEmitter = new CancellationTokenSource();
         document.addLine(".mylabel\t   jsr AllocMem(a6)        ; mycomment   ");
-        let result = await hp.provideHover(document, position, tockenEmitter.token);
+        let result = await hp.provideHover(document, position, tokenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
@@ -112,7 +112,7 @@ describe("Hover Tests", function () {
         }
         // LVOprefix is accepted
         document.addLine(".mylabel\t   jsr _LVOAllocMem(a6)        ; mycomment   ");
-        result = await hp.provideHover(document, position, tockenEmitter.token);
+        result = await hp.provideHover(document, position, tokenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
@@ -127,9 +127,9 @@ describe("Hover Tests", function () {
         let hp = new M68kHoverProvider(state.getDocumentationManager());
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 51);
-        let tockenEmitter = new CancellationTokenSource();
+        let tokenEmitter = new CancellationTokenSource();
         document.addLine(".mylabel\t   move.l #(BPLSIZE+COPPER_WAIT)/2,$dff180        ; mycomment   ");
-        let result = await hp.provideHover(document, position, tockenEmitter.token);
+        let result = await hp.provideHover(document, position, tokenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
@@ -144,9 +144,9 @@ describe("Hover Tests", function () {
         let hp = new M68kHoverProvider(state.getDocumentationManager());
         const document = new DummyTextDocument();
         let position: Position = new Position(0, 4);
-        let tockenEmitter = new CancellationTokenSource();
+        let tokenEmitter = new CancellationTokenSource();
         document.addLine("MY_H_VAR = xxx");
-        let result = await hp.provideHover(document, position, tockenEmitter.token);
+        let result = await hp.provideHover(document, position, tokenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {

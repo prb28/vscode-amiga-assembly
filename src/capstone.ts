@@ -85,7 +85,7 @@ export class Capstone {
     }
 
     /**
-     * Reads the workspace forlder dir
+     * Reads the workspace folder dir
      */
     private getWorkspaceRootDir(): Uri | null {
         if (workspace.workspaceFolders && (workspace.workspaceFolders.length > 0)) {

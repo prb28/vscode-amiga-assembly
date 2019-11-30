@@ -20,7 +20,7 @@ export class DocumentationInstructionsManager {
     constructor(extensionPath: string) {
         // Read the instructions file
         // Creating the relative path to find the test file
-        const filePath = path.join(extensionPath, "docs", "intructionsset.csv");
+        const filePath = path.join(extensionPath, "docs", "instructionsset.csv");
         let lines = fs.readFileSync(filePath, 'utf8').split(/\r\n|\r|\n/g);
         let lineIndex = 0;
         for (let line of lines) {
@@ -35,7 +35,7 @@ export class DocumentationInstructionsManager {
                     list.push(hi);
                     this.instructions.set(key, list);
                 } else {
-                    console.error("Error parsing file 'intructionsset.csv' on line [" + lineIndex + "]: '" + line + "'");
+                    console.error("Error parsing file 'instructionsset.csv' on line [" + lineIndex + "]: '" + line + "'");
                 }
             }
             lineIndex += 1;

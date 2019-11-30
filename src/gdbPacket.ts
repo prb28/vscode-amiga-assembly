@@ -41,7 +41,7 @@ export class GdbPacket {
     }
 
     /**
-     * Parses the data recieved.
+     * Parses the data received.
      * @param data Data to parse
      */
     public static parseData(data: any): GdbPacket[] {

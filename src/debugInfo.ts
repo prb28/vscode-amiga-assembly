@@ -184,11 +184,11 @@ export class DebugInfo {
         return resolvedFileName;
     }
 
-    public areSameSourceFileNames(sourcea: string, sourceb: string): boolean {
-        if (path.isAbsolute(sourcea) && path.isAbsolute(sourceb)) {
-            return sourcea === sourceb;
+    public areSameSourceFileNames(sourceA: string, sourceB: string): boolean {
+        if (path.isAbsolute(sourceA) && path.isAbsolute(sourceB)) {
+            return sourceA === sourceB;
         }
-        return path.basename(sourceb) === path.basename(sourcea);
+        return path.basename(sourceB) === path.basename(sourceA);
     }
 
     public getAddressSeg(filename: string, fileLine: number): ([number, number] | null) {

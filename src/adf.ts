@@ -8,11 +8,11 @@ import * as fs from "fs";
  * Class to Generate an ADF file
  */
 export class ADFTools {
-    /** Path to the adftools executables */
-    private adfCreateFilepath: string = "";
-    private adfCopyFilepath: string = "";
-    private adfInstallFilepath: string = "";
-    private adfMkDirFilepath: string = "";
+    /** Path to the adftools executable */
+    private adfCreateFilePath: string = "";
+    private adfCopyFilePath: string = "";
+    private adfInstallFilePath: string = "";
+    private adfMkDirFilePath: string = "";
     /** Executor to run the tools */
     private executor: ExecutorHelper;
 
@@ -30,10 +30,10 @@ export class ADFTools {
      * @param adfToolsRootPath Path to ADFTools
      */
     private setToolsRootPath(adfToolsRootPath: string) {
-        this.adfCreateFilepath = path.join(adfToolsRootPath, 'adfcreate');
-        this.adfCopyFilepath = path.join(adfToolsRootPath, 'adfcopy');
-        this.adfInstallFilepath = path.join(adfToolsRootPath, 'adfinst');
-        this.adfMkDirFilepath = path.join(adfToolsRootPath, 'adfmakedir');
+        this.adfCreateFilePath = path.join(adfToolsRootPath, 'adfcreate');
+        this.adfCopyFilePath = path.join(adfToolsRootPath, 'adfcopy');
+        this.adfInstallFilePath = path.join(adfToolsRootPath, 'adfinst');
+        this.adfMkDirFilePath = path.join(adfToolsRootPath, 'adfmakedir');
     }
 
     /**
@@ -132,9 +132,9 @@ export class ADFTools {
                     let createdDirs = new Array<string>();
                     createdDirs.push("/");
                     for (let file of files) {
-                        let fullpath = path.join(newRootSourceDir, file);
+                        let fullPath = path.join(newRootSourceDir, file);
                         try {
-                            let stat = fs.lstatSync(fullpath);
+                            let stat = fs.lstatSync(fullPath);
                             if (stat.isDirectory()) {
                                 // For each file copy to disk
                                 await this.mkdirs(filename, file, createdDirs, cancellationToken).catch((err) => {
@@ -150,7 +150,7 @@ export class ADFTools {
                                         return reject(err);
                                     });
                                 }
-                                await this.copyToADFDisk(filename, fullpath, fileParentDir, cancellationToken).catch((err) => {
+                                await this.copyToADFDisk(filename, fullPath, fileParentDir, cancellationToken).catch((err) => {
                                     return reject(err);
                                 });
                             }
@@ -169,15 +169,15 @@ export class ADFTools {
     /**
      * Create a new disk
      * @param filename Filename of the new adf disk file
-     * @param dirpath Path of the directory to create
-     * @param createdDirs allready created dirs 
+     * @param dirPath Path of the directory to create
+     * @param createdDirs already created dirs 
      * @param cancellationToken Token to cancel the process
      */
-    public mkdirs(filename: string, dirpath: string, createdDirs: Array<string>, cancellationToken?: CancellationToken): Promise<void> {
+    public mkdirs(filename: string, dirPath: string, createdDirs: Array<string>, cancellationToken?: CancellationToken): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (!(createdDirs.includes(dirpath))) {
+            if (!(createdDirs.includes(dirPath))) {
                 // split the path
-                let normPath = dirpath.replace('\\', '/');
+                let normPath = dirPath.replace('\\', '/');
                 let concatPath = "";
                 for (let pathElement of normPath.split('/')) {
                     concatPath += pathElement;
@@ -196,11 +196,11 @@ export class ADFTools {
     /**
      * Create a new disk
      * @param filename Filename of the new adf disk file
-     * @param dirpath Path of the directory to create
+     * @param dirPath Path of the directory to create
      * @param cancellationToken Token to cancel the process
      */
-    public mkdir(filename: string, dirpath: string, cancellationToken?: CancellationToken): Promise<void> {
-        return this.executeADFCommand(this.adfMkDirFilepath, [filename, dirpath], cancellationToken);
+    public mkdir(filename: string, dirPath: string, cancellationToken?: CancellationToken): Promise<void> {
+        return this.executeADFCommand(this.adfMkDirFilePath, [filename, dirPath], cancellationToken);
     }
 
     /**
@@ -213,7 +213,7 @@ export class ADFTools {
         let args = new Array<string>();
         args = args.concat(adfCreateOptions);
         args.push(filename);
-        return this.executeADFCommand(this.adfCreateFilepath, args, cancellationToken);
+        return this.executeADFCommand(this.adfCreateFilePath, args, cancellationToken);
     }
 
     /**
@@ -222,7 +222,7 @@ export class ADFTools {
      * @param cancellationToken Token to cancel the process
      */
     public installADFDisk(filename: string, cancellationToken?: CancellationToken): Promise<void> {
-        return this.executeADFCommand(this.adfInstallFilepath, ["-i", filename], cancellationToken);
+        return this.executeADFCommand(this.adfInstallFilePath, ["-i", filename], cancellationToken);
     }
 
     /**
@@ -233,7 +233,7 @@ export class ADFTools {
      * @param cancellationToken Token to cancel the process
      */
     public copyToADFDisk(filename: string, sourceFilename: string, destinationDir: string, cancellationToken?: CancellationToken): Promise<void> {
-        return this.executeADFCommand(this.adfCopyFilepath, [filename, sourceFilename, destinationDir], cancellationToken);
+        return this.executeADFCommand(this.adfCopyFilePath, [filename, sourceFilename, destinationDir], cancellationToken);
     }
 
     /**
@@ -270,7 +270,7 @@ export class ADFTools {
     }
 
     /**
-     * Reads the workspace forlder dir
+     * Reads the workspace folder dir
      */
     private getWorkspaceRootDir(): Uri | null {
         if (workspace.workspaceFolders && (workspace.workspaceFolders.length > 0)) {

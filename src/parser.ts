@@ -461,7 +461,7 @@ export class NumberParser {
         return null;
     }
 
-    public tranformToDecimal(text: string): string {
+    public transformToDecimal(text: string): string {
         let hexValueRegExp = /\$([\da-z]+)/gi;
         let octValueRegExp = /@(\d+)/g;
         let binValueRegExp = /%([01]*)/g;
@@ -582,7 +582,7 @@ export class NumberParser {
 
 export class ASMDocument {
     public asmLinesArray = new Array<ASMLine>();
-    public ovesizedCommentLine = new Array<ASMLine>();
+    public oversizedCommentLine = new Array<ASMLine>();
     public maxLabelSize = 0;
     public maxInstructionSize = 0;
     public maxDataSize = 0;
@@ -632,12 +632,12 @@ export class ASMDocument {
                 this.asmLinesArray.push(asmLine);
             }
             if ((formatterConfiguration.preferredCommentPosition > 0) || (formatterConfiguration.preferredInstructionPosition > 0)) {
-                // Check if it is a ovesized line
+                // Check if it is a oversized line
                 let endOfLineCommentPositionInst = asmLine.label.length + asmLine.instruction.length + asmLine.data.length +
                     formatterConfiguration.labelToInstructionDistance + formatterConfiguration.instructionToDataDistance + formatterConfiguration.dataToCommentsDistance;
                 if (((formatterConfiguration.preferredCommentPosition > 0) && (endOfLineCommentPositionInst > formatterConfiguration.preferredCommentPosition)) ||
                     ((formatterConfiguration.preferredInstructionPosition > 0) && (asmLine.label.length + formatterConfiguration.labelToInstructionDistance >= formatterConfiguration.preferredInstructionPosition))) {
-                    this.ovesizedCommentLine.push(asmLine);
+                    this.oversizedCommentLine.push(asmLine);
                     isOversized = true;
                 }
             }
@@ -699,6 +699,6 @@ export class ASMDocument {
         }
     }
     isOversized(asmLine: ASMLine): boolean {
-        return this.ovesizedCommentLine.indexOf(asmLine) >= 0;
+        return this.oversizedCommentLine.indexOf(asmLine) >= 0;
     }
 }

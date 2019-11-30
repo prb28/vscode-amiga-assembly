@@ -19,7 +19,7 @@ describe("Symbols reader Tests", function () {
         let variables = symbolFile.getVariables();
         let labels = symbolFile.getLabels();
         expect(definedSymbols.length).to.be.equal(58);
-        let referedSymbols = symbolFile.getReferedSymbols();
+        let referedSymbols = symbolFile.getReferredSymbols();
         expect(referedSymbols.length).to.be.equal(313);
         let firstDefined = definedSymbols[0];
         expect(firstDefined.getLabel()).to.be.equal("COPPER_WAIT");

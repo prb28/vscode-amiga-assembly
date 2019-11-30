@@ -18,7 +18,7 @@ export class VLINKLinker {
     /**
      * Build the selected file
      * @param filepathname Path of the file to build
-     * @param exeFilepathname Name of the executabl generated
+     * @param exeFilepathname Name of the executable generated
      * @param entrypoint Optional name of the object file containing the entrypoint
      * @param workspaceRootDir Path to the root of the workspace
      * @param buildDir Build directory
@@ -30,7 +30,7 @@ export class VLINKLinker {
             if (this.mayLink(conf)) {
                 let vlinkExecutableName: string = conf.file;
                 let confArgs = conf.options;
-                let objectPathnames: string[] = [];
+                let objectPathNames: string[] = [];
                 for (let i = 0; i < filesURI.length; i += 1) {
                     let filename = path.basename(filesURI[i].fsPath);
                     let objFilename;
@@ -40,7 +40,7 @@ export class VLINKLinker {
                     } else {
                         objFilename = path.join(buildDir.fsPath, filename + ".o");
                     }
-                    objectPathnames.push(objFilename);
+                    objectPathNames.push(objFilename);
                 }
                 if (entrypoint !== undefined) {
                     // Vlink is unable to set an entrypoint for Amiga hunk files.
@@ -49,7 +49,7 @@ export class VLINKLinker {
                     // put the object containing the code to be executed first at the
                     // beginning of the objects list.
                     let entrypointNoExt = entrypoint.replace(/\.[^/.]+$/, "");
-                    objectPathnames.sort(function (a, b) {
+                    objectPathNames.sort(function (a, b) {
                         if (a === b) {
                             return 0;
                         }
@@ -67,7 +67,7 @@ export class VLINKLinker {
                         return 1;
                     });
                 }
-                let args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathnames);
+                let args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathNames);
                 await this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, null, true, this.parser).then(results => {
                     resolve(results);
                 }).catch(err => {
