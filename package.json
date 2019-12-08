@@ -192,6 +192,10 @@
                             },
                             "default": [],
                             "description": "adfCreate options"
+                        },
+                        "bootBlockSourceFile": {
+                            "type": "file",
+                            "description": "Source file containing the code of the bootblock"
                         }
                     },
                     "default": {
@@ -682,7 +686,9 @@
         "tslint": "^5.20.1",
         "typescript": "^3.7.2",
         "vscode-test": "^1.2.3",
-        "vscode-debugadapter-testsupport": "^1.39.0"
+        "vscode-debugadapter-testsupport": "^1.39.0",
+        "@types/temp": "^0.8.34",
+        "temp": "^0.9.1"
     },
     "dependencies": {
         "await-notify": "^1.0.1",

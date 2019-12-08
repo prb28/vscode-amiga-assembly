@@ -62,7 +62,11 @@ export class ADFTools {
                 let includes = conf.includes;
                 let excludes = conf.excludes;
                 let adfCreateOptions = conf.adfCreateOptions;
-                await this.createBootableADFDiskFromDir(filename, rootSourceDir, includes, excludes, adfCreateOptions, cancellationToken).then(() => {
+                let bootBlockSourceFileName;
+                if (conf.bootBlockSourceFile) {
+                    bootBlockSourceFileName = conf.bootBlockSourceFile;
+                }
+                await this.createBootableADFDiskFromDir(filename, rootSourceDir, includes, excludes, adfCreateOptions, bootBlockSourceFileName, cancellationToken).then(() => {
                     resolve();
                 }).catch((err) => {
                     reject(err);
@@ -81,17 +85,23 @@ export class ADFTools {
      * @param includes Expression for the files to include
      * @param excludes Expression for the files to exclude
      * @param adfCreateOptions Option for the create command
+     * @param bootBlockSourceFilename Filename of the boot block, if none the default boot block will be installed
      * @param cancellationToken Token to cancel the process
      */
-    public createBootableADFDiskFromDir(filename: string, rootSourceDir: string, includes: string, excludes: string, adfCreateOptions: Array<string>, cancellationToken?: CancellationToken): Promise<void> {
+    public createBootableADFDiskFromDir(filename: string, rootSourceDir: string, includes: string, excludes: string, adfCreateOptions: Array<string>, bootBlockSourceFilename?: string, cancellationToken?: CancellationToken): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
+                let bootBlockFilename;
+                if (bootBlockSourceFilename) {
+                    // Build the source file
+                    // TODO: call the build command
+                }
                 // Create a disk
                 await this.createADFDisk(filename, adfCreateOptions, cancellationToken).catch((err) => {
                     return reject(err);
                 });
                 // Install the disk
-                await this.installADFDisk(filename, cancellationToken).catch((err) => {
+                await this.installADFDisk(filename, bootBlockFilename, cancellationToken).catch((err) => {
                     return reject(err);
                 });
                 let files = new Array<string>();
@@ -219,10 +229,15 @@ export class ADFTools {
     /**
      * Install a bootblock to the disk
      * @param filename Filename of the new adf disk file
+     * @param bootBlockFilename Filename of the boot block, if none the default boot block will be installed
      * @param cancellationToken Token to cancel the process
      */
-    public installADFDisk(filename: string, cancellationToken?: CancellationToken): Promise<void> {
-        return this.executeADFCommand(this.adfInstallFilePath, ["-i", filename], cancellationToken);
+    public installADFDisk(filename: string, bootBlockFilename?: string, cancellationToken?: CancellationToken): Promise<void> {
+        if (bootBlockFilename) {
+            return this.executeADFCommand(this.adfInstallFilePath, [`--install=${cancellationToken}`, filename], cancellationToken);
+        } else {
+            return this.executeADFCommand(this.adfInstallFilePath, ["-i", filename], cancellationToken);
+        }
     }
 
     /**
@@ -291,4 +306,46 @@ export class ADFTools {
         }
         return new ADFTools(rootToolsDir);
     }
+
+    /**
+     * Compute checksum of a bootblock
+     * @param bootblock Complete bootblock
+     */
+    public calculateChecksum(bootblock: Buffer): number {
+        let newSum: number = 0;
+        newSum = 0;
+        for (let i = 0; i < 256; i++) { // The boot block must be 1024
+            if (i != 1) { // skip the checksum value ni the bootblock
+                newSum += bootblock.readUInt32BE(i * 4); // Read unsigned int 32b in Big Endian
+                if (newSum > 0xffffffff) { // Int32 overflow
+                    newSum -= 0x100000000; // Simulating overflow
+                    newSum++; // part of the checksum calculation
+                }
+            }
+        }
+        return ~newSum >>> 0;	/* not unsigned */
+    }
+
+    /**
+     * Create a bootblock buffer from a boot block binary buffer
+     * @param bootblockData Boot block binary data
+     */
+    public createBootBlock(bootblockData: Buffer): Buffer {
+        let bootblock = Buffer.alloc(1024);
+        bootblockData.copy(bootblock);
+        let checksum = this.calculateChecksum(bootblock);
+        bootblock.writeUInt32BE(checksum, 4);
+        return bootblock;
+    }
+
+    /**
+     * Write a bootblock file to integrate in adfinstall from a binary boot block buffer
+     * @param bootblockData Boot block binary data
+     */
+    public writeBootBlockFile(bootblockData: Buffer, filename: string) {
+        let bootblock = this.createBootBlock(bootblockData);
+        let fd = fs.openSync(filename, 'w');
+        fs.writeSync(fd, bootblock);
+    }
+
 }
