@@ -68,7 +68,7 @@ export class VASMCompiler {
   public buildDocument(document: TextDocument): Promise<ICheckResult[]> {
     return new Promise((resolve, reject) => {
       this.buildFile(document.uri, false)
-        .then(errors => {
+        .then(([_objectFile, errors]) => {
           this.processGlobalErrors(document, errors);
           this.executor.handleDiagnosticErrors(
             document,
@@ -278,8 +278,9 @@ export class VASMCompiler {
    * Build the selected file
    * @param filepathname Path of the file to build
    * @param debug If true debug symbols are added
+   * @param bootblock If true it will build a bootblock 
    */
-  public buildFile(fileUri: Uri, debug: boolean): Promise<ICheckResult[]> {
+  public buildFile(fileUri: Uri, debug: boolean, bootblock?: boolean): Promise<[string | null, ICheckResult[]]> {
     return new Promise(async (resolve, reject) => {
       const workspaceRootDir = this.getWorkspaceRootDir();
       const buildDir = this.getBuildDir();
@@ -310,7 +311,14 @@ export class VASMCompiler {
           } else {
             objFilename = path.join(buildDir.fsPath, filename + ".o");
           }
-          let confArgs = conf.options;
+          let confArgs: any;
+          if (bootblock) {
+            confArgs = new Array<string>();
+            confArgs.push("-m68000");
+            confArgs.push("-Fbin");
+          } else {
+            confArgs = conf.options;
+          }
           if (debug) {
             confArgs.push("-linedebug");
           }
@@ -333,7 +341,7 @@ export class VASMCompiler {
               this.parser
             )
             .then(results => {
-              resolve(results);
+              resolve([objFilename, results]);
             })
             .catch(err => {
               reject(err);
@@ -342,7 +350,7 @@ export class VASMCompiler {
         } else if (!this.disabledInConf(conf)) {
           reject(VASMCompiler.CONFIGURE_VASM_ERROR);
         } else {
-          resolve(new Array<ICheckResult>());
+          resolve(["", new Array<ICheckResult>()]);
         }
       } else {
         reject(new Error("Root workspace path not found"));

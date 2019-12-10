@@ -3,6 +3,7 @@ import { ExecutorHelper } from "./execHelper";
 import * as path from 'path';
 import * as glob from "glob";
 import * as fs from "fs";
+import { VASMCompiler } from "./vasm";
 
 /**
  * Class to Generate an ADF file
@@ -40,7 +41,7 @@ export class ADFTools {
      * Create a bootable disk using the vscode configuration
      * @param cancellationToken Token to cancel the process
      */
-    public createBootableADFDisk(cancellationToken?: CancellationToken): Promise<void> {
+    public createBootableADFDisk(compiler?: VASMCompiler, cancellationToken?: CancellationToken): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const rootConf = workspace.getConfiguration('amiga-assembly', null);
             const conf: any = rootConf.get('adfgenerator');
@@ -66,7 +67,7 @@ export class ADFTools {
                 if (conf.bootBlockSourceFile) {
                     bootBlockSourceFileName = conf.bootBlockSourceFile;
                 }
-                await this.createBootableADFDiskFromDir(filename, rootSourceDir, includes, excludes, adfCreateOptions, bootBlockSourceFileName, cancellationToken).then(() => {
+                await this.createBootableADFDiskFromDir(filename, rootSourceDir, includes, excludes, adfCreateOptions, bootBlockSourceFileName, compiler, cancellationToken).then(() => {
                     resolve();
                 }).catch((err) => {
                     reject(err);
@@ -86,15 +87,44 @@ export class ADFTools {
      * @param excludes Expression for the files to exclude
      * @param adfCreateOptions Option for the create command
      * @param bootBlockSourceFilename Filename of the boot block, if none the default boot block will be installed
+     * @param compiler Compiler to compile to boot block code
      * @param cancellationToken Token to cancel the process
      */
-    public createBootableADFDiskFromDir(filename: string, rootSourceDir: string, includes: string, excludes: string, adfCreateOptions: Array<string>, bootBlockSourceFilename?: string, cancellationToken?: CancellationToken): Promise<void> {
+    public createBootableADFDiskFromDir(filename: string, rootSourceDir: string, includes: string, excludes: string, adfCreateOptions: Array<string>, bootBlockSourceFilename?: string, compiler?: VASMCompiler, cancellationToken?: CancellationToken): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
-                let bootBlockFilename;
-                if (bootBlockSourceFilename) {
+                const workspaceRootDir = this.getWorkspaceRootDir();
+                let bootBlockFilename: string | undefined = undefined;
+                if (bootBlockSourceFilename && compiler) {
                     // Build the source file
-                    // TODO: call the build command
+                    // Find the source file in the workspace
+                    let sourceFullPath: Uri | null = null;
+                    if (fs.existsSync(bootBlockSourceFilename)) {
+                        sourceFullPath = Uri.file(bootBlockSourceFilename);
+                    } else if (workspaceRootDir) {
+                        sourceFullPath = Uri.file(path.join(workspaceRootDir.fsPath, bootBlockSourceFilename));
+                        if (!fs.existsSync(sourceFullPath.fsPath)) {
+                            sourceFullPath = null;
+                        }
+                    }
+                    if (sourceFullPath) {
+                        // Call the build command
+                        let results = await compiler.buildFile(sourceFullPath, false, true).catch((err) => {
+                            return reject(err);
+                        });
+                        if (results && results[0]) {
+                            let bootBlockDataFilename = results[0];
+                            bootBlockFilename = bootBlockDataFilename.replace(".o", ".bb");
+                            // create the bootblock
+                            let fileSizeInBytes = fs.statSync(bootBlockDataFilename).size;
+                            let bootBlock = Buffer.alloc(fileSizeInBytes);
+                            let fd = fs.openSync(bootBlockDataFilename, 'r');
+                            fs.readSync(fd, bootBlock, 0, fileSizeInBytes, 0);
+                            this.writeBootBlockFile(bootBlock, bootBlockFilename);
+                        }
+                    } else {
+                        return reject(new Error(`Boot source file '${bootBlockSourceFilename}' not found`));
+                    }
                 }
                 // Create a disk
                 await this.createADFDisk(filename, adfCreateOptions, cancellationToken).catch((err) => {
@@ -121,7 +151,6 @@ export class ADFTools {
                 if (files.length <= 0) {
                     try {
                         // try to add the workspace dir
-                        const workspaceRootDir = this.getWorkspaceRootDir();
                         if (workspaceRootDir) {
                             newRootSourceDir = path.join(workspaceRootDir.fsPath, newRootSourceDir);
                             let stat = fs.lstatSync(newRootSourceDir);
@@ -234,7 +263,7 @@ export class ADFTools {
      */
     public installADFDisk(filename: string, bootBlockFilename?: string, cancellationToken?: CancellationToken): Promise<void> {
         if (bootBlockFilename) {
-            return this.executeADFCommand(this.adfInstallFilePath, [`--install=${cancellationToken}`, filename], cancellationToken);
+            return this.executeADFCommand(this.adfInstallFilePath, [`--install=${bootBlockFilename}`, filename], cancellationToken);
         } else {
             return this.executeADFCommand(this.adfInstallFilePath, ["-i", filename], cancellationToken);
         }

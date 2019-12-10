@@ -63,7 +63,7 @@ describe("ADFTools test", function () {
         // tslint:disable-next-line:no-unused-expression
         return expect(adfTools.createBootableADFDiskFromDir(adfDiskName, adfRootDir, "**/genc*", "**/.*", ["opts"])).to.be.rejected;
     });
-    context.only("Boot Block", function () {
+    context("Boot Block", function () {
         let referenceBootBlock: Buffer;
         let binaryBootBlockData: Buffer;
         let adfTools: ADFTools;

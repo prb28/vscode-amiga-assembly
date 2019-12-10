@@ -243,7 +243,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // create ADF file creator command
     disposable = vscode.commands.registerCommand('amiga-assembly.create-adffile', async () => {
-        state.getADFTools().createBootableADFDisk().catch(err => {
+        state.getADFTools().createBootableADFDisk(state.getCompiler()).catch(err => {
             vscode.window.showErrorMessage(err.message);
         });
     });
