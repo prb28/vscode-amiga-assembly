@@ -199,8 +199,8 @@
                         }
                     },
                     "default": {
-                        "ADFToolsParentDir": "my/path/to/adftoolsbinaries",
-                        "sourceRootDir": "my/path/to/rootdiskdir",
+                        "ADFToolsParentDir": "bin",
+                        "sourceRootDir": "",
                         "outputADFFile": "./build/disk.adf",
                         "includes": "**/*",
                         "excludes": "**/.*",

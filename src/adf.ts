@@ -135,69 +135,69 @@ export class ADFTools {
                     return reject(err);
                 });
                 let files = new Array<string>();
-                let newRootSourceDir = rootSourceDir;
-                try {
-                    let stat = fs.lstatSync(newRootSourceDir);
-                    if (stat.isDirectory()) {
-                        // List the source dir
-                        files = glob.sync(includes, {
-                            cwd: newRootSourceDir,
-                            ignore: excludes
-                        });
-                    }
-                } catch (e) {
-                    // Do nothing .. file not found
-                }
-                if (files.length <= 0) {
+                if (rootSourceDir && rootSourceDir.length > 0) {
+                    let newRootSourceDir = rootSourceDir;
                     try {
-                        // try to add the workspace dir
-                        if (workspaceRootDir) {
-                            newRootSourceDir = path.join(workspaceRootDir.fsPath, newRootSourceDir);
-                            let stat = fs.lstatSync(newRootSourceDir);
-                            if (stat.isDirectory()) {
-                                files = glob.sync(includes, {
-                                    cwd: newRootSourceDir,
-                                    ignore: excludes
-                                });
-                            }
+                        let stat = fs.lstatSync(newRootSourceDir);
+                        if (stat.isDirectory()) {
+                            // List the source dir
+                            files = glob.sync(includes, {
+                                cwd: newRootSourceDir,
+                                ignore: excludes
+                            });
                         }
                     } catch (e) {
-                        return reject(new Error("Sources for ADFDisk dir not found in '" + rootSourceDir + "' and '" + newRootSourceDir + "'"));
+                        // Do nothing .. file not found
                     }
-                }
-                if (files.length <= 0) {
-                    return reject(new Error("No sources files found for ADFDisk in '" + rootSourceDir + "' and '" + newRootSourceDir + "'"));
-                } else {
-                    let createdDirs = new Array<string>();
-                    createdDirs.push("/");
-                    for (let file of files) {
-                        let fullPath = path.join(newRootSourceDir, file);
+                    if (files.length <= 0) {
                         try {
-                            let stat = fs.lstatSync(fullPath);
-                            if (stat.isDirectory()) {
-                                // For each file copy to disk
-                                await this.mkdirs(filename, file, createdDirs, cancellationToken).catch((err) => {
-                                    return reject(err);
-                                });
-                            } else {
-                                // For each file copy to disk
-                                let fileParentDir = path.parse(file).dir;
-                                if (fileParentDir === "") {
-                                    fileParentDir = "/";
+                            // try to add the workspace dir
+                            if (workspaceRootDir) {
+                                newRootSourceDir = path.join(workspaceRootDir.fsPath, newRootSourceDir);
+                                let stat = fs.lstatSync(newRootSourceDir);
+                                if (stat.isDirectory()) {
+                                    files = glob.sync(includes, {
+                                        cwd: newRootSourceDir,
+                                        ignore: excludes
+                                    });
+                                }
+                            }
+                        } catch (e) {
+                            return reject(new Error("Sources for ADFDisk dir not found in '" + rootSourceDir + "' and '" + newRootSourceDir + "'"));
+                        }
+                    }
+                    if (files.length > 0) {
+                        let createdDirs = new Array<string>();
+                        createdDirs.push("/");
+                        for (let file of files) {
+                            let fullPath = path.join(newRootSourceDir, file);
+                            try {
+                                let stat = fs.lstatSync(fullPath);
+                                if (stat.isDirectory()) {
+                                    // For each file copy to disk
+                                    await this.mkdirs(filename, file, createdDirs, cancellationToken).catch((err) => {
+                                        return reject(err);
+                                    });
                                 } else {
-                                    await this.mkdirs(filename, fileParentDir, createdDirs, cancellationToken).catch((err) => {
+                                    // For each file copy to disk
+                                    let fileParentDir = path.parse(file).dir;
+                                    if (fileParentDir === "") {
+                                        fileParentDir = "/";
+                                    } else {
+                                        await this.mkdirs(filename, fileParentDir, createdDirs, cancellationToken).catch((err) => {
+                                            return reject(err);
+                                        });
+                                    }
+                                    await this.copyToADFDisk(filename, fullPath, fileParentDir, cancellationToken).catch((err) => {
                                         return reject(err);
                                     });
                                 }
-                                await this.copyToADFDisk(filename, fullPath, fileParentDir, cancellationToken).catch((err) => {
-                                    return reject(err);
-                                });
+                            } catch (e) {
+                                // Do nothing .. file not found - a bit weird..
                             }
-                        } catch (e) {
-                            // Do nothing .. file not found - a bit weird..
                         }
+                        resolve();
                     }
-                    resolve();
                 }
             } catch (e) {
                 reject(new Error(e));
