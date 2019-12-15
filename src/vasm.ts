@@ -11,7 +11,6 @@ import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import { ExtensionState } from "./extension";
 import { VLINKLinker } from "./vlink";
 import { AsmONE } from "./asmONE";
-import * as fs from "fs";
 import * as path from "path";
 import * as winston from 'winston';
 
@@ -289,7 +288,7 @@ export class VASMCompiler {
         let configuration = workspace.getConfiguration("amiga-assembly", null);
         let conf: any = configuration.get("vasm");
         if (this.mayCompile(conf)) {
-          await this.mkdirSync(buildDir.fsPath).catch(err => {
+          await this.mkdirSync(buildDir).catch(err => {
             reject(
               new Error(
                 `Error creating the  build dir "${buildDir}: ` + err.toString()
@@ -374,7 +373,7 @@ export class VASMCompiler {
    * @param fileUri Uri of the file to delete
    */
   unlink(fileUri: Uri) {
-    fs.unlinkSync(fileUri.fsPath);
+    workspace.fs.delete(fileUri);
   }
 
   /**
@@ -391,19 +390,15 @@ export class VASMCompiler {
    * Creates a directory
    * @param dirPath path to create
    */
-  mkdirSync(dirPath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
+  mkdirSync(dirPath: Uri): Promise<void> {
+    return new Promise(async (resolve, reject) => {
       try {
-        if (!fs.existsSync(dirPath)) {
-          fs.mkdirSync(dirPath);
-        }
+        await workspace.fs.createDirectory(dirPath);
+        resolve();
       } catch (err) {
-        if (err.code !== "EEXIST") {
-          window.showErrorMessage("Error creating build dir: " + dirPath);
-          reject(err);
-        }
+        window.showErrorMessage("Error creating build dir: " + dirPath);
+        reject(err);
       }
-      resolve();
     });
   }
 
