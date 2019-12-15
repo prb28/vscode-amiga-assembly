@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [0.19.0] - 
+- [Feat #107](https://github.com/prb28/vscode-amiga-assembly/issues/107) Don't use hardcoded build as temp path when saving
+- [Feat #106](https://github.com/prb28/vscode-amiga-assembly/issues/105) Add "step out" in debug capabilities
+- [Issue #105](https://github.com/prb28/vscode-amiga-assembly/issues/105) Debugger hangs when getting back (rts) from a jsr call) 
+- [Issue #102](https://github.com/prb28/vscode-amiga-assembly/issues/102) Multiple code SECTIONs cause debug output to be off
 - [Feat #101](https://github.com/prb28/vscode-amiga-assembly/issues/101) Do not show the "please configure VASM" message if it is disabled in the settings
 - [Feat #100](https://github.com/prb28/vscode-amiga-assembly/issues/100) Add register addresses to hover data
 - [Feat #95](https://github.com/prb28/vscode-amiga-assembly/issues/95) Generate Boot Block Code

@@ -10,10 +10,12 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 ## New in 0.19.0
 - Generate Boot Block Code and integrate it to ADF file
-- Modify market data with expression or defaults
+- Modify marked data with expression or defaults
 - Vasm can be completely disabled
 - Register addresses in hover data
 - Add Bitwise operators to calculations &(AND), |(OR), ^|(XOR), <<(Left shift), >>(Sign-propagating right shift), >>>(Zero-fill right shift), ~(NOT)
+- Modify build dir location
+- Add "step out" command in debugger
 - Bug fixes
 
 ### Other features
@@ -80,10 +82,12 @@ The assembly language will be formatted with the standard shortcuts :
 ## Release Notes
 ## 0.19.0
 - Generate Boot Block Code and integrate it to ADF file
-- Modify market data with expression or defaults
+- Modify marked data with expression or defaults
 - Vasm can be completely disabled
 - Register addresses in hover data
 - Add Bitwise operators to calculations &(AND), |(OR), ^|(XOR), <<(Left shift), >>(Sign-propagating right shift), >>>(Zero-fill right shift), ~(NOT)
+- Modify build dir location
+- Add "step out" command in debugger
 - Bug fixes
 
 ## 0.18.2
