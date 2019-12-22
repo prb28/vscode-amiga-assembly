@@ -8,6 +8,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as Path from 'path';
 import { ExecutorHelper } from '../execHelper';
 import { instance, when, anything, mock, capture, reset } from 'ts-mockito/lib/ts-mockito';
+import { Uri } from 'vscode';
 
 chai.use(chaiAsPromised);
 describe("Capstone test", function () {
@@ -33,7 +34,7 @@ describe("Capstone test", function () {
         let capstone = new Capstone('cstool');
         capstone.setTestContext(executor);
 
-        return capstone.disassembleFile(programFilename).then((data) => {
+        return capstone.disassembleFile(Uri.file(programFilename)).then((data) => {
             expect(data).to.be.equal(" 0  90 91  sub.l\t(a1), d0\n\n");
             const [args, , , ,] = capture(mockedExecutor.runToolRetrieveStdout).last();
             expect(args[0]).to.be.equal("m68k");

@@ -40,6 +40,31 @@ export class BreakpointManager {
         this.pendingBreakpoints.push(breakpoint);
     }
 
+    private fillBreakpointWithSegAddress(debugBp: GdbBreakpoint, path: string, line: number): boolean {
+        if (this.debugInfo) {
+            let values = this.debugInfo.getAddressSeg(path, line);
+            if (values) {
+                debugBp.segmentId = values[0];
+                debugBp.offset = values[1];
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public checkPendingBreakpointsAddresses() {
+        if (this.debugInfo) {
+            for (let debugBp of this.pendingBreakpoints) {
+                if (debugBp.source && debugBp.line) {
+                    const path = <string>debugBp.source.path;
+                    if (!DebugDisassembledFile.isDebugAsmFile(path)) {
+                        this.fillBreakpointWithSegAddress(debugBp, path, debugBp.line);
+                    }
+                }
+            }
+        }
+    }
+
     public setBreakpoint(debugBp: GdbBreakpoint): Promise<GdbBreakpoint> {
         return new Promise(async (resolve, reject) => {
             if (debugBp.source && debugBp.line && (debugBp.id !== undefined)) {
@@ -48,10 +73,7 @@ export class BreakpointManager {
 
                 if (!DebugDisassembledFile.isDebugAsmFile(path)) {
                     if (this.debugInfo) {
-                        let values = this.debugInfo.getAddressSeg(path, debugBp.line);
-                        if (values) {
-                            debugBp.segmentId = values[0];
-                            debugBp.offset = values[1];
+                        if (this.fillBreakpointWithSegAddress(debugBp, path, debugBp.line)) {
                             await this.gdbProxy.setBreakpoint(debugBp).then(() => {
                                 this.breakpoints.push(debugBp);
                                 resolve(debugBp);

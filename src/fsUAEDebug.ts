@@ -8,7 +8,7 @@ import { basename } from 'path';
 import { GdbProxy } from './gdbProxy';
 import { GdbRegister, Segment, GdbHaltStatus, GdbAmigaSysThreadId } from './gdbProxyCore';
 import { ExecutorHelper } from './execHelper';
-import { CancellationTokenSource, workspace, window } from 'vscode';
+import { CancellationTokenSource, workspace, window, Uri } from 'vscode';
 import { DebugInfo } from './debugInfo';
 import { Capstone } from './capstone';
 import { DebugVariableResolver } from './debugVariableResolver';
@@ -299,7 +299,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 	/**
 	 * Load the program with all the debug information
 	 */
-    protected loadDebugInfo(args: LaunchRequestArguments): boolean {
+    protected loadDebugInfo(args: LaunchRequestArguments): Promise<boolean> {
         let sMap = new Map<string, string>();
         if (args.sourceFileMap) {
             let keys = Object.keys(args.sourceFileMap);
@@ -311,8 +311,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             }
         }
         this.debugInfo = new DebugInfo(sMap, args.rootSourceFileMap);
-        this.breakpointManager.setDebugInfo(this.debugInfo);
-        return this.debugInfo.loadInfo(args.program);
+        return this.debugInfo.loadInfo(Uri.file(args.program));
     }
 
     /**
@@ -336,7 +335,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             // Does the program exists ? -> Loads the debug info
             let dInfoLoaded = false;
             try {
-                dInfoLoaded = this.loadDebugInfo(args);
+                dInfoLoaded = await this.loadDebugInfo(args);
+                if (dInfoLoaded && this.debugInfo) {
+                    this.breakpointManager.setDebugInfo(this.debugInfo);
+                    this.breakpointManager.checkPendingBreakpointsAddresses();
+                }
             } catch (err) {
                 this.sendStringErrorResponse(response, "Invalid program to debug: " + err.message);
                 resolve();

@@ -245,7 +245,7 @@ export class VASMCompiler {
                       if (ASMOneEnabled) {
                         this.asmONE.Auto(
                           filesURI,
-                          path.join(buildDir.fsPath, exefilename)
+                          Uri.file(path.join(buildDir.fsPath, exefilename))
                         );
                       }
                       resolve();

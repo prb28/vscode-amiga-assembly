@@ -10,6 +10,7 @@ import { ExecutorHelper } from '../execHelper';
 import { instance, when, anything, mock, capture, reset } from 'ts-mockito/lib/ts-mockito';
 import * as fs from 'fs';
 import * as temp from 'temp';
+import { Uri } from 'vscode';
 
 chai.use(chaiAsPromised);
 describe("ADFTools test", function () {
@@ -90,10 +91,10 @@ describe("ADFTools test", function () {
         it("Should create a bootblock from a binary file", async function () {
             expect(adfTools.createBootBlock(binaryBootBlockData)).to.be.eql(referenceBootBlock);
         });
-        it("Should write a bootblock file from a binary file", function () {
+        it("Should write a bootblock file from a binary file", async function () {
             let tempDir = temp.mkdirSync("build-test");
             let outputFile = path.join(tempDir, "boot.bb");
-            adfTools.writeBootBlockFile(binaryBootBlockData, outputFile);
+            await adfTools.writeBootBlockFile(binaryBootBlockData, Uri.file(outputFile));
             // Read the file to check
             let fileSizeInBytes = fs.statSync(outputFile).size;
             let fileContents = Buffer.alloc(fileSizeInBytes);

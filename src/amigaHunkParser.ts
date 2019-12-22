@@ -1,5 +1,6 @@
-import * as fs from 'fs';
 import winston = require('winston');
+import { FileProxy } from './fsProxy';
+import { Uri } from 'vscode';
 
 const DEBUG_LINE: number = 0x4c494e45;
 
@@ -333,63 +334,70 @@ export class HunkParser {
         }
     }
 
-    public parse_file(filename: string): Array<Hunk> {
-        winston.debug(`Parsing file "${filename}"`);
-        const stats = fs.statSync(filename);
-        const fileSizeInBytes = stats.size;
-        let buffer = Buffer.alloc(fileSizeInBytes);
-        let fd = fs.openSync(filename, 'r');
-        fs.readSync(fd, buffer, 0, fileSizeInBytes, 0);
+    public parse_file(contents: Buffer): Array<Hunk> {
         let fileOffset = 0;
-        let fileData = new DataView(this.toArrayBuffer(buffer)); // Reading in Big Endian
+        let fileData = new DataView(this.toArrayBuffer(contents)); // Reading in Big Endian
 
         let hunk_header = fileData.getUint32(fileOffset, false);
         fileOffset += 4;
         if (hunk_header !== HunkType.HEADER) {
             throw new Error("Not a valid hunk file : Unable to find correct HUNK_HEADER");
-        }
-
-        // Skip header/string section
-        fileOffset += 4;
-
-        let table_size = fileData.getUint32(fileOffset, false);
-        fileOffset += 4;
-        let first_hunk = fileData.getUint32(fileOffset, false);
-        fileOffset += 4;
-        let last_hunk = fileData.getUint32(fileOffset, false);
-        fileOffset += 4;
-
-        if (table_size < 0 || first_hunk < 0 || last_hunk < 0) {
-            throw new Error("Not a valid hunk file : Invalid sizes for hunks");
-        }
-
-        let hunk_count = last_hunk - first_hunk + 1;
-
-        let hunk_table = new Array<SizesTypes>();
-
-        for (let i = 0; i < hunk_count; i++) {
-            let [size, memType] = this.get_size_type(fileData.getUint32(fileOffset, false));
-            winston.debug(`Hunk found [${MemoryType[memType]}] size = ${size}`);
+        } else {
+            // Skip header/string section
             fileOffset += 4;
-            hunk_table.push(<SizesTypes>{
-                memType: memType,
-                size: size
-            });
-        }
 
-        let hunks = new Array<Hunk>();
+            let table_size = fileData.getUint32(fileOffset, false);
+            fileOffset += 4;
+            let first_hunk = fileData.getUint32(fileOffset, false);
+            fileOffset += 4;
+            let last_hunk = fileData.getUint32(fileOffset, false);
+            fileOffset += 4;
 
-        for (let i = 0; i < hunk_count; i++) {
-            let hunk = <Hunk>{
-                index: i,
-                fileOffset: fileOffset,
-                memType: hunk_table[i].memType,
-                allocSize: hunk_table[i].size,
-            };
-            fileOffset = this.fill_hunk(hunk, fileData, fileOffset);
-            this.logHunk(hunk);
-            hunks.push(hunk);
+            if (table_size < 0 || first_hunk < 0 || last_hunk < 0) {
+                throw new Error("Not a valid hunk file : Invalid sizes for hunks");
+            }
+
+            let hunk_count = last_hunk - first_hunk + 1;
+
+            let hunk_table = new Array<SizesTypes>();
+
+            for (let i = 0; i < hunk_count; i++) {
+                let [size, memType] = this.get_size_type(fileData.getUint32(fileOffset, false));
+                winston.debug(`Hunk found [${MemoryType[memType]}] size = ${size}`);
+                fileOffset += 4;
+                hunk_table.push(<SizesTypes>{
+                    memType: memType,
+                    size: size
+                });
+            }
+
+            let hunks = new Array<Hunk>();
+
+            for (let i = 0; i < hunk_count; i++) {
+                let hunk = <Hunk>{
+                    index: i,
+                    fileOffset: fileOffset,
+                    memType: hunk_table[i].memType,
+                    allocSize: hunk_table[i].size,
+                };
+                fileOffset = this.fill_hunk(hunk, fileData, fileOffset);
+                this.logHunk(hunk);
+                hunks.push(hunk);
+            }
+            return hunks;
         }
-        return hunks;
+    }
+
+    public readFile(fileUri: Uri): Promise<Array<Hunk>> {
+        return new Promise(async (resolve, reject) => {
+            winston.debug(`Parsing file "${fileUri.fsPath}"`);
+            const fileProxy = new FileProxy(fileUri);
+            try {
+                let buffer = await fileProxy.readFile();
+                resolve(this.parse_file(buffer));
+            } catch (err) {
+                reject(err);
+            }
+        });
     }
 }

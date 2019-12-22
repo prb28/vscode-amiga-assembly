@@ -2,6 +2,8 @@ import { Hunk, HunkParser, SourceLine, HunkType, Symbol } from './amigaHunkParse
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { FileProxy } from './fsProxy';
+import { Uri } from 'vscode';
 
 export class DebugInfo {
     public hunks = new Array<Hunk>();
@@ -15,15 +17,16 @@ export class DebugInfo {
         this.sourcesRootPaths = sourcesRootPaths;
     }
 
-    public loadInfo(filePath: string): boolean {
-        // Does the file exists
-        if (fs.existsSync(filePath)) {
+    public loadInfo(filePath: Uri): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
             let parser = new HunkParser();
-            this.hunks = parser.parse_file(filePath);
-            return true;
-        } else {
-            return false;
-        }
+            try {
+                this.hunks = await parser.readFile(filePath);
+                resolve(true);
+            } catch (err) {
+                resolve(false);
+            }
+        });
     }
 
     public getCodeData(): Uint32Array[] {
@@ -41,7 +44,7 @@ export class DebugInfo {
         let symbols = Array<[Symbol, number | undefined]>();
         let normFilename = filename;
         if (normFilename) {
-            normFilename = this.normalize(normFilename);
+            normFilename = FileProxy.normalize(normFilename);
         }
         for (let i = 0; i < this.hunks.length; i++) {
             let hunk = this.hunks[i];
@@ -178,7 +181,7 @@ export class DebugInfo {
                     }
                 }
             }
-            resolvedFileName = this.normalize(resolvedFileName);
+            resolvedFileName = FileProxy.normalize(resolvedFileName);
             this.resolvedSourceFilesNames.set(filename, resolvedFileName);
         }
         return resolvedFileName;
@@ -192,7 +195,7 @@ export class DebugInfo {
     }
 
     public getAddressSeg(filename: string, fileLine: number): ([number, number] | null) {
-        let normFilename = this.normalize(filename);
+        let normFilename = FileProxy.normalize(filename);
         for (let i = 0; i < this.hunks.length; i++) {
             let hunk = this.hunks[i];
             let sourceFiles = hunk.lineDebugInfo;
@@ -217,7 +220,7 @@ export class DebugInfo {
 
     public getAllSegmentIds(filename: string): number[] {
         let segIds: number[] = [];
-        let normFilename = this.normalize(filename);
+        let normFilename = FileProxy.normalize(filename);
         for (let i = 0; i < this.hunks.length; i++) {
             let hunk = this.hunks[i];
             let sourceFiles = hunk.lineDebugInfo;
@@ -233,15 +236,5 @@ export class DebugInfo {
             }
         }
         return segIds;
-    }
-
-    public normalize(dirName: string): string {
-        let newDName = dirName.replace(/\\+/g, '/');
-        // Testing Windows derive letter -> to uppercase
-        if ((newDName.length > 0) && (newDName.charAt(1) === ":")) {
-            let fChar = newDName.charAt(0).toUpperCase();
-            newDName = fChar + ":" + newDName.substring(2);
-        }
-        return newDName;
     }
 }

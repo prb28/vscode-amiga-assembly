@@ -5,14 +5,15 @@
 import { expect } from 'chai';
 import { HunkParser, HunkType } from '../amigaHunkParser';
 import * as Path from 'path';
+import { Uri } from 'vscode';
 
 // tslint:disable:no-unused-expression
 describe("AmigaHunkFile", function () {
-    it("Should open a hunk file", function () {
+    it("Should open a hunk file", async function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
         let parser = new HunkParser();
-        let hunks = parser.parse_file(programFilename);
+        let hunks = await parser.readFile(Uri.file(programFilename));
         expect(hunks.length).to.be.equal(1);
         let hunk = hunks[0];
         if (hunk.symbols) {
@@ -32,11 +33,11 @@ describe("AmigaHunkFile", function () {
         }
     });
 
-    it("Should parse the symbols of a multi hunk file", function () {
+    it("Should parse the symbols of a multi hunk file", async function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'tutorial');
         let parser = new HunkParser();
-        let hunks = parser.parse_file(programFilename);
+        let hunks = await parser.readFile(Uri.file(programFilename));
         expect(hunks.length).to.be.equal(3);
         // Code hunk
         let hunk = hunks[0];
@@ -73,11 +74,11 @@ describe("AmigaHunkFile", function () {
             expect.fail("hunk has no symbol");
         }
     });
-    it("Should parse the a vbcc generated file", function () {
+    it("Should parse the a vbcc generated file", async function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'hello-vbcc');
         let parser = new HunkParser();
-        let hunks = parser.parse_file(programFilename);
+        let hunks = await parser.readFile(Uri.file(programFilename));
         expect(hunks.length).to.be.equal(7);
         // Code hunk
         let hunk = hunks[0];

@@ -1,9 +1,8 @@
-import { CancellationToken, Uri, workspace } from "vscode";
+import { CancellationToken, Uri, workspace, FileType } from "vscode";
 import { ExecutorHelper } from "./execHelper";
 import * as path from 'path';
-import * as glob from "glob";
-import * as fs from "fs";
 import { VASMCompiler } from "./vasm";
+import { FileProxy } from "./fsProxy";
 
 /**
  * Class to Generate an ADF file
@@ -99,12 +98,18 @@ export class ADFTools {
                     // Build the source file
                     // Find the source file in the workspace
                     let sourceFullPath: Uri | null = null;
-                    if (fs.existsSync(bootBlockSourceFilename)) {
-                        sourceFullPath = Uri.file(bootBlockSourceFilename);
-                    } else if (workspaceRootDir) {
-                        sourceFullPath = Uri.file(path.join(workspaceRootDir.fsPath, bootBlockSourceFilename));
-                        if (!fs.existsSync(sourceFullPath.fsPath)) {
-                            sourceFullPath = null;
+                    let bUri = Uri.file(bootBlockSourceFilename);
+                    let pFile = new FileProxy(bUri);
+                    if (pFile.exists()) {
+                        sourceFullPath = bUri;
+                    } else {
+                        // file not exists
+                        if (workspaceRootDir) {
+                            sourceFullPath = Uri.file(path.join(workspaceRootDir.fsPath, bootBlockSourceFilename));
+                            pFile = new FileProxy(sourceFullPath);
+                            if (!pFile.exists()) {
+                                sourceFullPath = null;
+                            }
                         }
                     }
                     if (sourceFullPath) {
@@ -115,12 +120,15 @@ export class ADFTools {
                         if (results && results[0]) {
                             let bootBlockDataFilename = results[0];
                             bootBlockFilename = bootBlockDataFilename.replace(".o", ".bb");
+                            let bootBlockDataFilenameUri = Uri.file(bootBlockDataFilename);
+                            let bootBlockFile = new FileProxy(bootBlockDataFilenameUri);
                             // create the bootblock
-                            let fileSizeInBytes = fs.statSync(bootBlockDataFilename).size;
-                            let bootBlock = Buffer.alloc(fileSizeInBytes);
-                            let fd = fs.openSync(bootBlockDataFilename, 'r');
-                            fs.readSync(fd, bootBlock, 0, fileSizeInBytes, 0);
-                            this.writeBootBlockFile(bootBlock, bootBlockFilename);
+                            try {
+                                let bootBlock = await bootBlockFile.readFile();
+                                await this.writeBootBlockFile(Buffer.from(bootBlock), bootBlockDataFilenameUri);
+                            } catch (err) {
+                                return reject(new Error(`Error writing boot block '${bootBlockSourceFilename}'`));
+                            }
                         }
                     } else {
                         return reject(new Error(`Boot source file '${bootBlockSourceFilename}' not found`));
@@ -134,69 +142,58 @@ export class ADFTools {
                 await this.installADFDisk(filename, bootBlockFilename, cancellationToken).catch((err) => {
                     return reject(err);
                 });
-                let files = new Array<string>();
+                let files: Array<FileProxy>;
                 if (rootSourceDir && rootSourceDir.length > 0) {
-                    let newRootSourceDir = rootSourceDir;
+                    let rootSourceDirUri: Uri;
+                    if (!path.isAbsolute(rootSourceDir) && workspace.workspaceFolders) {
+                        rootSourceDirUri = Uri.file(path.join(workspace.workspaceFolders[0].uri.fsPath, rootSourceDir));
+                    } else {
+                        if (workspace.workspaceFolders) {
+                            let relativePath = path.relative(workspace.workspaceFolders[0].uri.fsPath, rootSourceDir);
+                            rootSourceDirUri = Uri.file(path.join(workspace.workspaceFolders[0].uri.fsPath, relativePath));
+                        } else {
+                            rootSourceDirUri = Uri.file(rootSourceDir);
+                        }
+                    }
                     try {
-                        let stat = fs.lstatSync(newRootSourceDir);
-                        if (stat.isDirectory()) {
-                            // List the source dir
-                            files = glob.sync(includes, {
-                                cwd: newRootSourceDir,
-                                ignore: excludes
-                            });
-                        }
-                    } catch (e) {
-                        // Do nothing .. file not found
-                    }
-                    if (files.length <= 0) {
-                        try {
-                            // try to add the workspace dir
-                            if (workspaceRootDir) {
-                                newRootSourceDir = path.join(workspaceRootDir.fsPath, newRootSourceDir);
-                                let stat = fs.lstatSync(newRootSourceDir);
-                                if (stat.isDirectory()) {
-                                    files = glob.sync(includes, {
-                                        cwd: newRootSourceDir,
-                                        ignore: excludes
-                                    });
-                                }
-                            }
-                        } catch (e) {
-                            return reject(new Error("Sources for ADFDisk dir not found in '" + rootSourceDir + "' and '" + newRootSourceDir + "'"));
-                        }
-                    }
-                    if (files.length > 0) {
-                        let createdDirs = new Array<string>();
-                        createdDirs.push("/");
-                        for (let file of files) {
-                            let fullPath = path.join(newRootSourceDir, file);
-                            try {
-                                let stat = fs.lstatSync(fullPath);
-                                if (stat.isDirectory()) {
-                                    // For each file copy to disk
-                                    await this.mkdirs(filename, file, createdDirs, cancellationToken).catch((err) => {
-                                        return reject(err);
-                                    });
-                                } else {
-                                    // For each file copy to disk
-                                    let fileParentDir = path.parse(file).dir;
-                                    if (fileParentDir === "") {
-                                        fileParentDir = "/";
+                        let sourceRootFileProxy = new FileProxy(rootSourceDirUri);
+                        files = await sourceRootFileProxy.findFiles(rootSourceDir + '/' + includes, excludes);
+                        if (files.length > 0) {
+                            let createdDirs = new Array<string>();
+                            createdDirs.push("/");
+                            for (let file of files) {
+                                let relativePath = path.relative(rootSourceDirUri.path, file.getUri().fsPath);
+                                try {
+                                    let stat = await file.stat();
+                                    if (stat.type & FileType.Directory) {
+                                        // For each file copy to disk
+                                        await this.mkdirs(filename, relativePath, createdDirs, cancellationToken).catch((err) => {
+                                            return reject(err);
+                                        });
                                     } else {
-                                        await this.mkdirs(filename, fileParentDir, createdDirs, cancellationToken).catch((err) => {
+                                        // For each file copy to disk
+                                        let fileParentDir = path.parse(file.getUri().path).dir;
+                                        let parentRelativePath = path.relative(rootSourceDirUri.path, fileParentDir);
+                                        if (parentRelativePath === "") {
+                                            parentRelativePath = "/";
+                                        } else {
+                                            await this.mkdirs(filename, parentRelativePath, createdDirs, cancellationToken).catch((err) => {
+                                                return reject(err);
+                                            });
+                                        }
+                                        await this.copyToADFDisk(filename, file.getUri().fsPath, parentRelativePath, cancellationToken).catch((err) => {
                                             return reject(err);
                                         });
                                     }
-                                    await this.copyToADFDisk(filename, fullPath, fileParentDir, cancellationToken).catch((err) => {
-                                        return reject(err);
-                                    });
+                                } catch (e) {
+                                    // Do nothing .. file not found - a bit weird..
                                 }
-                            } catch (e) {
-                                // Do nothing .. file not found - a bit weird..
                             }
                         }
                         resolve();
+                    } catch (e) {
+                        // Do nothing .. file not found
+                        return reject(new Error("Sources for ADFDisk dir not found in '" + rootSourceDir + "'"));
                     }
                 }
             } catch (e) {
@@ -371,10 +368,17 @@ export class ADFTools {
      * Write a bootblock file to integrate in adfinstall from a binary boot block buffer
      * @param bootblockData Boot block binary data
      */
-    public writeBootBlockFile(bootblockData: Buffer, filename: string) {
-        let bootblock = this.createBootBlock(bootblockData);
-        let fd = fs.openSync(filename, 'w');
-        fs.writeSync(fd, bootblock);
+    public writeBootBlockFile(bootblockData: Buffer, filename: Uri): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let bootblock = this.createBootBlock(bootblockData);
+                let fileProxy = new FileProxy(filename);
+                await fileProxy.writeFile(bootblock);
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
     }
 
 }

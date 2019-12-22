@@ -50,11 +50,11 @@ export class Capstone {
      * @param filename File to disassemble
      * @param cancellationToken Token to cancel the process
      */
-    public disassembleFile(filename: string, cancellationToken?: CancellationToken): Promise<string> {
+    public disassembleFile(filename: Uri, cancellationToken?: CancellationToken): Promise<string> {
         return new Promise(async (resolve, reject) => {
             let di = new DebugInfo();
             try {
-                if (di.loadInfo(filename)) {
+                if (await di.loadInfo(filename)) {
                     let codeDataArray = di.getCodeData();
                     let allCode = "";
                     for (let codeData of codeDataArray) {

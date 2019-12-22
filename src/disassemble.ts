@@ -52,16 +52,15 @@ export class Disassembler {
                     });
                     if (selectedFiles && (selectedFiles.length > 0)) {
                         const selectedFile = selectedFiles[0];
-                        const filePath = selectedFile.fsPath;
                         // Disassembles the file
-                        await capstone.disassembleFile(filePath).then(async data => {
+                        await capstone.disassembleFile(selectedFile).then(async data => {
                             // opens a new editor document
                             let folder = ".";
                             let folders = workspace.workspaceFolders;
                             if (folders && folders.length) {
                                 folder = folders[0].uri.fsPath;
                             }
-                            let filename = path.basename(filePath) + "_" + Date.now() + "_dis.s";
+                            let filename = path.basename(selectedFile.fsPath) + "_" + Date.now() + "_dis.s";
                             const newFile = Uri.parse("untitled:" + folder + "/" + filename);
                             await window.showTextDocument(newFile).then((textEditor) => {
                                 textEditor.edit(edit => {

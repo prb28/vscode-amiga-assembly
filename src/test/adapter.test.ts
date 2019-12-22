@@ -203,11 +203,11 @@ describe('Node Debug Adapter', () => {
 	describe('setBreakpoints', function () {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
-				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(this.mockedGdbProxy.connect(anything(), anything())).thenReturn(Promise.resolve());
 				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 			}
 		});
-		it('should stop on a breakpoint', function () {
+		it('should stop on a breakpoint', async function () {
 			this.timeout(defaultTimeout);
 			when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
 			when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));
@@ -246,10 +246,14 @@ describe('Node Debug Adapter', () => {
 			}]));
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			await Promise.all([
+				dc.configurationSequence(),
+				dc.launch(launchArgsCopy)
+			]);
 			return dc.hitBreakpoint(launchArgsCopy, { path: SOURCE_FILE_NAME, line: 33 });
 		});
 
-		it('hitting a lazy breakpoint should send a breakpoint event', function () {
+		it('hitting a lazy breakpoint should send a breakpoint event', async function () {
 			this.timeout(defaultTimeout);
 			when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
 			when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));
@@ -295,6 +299,10 @@ describe('Node Debug Adapter', () => {
 			}));
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			await Promise.all([
+				dc.configurationSequence(),
+				dc.launch(launchArgsCopy)
+			]);
 			return Promise.all([
 				dc.hitBreakpoint(launchArgsCopy, { path: SOURCE_FILE_NAME, line: 33 }),
 				dc.waitForEvent('breakpoint').then(function (event: DebugProtocol.Event) {

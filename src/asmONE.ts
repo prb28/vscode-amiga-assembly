@@ -23,31 +23,34 @@ export class AsmONE {
 	 * @param filesURI source files URIs
 	 * @param exeFile executable file to patch
 	 */
-	public Auto(filesURI: Uri[], exeFile: string) {
-		try {
-			let symbols = new Array<Symbol>();
-			for (let i = 0; i < filesURI.length; i++) {
-				let src = filesURI[i].fsPath;
-				let autos = this.findAutos(src);
-				if (0 === autos.length) {
-					continue;
-				}
+	public Auto(filesURI: Uri[], exeFile: Uri): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let symbols = new Array<Symbol>();
+				for (let i = 0; i < filesURI.length; i++) {
+					let src = filesURI[i].fsPath;
+					let autos = this.findAutos(src);
+					if (0 === autos.length) {
+						continue;
+					}
 
-				// Load exe symbols
-				if (0 === symbols.length) {
-					symbols = this.loadExeSymbols(exeFile);
-				}
+					// Load exe symbols
+					if (0 === symbols.length) {
+						symbols = await this.loadExeSymbols(exeFile);
+					}
 
-				// Process all autos
-				for (const auto of autos) {
-					winston.info("AsmONE AUTO " + auto + " source:" + src + " exe:" + exeFile);
-					let command = auto.split("\\");
-					this.execCommand(command[0], command.slice(1), exeFile, symbols);
+					// Process all autos
+					for (const auto of autos) {
+						winston.info("AsmONE AUTO " + auto + " source:" + src + " exe:" + exeFile);
+						let command = auto.split("\\");
+						this.execCommand(command[0], command.slice(1), exeFile.fsPath, symbols);
+					}
 				}
+			} catch (error) {
+				winston.info("AsmONE AUTO " + error);
 			}
-		} catch (error) {
-			winston.info("AsmONE AUTO " + error);
-		}
+			resolve();
+		});
 	}
 
 	/**
@@ -103,20 +106,26 @@ export class AsmONE {
 		return line;
 	}
 
-	private loadExeSymbols(exeFile: string): Symbol[] {
-		let symbols = new Array<Symbol>();
-		let hunks = this.hunkParser.parse_file(exeFile);
-		for (let i = 0; i < hunks.length; i++) {
-			let hunk: Hunk = hunks[i];
-			if (!hunk.symbols) {
-				continue;
+	private loadExeSymbols(exeFile: Uri): Promise<Symbol[]> {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let symbols = new Array<Symbol>();
+				let hunks = await this.hunkParser.readFile(exeFile);
+				for (let i = 0; i < hunks.length; i++) {
+					let hunk: Hunk = hunks[i];
+					if (!hunk.symbols) {
+						continue;
+					}
+					for (const symbol of hunk.symbols) {
+						symbol.offset += hunk.dataOffset;
+						symbols.push(symbol);
+					}
+				}
+				resolve(symbols);
+			} catch (err) {
+				reject(err);
 			}
-			for (const symbol of hunk.symbols) {
-				symbol.offset += hunk.dataOffset;
-				symbols.push(symbol);
-			}
-		}
-		return symbols;
+		});
 	}
 
 	private execCommand(cmd: string, args: string[], exeFile: string, symbols: Symbol[]) {
