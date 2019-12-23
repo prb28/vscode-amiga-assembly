@@ -69,7 +69,6 @@ export class ExtensionState {
     private watcher: vscode.FileSystemWatcher | undefined;
     private outputChannel: vscode.OutputChannel;
 
-
     private extensionPath: string = path.join(__dirname, "..");
 
     public constructor() {
