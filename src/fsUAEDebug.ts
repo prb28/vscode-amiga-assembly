@@ -14,11 +14,11 @@ import { Capstone } from './capstone';
 import { DebugVariableResolver } from './debugVariableResolver';
 import { DebugExpressionHelper } from './debugExpressionHelper';
 import { DebugDisassembledManager, DisassembleAddressArguments } from './debugDisassembled';
-import * as fs from 'fs';
 import { StringUtils } from './stringUtils';
 import { MemoryLabelsRegistry } from './customMemoryAddresses';
 import { BreakpointManager, GdbBreakpoint } from './breakpointManager';
 import { CopperDisassembler } from './copperDisassembler';
+import { FileProxy } from './fsProxy';
 const { Subject } = require('await-notify');
 
 
@@ -411,9 +411,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         });
     }
 
-    public checkEmulator(emulatorPath: string): boolean {
+    public checkEmulator(emulatorPath: string): Promise<boolean> {
         // Function useful for testing - mocking
-        return fs.existsSync(emulatorPath);
+        let fileProxy = new FileProxy(Uri.file(emulatorPath));
+        return fileProxy.exists();
     }
 
     public startEmulator(args: LaunchRequestArguments): Promise<void> {

@@ -7,9 +7,9 @@ import {
 	InitializedEvent, Scope, TerminatedEvent, DebugSession
 } from 'vscode-debugadapter/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
-import { CancellationTokenSource, window } from 'vscode';
+import { CancellationTokenSource, window, Uri } from 'vscode';
 import { ExecutorHelper } from './execHelper';
-import * as fs from 'fs';
+import { FileProxy } from './fsProxy';
 const { Subject } = require('await-notify');
 
 
@@ -116,9 +116,10 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
-	private checkEmulator(emulatorPath: string): boolean {
+	public checkEmulator(emulatorPath: string): Promise<boolean> {
 		// Function useful for testing - mocking
-		return fs.existsSync(emulatorPath);
+		let fileProxy = new FileProxy(Uri.file(emulatorPath));
+		return fileProxy.exists();
 	}
 
 	public startEmulator(args: LaunchRequestArguments): Promise<void> {
