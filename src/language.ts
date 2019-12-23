@@ -1,22 +1,41 @@
-import * as fs from 'fs';
 import * as path from 'path';
+import { FileProxy } from './fsProxy';
+import { Uri } from 'vscode';
 
 /**
  * Class to manage the language file
  */
 export class M68kLanguage {
+    private isLoaded = false;
+    private extensionPath: string;
     languageMap: any;
     extensionsMap: Map<string, Array<string>>;
     /**
      * Constructor : parses the file
      */
     constructor(extensionPath: string) {
-        const syntaxFilePath = path.join(extensionPath, "syntaxes", "M68k-Assembly.tmLanguage.json");
-        let data = fs.readFileSync(syntaxFilePath, 'utf8');
-        this.languageMap = JSON.parse(data);
+        this.extensionPath = extensionPath;
         this.extensionsMap = new Map<string, Array<string>>();
-        this.createExtensionMap();
     }
+
+    /**
+     * Loads the language definition.
+     */
+    public load(): Promise<void> {
+        if (this.isLoaded) {
+            return Promise.resolve();
+        } else {
+            return new Promise(async (resolve, _) => {
+                const syntaxFilePath = path.join(this.extensionPath, "syntaxes", "M68k-Assembly.tmLanguage.json");
+                let fileProxy = new FileProxy(Uri.file(syntaxFilePath));
+                let data = await fileProxy.readFileText('utf8');
+                this.languageMap = JSON.parse(data);
+                this.createExtensionMap();
+                resolve();
+            });
+        }
+    }
+
     /**
      * Create a map from instruction to extension
      */

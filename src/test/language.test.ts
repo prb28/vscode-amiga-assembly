@@ -17,6 +17,7 @@ describe("Language Tests", function () {
         if (ext) {
             await ext.activate();
             l = new M68kLanguage(ext.extensionPath);
+            await l.load();
         }
     });
     describe("ASMLine Tests", function () {

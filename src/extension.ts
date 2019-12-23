@@ -69,6 +69,7 @@ export class ExtensionState {
     private watcher: vscode.FileSystemWatcher | undefined;
     private outputChannel: vscode.OutputChannel;
 
+
     private extensionPath: string = path.join(__dirname, "..");
 
     public constructor() {
@@ -164,14 +165,19 @@ export class ExtensionState {
     }
     public setExtensionPath(extensionPath: string) {
         this.extensionPath = extensionPath;
-        this.language = new M68kLanguage(this.extensionPath);
+        this.updateLanguage();
     }
     public getExtensionPath(): string {
         return this.extensionPath;
     }
+    private updateLanguage(): M68kLanguage {
+        this.language = new M68kLanguage(this.extensionPath);
+        this.language.load();
+        return this.language;
+    }
     public getLanguage(): M68kLanguage {
         if (this.language === undefined) {
-            this.language = new M68kLanguage(this.extensionPath);
+            return this.updateLanguage();
         }
         return this.language;
     }
@@ -191,7 +197,9 @@ const state = new ExtensionState();
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     state.setExtensionPath(context.extensionPath);
-    ASMLine.init(state.getLanguage());
+    state.getLanguage().load().then(() => {
+        ASMLine.init(state.getLanguage());
+    });
     context.globalState.update('state', state);
     // Preparing the status manager
     let statusManager = state.getStatusManager();
@@ -311,7 +319,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     // Completion provider
-    context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AMIGA_ASM_MODE, new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage()), '.', '\"'));
+    state.getLanguage().load().then(() => {
+        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AMIGA_ASM_MODE, new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage()), '.', '\"'));
+    });
 
     // Color provider
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_ASM_MODE, new M86kColorProvider()));

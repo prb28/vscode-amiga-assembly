@@ -78,6 +78,16 @@ describe('Node Debug Adapter', () => {
 		this.timeout(this.defaultTimeout);
 		// start port listener on launch of first debug this.session
 		if (!this.server) {
+			// start listening on a random port
+			this.server = Net.createServer(socket => {
+				this.session = new FsUAEDebugSession();
+				if (!testWithRealEmulator) {
+					this.session.setTestContext(this.gdbProxy, this.executor, this.capstone);
+				}
+				this.session.setRunAsServer(true);
+				this.session.start(<NodeJS.ReadableStream>socket, socket);
+				this.spiedSession = spy(this.session);
+			}).listen(0);
 		}
 		// make VS Code connect to debug server instead of launching debug adapter
 		dc = new DebugClient('node', DEBUG_ADAPTER, 'fs-uae');

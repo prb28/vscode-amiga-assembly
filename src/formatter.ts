@@ -56,15 +56,17 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @return edits
      */
     format(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken, range?: vscode.Range, position?: vscode.Position): vscode.ProviderResult<vscode.TextEdit[]> {
-        let configuration = DocumentFormatterConfiguration.create(document.uri, options.tabSize);
-        let asmDocument = new ASMDocument();
-        asmDocument.parse(document, configuration, token, range, position);
-        // Compute the edits
-        if (asmDocument.onTypeAsmLine && position) {
-            return this.computeEditsForLineOnType(asmDocument, asmDocument.onTypeAsmLine, configuration, position);
-        } else {
-            return this.computeEdits(asmDocument, configuration, token);
-        }
+        return new Promise((resolve, reject) => {
+            let configuration = DocumentFormatterConfiguration.create(document.uri, options.tabSize);
+            let asmDocument = new ASMDocument();
+            asmDocument.parse(document, configuration, token, range, position);
+            // Compute the edits
+            if (asmDocument.onTypeAsmLine && position) {
+                resolve(this.computeEditsForLineOnType(asmDocument, asmDocument.onTypeAsmLine, configuration, position));
+            } else {
+                resolve(this.computeEdits(asmDocument, configuration, token));
+            }
+        });
     }
 
     /**
