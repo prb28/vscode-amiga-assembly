@@ -341,7 +341,7 @@ export class ADFTools {
         let newSum: number = 0;
         newSum = 0;
         for (let i = 0; i < 256; i++) { // The boot block must be 1024
-            if (i != 1) { // skip the checksum value ni the bootblock
+            if (i !== 1) { // skip the checksum value ni the bootblock
                 newSum += bootblock.readUInt32BE(i * 4); // Read unsigned int 32b in Big Endian
                 if (newSum > 0xffffffff) { // Int32 overflow
                     newSum -= 0x100000000; // Simulating overflow
