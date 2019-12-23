@@ -94,7 +94,7 @@ describe("FsProxy test", function () {
         let filePath = path.join(__dirname, "..", "..", "test_files");
         let f = new FileProxy(Uri.file(filePath));
         let files = await f.readDirectory();
-        expect(files.length).to.be.equal(12);
+        expect(files.length).to.be.equal(11);
         let foundFile = false;
         let foundDir = false;
         for (let [cFile, cType] of files) {
@@ -132,9 +132,9 @@ describe("FsProxy test", function () {
         let childFileName = "foo";
         let rootChildFileName = `${filePath}/${childFileName}`;
         let rootChildFileNameBack = `${filePath}\\${childFileName}`;
-        expect(f.getRelativeFile(childFileName).getUri().fsPath).to.be.equal(rootChildFileName);
-        expect(f.getRelativeFile(rootChildFileName).getUri().fsPath).to.be.equal(rootChildFileName);
-        expect(f.getRelativeFile(rootChildFileNameBack).getUri().fsPath).to.be.equal(rootChildFileName);
+        expect(FileProxy.normalize(f.getRelativeFile(childFileName).getUri().fsPath)).to.be.equal(rootChildFileName);
+        expect(FileProxy.normalize(f.getRelativeFile(rootChildFileName).getUri().fsPath)).to.be.equal(rootChildFileName);
+        expect(FileProxy.normalize(f.getRelativeFile(rootChildFileNameBack).getUri().fsPath)).to.be.equal(rootChildFileName);
     });
 
     it("Should normalize paths", function () {
