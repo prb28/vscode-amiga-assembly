@@ -1,5 +1,4 @@
 import { Hunk, HunkParser, SourceLine, HunkType, Symbol } from './amigaHunkParser';
-import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { FileProxy } from './fsProxy';
@@ -40,38 +39,40 @@ export class DebugInfo {
         return codeDataArray;
     }
 
-    public getSymbols(filename: string | undefined): Array<[Symbol, number | undefined]> {
-        let symbols = Array<[Symbol, number | undefined]>();
-        let normFilename = filename;
-        if (normFilename) {
-            normFilename = FileProxy.normalize(normFilename);
-        }
-        for (let i = 0; i < this.hunks.length; i++) {
-            let hunk = this.hunks[i];
-            if (hunk.symbols) {
-                if (normFilename) {
-                    let sourceFiles = hunk.lineDebugInfo;
-                    if (sourceFiles) {
-                        for (let j = 0; j < sourceFiles.length; j++) {
-                            let srcFile = sourceFiles[j];
-                            // Is there a path replacement
-                            let name = this.resolveFileName(srcFile.name);
-                            if (this.areSameSourceFileNames(name, normFilename)) {
-                                for (let s of hunk.symbols) {
-                                    symbols.push([s, hunk.segmentsId]);
+    public getSymbols(filename: string | undefined): Promise<Array<[Symbol, number | undefined]>> {
+        return new Promise(async (resolve, _reject) => {
+            let symbols = Array<[Symbol, number | undefined]>();
+            let normFilename = filename;
+            if (normFilename) {
+                normFilename = FileProxy.normalize(normFilename);
+            }
+            for (let i = 0; i < this.hunks.length; i++) {
+                let hunk = this.hunks[i];
+                if (hunk.symbols) {
+                    if (normFilename) {
+                        let sourceFiles = hunk.lineDebugInfo;
+                        if (sourceFiles) {
+                            for (let j = 0; j < sourceFiles.length; j++) {
+                                let srcFile = sourceFiles[j];
+                                // Is there a path replacement
+                                let name = await this.resolveFileName(srcFile.name);
+                                if (this.areSameSourceFileNames(name, normFilename)) {
+                                    for (let s of hunk.symbols) {
+                                        symbols.push([s, hunk.segmentsId]);
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
-                    }
-                } else {
-                    for (let s of hunk.symbols) {
-                        symbols.push([s, hunk.segmentsId]);
+                    } else {
+                        for (let s of hunk.symbols) {
+                            symbols.push([s, hunk.segmentsId]);
+                        }
                     }
                 }
             }
-        }
-        return symbols;
+            resolve(symbols);
+        });
     }
 
     protected tryFindLine(filename: string, lines: Array<SourceLine>, offset: number): ([string, number] | null) {
@@ -99,92 +100,105 @@ export class DebugInfo {
         }
     }
 
-    private getSourceLineText(filename: string, line: number): [string, string | null] {
-        let resolvedFileName = this.resolveFileName(filename);
-        let contents: Array<string> | undefined = this.sourceFilesCacheMap.get(resolvedFileName);
-        if (!contents) {
-            // Load source file
-            contents = fs.readFileSync(resolvedFileName).toString().split(/\r\n|\r|\n/g);
-            this.sourceFilesCacheMap.set(resolvedFileName, contents);
-        }
-        if (contents && (line < contents.length)) {
-            return [resolvedFileName, contents[line]];
-        }
-        return [resolvedFileName, null];
+    private getSourceLineText(filename: string, line: number): Promise<[string, string | null]> {
+        return new Promise(async (resolve, reject) => {
+            let resolvedFileName = await this.resolveFileName(filename);
+            let contents: Array<string> | undefined = this.sourceFilesCacheMap.get(resolvedFileName);
+            if (!contents) {
+                // Load source file
+                let fileProxy = new FileProxy(Uri.file(resolvedFileName));
+                let fileContentsString = await fileProxy.readFileText();
+                contents = fileContentsString.split(/\r\n|\r|\n/g);
+                this.sourceFilesCacheMap.set(resolvedFileName, contents);
+            }
+            if (contents && (line < contents.length)) {
+                resolve([resolvedFileName, contents[line]]);
+            }
+            resolve([resolvedFileName, null]);
+        });
     }
 
-    public resolveFileLine(segId: number, offset: number): ([string, number, string | null] | null) {
-        if (segId >= this.hunks.length) {
-            return null;
-        }
-        let hunk = this.hunks[segId];
-        let sourceLineText = null;
+    public resolveFileLine(segId: number, offset: number): Promise<([string, number, string | null] | null)> {
+        return new Promise(async (resolve, reject) => {
+            if (segId >= this.hunks.length) {
+                resolve(null);
+            }
+            let hunk = this.hunks[segId];
+            let sourceLineText = null;
 
-        let source_files = hunk.lineDebugInfo;
-        if (source_files) {
-            for (let i = 0; i < source_files.length; i++) {
-                let srcFile = source_files[i];
-                //if offset > src_file.base_offset {
-                //    continue;
-                //}
-                let data = this.tryFindLine(srcFile.name, srcFile.lines, offset);
-                if (data) {
-                    // transform the file path to a local one
-                    let resolvedFileName = this.resolveFileName(data[0]);
-                    if (data[1] > 0) {
-                        [resolvedFileName, sourceLineText] = this.getSourceLineText(resolvedFileName, data[1] - 1);
+            let source_files = hunk.lineDebugInfo;
+            if (source_files) {
+                for (let i = 0; i < source_files.length; i++) {
+                    let srcFile = source_files[i];
+                    //if offset > src_file.base_offset {
+                    //    continue;
+                    //}
+                    let data = this.tryFindLine(srcFile.name, srcFile.lines, offset);
+                    if (data) {
+                        // transform the file path to a local one
+                        let resolvedFileName = await this.resolveFileName(data[0]);
+                        if (data[1] > 0) {
+                            [resolvedFileName, sourceLineText] = await this.getSourceLineText(resolvedFileName, data[1] - 1);
+                        }
+                        resolve([resolvedFileName, data[1], sourceLineText]);
                     }
-                    return [resolvedFileName, data[1], sourceLineText];
                 }
             }
-        }
-        return null;
+            resolve(null);
+        });
     }
 
-    findFileInWorkspace(filename: string): string {
-        // fall back to the first workspace
-        let folders = vscode.workspace.workspaceFolders;
-        if (folders) {
-            for (let folder of folders) {
-                let folderPath = path.join(folder.uri.fsPath, filename);
-                if (fs.existsSync(folderPath)) {
-                    return folderPath;
+    private findFileInWorkspace(filename: string): Promise<string> {
+        return new Promise(async (resolve, _reject) => {
+            // fall back to the first workspace
+            let folders = vscode.workspace.workspaceFolders;
+            if (folders) {
+                for (let folder of folders) {
+                    let folderPath = path.join(folder.uri.fsPath, filename);
+                    let fileProxy = new FileProxy(Uri.file(folderPath));
+                    if (await fileProxy.exists()) {
+                        resolve(folderPath);
+                    }
                 }
             }
-        }
-        return filename;
+            resolve(filename);
+        });
     }
 
-    private resolveFileName(filename: string): string {
-        let resolvedFileName = this.resolvedSourceFilesNames.get(filename);
-        if (!resolvedFileName) {
-            resolvedFileName = filename;
-            if (this.pathReplacements) {
-                for (let key of Array.from(this.pathReplacements.keys())) {
-                    if (resolvedFileName.indexOf(key) >= 0) {
-                        let value = this.pathReplacements.get(key);
-                        if (value) {
-                            resolvedFileName = resolvedFileName.replace(key, value);
+    private resolveFileName(filename: string): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+            let resolvedFileName = this.resolvedSourceFilesNames.get(filename);
+            if (!resolvedFileName) {
+                resolvedFileName = filename;
+                if (this.pathReplacements) {
+                    for (let key of Array.from(this.pathReplacements.keys())) {
+                        if (resolvedFileName.indexOf(key) >= 0) {
+                            let value = this.pathReplacements.get(key);
+                            if (value) {
+                                resolvedFileName = resolvedFileName.replace(key, value);
+                                break;
+                            }
+                        }
+                    }
+                }
+                // search the file in the workspace
+                resolvedFileName = await this.findFileInWorkspace(resolvedFileName);
+                let fProxy = new FileProxy(Uri.file(resolvedFileName));
+                if (this.sourcesRootPaths && !await fProxy.exists()) {
+                    for (let rootPath of this.sourcesRootPaths) {
+                        let checkedPath = path.join(rootPath, resolvedFileName);
+                        let checkedProxy = new FileProxy(Uri.file(checkedPath));
+                        if (await checkedProxy.exists()) {
+                            resolvedFileName = checkedPath;
                             break;
                         }
                     }
                 }
+                resolvedFileName = FileProxy.normalize(resolvedFileName);
+                this.resolvedSourceFilesNames.set(filename, resolvedFileName);
             }
-            // search the file in the workspace
-            resolvedFileName = this.findFileInWorkspace(resolvedFileName);
-            if (this.sourcesRootPaths && !fs.existsSync(resolvedFileName)) {
-                for (let rootPath of this.sourcesRootPaths) {
-                    let checkedPath = path.join(rootPath, resolvedFileName);
-                    if (fs.existsSync(checkedPath)) {
-                        resolvedFileName = checkedPath;
-                        break;
-                    }
-                }
-            }
-            resolvedFileName = FileProxy.normalize(resolvedFileName);
-            this.resolvedSourceFilesNames.set(filename, resolvedFileName);
-        }
-        return resolvedFileName;
+            resolve(resolvedFileName);
+        });
     }
 
     public areSameSourceFileNames(sourceA: string, sourceB: string): boolean {
@@ -194,47 +208,51 @@ export class DebugInfo {
         return path.basename(sourceB) === path.basename(sourceA);
     }
 
-    public getAddressSeg(filename: string, fileLine: number): ([number, number] | null) {
-        let normFilename = FileProxy.normalize(filename);
-        for (let i = 0; i < this.hunks.length; i++) {
-            let hunk = this.hunks[i];
-            let sourceFiles = hunk.lineDebugInfo;
-            if (sourceFiles) {
-                for (let j = 0; j < sourceFiles.length; j++) {
-                    let srcFile = sourceFiles[j];
-                    // Is there a path replacement
-                    let name = this.resolveFileName(srcFile.name);
-                    if (this.areSameSourceFileNames(name, normFilename)) {
-                        for (let k = 0; k < srcFile.lines.length; k++) {
-                            let line = srcFile.lines[k];
-                            if (line.line === fileLine) {
-                                return [i, line.offset];
+    public getAddressSeg(filename: string, fileLine: number): Promise<([number, number] | null)> {
+        return new Promise(async (resolve, _reject) => {
+            let normFilename = FileProxy.normalize(filename);
+            for (let i = 0; i < this.hunks.length; i++) {
+                let hunk = this.hunks[i];
+                let sourceFiles = hunk.lineDebugInfo;
+                if (sourceFiles) {
+                    for (let j = 0; j < sourceFiles.length; j++) {
+                        let srcFile = sourceFiles[j];
+                        // Is there a path replacement
+                        let name = await this.resolveFileName(srcFile.name);
+                        if (this.areSameSourceFileNames(name, normFilename)) {
+                            for (let k = 0; k < srcFile.lines.length; k++) {
+                                let line = srcFile.lines[k];
+                                if (line.line === fileLine) {
+                                    resolve([i, line.offset]);
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        return null;
+            resolve(null);
+        });
     }
 
-    public getAllSegmentIds(filename: string): number[] {
-        let segIds: number[] = [];
-        let normFilename = FileProxy.normalize(filename);
-        for (let i = 0; i < this.hunks.length; i++) {
-            let hunk = this.hunks[i];
-            let sourceFiles = hunk.lineDebugInfo;
-            if (sourceFiles) {
-                for (let j = 0; j < sourceFiles.length; j++) {
-                    let srcFile = sourceFiles[j];
-                    // Is there a path replacement
-                    let name = this.resolveFileName(srcFile.name);
-                    if (this.areSameSourceFileNames(name, normFilename)) {
-                        segIds.push(i);
+    public getAllSegmentIds(filename: string): Promise<number[]> {
+        return new Promise(async (resolve, _reject) => {
+            let segIds: number[] = [];
+            let normFilename = FileProxy.normalize(filename);
+            for (let i = 0; i < this.hunks.length; i++) {
+                let hunk = this.hunks[i];
+                let sourceFiles = hunk.lineDebugInfo;
+                if (sourceFiles) {
+                    for (let j = 0; j < sourceFiles.length; j++) {
+                        let srcFile = sourceFiles[j];
+                        // Is there a path replacement
+                        let name = await this.resolveFileName(srcFile.name);
+                        if (this.areSameSourceFileNames(name, normFilename)) {
+                            segIds.push(i);
+                        }
                     }
                 }
             }
-        }
-        return segIds;
+            resolve(segIds);
+        });
     }
 }

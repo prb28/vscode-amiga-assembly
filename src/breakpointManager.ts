@@ -40,16 +40,18 @@ export class BreakpointManager {
         this.pendingBreakpoints.push(breakpoint);
     }
 
-    private fillBreakpointWithSegAddress(debugBp: GdbBreakpoint, path: string, line: number): boolean {
-        if (this.debugInfo) {
-            let values = this.debugInfo.getAddressSeg(path, line);
-            if (values) {
-                debugBp.segmentId = values[0];
-                debugBp.offset = values[1];
-                return true;
+    private fillBreakpointWithSegAddress(debugBp: GdbBreakpoint, path: string, line: number): Promise<boolean> {
+        return new Promise(async (resolve, _reject) => {
+            if (this.debugInfo) {
+                let values = await this.debugInfo.getAddressSeg(path, line);
+                if (values) {
+                    debugBp.segmentId = values[0];
+                    debugBp.offset = values[1];
+                    resolve(true);
+                }
             }
-        }
-        return false;
+            resolve(false);
+        });
     }
 
     public checkPendingBreakpointsAddresses() {

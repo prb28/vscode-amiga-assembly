@@ -526,109 +526,112 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         });
     }
 
-    protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
-        if (this.debugInfo) {
-            const dbgInfo = this.debugInfo;
-            const thread = this.gdbProxy.getThread(args.threadId);
-            if (thread) {
-                this.gdbProxy.stack(thread).then(async stk => {
-                    let stackFrames = [];
-                    let updatedView = false;
-                    for (let f of stk.frames) {
-                        if ((!updatedView) && (thread.getThreadId() === GdbAmigaSysThreadId.CPU)) {
-                            // Update the cpu view
-                            this.updateDisassembledView(f.pc, 100);
-                            updatedView = true;
-                        }
-                        let stackFrameDone = false;
-                        let pc = f.pc.toString(16);
-                        if (f.segmentId >= 0) {
-                            let values = dbgInfo.resolveFileLine(f.segmentId, f.offset);
-                            if (values) {
-                                let line = values[2];
-                                if (line) {
-                                    let idx = line.indexOf(';');
-                                    if (idx > 0) {
-                                        line = line.substring(0, idx);
-                                    }
-                                    line = pc + ": " + line.trim().replace(/\s\s+/g, ' ');
-                                } else {
-                                    line = pc;
-                                }
-                                stackFrames.push(new StackFrame(f.index, line, this.createSource(values[0]), values[1], 1));
-                                stackFrameDone = true;
+    protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): Promise<void> {
+        return new Promise(async (resolve, _reject) => {
+            if (this.debugInfo) {
+                const dbgInfo = this.debugInfo;
+                const thread = this.gdbProxy.getThread(args.threadId);
+                if (thread) {
+                    this.gdbProxy.stack(thread).then(async stk => {
+                        let stackFrames = [];
+                        let updatedView = false;
+                        for (let f of stk.frames) {
+                            if ((!updatedView) && (thread.getThreadId() === GdbAmigaSysThreadId.CPU)) {
+                                // Update the cpu view
+                                this.updateDisassembledView(f.pc, 100);
+                                updatedView = true;
                             }
-                        }
-                        if (!stackFrameDone) {
-                            let line: string = pc;
-                            if (thread.getThreadId() === GdbAmigaSysThreadId.CPU) {
-                                let dCode = this.disassembledCache.get(f.pc);
-                                if (dCode) {
-                                    line = dCode;
-                                } else {
-                                    // Get the disassembled line
-                                    line += ": ";
-                                    if (this.capstone) {
+                            let stackFrameDone = false;
+                            let pc = f.pc.toString(16);
+                            if (f.segmentId >= 0) {
+                                let values = await dbgInfo.resolveFileLine(f.segmentId, f.offset);
+                                if (values) {
+                                    let line = values[2];
+                                    if (line) {
+                                        let idx = line.indexOf(';');
+                                        if (idx > 0) {
+                                            line = line.substring(0, idx);
+                                        }
+                                        line = pc + ": " + line.trim().replace(/\s\s+/g, ' ');
+                                    } else {
+                                        line = pc;
+                                    }
+                                    stackFrames.push(new StackFrame(f.index, line, this.createSource(values[0]), values[1], 1));
+                                    stackFrameDone = true;
+                                }
+                            }
+                            if (!stackFrameDone) {
+                                let line: string = pc;
+                                if (thread.getThreadId() === GdbAmigaSysThreadId.CPU) {
+                                    let dCode = this.disassembledCache.get(f.pc);
+                                    if (dCode) {
+                                        line = dCode;
+                                    } else {
+                                        // Get the disassembled line
+                                        line += ": ";
+                                        if (this.capstone) {
+                                            let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
+                                                console.error("Error ignored: " + err.getMessage());
+                                            });
+                                            if (memory) {
+                                                let disassembled = await this.capstone.disassemble(memory);
+                                                let lines = disassembled.split(/\r\n|\r|\n/g);
+                                                let selectedLine = lines[0];
+                                                for (let l of lines) {
+                                                    if (l.trim().length > 0) {
+                                                        selectedLine = l;
+                                                        break;
+                                                    }
+                                                }
+                                                let elms = selectedLine.split("  ");
+                                                if (elms.length > 2) {
+                                                    selectedLine = elms[2];
+                                                }
+                                                line += selectedLine.trim().replace(/\s\s+/g, ' ');
+                                            }
+                                        }
+                                        this.disassembledCache.set(f.pc, line);
+                                    }
+                                } else if (thread.getThreadId() === GdbAmigaSysThreadId.COP) {
+                                    let dCopperCode = this.disassembledCopperCache.get(f.pc);
+                                    if (dCopperCode) {
+                                        line = dCopperCode;
+                                    } else {
+                                        // Get the disassembled line
+                                        line += ": ";
                                         let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
                                             console.error("Error ignored: " + err.getMessage());
                                         });
                                         if (memory) {
-                                            let disassembled = await this.capstone.disassemble(memory);
-                                            let lines = disassembled.split(/\r\n|\r|\n/g);
-                                            let selectedLine = lines[0];
-                                            for (let l of lines) {
-                                                if (l.trim().length > 0) {
-                                                    selectedLine = l;
-                                                    break;
-                                                }
-                                            }
-                                            let elms = selectedLine.split("  ");
-                                            if (elms.length > 2) {
-                                                selectedLine = elms[2];
-                                            }
-                                            line += selectedLine.trim().replace(/\s\s+/g, ' ');
+                                            let cDis = new CopperDisassembler(memory);
+                                            line = line + cDis.disassemble()[0].toString().split("    ")[0];
+                                            this.disassembledCopperCache.set(f.pc, line);
                                         }
                                     }
-                                    this.disassembledCache.set(f.pc, line);
                                 }
-                            } else if (thread.getThreadId() === GdbAmigaSysThreadId.COP) {
-                                let dCopperCode = this.disassembledCopperCache.get(f.pc);
-                                if (dCopperCode) {
-                                    line = dCopperCode;
-                                } else {
-                                    // Get the disassembled line
-                                    line += ": ";
-                                    let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
-                                        console.error("Error ignored: " + err.getMessage());
-                                    });
-                                    if (memory) {
-                                        let cDis = new CopperDisassembler(memory);
-                                        line = line + cDis.disassemble()[0].toString().split("    ")[0];
-                                        this.disassembledCopperCache.set(f.pc, line);
-                                    }
+                                // The the stack frame from the manager
+                                let stackFrame = await this.debugDisassembledManager.getStackFrame(f.index, f.pc, line, (thread.getThreadId() === GdbAmigaSysThreadId.COP));
+                                if (stackFrame) {
+                                    stackFrames.push(stackFrame);
                                 }
-                            }
-                            // The the stack frame from the manager
-                            let stackFrame = await this.debugDisassembledManager.getStackFrame(f.index, f.pc, line, (thread.getThreadId() === GdbAmigaSysThreadId.COP));
-                            if (stackFrame) {
-                                stackFrames.push(stackFrame);
                             }
                         }
-                    }
-                    response.body = {
-                        stackFrames: stackFrames,
-                        totalFrames: stk.count
-                    };
-                    this.sendResponse(response);
-                }).catch((err) => {
-                    this.sendStringErrorResponse(response, err.message);
-                });
+                        response.body = {
+                            stackFrames: stackFrames,
+                            totalFrames: stk.count
+                        };
+                        this.sendResponse(response);
+                    }).catch((err) => {
+                        this.sendStringErrorResponse(response, err.message);
+                    });
+                } else {
+                    this.sendStringErrorResponse(response, "Unknown thread");
+                }
             } else {
-                this.sendStringErrorResponse(response, "Unknown thread");
+                this.sendStringErrorResponse(response, "No debug info loaded");
             }
-        } else {
-            this.sendStringErrorResponse(response, "No debug info loaded");
-        }
+            resolve();
+        });
     }
 
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {

@@ -43,7 +43,7 @@ describe('Breakpoint Manager', () => {
             let offset = 2;
             context('Source existing', () => {
                 beforeEach(function () {
-                    when(mockedDebugInfo.getAddressSeg(SOURCE_PATH, sourceLine)).thenReturn([segId, offset]);
+                    when(mockedDebugInfo.getAddressSeg(SOURCE_PATH, sourceLine)).thenResolve([segId, offset]);
                 });
                 context('has debug info', () => {
                     beforeEach(function () {
@@ -154,7 +154,7 @@ describe('Breakpoint Manager', () => {
         let segId = 1;
         let offset = 2;
         bpManager.setDebugInfo(instance(mockedDebugInfo));
-        when(mockedDebugInfo.getAddressSeg(SOURCE_PATH, sourceLine)).thenReturn([segId, offset]);
+        when(mockedDebugInfo.getAddressSeg(SOURCE_PATH, sourceLine)).thenResolve([segId, offset]);
         when(mockedGdbProxy.setBreakpoint(anything())).thenReject(err);
         bpManager.addPendingBreakpoint(bp);
         expect(bpManager.getPendingBreakpoints().length).to.be.equal(1);

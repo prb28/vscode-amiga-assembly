@@ -18,8 +18,8 @@ describe("Debug Info", function () {
         pathReplacements.set("/Users/papa/developpements/amiga/projects/helloworld", sourceRootPath);
         let di = new DebugInfo(pathReplacements);
         await di.loadInfo(Uri.file(programFilename));
-        expect(di.getAddressSeg(sourceFilename, 32)).to.be.eql([0, 0]);
-        expect(di.getAddressSeg(sourceFilename, 33)).to.be.eql([0, 4]);
+        expect(await di.getAddressSeg(sourceFilename, 32)).to.be.eql([0, 0]);
+        expect(await di.getAddressSeg(sourceFilename, 33)).to.be.eql([0, 4]);
     });
     it("Should resolve the line number", async function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
@@ -29,7 +29,7 @@ describe("Debug Info", function () {
         pathReplacements.set("/Users/papa/developpements/amiga/projects/helloworld", sourceRootPath);
         let di = new DebugInfo(pathReplacements);
         await expect(di.loadInfo(Uri.file(programFilename))).to.be.eventually.equal(true);
-        expect(di.resolveFileLine(0, 4)).to.be.eql([FileProxy.normalize(sourceRootPath + Path.sep + "gencop.s"), 33, "              clr.l      d0                      ; les registres sont des long - il faut les nettoyer avec un .l"]);
+        await expect(di.resolveFileLine(0, 4)).to.be.eventually.eql([FileProxy.normalize(sourceRootPath + Path.sep + "gencop.s"), 33, "              clr.l      d0                      ; les registres sont des long - il faut les nettoyer avec un .l"]);
     });
     it("Should return all segments from a file", async function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
@@ -40,7 +40,7 @@ describe("Debug Info", function () {
         pathReplacements.set("/Users/papa/developpements/amiga/projects/helloworld", sourceRootPath);
         let di = new DebugInfo(pathReplacements);
         await expect(di.loadInfo(Uri.file(programFilename))).to.be.eventually.equal(true);
-        expect(di.getAllSegmentIds(sourceFilename)).to.be.eql([0]);
+        await expect(di.getAllSegmentIds(sourceFilename)).to.be.eventually.eql([0]);
     });
     it("Should raise an error if the file is not found", async function () {
         let di = new DebugInfo();
@@ -62,7 +62,7 @@ describe("Debug Info", function () {
         let pathReplacements = new Map<string, string>();
         let di = new DebugInfo(pathReplacements, [sourceRootPath]);
         await expect(di.loadInfo(Uri.file(programFilename))).to.be.eventually.equal(true);
-        expect(di.resolveFileLine(0, 1024)).to.be.eql([FileProxy.normalize(sourceRootPath + Path.sep + "hello.c"), 9, "        printf(\"10 * %d = %d\\n\", i, mul_by_ten(i));"]);
+        await expect(di.resolveFileLine(0, 1024)).to.be.eventually.eql([FileProxy.normalize(sourceRootPath + Path.sep + "hello.c"), 9, "        printf(\"10 * %d = %d\\n\", i, mul_by_ten(i));"]);
     });
     it("Should find the segment address for a C file", async function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
@@ -72,9 +72,9 @@ describe("Debug Info", function () {
         let pathReplacements = new Map<string, string>();
         let di = new DebugInfo(pathReplacements, [sourceRootPath]);
         await di.loadInfo(Uri.file(programFilename));
-        expect(di.getAddressSeg(sourceFilename, 9)).to.be.eql([0, 986]);
+        await expect(di.getAddressSeg(sourceFilename, 9)).to.be.eventually.eql([0, 986]);
         // Without path
-        expect(di.getAddressSeg('hello.c', 9)).to.be.eql([0, 986]);
+        await expect(di.getAddressSeg('hello.c', 9)).to.be.eventually.eql([0, 986]);
     });
 
 });
