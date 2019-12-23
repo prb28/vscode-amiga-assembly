@@ -158,6 +158,7 @@ export class ExtensionState {
     public getDocumentationManager(): DocumentationManager {
         if (this.documentationManager === undefined) {
             this.documentationManager = new DocumentationManager(this.extensionPath);
+            this.documentationManager.load();
         }
         return this.documentationManager;
     }

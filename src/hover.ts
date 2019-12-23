@@ -23,6 +23,8 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         let configuration = vscode.workspace.getConfiguration('amiga-assembly', document.uri);
         let numberDisplayFormat = ConfigurationHelper.retrieveStringProperty(configuration, 'hover.numberDisplayFormat', M68kHoverProvider.DEFAULT_NUMBER_DISPLAY_FORMAT);
         return new Promise(async (resolve, reject) => {
+            // wait for the documentation load function
+            await this.documentationManager.load();
             // Parse the line
             let line = document.lineAt(position.line);
             let asmLine = new ASMLine(line.text, line);
@@ -47,7 +49,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 if (word) {
                     // Text to search in
                     let text = document.getText(word);
-                    let rendered = this.renderWordHover(text.toUpperCase());
+                    let rendered = await this.renderWordHover(text.toUpperCase());
                     let renderedLine2 = null;
                     if (!rendered) {
                         // Translate to get the control character
@@ -207,15 +209,17 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @param word Word to search
      * @return Markdown string
      */
-    public renderWordHover(word: string): vscode.MarkdownString | null {
-        let value = this.documentationManager.get(word);
-        if (value) {
-            let mdStr = new vscode.MarkdownString(value);
-            mdStr.isTrusted = true;
-            return mdStr;
-        } else {
-            return null;
-        }
+    public renderWordHover(word: string): Promise<vscode.MarkdownString | null> {
+        return new Promise(async (resolve, _) => {
+            let value = await this.documentationManager.get(word);
+            if (value) {
+                let mdStr = new vscode.MarkdownString(value);
+                mdStr.isTrusted = true;
+                resolve(mdStr);
+            } else {
+                resolve(null);
+            }
+        });
     }
 
     /**

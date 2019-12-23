@@ -1,7 +1,8 @@
 import { Uri, workspace, FileStat, FileType, FileSystemError } from "vscode";
 //import * as path from 'path';
 import * as fs from 'fs';
-import * as glob from "glob";
+import * as glob from 'glob';
+import * as path from 'path';
 
 /**
  * Class to Manage all the filesystem accesses
@@ -50,6 +51,21 @@ export class FileProxy {
             }
         });
     }
+
+    /**
+     * Read a text file.
+     */
+    public readFileText(encoding?: string): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let buffer = await this.readFile();
+                resolve(buffer.toString(encoding));
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
 
     /**
      * Read the file contents
@@ -202,8 +218,29 @@ export class FileProxy {
         });
     }
 
-    public static normalize(dirName: string): string {
-        let newDName = dirName.replace(/\\+/g, '/');
+    /**
+     * List the files in the directory
+     */
+    public listFiles(): Promise<Array<FileProxy>> {
+        return this.findFiles("*", "");
+    }
+
+    /**
+     * Name of the file
+     * 
+     * @return The name of the file
+     */
+    public getName(): string {
+        return path.basename(this.uri.fsPath);
+    }
+
+    /**
+     * Normalizes a path
+     * @param inputPath Path to normalize
+     * @return Normalized path
+     */
+    public static normalize(inputPath: string): string {
+        let newDName = inputPath.replace(/\\+/g, '/');
         // Testing Windows derive letter -> to uppercase
         if ((newDName.length > 0) && (newDName.charAt(1) === ":")) {
             let fChar = newDName.charAt(0).toUpperCase();

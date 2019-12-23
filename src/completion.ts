@@ -14,7 +14,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         this.language = language;
     }
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionItem[]> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, _reject) => {
             let completions = new Array<vscode.CompletionItem>();
             let range = document.getWordRangeAtPosition(position);
             let line = document.lineAt(position.line);
@@ -32,7 +32,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                     let labelsAdded = new Array<string>();
                     let isInData = (range.intersection(asmLine.dataRange) !== undefined);
                     // In the documentation
-                    let values = this.documentationManager.findKeywordStartingWith(word);
+                    let values = await this.documentationManager.findKeywordStartingWith(word);
                     if (values) {
                         for (const value of values) {
                             let label = value.name;

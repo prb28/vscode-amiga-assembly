@@ -171,14 +171,14 @@ describe("Hover Tests", function () {
         hoverInstruction.c = "5";
         expect(hp.renderHover(hoverInstruction).value).to.be.equal("`ADD[.BW]` `Dx,Dy` _(x:1,n:2,z:3,v:4,c:5)_");
     });
-    it("Should render a register hover", function () {
+    it("Should render a register hover", async function () {
         let hp = new M68kHoverProvider(state.getDocumentationManager());
-        let mdStr = hp.renderWordHover("DFF180");
+        let mdStr = await hp.renderWordHover("DFF180");
         expect(mdStr).to.not.be.null;
         if (mdStr) {
             expect(mdStr.value).to.contain("Color");
         }
-        mdStr = hp.renderWordHover("COLOR00");
+        mdStr = await hp.renderWordHover("COLOR00");
         expect(mdStr).to.not.be.null;
         if (mdStr) {
             expect(mdStr.value).to.contain("Color");

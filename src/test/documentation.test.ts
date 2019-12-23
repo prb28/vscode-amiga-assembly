@@ -70,12 +70,12 @@ describe("Documentation Tests", function () {
         });
     });
     context("Hover register file parsing", function () {
-        it("Should read the files correctly", function () {
+        it("Should read the files correctly", async function () {
             let manager = documentationManger.registersManager;
             expect(manager.getRegistersByNameCount()).to.be.equal(280);
             expect(manager.getRegistersByAddressCount()).to.be.equal(266);
-            let registerByName = manager.getRegistersByName("ADKCONR");
-            let registerByAddress = manager.getRegistersByAddress("DFF010");
+            let registerByName = await manager.getRegistersByName("ADKCONR");
+            let registerByAddress = await manager.getRegistersByAddress("DFF010");
             expect(registerByName).to.not.be.undefined;
             expect(registerByAddress).to.not.be.undefined;
             if (registerByName) {
@@ -88,10 +88,10 @@ describe("Documentation Tests", function () {
         });
     });
     context("Hover library file parsing", function () {
-        it("Should read the files correctly", function () {
+        it("Should read the files correctly", async function () {
             let manager = documentationManger.libraryManager;
             expect(manager.size()).to.be.equal(505);
-            let registerByName = manager.loadDescription("OPENLIBRARY");
+            let registerByName = await manager.loadDescription("OPENLIBRARY");
             expect(registerByName).to.not.be.undefined;
             if (registerByName) {
                 expect(registerByName.name).to.be.equals("OpenLibrary");
@@ -100,7 +100,7 @@ describe("Documentation Tests", function () {
                 expect(registerByName.description).not.to.contains("[OpenDevice](OpenDevice)");
                 expect(registerByName.description).to.contains("[OpenDevice](command:amiga-assembly.showdoc?%5B%7B%22path%22%3A%22libs%2Fexec%2FOpenDevice%22%7D%5D)");
             }
-            registerByName = manager.loadDescription("ADDTASK");
+            registerByName = await manager.loadDescription("ADDTASK");
             expect(registerByName).to.not.be.undefined;
             if (registerByName) {
                 // should have refactored a link with relative path
@@ -109,15 +109,15 @@ describe("Documentation Tests", function () {
             }
         });
     });
-    it("Should find the keywords starting with a word", function () {
-        let docs = documentationManger.findKeywordStartingWith("ADDTASK");
+    it("Should find the keywords starting with a word", async function () {
+        let docs = await documentationManger.findKeywordStartingWith("ADDTASK");
         expect(docs[0].name).to.be.equal("AddTask");
-        docs = documentationManger.findKeywordStartingWith("_LVOADDTASK");
+        docs = await documentationManger.findKeywordStartingWith("_LVOADDTASK");
         expect(docs[0].name).to.be.equal("AddTask");
-        docs = documentationManger.findKeywordStartingWith("addt");
+        docs = await documentationManger.findKeywordStartingWith("addt");
         expect(docs[0].name).to.be.equal("AddTail");
         expect(docs[1].name).to.be.equal("AddTask");
-        docs = documentationManger.findKeywordStartingWith("move");
+        docs = await documentationManger.findKeywordStartingWith("move");
         expect(docs.length).to.be.equal(10);
     });
 });
