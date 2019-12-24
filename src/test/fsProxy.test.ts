@@ -14,7 +14,7 @@ describe("FsProxy test", function () {
     });
     it("Should stat an existing file", async function () {
         let filePath = path.join(__dirname, "..", "..", "test_files", "hw-exp.s");
-        let expectedSize = 1303;
+        let expectedSize = 1302;
         let f = new FileProxy(Uri.file(filePath));
         let stat = await f.stat();
         expect(stat.size).to.be.greaterThan(expectedSize);
@@ -35,7 +35,7 @@ describe("FsProxy test", function () {
     });
     it("Should read an existing file", async function () {
         let filePath = path.join(__dirname, "..", "..", "test_files", "hw-exp.s");
-        let expectedSize = 1303;
+        let expectedSize = 1302;
         let f = new FileProxy(Uri.file(filePath));
         let contents = await f.readFile();
         expect(contents.length).to.be.greaterThan(expectedSize);
