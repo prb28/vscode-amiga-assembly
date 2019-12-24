@@ -255,12 +255,13 @@ export class FileProxy {
      * @return A new file to the relative path
      */
     public getRelativeFile(relativePath: string): FileProxy {
-        let relativeUri = Uri.file(FileProxy.normalize(relativePath));
+        let normalizedRelativePath = FileProxy.normalize(relativePath);
+        let currentUriPath = FileProxy.normalize(this.uri.fsPath);
         // Does the current uri contains child path ?
-        if (relativeUri.fsPath.indexOf(this.uri.path) === 0) {
-            return new FileProxy(relativeUri);
+        if (normalizedRelativePath.indexOf(currentUriPath) === 0) {
+            return new FileProxy(Uri.file(normalizedRelativePath));
         } else {
-            return new FileProxy(Uri.file(`${this.uri.fsPath}/${relativePath}`));
+            return new FileProxy(Uri.file(`${currentUriPath}/${normalizedRelativePath}`));
         }
     }
 

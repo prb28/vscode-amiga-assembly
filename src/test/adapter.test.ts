@@ -13,8 +13,9 @@ import { ExecutorHelper } from '../execHelper';
 import { Capstone } from '../capstone';
 import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
 import { DebugDisassembledFile } from '../debugDisassembled';
+import { ExtensionState } from '../extension';
 
-describe('Node Debug Adapter', () => {
+describe.only('Node Debug Adapter', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
 	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
 	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug').replace(/\\+/g, '/');
@@ -42,6 +43,13 @@ describe('Node Debug Adapter', () => {
 	let thCop = new GdbThread(1, GdbAmigaSysThreadId.COP);
 
 	before(async function () {
+		this.timeout(defaultTimeout);
+		// activate the extension
+		let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+		if (ext) {
+			await ext.activate();
+			await ExtensionState.getCurrent().getLanguage().load();
+		}
 		if (testWithRealEmulator) {
 			defaultTimeout = 60000;
 		}
@@ -65,6 +73,7 @@ describe('Node Debug Adapter', () => {
 
 
 	beforeEach(function () {
+		this.timeout(defaultTimeout);
 		this.mockedExecutor = mock(ExecutorHelper);
 		this.executor = instance(this.mockedExecutor);
 		this.mockedGdbProxy = mock(GdbProxy);
@@ -621,6 +630,7 @@ describe('Node Debug Adapter', () => {
 	});
 	describe('evaluateExpression', function () {
 		beforeEach(async function () {
+			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
 				when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));

@@ -10,20 +10,27 @@ export class DebugInfo {
     private sourcesRootPaths?: Array<string>;
     private resolvedSourceFilesNames = new Map<string, string>();
     private sourceFilesCacheMap = new Map<string, Array<string>>();
+    private uri: Uri;
+    private loaded = false;
 
-    constructor(pathReplacements?: Map<string, string>, sourcesRootPaths?: Array<string>) {
+    constructor(fileUri: Uri, pathReplacements?: Map<string, string>, sourcesRootPaths?: Array<string>) {
+        this.uri = fileUri;
         this.pathReplacements = pathReplacements;
         this.sourcesRootPaths = sourcesRootPaths;
     }
 
-    public loadInfo(filePath: Uri): Promise<boolean> {
+    public load(): Promise<boolean> {
         return new Promise(async (resolve, reject) => {
-            let parser = new HunkParser();
-            try {
-                this.hunks = await parser.readFile(filePath);
+            if (this.loaded) {
                 resolve(true);
-            } catch (err) {
-                resolve(false);
+            } else {
+                let parser = new HunkParser();
+                try {
+                    this.hunks = await parser.readFile(this.uri);
+                    resolve(true);
+                } catch (err) {
+                    resolve(false);
+                }
             }
         });
     }

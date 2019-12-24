@@ -52,9 +52,9 @@ export class Capstone {
      */
     public disassembleFile(filename: Uri, cancellationToken?: CancellationToken): Promise<string> {
         return new Promise(async (resolve, reject) => {
-            let di = new DebugInfo();
+            let di = new DebugInfo(filename);
             try {
-                if (await di.loadInfo(filename)) {
+                if (await di.load()) {
                     let codeDataArray = di.getCodeData();
                     let allCode = "";
                     for (let codeData of codeDataArray) {

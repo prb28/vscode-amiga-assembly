@@ -310,8 +310,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 }
             }
         }
-        this.debugInfo = new DebugInfo(sMap, args.rootSourceFileMap);
-        return this.debugInfo.loadInfo(Uri.file(args.program));
+        this.debugInfo = new DebugInfo(Uri.file(args.program), sMap, args.rootSourceFileMap);
+        return this.debugInfo.load();
     }
 
     /**
