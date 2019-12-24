@@ -48,6 +48,7 @@ export class DebugInfo {
 
     public getSymbols(filename: string | undefined): Promise<Array<[Symbol, number | undefined]>> {
         return new Promise(async (resolve, _reject) => {
+            await this.load();
             let symbols = Array<[Symbol, number | undefined]>();
             let normFilename = filename;
             if (normFilename) {
@@ -127,6 +128,7 @@ export class DebugInfo {
 
     public resolveFileLine(segId: number, offset: number): Promise<([string, number, string | null] | null)> {
         return new Promise(async (resolve, reject) => {
+            await this.load();
             if (segId >= this.hunks.length) {
                 resolve(null);
             }
@@ -217,6 +219,7 @@ export class DebugInfo {
 
     public getAddressSeg(filename: string, fileLine: number): Promise<([number, number] | null)> {
         return new Promise(async (resolve, _reject) => {
+            await this.load();
             let normFilename = FileProxy.normalize(filename);
             for (let i = 0; i < this.hunks.length; i++) {
                 let hunk = this.hunks[i];
@@ -243,6 +246,7 @@ export class DebugInfo {
 
     public getAllSegmentIds(filename: string): Promise<number[]> {
         return new Promise(async (resolve, _reject) => {
+            await this.load();
             let segIds: number[] = [];
             let normFilename = FileProxy.normalize(filename);
             for (let i = 0; i < this.hunks.length; i++) {
