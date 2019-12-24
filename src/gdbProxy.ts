@@ -149,7 +149,7 @@ export class GdbProxy extends EventEmitter {
             case GdbPacketType.PLUS:
             case GdbPacketType.UNKNOWN:
             default:
-                ////console.log("Packet ignored by onData : " + packet.message);
+                //console.log("Packet ignored by onData : " + packet.message);
                 break;
         }
         return consumed;

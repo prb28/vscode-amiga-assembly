@@ -23,8 +23,6 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         let configuration = vscode.workspace.getConfiguration('amiga-assembly', document.uri);
         let numberDisplayFormat = ConfigurationHelper.retrieveStringProperty(configuration, 'hover.numberDisplayFormat', M68kHoverProvider.DEFAULT_NUMBER_DISPLAY_FORMAT);
         return new Promise(async (resolve, reject) => {
-            // wait for the documentation load function
-            await this.documentationManager.load();
             // Parse the line
             let line = document.lineAt(position.line);
             let asmLine = new ASMLine(line.text, line);
@@ -140,9 +138,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         return null;
     }
     /**
- * Renders a value of a register
- * @param value Value of the register
- */
+     * Renders a value of a register
+     * @param value Value of the register
+     */
     public renderRegisterValueNumber(value: number): vscode.MarkdownString | null {
         // Transform to bin
         let bin;

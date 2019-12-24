@@ -259,9 +259,9 @@ export class FileProxy {
         let currentUriPath = FileProxy.normalize(this.uri.fsPath);
         // Does the current uri contains child path ?
         if (normalizedRelativePath.indexOf(currentUriPath) === 0) {
-            return new FileProxy(Uri.file(normalizedRelativePath));
+            return new FileProxy(Uri.file(normalizedRelativePath), this.useDirectAccess);
         } else {
-            return new FileProxy(Uri.file(`${currentUriPath}/${normalizedRelativePath}`));
+            return new FileProxy(Uri.file(`${currentUriPath}/${normalizedRelativePath}`), this.useDirectAccess);
         }
     }
 

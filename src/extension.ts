@@ -155,30 +155,32 @@ export class ExtensionState {
         }
         return this.dataGenerator;
     }
-    public getDocumentationManager(): DocumentationManager {
-        if (this.documentationManager === undefined) {
-            this.documentationManager = new DocumentationManager(this.extensionPath);
-            this.documentationManager.load();
-        }
-        return this.documentationManager;
+    public getDocumentationManager(): Promise<DocumentationManager> {
+        return new Promise(async (resolve, reject) => {
+            if (this.documentationManager === undefined) {
+                this.documentationManager = new DocumentationManager(this.extensionPath);
+                await this.documentationManager.load();
+            }
+            resolve(this.documentationManager);
+        });
     }
     public setExtensionPath(extensionPath: string) {
         this.extensionPath = extensionPath;
-        this.updateLanguage();
+        // reset language
+        this.language = undefined;
     }
     public getExtensionPath(): string {
         return this.extensionPath;
     }
-    private updateLanguage(): M68kLanguage {
-        this.language = new M68kLanguage(this.extensionPath);
-        this.language.load();
-        return this.language;
-    }
-    public getLanguage(): M68kLanguage {
+    public getLanguage(): Promise<M68kLanguage> {
         if (this.language === undefined) {
-            return this.updateLanguage();
+            return new Promise(async (resolve, _reject) => {
+                this.language = new M68kLanguage(this.extensionPath);
+                await this.language.load();
+                resolve(this.language);
+            });
         }
-        return this.language;
+        return Promise.resolve(this.language);
     }
     public getOutputChannel(): vscode.OutputChannel {
         return this.outputChannel;
@@ -194,10 +196,10 @@ const state = new ExtensionState();
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
     state.setExtensionPath(context.extensionPath);
-    state.getLanguage().load().then(() => {
-        ASMLine.init(state.getLanguage());
+    await state.getLanguage().then((language) => {
+        ASMLine.init(language);
     });
     context.globalState.update('state', state);
     // Preparing the status manager
@@ -221,8 +223,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     // Declaring the Hover
-    disposable = vscode.languages.registerHoverProvider(AMIGA_ASM_MODE, new M68kHoverProvider(state.getDocumentationManager()));
-    context.subscriptions.push(disposable);
+    await state.getDocumentationManager().then((docManager) => {
+        disposable = vscode.languages.registerHoverProvider(AMIGA_ASM_MODE, new M68kHoverProvider(docManager));
+        context.subscriptions.push(disposable);
+    });
 
     // create a new disassembler
     let disassembler = state.getDisassembler();
@@ -318,8 +322,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     // Completion provider
-    state.getLanguage().load().then(() => {
-        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AMIGA_ASM_MODE, new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), state.getLanguage()), '.', '\"'));
+    await state.getLanguage().then(async (language) => {
+        await state.getDocumentationManager().then((docManager) => {
+            context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AMIGA_ASM_MODE, new M68kCompletionItemProvider(docManager, state.getDefinitionHandler(), language), '.', '\"'));
+        });
     });
 
     // Color provider

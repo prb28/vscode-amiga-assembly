@@ -29,7 +29,7 @@ export class DocumentationInstructionsManager {
             // Read the instructions file
             // Creating the relative path to find the test file
             const filePath = path.join(this.extensionPath, "docs", "instructionsset.csv");
-            const fileProxy = new FileProxy(Uri.file(filePath));
+            const fileProxy = new FileProxy(Uri.file(filePath), true);
             let lines = (await fileProxy.readFileText('utf8')).split(/\r\n|\r|\n/g);
             let lineIndex = 0;
             for (let line of lines) {
@@ -111,7 +111,7 @@ export class DocumentationRegistersManager {
             // Read the registers file
             // Creating the relative path to find the test file
             const dirPath = path.join(this.extensionPath, "docs", "hardware");
-            const dirProxy = new FileProxy(Uri.file(dirPath));
+            const dirProxy = new FileProxy(Uri.file(dirPath), true);
             let files = await dirProxy.listFiles();
             files.forEach(fileProxy => {
                 let filename = fileProxy.getName();
@@ -203,7 +203,7 @@ export class DocumentationRegister extends DocumentationElement {
     public loadDescription(): Promise<void> {
         return new Promise(async (resolve, _reject) => {
             if (!this.loaded) {
-                let fProxy = new FileProxy(Uri.file(this.filename));
+                let fProxy = new FileProxy(Uri.file(this.filename), true);
                 let contents = await fProxy.readFileText('utf8');
                 this.description = this.modifyDescription(contents, this.address, this.name);
                 this.loaded = true;
@@ -244,7 +244,7 @@ export class DocumentationLibraryManager {
             // Read the registers file
             // Creating the relative path to find the test file
             const dirPath = path.join(this.extensionPath, "docs", "libs");
-            const dirProxy = new FileProxy(Uri.file(dirPath));
+            const dirProxy = new FileProxy(Uri.file(dirPath), true);
             let files = await dirProxy.listFiles();
             files.forEach(async fileProxy => {
                 let dirName = fileProxy.getName();
@@ -337,19 +337,18 @@ export class DocumentationManager {
             return new Promise(async (resolve, _) => {
                 await Promise.all([this.instructionsManager.load(),
                 this.registersManager.load(),
-                this.libraryManager.load()]).then(() => {
-                    for (const [key, value] of this.instructionsManager.instructions.entries()) {
-                        this.addRelevantKeywordElements(key, value[0]);
-                    }
-                    for (const [key, value] of this.registersManager.entriesByName()) {
-                        this.addRelevantKeywordElements(key, value);
-                    }
-                    for (const [key, value] of this.libraryManager.functionsByName.entries()) {
-                        this.addRelevantKeywordElements(key, value);
-                    }
-                    this.isLoaded = true;
-                    resolve();
-                });
+                this.libraryManager.load()]);
+                for (const [key, value] of this.instructionsManager.instructions.entries()) {
+                    this.addRelevantKeywordElements(key, value[0]);
+                }
+                for (const [key, value] of this.registersManager.entriesByName()) {
+                    this.addRelevantKeywordElements(key, value);
+                }
+                for (const [key, value] of this.libraryManager.functionsByName.entries()) {
+                    this.addRelevantKeywordElements(key, value);
+                }
+                this.isLoaded = true;
+                resolve();
             });
         } else {
             return Promise.resolve();

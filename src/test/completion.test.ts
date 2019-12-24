@@ -13,6 +13,7 @@ import * as Path from 'path';
 import { M68kDefinitionHandler } from '../definitionHandler';
 import * as vscode from 'vscode';
 import { M68kCompletionItemProvider } from '../completion';
+import { DocumentationManager } from '../documentation';
 
 chai.use(chaiAsPromised);
 // tslint:disable:no-unused-expression
@@ -22,6 +23,7 @@ describe("Completion Tests", function () {
     const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
     let dHnd: M68kDefinitionHandler;
     let state: ExtensionState;
+    let documentationManager: DocumentationManager;
     before(async function () {
         // activate the extension
         let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
@@ -30,11 +32,12 @@ describe("Completion Tests", function () {
         }
         state = ExtensionState.getCurrent();
         dHnd = state.getDefinitionHandler();
+        documentationManager = await state.getDocumentationManager();
         await dHnd.scanFile(Uri.file(MAIN_SOURCE));
     });
     describe("Completion api", function () {
         it("Should return no completion on an unknown work", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), await state.getLanguage());
+            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 11);
             let tokenEmitter = new CancellationTokenSource();
@@ -43,7 +46,7 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should return a completion on a library function", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), await state.getLanguage());
+            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 11);
             let tokenEmitter = new CancellationTokenSource();
@@ -54,7 +57,7 @@ describe("Completion Tests", function () {
             expect(elm.label).to.be.equal("OldOpenLibrary");
         });
         it("Should return a completion on a register", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), await state.getLanguage());
+            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 11);
             let tokenEmitter = new CancellationTokenSource();
@@ -65,7 +68,7 @@ describe("Completion Tests", function () {
             expect(elm.label).to.be.equal("INTENAR");
         });
         it("Should return a completion on a variable", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), await state.getLanguage());
+            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 11);
             let tokenEmitter = new CancellationTokenSource();
@@ -76,7 +79,7 @@ describe("Completion Tests", function () {
             expect(elm.label).to.be.equal("MY_W_VAR");
         });
         it("Should return a completion on an instruction", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), await state.getLanguage());
+            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 3);
             let tokenEmitter = new CancellationTokenSource();
@@ -87,7 +90,7 @@ describe("Completion Tests", function () {
             expect(elm.label).to.be.equal("move");
         });
         it("Should not return a completion on an instruction after .", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), await state.getLanguage());
+            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 6);
             let tokenEmitter = new CancellationTokenSource();
@@ -102,7 +105,7 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should not return completion in a comment", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), await state.getLanguage());
+            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 4);
             let tokenEmitter = new CancellationTokenSource();
@@ -115,7 +118,7 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should not return completion on a variable or function in an instruction place", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), await state.getLanguage());
+            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 11);
             let tokenEmitter = new CancellationTokenSource();
@@ -128,7 +131,7 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should not return completion with an instruction in a data", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), await state.getLanguage());
+            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 11);
             let tokenEmitter = new CancellationTokenSource();
@@ -137,7 +140,7 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should not have the same completion in variable and library function or register", async function () {
-            let cp = new M68kCompletionItemProvider(state.getDocumentationManager(), state.getDefinitionHandler(), await state.getLanguage());
+            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 14);
             let tokenEmitter = new CancellationTokenSource();

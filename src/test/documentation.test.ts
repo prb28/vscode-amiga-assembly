@@ -17,7 +17,7 @@ describe("Documentation Tests", function () {
             await ext.activate();
         }
         let state = ExtensionState.getCurrent();
-        documentationManger = state.getDocumentationManager();
+        documentationManger = await state.getDocumentationManager();
     });
     context("Hover instruction file parsing", function () {
         it("Should read the file correctly", function () {

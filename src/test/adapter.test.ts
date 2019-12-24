@@ -48,7 +48,7 @@ describe('Node Debug Adapter', () => {
 		let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
 		if (ext) {
 			await ext.activate();
-			await ExtensionState.getCurrent().getLanguage().load();
+			await ExtensionState.getCurrent().getLanguage();
 		}
 		if (testWithRealEmulator) {
 			defaultTimeout = 60000;
