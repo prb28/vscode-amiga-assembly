@@ -78,12 +78,13 @@ describe("ADFTools test", function () {
             referenceBootBlock = Buffer.alloc(fileSizeInBytes);
             let fd = fs.openSync(bootBlockFileName, 'r');
             fs.readSync(fd, referenceBootBlock, 0, fileSizeInBytes, 0);
-
+            fs.closeSync(fd);
             let croppedBootBlockFileName = path.join(__dirname, "..", "..", "test_files", "bootblock", "OS13Crop.bb");
             fileSizeInBytes = fs.statSync(croppedBootBlockFileName).size;
             binaryBootBlockData = Buffer.alloc(fileSizeInBytes);
             fd = fs.openSync(croppedBootBlockFileName, 'r');
             fs.readSync(fd, binaryBootBlockData, 0, fileSizeInBytes, 0);
+            fs.closeSync(fd);
         });
         it("Should compute a bootblock checksum", async function () {
             expect(adfTools.calculateChecksum(referenceBootBlock)).to.be.equal(0xC0200F19);
@@ -100,7 +101,10 @@ describe("ADFTools test", function () {
             let fileContents = Buffer.alloc(fileSizeInBytes);
             let fd = fs.openSync(outputFile, 'r');
             fs.readSync(fd, fileContents, 0, fileSizeInBytes, 0);
+            fs.closeSync(fd);
             expect(fileContents).to.be.eql(referenceBootBlock);
+            fs.unlinkSync(outputFile);
+            fs.rmdirSync(tempDir);
         });
     });
 });

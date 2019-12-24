@@ -15,7 +15,7 @@ import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
 import { DebugDisassembledFile } from '../debugDisassembled';
 import { ExtensionState } from '../extension';
 
-describe('Node Debug Adapter', () => {
+describe.only('Node Debug Adapter', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
 	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
 	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug').replace(/\\+/g, '/');

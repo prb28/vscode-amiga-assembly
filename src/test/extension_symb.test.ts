@@ -16,6 +16,11 @@ describe("Global Extension Tests", function () {
         // Simple test file
         const uri = vscode.Uri.file(Path.join(testFilesPath, "tutorial.s"));
         before(async () => {
+            // activate the extension
+            let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+            if (ext) {
+                await ext.activate();
+            }
             // Read the file
             document = await vscode.workspace.openTextDocument(uri);
             // tslint:disable-next-line:no-unused-expression
