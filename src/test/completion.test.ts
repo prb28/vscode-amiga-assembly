@@ -152,9 +152,9 @@ describe("Completion Tests", function () {
             document.addLine(" move.l INTENAR");
             position = new Position(1, 15);
             results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
-            expect(results.length).to.be.equal(1);
+            expect(results.length).to.be.greaterThan(0);
             elm = results[0];
-            expect(elm.label).to.be.equal("INTENAR");
+            expect(elm.label.toUpperCase()).to.be.equal("INTENAR");
         });
     });
 });
