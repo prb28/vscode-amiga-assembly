@@ -720,18 +720,23 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments): void {
-        const id = this.variableHandles.get(args.variablesReference);
-        if ((id !== null) && (id.startsWith("registers_"))) {
-            this.gdbProxy.setRegister(args.name, args.value).then((newValue) => {
-                response.body = {
-                    value: newValue
-                };
-                this.sendResponse(response);
-            });
-        } else {
-            this.sendStringErrorResponse(response, "Illegal variable request");
-        }
+    protected setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            const id = this.variableHandles.get(args.variablesReference);
+            if ((id !== null) && (id.startsWith("registers_"))) {
+                await this.gdbProxy.setRegister(args.name, args.value).then((newValue) => {
+                    response.body = {
+                        value: newValue
+                    };
+                    this.sendResponse(response);
+                }).catch(err => {
+                    this.sendStringErrorResponse(response, err.getMessage());
+                });
+            } else {
+                this.sendStringErrorResponse(response, "Illegal variable request");
+            }
+            resolve();
+        });
     }
 
     public terminate() {

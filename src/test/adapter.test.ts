@@ -55,8 +55,6 @@ describe('Node Debug Adapter', () => {
 		}
 		// Opening file to activate the extension
 		this.timeout(this.defaultTimeout);
-		const newFile = vscode.Uri.parse("untitled://./debug.s");
-		await vscode.window.showTextDocument(newFile);
 		// start listening on a random port
 		this.server = Net.createServer(socket => {
 			this.session = new FsUAEDebugSession();

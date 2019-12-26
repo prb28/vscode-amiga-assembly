@@ -344,10 +344,15 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         });
     }
 
-    public evaluateFormula(formula: string): Promise<number> {
+    public evaluateFormula(formula: string, replaceVariables?: boolean): Promise<number> {
         return new Promise(async (resolve, reject) => {
             let resolved = false;
-            let newFormula = this.replaceVariablesInFormula(formula);
+            let newFormula: string;
+            if (replaceVariables === false) {
+                newFormula = formula;
+            } else {
+                newFormula = this.replaceVariablesInFormula(formula);
+            }
             if (newFormula) {
                 let calc = new Calc();
                 let result = calc.calculate(newFormula);

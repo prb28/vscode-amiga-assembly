@@ -1041,11 +1041,13 @@ export class GdbProxy extends EventEmitter {
                 let regIdx = this.getRegisterIndex(name);
                 if (regIdx !== null) {
                     let message = "P" + regIdx.toString(16) + "=" + value;
-                    await this.sendPacketString(message).then(data => {
-                        resolve(data);
-                    }).catch(err => {
+                    try {
+                        await this.sendPacketString(message).then(data => {
+                            resolve(data);
+                        })
+                    } catch (err) {
                         reject(err);
-                    });
+                    };
                 } else {
                     reject(new Error("Invalid register name: " + name));
                 }

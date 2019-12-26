@@ -9,12 +9,12 @@
 
          section    _code,code
 
-a=32
+ax=32
 myvar   = 28
 myvar2  equ 28
 foo =      43
 ; test comment
-b=32
+bx=32
 myvarlong  equ 12345  ; my coment
 start    move.l     #dos.library,a1          ;open the dos library
          moveq      #0,d0
