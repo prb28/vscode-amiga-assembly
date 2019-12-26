@@ -70,10 +70,10 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 let label = this.getLabel(document, rg);
                 let locations = new Array<Location>();
                 for (let refs of this.referredSymbols) {
-                    let symbs = refs[1].get(label);
-                    if (symbs !== undefined) {
-                        for (let i = 0; i < symbs.length; i++) {
-                            let s = symbs[i];
+                    let symbols = refs[1].get(label);
+                    if (symbols !== undefined) {
+                        for (let i = 0; i < symbols.length; i++) {
+                            let s = symbols[i];
                             locations.push(new Location(s.getFile().getUri(), s.getRange()));
                         }
                     }
@@ -243,16 +243,16 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                     return;
                 });
             }
-            let symb = file.getDefinedSymbols();
-            for (let i = 0; i < symb.length; i++) {
-                let s = symb[i];
+            let symbol = file.getDefinedSymbols();
+            for (let i = 0; i < symbol.length; i++) {
+                let s = symbol[i];
                 this.definedSymbols.set(s.getLabel(), s);
             }
             this.referredSymbols.delete(uri.fsPath);
             let refs = new Map<string, Array<Symbol>>();
-            let refSymb = file.getReferredSymbols();
-            for (let i = 0; i < refSymb.length; i++) {
-                let s = refSymb[i];
+            let refSymbol = file.getReferredSymbols();
+            for (let i = 0; i < refSymbol.length; i++) {
+                let s = refSymbol[i];
                 let label = s.getLabel();
                 let lst = refs.get(label);
                 if (lst === undefined) {
@@ -262,9 +262,9 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 lst.push(s);
             }
             this.referredSymbols.set(uri.fsPath, refs);
-            symb = file.getVariables();
-            for (let i = 0; i < symb.length; i++) {
-                let s = symb[i];
+            symbol = file.getVariables();
+            for (let i = 0; i < symbol.length; i++) {
+                let s = symbol[i];
                 this.variables.set(s.getLabel(), s);
             }
             // sort variables
@@ -273,9 +273,9 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 return b.length - a.length;
             });
 
-            symb = file.getLabels();
-            for (let i = 0; i < symb.length; i++) {
-                let s = symb[i];
+            symbol = file.getLabels();
+            for (let i = 0; i < symbol.length; i++) {
+                let s = symbol[i];
                 this.labels.set(s.getLabel(), s);
             }
             resolve(file);
