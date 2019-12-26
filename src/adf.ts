@@ -156,8 +156,8 @@ export class ADFTools {
                         }
                     }
                     try {
-                        let sourceRootFileProxy = new FileProxy(rootSourceDirUri);
-                        files = await sourceRootFileProxy.findFiles(rootSourceDir + '/' + includes, excludes);
+                        let sourceRootFileProxy = new FileProxy(rootSourceDirUri, true);
+                        files = await sourceRootFileProxy.findFiles(includes, excludes);
                         if (files.length > 0) {
                             let createdDirs = new Array<string>();
                             createdDirs.push("/");
