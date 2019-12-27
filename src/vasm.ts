@@ -13,6 +13,7 @@ import { VLINKLinker } from "./vlink";
 import { AsmONE } from "./asmONE";
 import * as path from "path";
 import * as winston from 'winston';
+import { FileProxy } from "./fsProxy";
 
 /**
  * Class to manage the VASM compiler
@@ -42,7 +43,7 @@ export class VASMCompiler {
       if (editor) {
         let conf = workspace.getConfiguration("amiga-assembly.vasm");
         if (this.mayCompile(conf)) {
-          await this.buildDocument(editor.document)
+          await this.buildDocument(editor.document, true)
             .then(() => {
               resolve();
             })
@@ -63,10 +64,11 @@ export class VASMCompiler {
   /**
    * Build the selected document
    * @param document The document to build
+   * @param temporaryBuild If true the build will be done in the tmp dir
    */
-  public buildDocument(document: TextDocument): Promise<ICheckResult[]> {
+  public buildDocument(document: TextDocument, temporaryBuild: boolean): Promise<ICheckResult[]> {
     return new Promise((resolve, reject) => {
-      this.buildFile(document.uri, false)
+      this.buildFile(document.uri, false, temporaryBuild)
         .then(([_objectFile, errors]) => {
           this.processGlobalErrors(document, errors);
           this.executor.handleDiagnosticErrors(
@@ -171,27 +173,47 @@ export class VASMCompiler {
       let configuration = workspace.getConfiguration("amiga-assembly", null);
       let conf: any = configuration.get("vasm");
       if (this.mayCompile(conf)) {
-        const workspaceRootDir = this.getWorkspaceRootDir();
-        if (workspaceRootDir) {
-          await workspace.findFiles("build/**/*.o").then(filesURI => {
-            for (let i = 0; i < filesURI.length; i++) {
-              const fileUri = filesURI[i];
-              winston.info(
-                `Deleting ${fileUri.fsPath}`
-              );
-              this.unlink(fileUri);
-            }
-            resolve();
-          });
-        } else {
-          reject(new Error("Root workspace not found"));
-        }
+        const buildDir = this.getBuildDir();
+        await buildDir.findFiles("**/*.o", "").then(filesProxies => {
+          for (let i = 0; i < filesProxies.length; i++) {
+            const fileUri = filesProxies[i];
+            winston.info(
+              `Deleting ${fileUri.getPath()}`
+            );
+            fileUri.delete();
+          }
+          resolve();
+        });
       } else if (!this.disabledInConf(conf)) {
         reject(VASMCompiler.CONFIGURE_VASM_ERROR);
       } else {
         resolve();
       }
     });
+  }
+
+  /**
+   * Returns the build directory
+   * Useful for tests
+   */
+  public getBuildDir(): FileProxy {
+    return ExtensionState.getCurrent().getBuildDir();
+  }
+
+  /**
+   * Returns the temp directory
+   * Useful for tests
+   */
+  public getTmpDir(): FileProxy {
+    return ExtensionState.getCurrent().getTmpDir();
+  }
+
+  /**
+   * Returns the workspace root directory
+   * Useful for tests
+   */
+  public getWorkspaceRootDir(): Uri | null {
+    return ExtensionState.getCurrent().getWorkspaceRootDir();
   }
 
   private buildWorkspaceInner(
@@ -213,7 +235,7 @@ export class VASMCompiler {
             const fileUri = filesURI[i];
             promises.push(
               workspace.openTextDocument(fileUri).then(document => {
-                return this.buildDocument(document);
+                return this.buildDocument(document, false);
               })
             );
           }
@@ -236,7 +258,7 @@ export class VASMCompiler {
                     exefilename,
                     entrypoint,
                     workspaceRootDir,
-                    buildDir
+                    buildDir.getUri()
                   )
                   .then(errors => {
                     if (errors && errors.length > 0) {
@@ -245,7 +267,7 @@ export class VASMCompiler {
                       if (ASMOneEnabled) {
                         this.asmONE.Auto(
                           filesURI,
-                          Uri.file(path.join(buildDir.fsPath, exefilename))
+                          buildDir.getRelativeFile(exefilename).getUri()
                         );
                       }
                       resolve();
@@ -277,25 +299,29 @@ export class VASMCompiler {
    * Build the selected file
    * @param filepathname Path of the file to build
    * @param debug If true debug symbols are added
+   * @param temporaryBuild If true the ile will go to the temp folder
    * @param bootblock If true it will build a bootblock 
    */
-  public buildFile(fileUri: Uri, debug: boolean, bootblock?: boolean): Promise<[string | null, ICheckResult[]]> {
+  public buildFile(fileUri: Uri, debug: boolean, temporaryBuild: boolean, bootblock?: boolean): Promise<[string | null, ICheckResult[]]> {
     return new Promise(async (resolve, reject) => {
       const workspaceRootDir = this.getWorkspaceRootDir();
-      const buildDir = this.getBuildDir();
+      let buildDir: FileProxy;
+      if (temporaryBuild) {
+        buildDir = this.getTmpDir();
+      } else {
+        buildDir = this.getBuildDir();
+      }
       if (workspaceRootDir && buildDir) {
         let filename = path.basename(fileUri.fsPath);
         let configuration = workspace.getConfiguration("amiga-assembly", null);
         let conf: any = configuration.get("vasm");
         if (this.mayCompile(conf)) {
-          await this.mkdirSync(buildDir).catch(err => {
-            reject(
-              new Error(
-                `Error creating the  build dir "${buildDir}: ` + err.toString()
-              )
-            );
+          try {
+            await buildDir.mkdir();
+          } catch (err) {
+            reject(new Error(`Error creating the  build dir "${buildDir}: ` + err.toString()));
             return;
-          });
+          };
           let state = ExtensionState.getCurrent();
           let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
           let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
@@ -304,11 +330,11 @@ export class VASMCompiler {
           let objFilename: string;
           if (extSep > 0) {
             objFilename = path.join(
-              buildDir.fsPath,
+              buildDir.getPath(),
               filename.substr(0, filename.lastIndexOf(".")) + ".o"
             );
           } else {
-            objFilename = path.join(buildDir.fsPath, filename + ".o");
+            objFilename = path.join(buildDir.getPath(), filename + ".o");
           }
           let confArgs: any;
           if (bootblock) {
@@ -353,51 +379,6 @@ export class VASMCompiler {
         }
       } else {
         reject(new Error("Root workspace path not found"));
-      }
-    });
-  }
-
-  /**
-   * Reads the build directory
-   */
-  getBuildDir(): Uri | null {
-    let rootDir = this.getWorkspaceRootDir();
-    if (rootDir) {
-      return rootDir.with({ path: rootDir.path + "/build" });
-    }
-    return null;
-  }
-
-  /**
-   * Deletes a file
-   * @param fileUri Uri of the file to delete
-   */
-  unlink(fileUri: Uri) {
-    workspace.fs.delete(fileUri);
-  }
-
-  /**
-   * Reads the workspace folder dir
-   */
-  getWorkspaceRootDir(): Uri | null {
-    if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-      return workspace.workspaceFolders[0].uri;
-    }
-    return null;
-  }
-
-  /**
-   * Creates a directory
-   * @param dirPath path to create
-   */
-  mkdirSync(dirPath: Uri): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        await workspace.fs.createDirectory(dirPath);
-        resolve();
-      } catch (err) {
-        window.showErrorMessage("Error creating build dir: " + dirPath);
-        reject(err);
       }
     });
   }
@@ -456,7 +437,7 @@ export class VASMController {
     let statusManager = state.getStatusManager();
     if (document.languageId === "m68k") {
       statusManager.onDefault();
-      await this.compiler.buildDocument(document).catch(error => {
+      await this.compiler.buildDocument(document, true).catch(error => {
         statusManager.onError(error.message);
       });
     }

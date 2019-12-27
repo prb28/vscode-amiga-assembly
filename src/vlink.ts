@@ -1,7 +1,6 @@
-import { workspace, Uri, window } from "vscode";
+import { workspace, Uri } from "vscode";
 import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import * as path from "path";
-import * as fs from "fs";
 
 /**
  * Class to manage the VLINK linker
@@ -119,25 +118,5 @@ export class VLINKParser implements ExecutorParser {
             }
         }
         return errors;
-    }
-
-    /**
-     * Creates a directory
-     * @param dirPath path to create
-     */
-    mkdirSync(dirPath: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            try {
-                if (!fs.existsSync(dirPath)) {
-                    fs.mkdirSync(dirPath);
-                }
-            } catch (err) {
-                if (err.code !== 'EEXIST') {
-                    window.showErrorMessage(`Error creating build dir: "${dirPath}"`);
-                    reject(err);
-                }
-            }
-            resolve();
-        });
     }
 }

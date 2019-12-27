@@ -27,6 +27,7 @@ import { DisassembledMemoryDataProvider } from './viewDisassembled';
 import { DisassembledInstructionAdapter } from './debugExpressionHelper';
 import * as winston from "winston";
 import * as TransportStream from "winston-transport";
+import { FileProxy } from './fsProxy';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -55,6 +56,7 @@ class SimpleConsoleTransport extends TransportStream {
 }
 
 export class ExtensionState {
+    public static readonly CONFIGURATION_NAME = 'amiga-assembly';
     private compiler: VASMCompiler | undefined;
     private errorDiagnosticCollection: vscode.DiagnosticCollection | undefined;
     private warningDiagnosticCollection: vscode.DiagnosticCollection | undefined;
@@ -68,6 +70,8 @@ export class ExtensionState {
     private language: M68kLanguage | undefined;
     private watcher: vscode.FileSystemWatcher | undefined;
     private outputChannel: vscode.OutputChannel;
+    private buildDir: FileProxy | undefined;
+    private tmpDir: FileProxy | undefined;
 
     private extensionPath: string = path.join(__dirname, "..");
 
@@ -81,7 +85,7 @@ export class ExtensionState {
         winston.add(transport);
     }
     public getLogLevel(): string | undefined {
-        return vscode.workspace.getConfiguration('amiga-assembly', null).get('logLevel');
+        return vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('logLevel');
     }
     public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
         if (this.errorDiagnosticCollection === undefined) {
@@ -189,6 +193,38 @@ export class ExtensionState {
         if (this.outputChannel) {
             this.outputChannel.dispose();
         }
+    }
+    public getTmpDir(): FileProxy {
+        let tmpDirPath: any = vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('tmpDir');
+        if (tmpDirPath) {
+            this.tmpDir = new FileProxy(vscode.Uri.file(tmpDirPath));
+        } else {
+            this.tmpDir = new FileProxy(vscode.Uri.file("./build"));
+        }
+        return this.tmpDir;
+    }
+    public getBuildDir(): FileProxy {
+        let buildDirPath: any = vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('buildDir');
+        if (buildDirPath) {
+            this.buildDir = new FileProxy(vscode.Uri.file(buildDirPath));
+        } else {
+            let rootDir = this.getWorkspaceRootDir();
+            if (rootDir) {
+                this.buildDir = new FileProxy(rootDir.with({ path: rootDir.path + "/build" }));
+            }
+            this.buildDir = new FileProxy(vscode.Uri.file("./build"));
+        }
+        return this.buildDir;
+    }
+
+    /**
+     * Reads the workspace folder dir
+     */
+    getWorkspaceRootDir(): vscode.Uri | null {
+        if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+            return vscode.workspace.workspaceFolders[0].uri;
+        }
+        return null;
     }
 }
 

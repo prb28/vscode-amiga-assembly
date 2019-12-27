@@ -265,4 +265,58 @@ export class FileProxy {
         }
     }
 
+    /**
+     * Deletes a file
+     */
+    delete() {
+        return new Promise(async (resolve, reject) => {
+            if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
+                try {
+                    fs.unlinkSync(this.uri.fsPath);
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            } else {
+                try {
+                    await workspace.fs.delete(this.uri);
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            }
+        });
+    }
+
+    /**
+     * Creates a directory
+     */
+    mkdir(): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
+                try {
+                    fs.mkdirSync(this.uri.fsPath);
+                    resolve();
+                } catch (err) {
+                    if (err.code !== 'EEXIST') {
+                        reject(err);
+                    }
+                }
+            } else {
+                try {
+                    await workspace.fs.createDirectory(this.uri);
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            }
+        });
+    }
+
+    /**
+     * Returns the path of the file
+     */
+    public getPath(): string {
+        return this.uri.fsPath;
+    }
 }
