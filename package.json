@@ -160,6 +160,18 @@
                     "default": "cstool",
                     "description": "Specifies the path to the Capstone cstool binary."
                 },
+                "amiga-assembly.buildDir": {
+                    "type": "string",
+                    "scope": "window",
+                    "default": "build",
+                    "description": "Specifies the path to the build directory."
+                },
+                "amiga-assembly.tmpDir": {
+                    "type": "string",
+                    "scope": "window",
+                    "default": "build",
+                    "description": "Specifies the path to the temporary build directory."
+                },
                 "amiga-assembly.adfgenerator": {
                     "type": "object",
                     "scope": "window",
@@ -194,7 +206,7 @@
                             "description": "adfCreate options"
                         },
                         "bootBlockSourceFile": {
-                            "type": "file",
+                            "type": "string",
                             "description": "Source file containing the code of the bootblock"
                         }
                     },
@@ -656,6 +668,7 @@
         "watch": "tsc -watch -p .",
         "test": "npm run coverage:disable && node ./out/test/runTest.js",
         "testonly": "node ./out/test/runTest.js",
+        "buildtest": "gulp cover:disable && npm run compile && node ./out/test/runTest.js",
         "test:coverage": "npm run coverage:enable && node ./out/test/runTest.js",
         "coverage:enable": "gulp cover:enable",
         "coverage:disable": "gulp cover:disable",
