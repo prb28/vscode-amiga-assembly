@@ -194,25 +194,53 @@ export class ExtensionState {
             this.outputChannel.dispose();
         }
     }
+
+    /**
+     * Default build dir : Workspace/build
+     */
+    private getDefaultBuildDir(): FileProxy {
+        let rootDir = this.getWorkspaceRootDir();
+        if (rootDir) {
+            return new FileProxy(rootDir.with({ path: rootDir.path + "/build" }));
+        }
+        return new FileProxy(vscode.Uri.file("./build"));
+    }
+
+    /**
+     * If it is an absolute path returns it, or add it to the current workspace path 
+     */
+    private getPathOrRelative(pathSelected: string): FileProxy {
+        if (!path.isAbsolute(pathSelected)) {
+            let rootDir = this.getWorkspaceRootDir();
+            if (rootDir) {
+                return new FileProxy(rootDir.with({ path: `${rootDir.path}/${pathSelected}` }));
+            }
+        }
+        return new FileProxy(vscode.Uri.file(pathSelected));
+    }
+
+    /**
+     * Returns the temporary directory
+     */
     public getTmpDir(): FileProxy {
         let tmpDirPath: any = vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('tmpDir');
         if (tmpDirPath) {
-            this.tmpDir = new FileProxy(vscode.Uri.file(tmpDirPath));
+            this.tmpDir = this.getPathOrRelative(tmpDirPath);
         } else {
-            this.tmpDir = new FileProxy(vscode.Uri.file("./build"));
+            this.tmpDir = this.getDefaultBuildDir();
         }
         return this.tmpDir;
     }
+
+    /**
+     * Returns the build directory
+     */
     public getBuildDir(): FileProxy {
         let buildDirPath: any = vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('buildDir');
         if (buildDirPath) {
-            this.buildDir = new FileProxy(vscode.Uri.file(buildDirPath));
+            this.buildDir = this.getPathOrRelative(buildDirPath);
         } else {
-            let rootDir = this.getWorkspaceRootDir();
-            if (rootDir) {
-                this.buildDir = new FileProxy(rootDir.with({ path: rootDir.path + "/build" }));
-            }
-            this.buildDir = new FileProxy(vscode.Uri.file("./build"));
+            this.buildDir = this.getDefaultBuildDir();
         }
         return this.buildDir;
     }

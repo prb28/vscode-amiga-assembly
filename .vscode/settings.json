@@ -96,6 +96,7 @@
         "bchg",
         "blitter",
         "bootblock",
+        "buildtest",
         "bwld",
         "bwls",
         "bwlsdxp",
