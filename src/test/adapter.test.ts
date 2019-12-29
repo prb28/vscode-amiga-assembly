@@ -801,6 +801,7 @@ describe('Node Debug Adapter', () => {
 	});
 	describe('Set variables', function () {
 		beforeEach(async function () {
+			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
 				when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));
