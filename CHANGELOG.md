@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### [0.19.0] - 
+### [0.19.0] - 2019-12-30
 - [Feat #107](https://github.com/prb28/vscode-amiga-assembly/issues/107) Don't use hardcoded build as temp path when saving
 - [Feat #106](https://github.com/prb28/vscode-amiga-assembly/issues/105) Add "step out" in debug capabilities
 - [Issue #105](https://github.com/prb28/vscode-amiga-assembly/issues/105) Debugger hangs when getting back (rts) from a jsr call) 
