@@ -3,6 +3,7 @@ import { ExecutorHelper } from "./execHelper";
 import * as path from 'path';
 import { VASMCompiler } from "./vasm";
 import { FileProxy } from "./fsProxy";
+import { ExtensionState } from "./extension";
 
 /**
  * Class to Generate an ADF file
@@ -114,7 +115,7 @@ export class ADFTools {
                     }
                     if (sourceFullPath) {
                         // Call the build command
-                        let results = await compiler.buildFile(sourceFullPath, false, true).catch((err) => {
+                        let results = await compiler.buildFile(sourceFullPath, false, true, true).catch((err) => {
                             return reject(err);
                         });
                         if (results && results[0]) {
@@ -125,7 +126,7 @@ export class ADFTools {
                             // create the bootblock
                             try {
                                 let bootBlock = await bootBlockFile.readFile();
-                                await this.writeBootBlockFile(Buffer.from(bootBlock), bootBlockDataFilenameUri);
+                                await this.writeBootBlockFile(Buffer.from(bootBlock), Uri.file(bootBlockFilename));
                             } catch (err) {
                                 return reject(new Error(`Error writing boot block '${bootBlockSourceFilename}'`));
                             }
@@ -314,10 +315,7 @@ export class ADFTools {
      * Reads the workspace folder dir
      */
     private getWorkspaceRootDir(): Uri | null {
-        if (workspace.workspaceFolders && (workspace.workspaceFolders.length > 0)) {
-            return workspace.workspaceFolders[0].uri;
-        }
-        return null;
+        return ExtensionState.getCurrent().getWorkspaceRootDir();
     }
 
     /**

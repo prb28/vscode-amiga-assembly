@@ -7,7 +7,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import { FileProxy } from "../fsProxy";
 chai.use(chaiAsPromised);
 
-describe.only("FsProxy test", function () {
+describe("FsProxy test", function () {
     before(function () {
         // Automatically track and cleanup files at exit
         temp.track();

@@ -338,8 +338,12 @@ export class VASMCompiler {
           }
           let confArgs: any;
           if (bootblock) {
-            confArgs = new Array<string>();
-            confArgs.push("-m68000");
+            if (conf.options && (conf.options.length > 0)) {
+              confArgs = conf.options;
+            } else {
+              confArgs = new Array<string>();
+              confArgs.push("-m68000");
+            }
             confArgs.push("-Fbin");
           } else {
             confArgs = conf.options;
