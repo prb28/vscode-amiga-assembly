@@ -287,7 +287,7 @@
                         },
                         "exefilename": {
                             "type": "string",
-                            "description": "Name of the executable file"
+                            "description": "Name of the executable file relative to the build dir"
                         },
                         "options": {
                             "type": "array",
