@@ -31,6 +31,10 @@ describe("Calc Tests", function () {
     });
     it("Should calculate an expression with binary operations", async function () {
         let c = new CalcComponent();
+        await expect(c.calculate("$10&16")).to.be.eventually.equal(0x10);
+        await expect(c.calculate("$21&16")).to.be.eventually.equal(0);
+        await expect(c.calculate("$41&16")).to.be.eventually.equal(0);
+        await expect(c.calculate("$61&16")).to.be.eventually.equal(0);
         await expect(c.calculate("5&1")).to.be.eventually.equal(1);
         await expect(c.calculate("4|1")).to.be.eventually.equal(5);
         await expect(c.calculate("5 << 1")).to.be.eventually.equal(10);

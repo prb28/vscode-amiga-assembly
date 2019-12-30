@@ -14,6 +14,11 @@ describe("Global Extension Tests", function () {
     let state: ExtensionState | undefined;
     context("Simple calc commands", function () {
         before(async () => {
+            // activate the extension
+            let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+            if (ext) {
+                await ext.activate();
+            }
             const newFile = vscode.Uri.parse("untitled://./myfile.s");
             await vscode.workspace.openTextDocument(newFile).then(async document => {
                 const edit = new vscode.WorkspaceEdit();
@@ -116,7 +121,8 @@ describe("Global Extension Tests", function () {
             await vscode.workspace.openTextDocument(newFile).then(async document => {
                 const edit = new vscode.WorkspaceEdit();
                 edit.insert(newFile, new vscode.Position(0, 0), " dc.b $1, #10, #-1, $a, %1010, @1\n");
-                edit.insert(newFile, new vscode.Position(1, 0), " move.l #$80,d7");
+                edit.insert(newFile, new vscode.Position(1, 0), " move.l #$80,d7\n");
+                edit.insert(newFile, new vscode.Position(2, 0), " dc.b $10,$21,$10,$41,$10,$61\n");
                 await vscode.workspace.applyEdit(edit).then(async (success) => {
                     if (success) {
                         await vscode.window.showTextDocument(document);
@@ -134,6 +140,18 @@ describe("Global Extension Tests", function () {
                 await vscode.commands.executeCommand("amiga-assembly.apply-formula", { formula: "x+3" });
                 expect(editor.document.lineAt(0).text).to.be.equal(" dc.b $4, #13, #2, $d, %1101, @4");
                 expect(editor.document.lineAt(1).text).to.be.equal(" move.l #$83,d7");
+            } else {
+                expect.fail("Editor not available");
+            }
+        });
+        it("Should apply a formula with binary operators to a selection and replace with the result", async () => {
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                await vscode.commands.executeCommand("cursorMove", { to: 'down', by: 'line', value: 1, select: false });
+                await vscode.commands.executeCommand("cursorMove", { to: 'wrappedLineFirstNonWhitespaceCharacter', select: false });
+                await vscode.commands.executeCommand("cursorMove", { to: 'wrappedLineLastNonWhitespaceCharacter', select: true });
+                await vscode.commands.executeCommand("amiga-assembly.apply-formula", { formula: "x&16" });
+                expect(editor.document.lineAt(2).text).to.be.equal(" dc.b $10,$0,$10,$0,$10,$0");
             } else {
                 expect.fail("Editor not available");
             }

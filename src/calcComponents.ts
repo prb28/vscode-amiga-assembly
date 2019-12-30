@@ -181,11 +181,11 @@ export class CalcComponent {
                                     let num = result[0];
                                     let tp = result[1];
                                     let modifiedFormula = formula.replace('x', num.toString());
-                                    let resultValue = await this.calculate(modifiedFormula).catch(err => {
-                                        reject(err);
-                                    });
-                                    if (resultValue) {
+                                    try {
+                                        let resultValue = await this.calculate(modifiedFormula);
                                         replaceValues.push([numberParser.numberToTypedString(resultValue, tp), range]);
+                                    } catch (err) {
+                                        reject(err);
                                     }
                                 }
                             }
