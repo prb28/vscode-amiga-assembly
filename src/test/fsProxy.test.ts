@@ -7,7 +7,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import { FileProxy } from "../fsProxy";
 chai.use(chaiAsPromised);
 
-describe("FsProxy test", function () {
+describe.only("FsProxy test", function () {
     before(function () {
         // Automatically track and cleanup files at exit
         temp.track();
@@ -66,12 +66,16 @@ describe("FsProxy test", function () {
         // Read the file
         let contents = await f.readFile();
         expect(contents).to.be.eql(buf);
+        await expect(f.isDirectory()).to.be.eventually.false;
+        await expect(f.isFile()).to.be.eventually.true;
         // with direct access
         f = new FileProxy(Uri.file(filePath), true);
         await f.writeFile(buf);
         // Read the file
         contents = await f.readFile();
         expect(contents).to.be.eql(buf);
+        await expect(f.isDirectory()).to.be.eventually.false;
+        await expect(f.isFile()).to.be.eventually.true;
     });
     it("Should send an error on write of an non existing dir", async function () {
         let filePath = path.join(__dirname, "..", "..", "out");
@@ -84,6 +88,48 @@ describe("FsProxy test", function () {
         f = new FileProxy(Uri.file(filePath), true);
         // tslint:disable-next-line:no-unused-expression
         expect(f.writeFile(buf)).to.be.rejected;
+    });
+
+    it("Should delete a file", async function () {
+        let tempDir = temp.mkdirSync("delete-test-fs");
+        let filePath = path.join(tempDir, "wOut.txt");
+        let f = new FileProxy(Uri.file(filePath));
+        let writtenContents = "test";
+        let buf = Buffer.from(writtenContents);
+        await f.writeFile(buf);
+        await expect(f.exists()).to.be.eventually.true;
+        // with direct access
+        await f.delete();
+        await expect(f.exists()).to.be.eventually.false;
+        f = new FileProxy(Uri.file(filePath), true);
+        await f.writeFile(buf);
+        await expect(f.exists()).to.be.eventually.true;
+        // with direct access
+        await f.delete();
+        await expect(f.exists()).to.be.eventually.false;
+    });
+
+    it("Should create a directory and delete", async function () {
+        let tempDir = temp.mkdirSync("mkdir-test-fs");
+        let dirPath = path.join(tempDir, "testDir");
+        let f = new FileProxy(Uri.file(dirPath));
+        await expect(f.exists()).to.be.eventually.false;
+        await f.mkdir();
+        await expect(f.exists()).to.be.eventually.true;
+        await expect(f.isDirectory()).to.be.eventually.true;
+        await expect(f.isFile()).to.be.eventually.false;
+        await f.delete();
+        await expect(f.exists()).to.be.eventually.false;
+        // with direct access
+        let dirPathDirect = path.join(tempDir, "testDirDirect");
+        f = new FileProxy(Uri.file(dirPathDirect), true);
+        await expect(f.exists()).to.be.eventually.false;
+        await f.mkdir();
+        await expect(f.exists()).to.be.eventually.true;
+        await expect(f.isDirectory()).to.be.eventually.true;
+        await expect(f.isFile()).to.be.eventually.false;
+        await f.delete();
+        await expect(f.exists()).to.be.eventually.false;
     });
     it("Should verify if a file or dir exists", async function () {
         let filePath = path.join(__dirname, "..", "..", "test_files", "hw-exp.s");

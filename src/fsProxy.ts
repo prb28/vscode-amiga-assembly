@@ -266,13 +266,37 @@ export class FileProxy {
     }
 
     /**
+     * Check if the file is a directory
+     */
+    public isDirectory(): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            let stat = await this.stat();
+            resolve((stat.type & FileType.Directory) > 0);
+        });
+    }
+
+    /**
+     * Check if the file is a file
+     */
+    public isFile(): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            let stat = await this.stat();
+            resolve((stat.type & FileType.File) > 0);
+        });
+    }
+
+    /**
      * Deletes a file
      */
     delete() {
         return new Promise(async (resolve, reject) => {
             if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
                 try {
-                    fs.unlinkSync(this.uri.fsPath);
+                    if (await this.isDirectory()) {
+                        fs.rmdirSync(this.uri.fsPath);
+                    } else {
+                        fs.unlinkSync(this.uri.fsPath);
+                    }
                     resolve();
                 } catch (err) {
                     reject(err);
