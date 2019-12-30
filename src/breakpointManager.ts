@@ -54,17 +54,20 @@ export class BreakpointManager {
         });
     }
 
-    public checkPendingBreakpointsAddresses() {
-        if (this.debugInfo) {
-            for (let debugBp of this.pendingBreakpoints) {
-                if (debugBp.source && debugBp.line) {
-                    const path = <string>debugBp.source.path;
-                    if (!DebugDisassembledFile.isDebugAsmFile(path)) {
-                        this.fillBreakpointWithSegAddress(debugBp, path, debugBp.line);
+    public checkPendingBreakpointsAddresses(): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            if (this.debugInfo) {
+                for (let debugBp of this.pendingBreakpoints) {
+                    if (debugBp.source && debugBp.line) {
+                        const path = <string>debugBp.source.path;
+                        if (!DebugDisassembledFile.isDebugAsmFile(path)) {
+                            await this.fillBreakpointWithSegAddress(debugBp, path, debugBp.line);
+                        }
                     }
                 }
             }
-        }
+            resolve();
+        });
     }
 
     public setBreakpoint(debugBp: GdbBreakpoint): Promise<GdbBreakpoint> {
@@ -75,7 +78,7 @@ export class BreakpointManager {
 
                 if (!DebugDisassembledFile.isDebugAsmFile(path)) {
                     if (this.debugInfo) {
-                        if (this.fillBreakpointWithSegAddress(debugBp, path, debugBp.line)) {
+                        if (await this.fillBreakpointWithSegAddress(debugBp, path, debugBp.line)) {
                             await this.gdbProxy.setBreakpoint(debugBp).then(() => {
                                 this.breakpoints.push(debugBp);
                                 resolve(debugBp);
