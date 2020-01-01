@@ -321,7 +321,7 @@ export class VASMCompiler {
           } catch (err) {
             reject(new Error(`Error creating the  build dir "${buildDir}: ` + err.toString()));
             return;
-          };
+          }
           let state = ExtensionState.getCurrent();
           let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
           let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
