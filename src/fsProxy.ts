@@ -324,8 +324,9 @@ export class FileProxy {
                 } catch (err) {
                     if (err.code !== 'EEXIST') {
                         reject(err);
+                    } else {
+                        resolve();
                     }
-                    resolve();
                 }
             } else {
                 try {
