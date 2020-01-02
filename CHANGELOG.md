@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [0.19.1] - 
+- [Issue #111](https://github.com/prb28/vscode-amiga-assembly/issues/111) Setting an absolute path in amiga-assembly.tmpDir outside the workspace does not work
 - [Issue #110](https://github.com/prb28/vscode-amiga-assembly/issues/110) Bug in Add Bitwise operators to calculations
 
 ### [0.19.0] - 2019-12-30

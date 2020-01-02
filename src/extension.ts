@@ -144,13 +144,14 @@ export class ExtensionState {
             this.watcher = vscode.workspace.createFileSystemWatcher(
                 M68kDefinitionHandler.SOURCE_FILES_GLOB
             );
-            this.watcher.onDidChange(this.scanFileWatcher);
+            this.watcher.onDidChange(ExtensionState.scanFileWatcher);
         }
         return this.definitionHandler;
     }
-    public scanFileWatcher(uri: vscode.Uri) {
-        if (this.definitionHandler) {
-            this.definitionHandler.scanFile(uri);
+    public static scanFileWatcher(uri: vscode.Uri) {
+        let dHandler = ExtensionState.getCurrent().getDefinitionHandler();
+        if (dHandler) {
+            dHandler.scanFile(uri);
         }
     }
     public getDataGenerator(): DataGeneratorCodeLensProvider {
