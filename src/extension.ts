@@ -8,7 +8,6 @@ import { M86kColorProvider } from './color';
 import { CalcController } from './calcComponents';
 import { VASMController } from './vasm';
 import { FsUAEDebugSession } from './fsUAEDebug';
-import * as Net from 'net';
 import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
 import { CalcComponent } from './calcComponents';
 import { VASMCompiler } from './vasm';
@@ -32,13 +31,6 @@ import { FileProxy } from './fsProxy';
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
 export const AMIGA_DEBUG_ASM_MODE: vscode.DocumentFilter = { language: 'amiga-assembly-debug.disassembly', scheme: 'disassembly' };
-
-/*
- * Set the following compile time flag to true if the
- * debug adapter should run inside the extension host.
- * Please note: the test suite does no longer work in this mode.
- */
-const EMBED_DEBUG_ADAPTER = true;
 
 class SimpleConsoleTransport extends TransportStream {
     private outputChannel: vscode.OutputChannel;
@@ -465,12 +457,10 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     // register a configuration provider for 'fs-uae' debug type
-    const provider = new FsUAEConfigurationProvider();
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', provider));
-    context.subscriptions.push(provider);
-    const runProvider = new RunFsUAEConfigurationProvider();
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae-run', runProvider));
-    context.subscriptions.push(runProvider);
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', new FsUAEConfigurationProvider()));
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('fs-uae', new FsUAEInlineDebugAdapterFactory()));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae-run', new RunFsUAEConfigurationProvider()));
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('fs-uae-run', new RunFsUAEInlineDebugAdapterFactory()));
     winston.info("------> done");
 
     context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('disassembly', new DisassemblyContentProvider()));
@@ -501,9 +491,6 @@ export function deactivate() {
 }
 
 class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
-
-    private server?: Net.Server;
-
 	/**
 	 * Massage a debug configuration just before a debug session is being launched,
 	 * e.g. add all missing attributes to the debug configuration.
@@ -533,49 +520,24 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
                 return undefined;	// abort launch
             });
         }
-
-        const self = this;
         if (config.buildWorkspace) {
             return vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace").then(() => {
-                return self.setSession(folder, config, token);
+                return config;
             });
         } else {
-            return this.setSession(folder, config, token);
-        }
-    }
-
-    /**
-     * Sets the session config
-     */
-    private setSession(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
-        if (EMBED_DEBUG_ADAPTER) {
-            // start port listener on launch of first debug session
-            if (!this.server) {
-                // start listening on a random port
-                this.server = Net.createServer(socket => {
-                    const session = new FsUAEDebugSession();
-                    session.setRunAsServer(true);
-                    session.start(<NodeJS.ReadableStream>socket, socket);
-                }).listen(0);
-            }
-            // make VS Code connect to debug server instead of launching debug adapter
-            let address: any = this.server.address();
-            if (address instanceof Object) {
-                config.debugServer = address.port;
-            }
-        }
-        return config;
-    }
-
-    dispose() {
-        if (this.server) {
-            this.server.close();
+            return config;
         }
     }
 }
 
+class FsUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
+    createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
+        // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
+        return <any>new vscode.DebugAdapterInlineImplementation(new FsUAEDebugSession());
+    }
+}
+
 class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
-    private runServer?: Net.Server;
 	/**
 	 * Massage a debug configuration just before a debug session is being launched,
 	 * e.g. add all missing attributes to the debug configuration.
@@ -594,45 +556,19 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
                 config.buildWorkspace = true;
             }
         }
-        const self = this;
         if (config.buildWorkspace) {
             return vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace").then(() => {
-                return self.setSession(folder, config, token);
+                return config;
             });
         } else {
-            return this.setSession(folder, config, token);
+            return config;
         }
     }
+}
 
-    /**
-     * Sets the session config
-     */
-    private setSession(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
-        if (EMBED_DEBUG_ADAPTER) {
-            // start port listener on launch of first debug session
-            if (!this.runServer) {
-                // start listening on a random port
-                this.runServer = Net.createServer(socket => {
-                    const session = new RunFsUAENoDebugSession();
-                    session.setRunAsServer(true);
-                    session.start(<NodeJS.ReadableStream>socket, socket);
-                }).listen(0);
-            }
-            // make VS Code connect to debug server instead of launching debug adapter
-            let address: any = this.runServer.address();
-            if (address instanceof Object) {
-                config.debugServer = address.port;
-            }
-        }
-        return config;
-    }
-
-    dispose() {
-        if (state) {
-            state.dispose();
-        }
-        if (this.runServer) {
-            this.runServer.close();
-        }
+class RunFsUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
+    createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
+        // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
+        return <any>new vscode.DebugAdapterInlineImplementation(new RunFsUAENoDebugSession());
     }
 }
