@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { CopperInstruction, CopperInstructionType, CopperWait, CopperSkip, CopperMove, CopperDisassembler } from '../copperDisassembler';
 
-describe.only("Copper Disassembler Tests", function () {
+describe("Copper Disassembler Tests", function () {
     // tslint:disable:no-unused-expression
     it("Should disassemble a move instruction", function () {
         let i = CopperInstruction.parse("f1800502"); // the first f is just for tests -> not real
@@ -31,7 +31,7 @@ describe.only("Copper Disassembler Tests", function () {
             expect(i.vertical).to.be.equal(0x96);
             expect(i.horizontal).to.be.equal(0x00);
         }
-        i = CopperInstruction.parse("1fd3fffe");
+        i = CopperInstruction.parse("3fd37ffe");
         expect(i instanceof CopperWait).to.be.true;
         if (i instanceof CopperWait) {
             expect(i.VP).to.be.equal(0x3f);
@@ -41,7 +41,7 @@ describe.only("Copper Disassembler Tests", function () {
             expect(i.HE).to.be.equal(0xfe);
             expect(i.vertical).to.be.equal(0x3f);
             expect(i.horizontal).to.be.equal(0xd2);
-            expect(i.toString()).to.be.equal("dc.w $3fd3,$fffe    ; Wait for vpos >= 0x3f and hpos >= 0xd2 and blitter finished");
+            expect(i.toString()).to.be.equal("dc.w $3fd3,$7ffe    ; Wait for vpos >= 0x3f and hpos >= 0xd2 and blitter finished");
         }
         i = CopperInstruction.parse("fffffffe");
         expect(i instanceof CopperWait).to.be.true;
