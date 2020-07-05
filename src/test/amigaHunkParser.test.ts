@@ -29,7 +29,7 @@ describe("AmigaHunkFile", function () {
             expect(hunk.lineDebugInfo.length).to.be.equal(1);
             let sourceFile = hunk.lineDebugInfo[0];
             expect(sourceFile.lines.length).to.be.equal(106);
-            expect(sourceFile.name).to.be.equal("/Users/papa/developpements/amiga/projects/helloworld/gencop.s");
+            expect(sourceFile.name).to.be.equal("c:\\Users\\paulr\\workspace\\amiga\\projects\\vscode-amiga-wks-example\\gencop.s");
         }
     });
 

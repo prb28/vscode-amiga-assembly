@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [0.20]
+- [Issue #117](https://github.com/prb28/vscode-amiga-assembly/issues/117) _ in variable
 - [Issue #116](https://github.com/prb28/vscode-amiga-assembly/issues/116) Support blitter wait in copperDisassembler
 - [Issue #112](https://github.com/prb28/vscode-amiga-assembly/issues/112) Current directory wrong when debugging
 
