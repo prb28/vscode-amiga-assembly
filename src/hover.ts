@@ -36,9 +36,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 if (token.isCancellationRequested) {
                     resolve();
                 }
-                let hoverInstructionList = this.documentationManager.getInstruction(keyInstruction.toUpperCase());
-                if (hoverInstructionList) {
-                    let hoverRendered = this.renderHoverList(hoverInstructionList);
+                let hoverInstruction = await this.documentationManager.getInstruction(keyInstruction.toUpperCase());
+                if (hoverInstruction) {
+                    let hoverRendered = this.renderHover(hoverInstruction);
                     resolve(new vscode.Hover(hoverRendered, asmLine.instructionRange));
                 }
             } else if (asmLine.dataRange && asmLine.dataRange.contains(position)) {
@@ -221,39 +221,12 @@ export class M68kHoverProvider implements vscode.HoverProvider {
     }
 
     /**
-     * Rendering a list of instructions
-     * @param hoverInstructionList Instructions list
-     */
-    renderHoverList(hoverInstructionList: Array<DocumentationInstruction>): Array<vscode.MarkdownString> {
-        let rendered = new Array<vscode.MarkdownString>();
-        let firstInst = hoverInstructionList[0];
-        let title = "**" + firstInst.name + "**: " + this.escapeText(firstInst.description);
-        rendered.push(new vscode.MarkdownString(title));
-        for (let hoverInstruction of hoverInstructionList) {
-            rendered.push(this.renderHover(hoverInstruction));
-        }
-        return rendered;
-    }
-
-    /**
      * Renders an instruction
      * @param instruction Instruction hover rendered
      * @return String rendered
      */
     renderHover(hoverInstruction: DocumentationInstruction): vscode.MarkdownString {
-        let rendered = new vscode.MarkdownString();
-        let s = "`" + hoverInstruction.name;
-        if (hoverInstruction.size.length > 0) {
-            s += "[." + hoverInstruction.size + "]";
-        }
-        s += "` `" + hoverInstruction.syntax + "` _(" +
-            "x:" + this.escapeText(hoverInstruction.x) + "," +
-            "n:" + this.escapeText(hoverInstruction.n) + "," +
-            "z:" + this.escapeText(hoverInstruction.z) + "," +
-            "v:" + this.escapeText(hoverInstruction.v) + "," +
-            "c:" + this.escapeText(hoverInstruction.c) +
-            ")_";
-        return rendered.appendMarkdown(s);
+        return new vscode.MarkdownString(hoverInstruction.description);
     }
 
     /**

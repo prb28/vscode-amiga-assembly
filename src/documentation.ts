@@ -13,87 +13,124 @@ export class DocumentationElement {
     description: string = "";
     type: DocumentationType = DocumentationType.UNKNOWN;
 }
+
+
 /**
  * Class to manage the instructions
  */
 export class DocumentationInstructionsManager {
-    instructions = new Map<string, Array<DocumentationInstruction>>();
+    private static readonly bccVariants = ["bcc", "bcs", "beq", "bge", "bgt", "bhi", "ble", "bls", "blt", "bmi", "bne", "bpl", "bvc", "bvs", "bhs", "blo"];
+    private instructions = new Map<string, DocumentationInstruction>();
     private extensionPath: string;
-
     constructor(extensionPath: string) {
         this.extensionPath = extensionPath;
     }
 
     public load(): Promise<void> {
         return new Promise(async (resolve, _reject) => {
-            // Read the instructions file
+            // Read the registers file
             // Creating the relative path to find the test file
-            const filePath = path.join(this.extensionPath, "docs", "instructionsset.csv");
-            const fileProxy = new FileProxy(Uri.file(filePath), true);
-            let lines = (await fileProxy.readFileText('utf8')).split(/\r\n|\r|\n/g);
-            let lineIndex = 0;
-            for (let line of lines) {
-                if (line.length > 0) {
-                    let hi = DocumentationInstruction.parse(line);
-                    if (hi) {
-                        let key = hi.name.toUpperCase();
-                        let list = this.instructions.get(key);
-                        if (!list) {
-                            list = new Array<DocumentationInstruction>();
-                        }
-                        list.push(hi);
-                        this.instructions.set(key, list);
-                    } else {
-                        console.error("Error parsing file 'instructionsset.csv' on line [" + lineIndex + "]: '" + line + "'");
+            const dirPath = path.join(this.extensionPath, "docs", "instructions");
+            const dirProxy = new FileProxy(Uri.file(dirPath), true);
+            let files = await dirProxy.listFiles();
+            files.forEach(fileProxy => {
+                let filename = fileProxy.getName();
+                if (filename.endsWith(".md")) {
+                    let elms = filename.replace(".md", "").split("_");
+                    if (elms[0] === "bcc") {
+                        elms = DocumentationInstructionsManager.bccVariants;
                     }
+                    elms.forEach(element => {
+                        let filePath = path.join(dirPath, filename);
+                        let name = element.toUpperCase();
+                        let di = new DocumentationInstruction(element, dirPath, filePath);
+                        this.instructions.set(name, di);
+                    });
                 }
-                lineIndex += 1;
+            });
+            resolve();
+        });
+    }
+
+    /**
+     * Retrieves an instruction by it's name
+     * @param name Name of the instruction
+     */
+    public getInstructionByName(name: string): Promise<DocumentationInstruction | undefined> {
+        return new Promise(async (resolve, _) => {
+            let instruction = this.instructions.get(name);
+            if (instruction) {
+                await instruction.loadDescription();
+            }
+            resolve(instruction);
+        });
+    }
+
+    /**
+     * Iterate on all entries by name.
+     */
+    public entriesByName(): IterableIterator<[string, DocumentationInstruction]> {
+        return this.instructions.entries();
+    }
+
+    public getCount(): number {
+        return this.instructions.size;
+    }
+}
+
+/**
+ * Class representing an intruction documentation
+ */
+export class DocumentationInstruction extends DocumentationElement {
+    filename: string;
+    parentDir: string;
+    loaded: boolean;
+    /**
+     * Constructor
+     * @param name Name
+     * @param parentDir path to the parent dir of the file
+     * @param filename filename of the documentation
+     */
+    constructor(name: string, parentDir: string, filename: string) {
+        super();
+        this.loaded = false;
+        this.name = name;
+        this.filename = filename;
+        this.description = "";
+        this.parentDir = parentDir;
+        this.type = DocumentationType.INSTRUCTION;
+    }
+
+    private refactorLinks(relativePath: string, text: string): string {
+        let rText = text;
+        const matcher = /\[([\/\\a-z0-9_\s\.\-]*)\]\(([a-z0-9_\-\/\\\.]*)\)/gi;
+        let match;
+        while (match = matcher.exec(text)) {
+            let title = match[1];
+            let pageName = match[2];
+            let uri = Uri.file(`${relativePath}/${pageName}`);
+            const commandUri = `[${title}](${uri})`;
+            rText = rText.replace(match[0], commandUri);
+        }
+        return rText;
+    }
+
+    /**
+     * Lazy loading for descriptions
+     */
+    public loadDescription(): Promise<void> {
+        return new Promise(async (resolve, _reject) => {
+            if (!this.loaded) {
+                let fProxy = new FileProxy(Uri.file(this.filename), true);
+                let contents = await fProxy.readFileText('utf8');
+                this.description = this.refactorLinks(this.parentDir, contents);
+                this.loaded = true;
             }
             resolve();
         });
     }
 }
 
-/**
- * Class representing an instruction
- */
-export class DocumentationInstruction extends DocumentationElement {
-    syntax: string = "";
-    size: string = "";
-    x: string = "";
-    n: string = "";
-    z: string = "";
-    v: string = "";
-    c: string = "";
-    constructor() {
-        super();
-        this.type = DocumentationType.INSTRUCTION;
-    }
-    /**
-     * Function to parse a line and create a HoverInstruction
-     * 
-     * @param cvsLine The line to parse
-     * @return HoverInstruction if the parse succeeded or null
-     */
-    static parse(csvLine: string): any {
-        let hi = new DocumentationInstruction();
-        let elements = csvLine.split(";");
-        if (elements.length < 9) {
-            return null;
-        } else {
-            hi.name = elements[0].toLowerCase();
-            hi.description = elements[1];
-            hi.syntax = elements[2];
-            hi.size = elements[3].replace("-", "");
-            hi.x = elements[4];
-            hi.n = elements[5];
-            hi.z = elements[6];
-            hi.v = elements[7];
-            hi.c = elements[8];
-            return hi;
-        }
-    }
-}
 
 /**
  * Class to manage the registers
@@ -252,7 +289,7 @@ export class DocumentationLibraryManager {
                     let childFiles = await fileProxy.listFiles();
                     childFiles.forEach(childFile => {
                         let childFileName = childFile.getName();
-                        if (childFileName.endsWith(".md") && !childFileName.startsWith('_')) {
+                        if (childFileName.endsWith(".md")) {
                             let name = childFileName.replace(".md", "");
                             let lf = new DocumentationLibraryFunction(dirName, name, "", childFile);
                             this.functionsByName.set(name.toUpperCase(), lf);
@@ -277,6 +314,7 @@ export class DocumentationLibraryManager {
         }
         return rText;
     }
+
     public loadDescription(functionName: string): Promise<DocumentationLibraryFunction | undefined> {
         return new Promise(async (resolve, reject) => {
             let hLibFunc = this.functionsByName.get(functionName);
@@ -338,8 +376,8 @@ export class DocumentationManager {
                 await Promise.all([this.instructionsManager.load(),
                 this.registersManager.load(),
                 this.libraryManager.load()]);
-                for (const [key, value] of this.instructionsManager.instructions.entries()) {
-                    this.addRelevantKeywordElements(key, value[0]);
+                for (const [key, value] of this.instructionsManager.entriesByName()) {
+                    this.addRelevantKeywordElements(key, value);
                 }
                 for (const [key, value] of this.registersManager.entriesByName()) {
                     this.addRelevantKeywordElements(key, value);
@@ -366,8 +404,8 @@ export class DocumentationManager {
         }
     }
 
-    public getInstruction(instruction: string): DocumentationInstruction[] | undefined {
-        return this.instructionsManager.instructions.get(instruction.toUpperCase());
+    public getInstruction(instruction: string): Promise<DocumentationInstruction | undefined> {
+        return this.instructionsManager.getInstructionByName(instruction.toUpperCase());
     }
     public getRegisterByAddress(address: string): Promise<DocumentationRegister | undefined> {
         return this.registersManager.getRegistersByAddress(address);

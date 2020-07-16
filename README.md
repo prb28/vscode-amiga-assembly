@@ -9,6 +9,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases) or the [VBCC workspace](https://github.com/prb28/vscode-amiga-vbcc-example).
 
 ## New in 0.20
+- New instruction's documentation
 - Bug fixes
 
 ## New in 0.19.1
@@ -87,6 +88,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 ## Release Notes
 ## 0.20
+- New instruction's documentation
 - Bug fixes
 
 ## 0.19.1
