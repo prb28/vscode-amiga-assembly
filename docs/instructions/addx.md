@@ -13,14 +13,10 @@ ADDX -(Ay),-(Ax)
 `Size` byte, word, longword
 
 ## Description
-Add the source operand to the destination operand along with
-the extend bit, and store the result in the destination location.
-The only legal addressing modes are data register direct and
-memory to memory with address register indirect using pre-decrementing.
+Add the source operand to the destination operand along with the extend bit, and store the result in the destination location. The only legal addressing modes are data register direct and memory to memory with address register indirect using pre-decrementing.
 
 ## Application
-The `ADDX` instruction is used in chain arithmetic to add together
-strings of bytes (words or longwords). Consider the addition of two 128-bit numbers, each of which is stored as four consecutive longwords.
+The `ADDX` instruction is used in chain arithmetic to add together strings of bytes (words or longwords). Consider the addition of two 128-bit numbers, each of which is stored as four consecutive longwords.
 
 ```assembly
         LEA  Number1,A0  ;A0 points at first number
@@ -36,8 +32,6 @@ LOOP    ADDX -(A0),-(A1) ;Add pair of numbers
 |--|--|--|--|--|
 |*|*|*|*|*|
 
-The Z-bit is cleared if the result is non-zero, and left unchanged
-otherwise. The Z-bit can be used to test for zero after a chain of
-multiple precision operations.
+The Z-bit is cleared if the result is non-zero, and left unchanged otherwise. The Z-bit can be used to test for zero after a chain of multiple precision operations.
 
 *From MOTOROLA M68000 FAMILY Programmer's reference manual. Copyright 1992 by Motorola Inc./NXP. Adapted with permission.*

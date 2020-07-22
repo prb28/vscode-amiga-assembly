@@ -9,16 +9,14 @@ CMP <ea>,Dn
 ```
 ## Sample syntax
 ```assembly
-CMP (Test,A6,D3.W),D
+CMP (Test,A6,D3.W),D2
 ```
 
 ## Attributes
 `Size` byte, word, longword
 
 ## Description
-Subtract the source operand from the destination operand and
-set the condition codes accordingly. The destination must be a
-data register. The destination is not modified by this instruction.
+Subtract the source operand from the destination operand and set the condition codes accordingly. The destination must be a data register. The destination is not modified by this instruction.
 
 ## Condition codes
 |X|N|Z|V|C|
@@ -26,7 +24,7 @@ data register. The destination is not modified by this instruction.
 |-|*|*|*|*|
 
 ## Source operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓|✓|✓|✓|✓|✓|✓|✓|✓|✓|✓|✓|
 

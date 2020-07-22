@@ -9,20 +9,16 @@ CMPA <ea>,An
 ```
 ## Sample syntax
 ```assembly
-CMPA.L #$1000,A
-CMPA.W (A2)+,A
-CMPA.L D5,A
+CMPA.L #$1000,A4
+CMPA.W (A2)+,A6
+CMPA.L D5,A2
 ```
 
 ## Attributes
 `Size` word, longword
 
 ## Description
-Subtract the source operand from the destination address register
-and set the condition codes accordingly. The address register is
-not modified. The size of the operation may be specified as word
-or longword. Word length operands are sign-extended to 32 bits
-before the comparison is carried out.
+Subtract the source operand from the destination address register and set the condition codes accordingly. The address register is not modified. The size of the operation may be specified as word or longword. Word length operands are sign-extended to 32 bits before the comparison is carried out.
 
 ## Condition codes
 |X|N|Z|V|C|
@@ -30,7 +26,7 @@ before the comparison is carried out.
 |-|*|*|*|*|
 
 ## Source operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓|✓|✓|✓|✓|✓|✓|✓|✓|✓|✓|✓|
 

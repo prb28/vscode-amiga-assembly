@@ -1,8 +1,8 @@
 # Scc - Set according to condition cc
 
 ## Operation
-IF cc = 1 THEN [destination] ← (^111111112)
-ELSE [destination] ← (^000000002)
+IF cc = 1 THEN [destination] ← 11111111<sub>2</sub><br/>
+&nbsp;&nbsp;ELSE [destination] ← 00000000<sub>2</sub>
 
 ## Syntax
 ```assembly
@@ -13,9 +13,7 @@ Scc <ea>
 `Size` byte
 
 ## Description
-The specified condition code is tested. If the condition is true, the
-bits at the effective address are all set to one (i.e., $FF). Otherwise,
-the bits at the effective address are set to zeros (i.e., $00).
+The specified condition code is tested. If the condition is true, the bits at the effective address are all set to one (i.e., $FF). Otherwise, the bits at the effective address are set to zeros (i.e., $00).
 
 |Mnemonic|Description|Condition|
 |--|--|--|
@@ -23,7 +21,7 @@ the bits at the effective address are set to zeros (i.e., $00).
 |`SCS` | set on carry set | C |
 |`SEQ` | set on equal | Z |
 |`SGE` | set on greater than or equal | N.V + N̅.V̅ |
-|`SGT` | set on greater than | N.V.Z + N̅.V̅.Z̅ |
+|`SGT` | set on greater than | N.V.Z̅ + N̅.V̅.Z̅ |
 |`SHI` | set on higher than | C̅.Z̅ |
 |`SLE` | set on less than or equal | Z + N.V̅ + N̅.V |
 |`SLS` | set on lower than or same | C + Z |
@@ -43,7 +41,7 @@ the bits at the effective address are set to zeros (i.e., $00).
 |-|-|-|-|-|
 
 ## Destination operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓||✓|✓|✓|✓|✓|✓|✓||||
 

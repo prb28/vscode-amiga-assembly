@@ -1,6 +1,6 @@
 # EORI - EOR immediate
 ## Operation
-[destination] ← <literal> ⊕ [destination]
+[destination] ← \<literal\> ⊕ [destination]
 
 ## Syntax
 ```assembly
@@ -19,14 +19,14 @@ EOR the immediate data with the contents of the destination operand. Store the r
 |-|*|*|0|0|
 
 ## Destination operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓||✓|✓|✓|✓|✓|✓|✓||||
 
-## EORI to CCR EOR immediate to CCR
+# EORI to CCR EOR immediate to CCR
 
 ## Operation
-[CCR] ← <literal> ⊕ [CCR]
+[CCR] ← \<literal\> ⊕ [CCR]
 
 ## Syntax
 ```assembly
@@ -36,12 +36,10 @@ EORI #<data>,CCR
 `Size` byte
 
 ## Description
-EOR the immediate data with the contents of the condition code
-register (i.e., the least-significant byte of the status register).
+EOR the immediate data with the contents of the condition code register (i.e., the least-significant byte of the status register).
 
 ## Application
-Used to toggle bits in the CCR. For example, `EORI #$0C,CCR`
-toggles the N- and Z-bits of the CCR.
+Used to toggle bits in the CCR. For example, `EORI #$0C,CCR` toggles the N- and Z-bits of the CCR.
 
 ## Condition codes
 |X|N|Z|V|C|
@@ -54,11 +52,12 @@ Z:= toggled if bit 2 of data = 1; unchanged otherwise<br/>
 V:= toggled if bit 1 of data = 1; unchanged otherwise<br/>
 C:= toggled if bit 0 of data = 1; unchanged otherwise<br/>
 
-## EORI to SR EOR immediate to status register
+# EORI to SR EOR immediate to status register
+
 ## Operation
 IF [S] = 1<br/>
 &nbsp;THEN<br/>
-&nbsp;&nbsp;[SR] ← <literal> ⊕ [SR]<br/>
+&nbsp;&nbsp;[SR] ← \<literal\> ⊕ [SR]<br/>
 &nbsp;ELSE TRAP<br/>
 
 ## Syntax
@@ -69,9 +68,7 @@ EORI #<data>,SR
 `Size` word
 
 ## Description
-EOR (exclusive OR) the immediate data with the contents of the
-status register and store the result in the status register. All bits
-of the status register are affected.
+EOR (exclusive OR) the immediate data with the contents of the status register and store the result in the status register. All bits of the status register are affected.
 
 ## Condition codes
 |X|N|Z|V|C|

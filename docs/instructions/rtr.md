@@ -1,7 +1,7 @@
 # RTR - Return and restore condition codes
 
 ## Operation
-[CCR] ← [M([SP])]; [SP] ← [SP] + 2
+[CCR] ← [M([SP])]; [SP] ← [SP] + 2<br/>
 [PC] ← [M([SP])]; [SP] ← [SP] + 4
 
 ## Syntax
@@ -13,23 +13,20 @@ RTR
 Unsized
 
 ## Description
-The condition code and program counter are pulled from the
-stack. The previous condition code and program counter are lost.
-The supervisor portion of the status register is not affected.
+The condition code and program counter are pulled from the stack. The previous condition code and program counter are lost. The supervisor portion of the status register is not affected.
 
 ## Application
-If you wish to preserve the CCR after entering a procedure, you
-can push it on the stack and then retrieve it with `RTR`.
+If you wish to preserve the CCR after entering a procedure, you can push it on the stack and then retrieve it with `RTR`.
 
 ```assembly
-      BSR                ;Proc1 Call the procedure
+      BSR     Proc1       ;Call the procedure
       .
       .
-Proc1 MOVE.W SR,-(SP)    ;Save old CCR on stack
+Proc1 MOVE.W  SR,-(SP)    ;Save old CCR on stack
       .
-      .                  ;Body of procedure
+      .                   ;Body of procedure
       .
-      RTR                ;Return and restore CCR (not SR!)
+      RTR                 ;Return and restore CCR (not SR!)
 ```
 
 ## Condition codes

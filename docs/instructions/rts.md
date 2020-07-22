@@ -12,8 +12,7 @@ RTS
 Unsized
 
 ## Description
-The program counter is pulled from the stack and the previous
-value of the PC is lost. `RTS` is used to terminate a subroutine.
+The program counter is pulled from the stack and the previous value of the PC is lost. `RTS` is used to terminate a subroutine.
 
 ## Condition codes
 |X|N|Z|V|C|

@@ -16,9 +16,7 @@ CLR (A4)+
 `Size` byte, word, longword
 
 ## Description
-The destination is cleared ó loaded with all zeros. The CLR instruction can't be used to clear an address register. You can use
-SUBA.L A0,A0 to clear A0. Note that a side effect of CLRís implementation is a read from the specified effective address before the
-clear (i.e., write) operation is executed. Under certain circumstances this might cause a problem (e.g., with write-only memory).
+The destination is cleared - loaded with all zeros. The `CLR` instruction can't be used to clear an address register. You can use `SUBA.L A0,A0` to clear A0. Note that a side effect of `CLR`'s implementation is a *read* from the specified effective address before the clear (i.e., write) operation is executed. Under certain circumstances this might cause a problem (e.g., with write-only memory).
 
 ## Condition codes
 |X|N|Z|V|C|
@@ -26,7 +24,7 @@ clear (i.e., write) operation is executed. Under certain circumstances this migh
 |-|0|1|0|0|
 
 ## Source operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓||✓|✓|✓|✓|✓|✓|✓||||
 

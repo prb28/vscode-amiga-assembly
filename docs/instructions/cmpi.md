@@ -12,9 +12,7 @@ CMPI #<data>,<ea>
 `Size` byte, word, longword
 
 ## Description
-Subtract the immediate data from the destination operand and
-set the condition codes accordingly - the destination is not
-modified. `CMPI` permits the comparison of a literal with memory.
+Subtract the immediate data from the destination operand and set the condition codes accordingly - the destination is not modified. `CMPI` permits the comparison of a literal with memory.
 
 ## Condition codes
 |X|N|Z|V|C|
@@ -22,7 +20,7 @@ modified. `CMPI` permits the comparison of a literal with memory.
 |-|*|*|*|*|
 
 ## Destination operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓||✓|✓|✓|✓|✓|✓|✓|✓|✓||
 

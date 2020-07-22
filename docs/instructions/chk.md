@@ -11,18 +11,10 @@ CHK <ea>,Dn
 `Size` word
 
 ## Description
-The contents of the low-order word in the data register specified
-in the instruction are examined and compared with the upper
-bound at the effective address. The upper bound is a twoís
-complement integer. If the data register value is less than zero or
-greater than the upper bound contained in the operand word,
-then the processor initiates exception processing.
+The contents of the low-order word in the data register specified in the instruction are examined and compared with the upper bound at the effective address. The upper bound is a two's complement integer. If the data register value is less than zero or greater than the upper bound contained in the operand word, then the processor initiates exception processing.
 
 ## Application
-The CHK instruction can be used to test the bounds of an array
-element before it is used. By performing this test, you can make
-certain that you do not access an element outside an array.
-Consider the following fragment of code:
+The `CHK` instruction can be used to test the bounds of an array element before it is used. By performing this test, you can make certain that you do not access an element outside an array. Consider the following fragment of code:
 
 ```assembly
 MOVE.W subscript,D0    ;Get subscript to test
@@ -38,7 +30,7 @@ CHK    #max_bound,D0   ;Test subscript against 0 and upper bound
 N: set if [Dn] < 0 ; cleared if [Dn] > [\<ea\>]; undefined otherwise.
 
 ### Source operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓||✓|✓|✓|✓|✓|✓|✓||||
 

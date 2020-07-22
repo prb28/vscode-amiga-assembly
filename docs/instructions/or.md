@@ -13,13 +13,10 @@ OR Dn,<ea>
 `Size`  byte, word, longword
 
 ## Description
-OR the source operand to the destination operand, and store the
-result in the destination location.
+OR the source operand to the destination operand, and store the result in the destination location.
 
 ## Application
-The `OR` instruction is used to set selected bits of the operand. For
-example, we can set the four most-significant bits of a longword
-operand in D0 by executing:
+The `OR` instruction is used to set selected bits of the operand. For example, we can set the four most-significant bits of a longword operand in D0 by executing:
 
 ```
 OR.L #$F0000000,D0
@@ -31,12 +28,12 @@ OR.L #$F0000000,D0
 |-|*|*|0|0|
 
 ## Source operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓||✓|✓|✓|✓|✓|✓|✓|✓|✓|✓|
 
 ## Destination operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓||✓|✓|✓|✓|✓|✓|✓||||
 

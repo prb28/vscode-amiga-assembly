@@ -1,11 +1,11 @@
 # TRAPV - Trap on overflow
 
 ## Operation
-IF V = 1 THEN:
-[SSP] ← [SSP] - 4; [M([SSP])] ← [PC];
-[SSP] ← [SSP] - 2; [M([SSP])] ← [SR];
-[PC] ← [M($01C)]
-ELSE no action
+IF V = 1 THEN:<br/>
+&nbsp;&nbsp;[SSP] ← [SSP] - 4; [M([SSP])] ← [PC];<br/>
+&nbsp;&nbsp;[SSP] ← [SSP] - 2; [M([SSP])] ← [SR];<br/>
+&nbsp;&nbsp;[PC] ← [M($01C)]<br/>
+&nbsp;&nbsp;ELSE no action
 
 ## Syntax
 ```assembly

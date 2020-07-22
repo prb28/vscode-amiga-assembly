@@ -1,7 +1,7 @@
 # SUBI - Subtract immediate
 
 ## Operation
-[destination] ← [destination] - <literal>
+[destination] ← [destination] - \<literal\>
 
 ## Syntax
 ```assembly
@@ -12,8 +12,7 @@ SUBI #<data>,<ea>
 `Size` byte, word, longword
 
 ## Description
-Subtract the immediate data from the destination operand. Store
-the result in the destination operand.
+Subtract the immediate data from the destination operand. Store the result in the destination operand.
 
 ## Condition codes
 |X|N|Z|V|C|
@@ -21,7 +20,7 @@ the result in the destination operand.
 |*|*|*|*|*|
 
 ## Destination operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓||✓|✓|✓|✓|✓|✓|✓||||
 

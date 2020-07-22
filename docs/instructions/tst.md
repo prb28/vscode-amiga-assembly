@@ -1,8 +1,8 @@
 # TST Test an operand
 
 ## Operation
-[CCR] ← tested([operand])
-i.e., [operand] - 0; update CCR
+[CCR] ← tested([operand])<br/>
+***i.e.,*** [operand] - 0; update CCR
 
 ## Syntax
 ```assembly
@@ -13,9 +13,7 @@ TST <ea>
 `Size` byte, word, longword
 
 ## Description
-The operand is compared with zero. No result is saved, but the
-contents of the *CCR* are set according to the result. The effect of
-`TST <ea>` is the same as `CMPI #0,<ea>` except that the `CMPI` instruction also sets/clears the V- and C-bits of the *CCR*.
+The operand is compared with zero. No result is saved, but the contents of the *CCR* are set according to the result. The effect of `TST <ea>` is the same as `CMPI #0,<ea>` except that the `CMPI` instruction also sets/clears the V- and C-bits of the *CCR*.
 
 
 ## Condition codes
@@ -24,7 +22,7 @@ contents of the *CCR* are set according to the result. The effect of
 |-|*|*|0|0|
 
 ## Source operand addressing modes
-|Dn|An|(An)|(An)+|-(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
+|Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓||✓|✓|✓|✓|✓|✓|✓|✓|✓||
 
