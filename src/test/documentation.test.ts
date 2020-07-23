@@ -50,7 +50,7 @@ describe("Documentation Tests", function () {
             expect(addDocumentation).to.not.be.undefined;
             if (addDocumentation) {
                 expect(addDocumentation.name).to.be.equal("roxl");
-                expect(addDocumentation.description).to.contain("doc/instructions/roxl_roxr.png)");
+                expect(addDocumentation.description).to.contain("docs/instructions/roxl_roxr.png)");
             }
         });
     });
