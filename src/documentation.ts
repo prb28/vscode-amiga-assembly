@@ -116,16 +116,12 @@ export class DocumentationInstruction extends DocumentationElement {
         this.type = DocumentationType.INSTRUCTION;
     }
 
-    private refactorLinks(relativePath: string, text: string): string {
+    private removeImages(text: string): string {
         let rText = text;
-        const matcher = /\[([\/\\a-z0-9_\s\.\-]*)\]\(([a-z0-9_\-\/\\\.]*)\)/gi;
+        const matcher = /[!]?\[([\/\\a-z0-9_\s\.\-]*)\]\(([a-z0-9_\-\/\\\.]*)\)/gi;
         let match;
         while (match = matcher.exec(text)) {
-            let title = match[1];
-            let pageName = match[2];
-            let uri = Uri.file(`${relativePath}/${pageName}`);
-            const commandUri = `[${title}](${uri})`;
-            rText = rText.replace(match[0], commandUri);
+            rText = rText.replace(match[0], '');
         }
         return rText;
     }
@@ -138,7 +134,7 @@ export class DocumentationInstruction extends DocumentationElement {
             if (!this.loaded) {
                 let fProxy = new FileProxy(Uri.file(this.filename), true);
                 let contents = await fProxy.readFileText('utf8');
-                this.description = this.refactorLinks(this.parentDir, contents);
+                this.description = this.removeImages(contents);
                 this.loaded = true;
             }
             resolve();

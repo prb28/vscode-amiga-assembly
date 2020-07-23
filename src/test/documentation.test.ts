@@ -44,13 +44,13 @@ describe("Documentation Tests", function () {
                 expect(addDocumentation.description).to.contain("# Bcc - Branch on condition");
             }
         });
-        it("Should replace images urls", async function () {
+        it("Should remove images urls", async function () {
             let manager = documentationManger.instructionsManager;
             let addDocumentation = await manager.getInstructionByName("ROXL");
             expect(addDocumentation).to.not.be.undefined;
             if (addDocumentation) {
                 expect(addDocumentation.name).to.be.equal("roxl");
-                expect(addDocumentation.description).to.contain("docs/instructions/roxl_roxr.png)");
+                expect(addDocumentation.description).not.to.contain("roxl_roxr.png");
             }
         });
     });
