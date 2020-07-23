@@ -14,41 +14,56 @@ export class DocumentationElement {
     type: DocumentationType = DocumentationType.UNKNOWN;
 }
 
-
 /**
- * Class to manage the instructions
+ * Class to manage documentations in a folder
  */
-export class DocumentationInstructionsManager {
-    private static readonly bccVariants = ["bcc", "bcs", "beq", "bge", "bgt", "bhi", "ble", "bls", "blt", "bmi", "bne", "bpl", "bvc", "bvs", "bhs", "blo"];
-    private instructions = new Map<string, DocumentationInstruction>();
-    private extensionPath: string;
-    constructor(extensionPath: string) {
-        this.extensionPath = extensionPath;
+abstract class DocumentationMDFileFolderManager {
+    protected dirPath: string;
+    constructor(extensionPath: string, dirName: string) {
+        this.dirPath = path.join(extensionPath, "docs", dirName);
     }
 
     public load(): Promise<void> {
         return new Promise(async (resolve, _reject) => {
             // Read the registers file
             // Creating the relative path to find the test file
-            const dirPath = path.join(this.extensionPath, "docs", "instructions");
-            const dirProxy = new FileProxy(Uri.file(dirPath), true);
+            const dirProxy = new FileProxy(Uri.file(this.dirPath), true);
             let files = await dirProxy.listFiles();
             files.forEach(fileProxy => {
                 let filename = fileProxy.getName();
                 if (filename.endsWith(".md")) {
-                    let elms = filename.replace(".md", "").split("_");
-                    if (elms[0] === "bcc") {
-                        elms = DocumentationInstructionsManager.bccVariants;
-                    }
-                    elms.forEach(element => {
-                        let filePath = path.join(dirPath, filename);
-                        let name = element.toUpperCase();
-                        let di = new DocumentationInstruction(element, dirPath, filePath);
-                        this.instructions.set(name, di);
-                    });
+                    this.loadFile(filename);
                 }
             });
             resolve();
+        });
+    }
+
+    protected abstract loadFile(filename: string): void;
+}
+
+
+/**
+ * Class to manage the instructions
+ */
+export class DocumentationInstructionsManager extends DocumentationMDFileFolderManager {
+    private static readonly bccVariants = ["bcc", "bcs", "beq", "bge", "bgt", "bhi", "ble", "bls", "blt", "bmi", "bne", "bpl", "bvc", "bvs", "bhs", "blo"];
+    private instructions = new Map<string, DocumentationInstruction>();
+
+    constructor(extensionPath: string) {
+        super(extensionPath, "instructions");
+    }
+
+    protected loadFile(filename: string) {
+        let elms = filename.replace(".md", "").split("_");
+        if (elms[0] === "bcc") {
+            elms = DocumentationInstructionsManager.bccVariants;
+        }
+        elms.forEach(element => {
+            let filePath = path.join(this.dirPath, filename);
+            let name = element.toUpperCase();
+            let di = new DocumentationInstruction(element, this.dirPath, filePath);
+            this.instructions.set(name, di);
         });
     }
 
@@ -135,37 +150,24 @@ export class DocumentationInstruction extends DocumentationElement {
 /**
  * Class to manage the registers
  */
-export class DocumentationRegistersManager {
+export class DocumentationRegistersManager extends DocumentationMDFileFolderManager {
     private registersByName = new Map<string, DocumentationRegister>();
     private registersByAddress = new Map<string, DocumentationRegister>();
-    private extensionPath: string;
+
     constructor(extensionPath: string) {
-        this.extensionPath = extensionPath;
+        super(extensionPath, "hardware");
     }
 
-    public load(): Promise<void> {
-        return new Promise(async (resolve, _reject) => {
-            // Read the registers file
-            // Creating the relative path to find the test file
-            const dirPath = path.join(this.extensionPath, "docs", "hardware");
-            const dirProxy = new FileProxy(Uri.file(dirPath), true);
-            let files = await dirProxy.listFiles();
-            files.forEach(fileProxy => {
-                let filename = fileProxy.getName();
-                if (filename.endsWith(".md")) {
-                    let elms = filename.replace(".md", "").split("_");
-                    if (elms.length === 2) {
-                        let filePath = path.join(dirPath, filename);
-                        let name = elms[1].toUpperCase();
-                        let address = elms[0].toUpperCase();
-                        let hr = new DocumentationRegister(address, name, filePath);
-                        this.registersByAddress.set(address, hr);
-                        this.registersByName.set(name, hr);
-                    }
-                }
-            });
-            resolve();
-        });
+    protected loadFile(filename: string) {
+        let elms = filename.replace(".md", "").split("_");
+        if (elms.length === 2) {
+            let filePath = path.join(this.dirPath, filename);
+            let name = elms[1].toUpperCase();
+            let address = elms[0].toUpperCase();
+            let hr = new DocumentationRegister(address, name, filePath);
+            this.registersByAddress.set(address, hr);
+            this.registersByName.set(name, hr);
+        }
     }
 
     /**
