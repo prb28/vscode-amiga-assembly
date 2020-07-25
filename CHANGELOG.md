@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [0.20]
+- [Issue #117](https://github.com/prb28/vscode-amiga-assembly/issues/117) _ in variable
+- [Issue #116](https://github.com/prb28/vscode-amiga-assembly/issues/116) Support blitter wait in copperDisassembler
+- [Issue #112](https://github.com/prb28/vscode-amiga-assembly/issues/112) Current directory wrong when debugging
+- [Feat #75](https://github.com/prb28/vscode-amiga-assembly/issues/75) Better documentation with examples for ASM instructions
+
 ### [0.19.1] - 2020-01-05
 - [Issue #111](https://github.com/prb28/vscode-amiga-assembly/issues/111) Setting an absolute path in amiga-assembly.tmpDir outside the workspace does not work
 - [Issue #110](https://github.com/prb28/vscode-amiga-assembly/issues/110) Bug in Add Bitwise operators to calculations

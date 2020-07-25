@@ -180,11 +180,13 @@ export class DebugInfo {
             if (!resolvedFileName) {
                 resolvedFileName = filename;
                 if (this.pathReplacements) {
+                    let normalizedFilename = FileProxy.normalize(resolvedFileName);
                     for (let key of Array.from(this.pathReplacements.keys())) {
-                        if (resolvedFileName.indexOf(key) >= 0) {
+                        let normalizedKey = FileProxy.normalize(key);
+                        if (normalizedFilename.indexOf(normalizedKey) >= 0) {
                             let value = this.pathReplacements.get(key);
                             if (value) {
-                                resolvedFileName = resolvedFileName.replace(key, value);
+                                resolvedFileName = normalizedFilename.replace(normalizedKey, value);
                                 break;
                             }
                         }

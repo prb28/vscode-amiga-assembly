@@ -3,7 +3,7 @@
 //
 
 import { expect } from 'chai';
-import { DocumentationInstruction, DocumentationManager } from '../documentation';
+import { DocumentationManager } from '../documentation';
 import * as vscode from 'vscode';
 import { ExtensionState } from '../extension';
 
@@ -20,53 +20,38 @@ describe("Documentation Tests", function () {
         documentationManger = await state.getDocumentationManager();
     });
     context("Hover instruction file parsing", function () {
-        it("Should read the file correctly", function () {
+        it("Should read the file correctly", async function () {
             let manager = documentationManger.instructionsManager;
-            expect(manager.instructions.size).to.be.equal(158);
-            let list = manager.instructions.get("ADD");
-            expect(list).to.not.be.undefined;
-            if (list) {
-                let hi = list[0];
-                expect(hi.name).to.be.equal("add");
-                expect(hi.description).to.be.equal("ADD binary");
-                expect(hi.syntax).to.be.equal("Dx,Dy");
-                expect(hi.size).to.be.equal("BWL");
-                expect(hi.x).to.be.equal("*");
-                expect(hi.n).to.be.equal("*");
-                expect(hi.z).to.be.equal("*");
-                expect(hi.v).to.be.equal("*");
-                expect(hi.c).to.be.equal("*");
+            expect(manager.getCount()).to.be.equal(89);
+            let addDocumentation = await manager.getInstructionByName("ADD");
+            expect(addDocumentation).to.not.be.undefined;
+            if (addDocumentation) {
+                expect(addDocumentation.name).to.be.equal("add");
             }
-            list = manager.instructions.get("MOVE");
-            expect(list).to.not.be.undefined;
-            if (list) {
-                let hi = list[1];
-                expect(hi.name).to.be.equal("move");
-                expect(hi.description).to.be.equal("Copy value");
-                expect(hi.syntax).to.be.equal("Rn,Dy");
-                expect(hi.size).to.be.equal("WL");
-                expect(hi.x).to.be.equal("-");
-                expect(hi.n).to.be.equal("*");
-                expect(hi.z).to.be.equal("*");
-                expect(hi.v).to.be.equal("0");
-                expect(hi.c).to.be.equal("0");
+            addDocumentation = await manager.getInstructionByName("MOVE");
+            expect(addDocumentation).to.not.be.undefined;
+            if (addDocumentation) {
+                expect(addDocumentation.name).to.be.equal("move");
             }
         });
-        it("Should parse a correct line", function () {
-            let hi = DocumentationInstruction.parse("ADD;ADD binary;Dx,Dy;BWL;1;2;3;4;5");
-            expect(hi.name).to.be.equal("add");
-            expect(hi.description).to.be.equal("ADD binary");
-            expect(hi.syntax).to.be.equal("Dx,Dy");
-            expect(hi.size).to.be.equal("BWL");
-            expect(hi.x).to.be.equal("1");
-            expect(hi.n).to.be.equal("2");
-            expect(hi.z).to.be.equal("3");
-            expect(hi.v).to.be.equal("4");
-            expect(hi.c).to.be.equal("5");
+        it("Should resolve bcc variants", async function () {
+            let manager = documentationManger.instructionsManager;
+            let addDocumentation = await manager.getInstructionByName("BNE");
+            expect(addDocumentation).to.not.be.undefined;
+            if (addDocumentation) {
+                expect(addDocumentation.name).to.be.equal("bne");
+                expect(addDocumentation.filename).to.contain("bcc");
+                expect(addDocumentation.description).to.contain("# Bcc - Branch on condition");
+            }
         });
-        it("Should return null if a line parse fail", function () {
-            let hi = DocumentationInstruction.parse("ADD;ADD binary");
-            expect(hi).to.be.null;
+        it("Should remove images urls", async function () {
+            let manager = documentationManger.instructionsManager;
+            let addDocumentation = await manager.getInstructionByName("ROXL");
+            expect(addDocumentation).to.not.be.undefined;
+            if (addDocumentation) {
+                expect(addDocumentation.name).to.be.equal("roxl");
+                expect(addDocumentation.description).not.to.contain("roxl_roxr.png");
+            }
         });
     });
     context("Hover register file parsing", function () {
@@ -90,7 +75,7 @@ describe("Documentation Tests", function () {
     context("Hover library file parsing", function () {
         it("Should read the files correctly", async function () {
             let manager = documentationManger.libraryManager;
-            expect(manager.size()).to.be.equal(505);
+            expect(manager.size()).to.be.equal(615);
             let registerByName = await manager.loadDescription("OPENLIBRARY");
             expect(registerByName).to.not.be.undefined;
             if (registerByName) {

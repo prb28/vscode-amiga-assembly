@@ -11,7 +11,7 @@ export class DisassembledMemoryDataProvider implements vscode.TreeDataProvider<V
     }
 
     refresh(): void {
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(undefined);
     }
 
     getTreeItem(element: ViewLineItem): vscode.TreeItem {

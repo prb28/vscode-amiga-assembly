@@ -111,7 +111,18 @@ export class CopperWait extends CopperCondition {
         if (this.isEnd()) {
             return `${inst}; End of CopperList`;
         } else {
-            return `${inst}; Wait for vpos >= 0x${this.vertical.toString(16)} and hpos >= 0x${this.horizontal.toString(16)}`;
+            const str = `${inst}; Wait for `;
+            const wait = [];
+            if (this.vertical) {
+                wait.push(`vpos >= 0x${this.vertical.toString(16)}`);
+            }
+            if (this.horizontal) {
+                wait.push(`hpos >= 0x${this.horizontal.toString(16)}`);
+            }
+            if (this.BFD === 0) {
+                wait.push(`blitter finished`);
+            }
+            return str + wait.join(' and ');
         }
     }
     public isEnd(): boolean {

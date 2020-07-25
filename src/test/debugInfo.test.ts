@@ -15,7 +15,7 @@ describe("Debug Info", function () {
         const sourceRootPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
         const sourceFilename = Path.join(sourceRootPath, 'gencop.s');
         let pathReplacements = new Map<string, string>();
-        pathReplacements.set("/Users/papa/developpements/amiga/projects/helloworld", sourceRootPath);
+        pathReplacements.set("c:\\Users\\paulr\\workspace\\amiga\\projects\\vscode-amiga-wks-example", sourceRootPath);
         let di = new DebugInfo(Uri.file(programFilename), pathReplacements);
         await di.load();
         expect(await di.getAddressSeg(sourceFilename, 32)).to.be.eql([0, 0]);
@@ -26,7 +26,7 @@ describe("Debug Info", function () {
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
         const sourceRootPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
         let pathReplacements = new Map<string, string>();
-        pathReplacements.set("/Users/papa/developpements/amiga/projects/helloworld", sourceRootPath);
+        pathReplacements.set("c:\\Users\\paulr\\workspace\\amiga\\projects\\vscode-amiga-wks-example", sourceRootPath);
         let di = new DebugInfo(Uri.file(programFilename), pathReplacements);
         await expect(di.load()).to.be.eventually.equal(true);
         await expect(di.resolveFileLine(0, 4)).to.be.eventually.eql([FileProxy.normalize(sourceRootPath + Path.sep + "gencop.s"), 33, "              clr.l      d0                      ; les registres sont des long - il faut les nettoyer avec un .l"]);
@@ -37,7 +37,7 @@ describe("Debug Info", function () {
         const sourceRootPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
         const sourceFilename = Path.join(sourceRootPath, 'gencop.s');
         let pathReplacements = new Map<string, string>();
-        pathReplacements.set("/Users/papa/developpements/amiga/projects/helloworld", sourceRootPath);
+        pathReplacements.set("c:\\Users\\paulr\\workspace\\amiga\\projects\\vscode-amiga-wks-example", sourceRootPath);
         let di = new DebugInfo(Uri.file(programFilename), pathReplacements);
         await expect(di.load()).to.be.eventually.equal(true);
         await expect(di.getAllSegmentIds(sourceFilename)).to.be.eventually.eql([0]);

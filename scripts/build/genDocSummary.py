@@ -37,10 +37,28 @@ def process_libs(libs_path):
     return md
 
 
+def process_instructions(instructions_path):
+    md = "| Insctructions  | Description |\n|:---|:---|\n"
+    # list all the files from the hardware dir
+    for fname in os.listdir(instructions_path):
+        if (fname.endswith(".md")):
+            name = fname[:-3]
+            filepathname = os.path.join(instructions_path, fname)
+            descElements = read_register_description(filepathname).split("-")
+            if descElements and len(descElements) > 1:
+                description = descElements[1]
+            else:
+                description = descElements[0]
+            description = description.strip()
+            md += "|[%s](%s)|%s|\n" % (name.replace("_", " "), "instructions/%s" %
+                                       fname, description)
+    return md
+
+
 def read_register_description(filepathname):
-    with open(filepathname, "r") as f:
+    with open(filepathname, "r", encoding="utf-8") as f:
         contents = f.readline()
-        return contents.replace("**", "").replace("\n", "")
+        return contents.replace("**", "").replace("\n", "").replace("\r", "")
     return ""
 
 
@@ -60,14 +78,16 @@ def process_registers(registers_path):
     return md
 
 
-def create_toc(dest_path, libs_md, registers_md):
+def create_toc(dest_path, instructions_md, libs_md, registers_md):
     # Load the reference
     contents = ""
-    with open("toc.md", "r") as source:
+    with open("toc.md", "r", encoding="utf-8") as source:
         contents = source.read()
+    contents = contents.replace(
+        "@amiga_insctructions_replacement@", instructions_md)
     contents = contents.replace("@amiga_registers_replacement@", registers_md)
     contents = contents.replace("@amiga_libs_replacement@", libs_md)
-    with open(os.path.join(dest_path, "toc.md"), "w") as destination:
+    with open(os.path.join(dest_path, "toc.md"), "w", encoding="utf-8") as destination:
         destination.write(contents)
 
 
@@ -79,8 +99,10 @@ def displaymatch(match):
 
 if __name__ == '__main__':
     docsPath = os.path.join("..", "..", "docs")
+    instructions_path = os.path.join(docsPath, "instructions")
+    instructionsMd = process_instructions(instructions_path)
     libsPath = os.path.join(docsPath, "libs")
     libsMd = process_libs(libsPath)
     registers_path = os.path.join(docsPath, "hardware")
     registersMd = process_registers(registers_path)
-    create_toc(docsPath, libsMd, registersMd)
+    create_toc(docsPath, instructionsMd, libsMd, registersMd)

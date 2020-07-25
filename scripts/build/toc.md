@@ -1,7 +1,7 @@
 # Documentation
 
 ## Motorolla 68000 assembler
-[Instructions](instructionset)
+@amiga_insctructions_replacement@
 
 ## Amiga registers
 @amiga_registers_replacement@

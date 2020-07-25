@@ -32,7 +32,7 @@ describe('Node Debug Adapter', () => {
 		options: [Path.join(FSUAE_ROOT, 'test.fs-uae')],
 		drive: Path.join(FSUAE_ROOT, 'hd0'),
 		sourceFileMap: {
-			"/Users/papa/developpements/amiga/projects/helloworld": DATA_ROOT
+			"C:\\Users\\paulr\\workspace\\amiga\\projects\\vscode-amiga-wks-example": DATA_ROOT
 		}
 	};
 	let dc: DebugClient;
@@ -705,11 +705,11 @@ describe('Node Debug Adapter', () => {
 			});
 			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª....À...ø');
 			evaluateResponse = await dc.evaluateRequest({
-				expression: "m ${copperlist},10"
+				expression: "m ${copper_list},10"
 			});
 			expect(evaluateResponse.body.result).to.equal('0000000b                            | ....');
 			evaluateResponse = await dc.evaluateRequest({
-				expression: "m #{copperlist},10"
+				expression: "m #{copper_list},10"
 			});
 			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | »....À...ø');
 			evaluateResponse = await dc.evaluateRequest({
@@ -743,7 +743,7 @@ describe('Node Debug Adapter', () => {
 			resetCalls(this.mockedGdbProxy);
 			expect(evaluateResponse.body.result).to.equal('aa000000 00c00b00 00f8          | ª....À...ø');
 			evaluateResponse = await dc.evaluateRequest({
-				expression: "M #{copperlist}=10"
+				expression: "M #{copper_list}=10"
 			});
 			verify(this.mockedGdbProxy.setMemory(11, anyString())).once();
 			resetCalls(this.mockedGdbProxy);
@@ -762,7 +762,7 @@ describe('Node Debug Adapter', () => {
 			});
 			expect(evaluateResponse.body.result).to.equal('sub.l (a1), d0');
 			evaluateResponse = await dc.evaluateRequest({
-				expression: "m ${copperlist},10,d"
+				expression: "m ${copper_list},10,d"
 			});
 			expect(evaluateResponse.body.result).to.equal('sub.l (a1), d0');
 		});

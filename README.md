@@ -8,6 +8,16 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases) or the [VBCC workspace](https://github.com/prb28/vscode-amiga-vbcc-example).
 
+### Run and Debug with FS-UAE
+![Debug](images/debug.gif)
+
+## New in 0.20
+
+![Instructions documentations](images/instruct_hover.png)
+
+- Better instruction's documentation
+- Bug fixes
+
 ## New in 0.19.1
 - Bug fixes
 
@@ -23,8 +33,6 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 ### Other features
 ### Run and Debug with FS-UAE
-![Debug](images/debug.gif)
-
 - Run a program in [FS-UAE](https://fs-uae.net/)
 - Disassemble a file with capstone
 - Show disassembled code in editor for stack trace selection without source, breakpoints on disassembled code
@@ -83,6 +91,10 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## 0.20
+- Better instruction's documentation
+- Bug fixes
+
 ## 0.19.1
 - Bug fixes
 

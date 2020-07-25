@@ -1,7 +1,77 @@
 # Documentation
 
 ## Motorolla 68000 assembler
-[Instructions](instructionset)
+| Insctructions  | Description |
+|:---|:---|
+|[abcd](instructions/abcd.md)|Add decimal with extend|
+|[add](instructions/add.md)|Add binary|
+|[adda](instructions/adda.md)|Add address|
+|[addi](instructions/addi.md)|Add immediate|
+|[addq](instructions/addq.md)|Add quick|
+|[addx](instructions/addx.md)|Add extended|
+|[and](instructions/and.md)|AND logical|
+|[andi](instructions/andi.md)|AND immediate|
+|[asl asr](instructions/asl_asr.md)|Arithmetic shift left/right|
+|[bcc](instructions/bcc.md)|Branch on condition cc|
+|[bchg](instructions/bchg.md)|Test a bit and change|
+|[bclr](instructions/bclr.md)|Test a bit and clear|
+|[bra](instructions/bra.md)|Branch always|
+|[bset](instructions/bset.md)|Test a bit and set|
+|[bsr](instructions/bsr.md)|Branch to subroutine|
+|[btst](instructions/btst.md)|Test a bit|
+|[chk](instructions/chk.md)|Check register against bounds|
+|[clr](instructions/clr.md)|Clear an operand|
+|[cmp](instructions/cmp.md)|Compare|
+|[cmpa](instructions/cmpa.md)|Compare address|
+|[cmpi](instructions/cmpi.md)|Compare immediate|
+|[cmpm](instructions/cmpm.md)|Compare memory with memory|
+|[dbcc](instructions/dbcc.md)|Test condition, decrement, and branch|
+|[divs divu](instructions/divs_divu.md)|Signed divide, unsigned divide|
+|[eor](instructions/eor.md)|Exclusive OR logical|
+|[eori](instructions/eori.md)|EOR immediate|
+|[exg](instructions/exg.md)|Exchange registers|
+|[ext](instructions/ext.md)|Sign|
+|[illegal](instructions/illegal.md)|Illegal instruction|
+|[jmp](instructions/jmp.md)|Jump (unconditionally)|
+|[jsr](instructions/jsr.md)|Jump to subroutine|
+|[lea](instructions/lea.md)|Load effective address|
+|[link](instructions/link.md)|Link and allocate|
+|[lsl lsr](instructions/lsl_lsr.md)|Logical shift left/right|
+|[move](instructions/move.md)|Copy data from source to destination|
+|[movea](instructions/movea.md)|Move address|
+|[movem](instructions/movem.md)|Move multiple registers|
+|[movep](instructions/movep.md)|Move peripheral data|
+|[moveq](instructions/moveq.md)|Move quick (copy a small literal to a destination)|
+|[muls mulu](instructions/muls_mulu.md)|Signed multiply, unsigned multiply|
+|[nbcd](instructions/nbcd.md)|Negate decimal with sign extend|
+|[neg](instructions/neg.md)|# NEG Negate|
+|[negx](instructions/negx.md)|Negate with extend|
+|[nop](instructions/nop.md)|No operation|
+|[not](instructions/not.md)|Logical complement|
+|[or](instructions/or.md)|OR logical|
+|[ori](instructions/ori.md)|OR immediate|
+|[pea](instructions/pea.md)|Push effective address|
+|[reset](instructions/reset.md)|Reset external devices|
+|[rol ror](instructions/rol_ror.md)|Rotate left/right (without extend)|
+|[roxl roxr](instructions/roxl_roxr.md)|Rotate left/right with extend|
+|[rte](instructions/rte.md)|Return from exception|
+|[rtr](instructions/rtr.md)|Return and restore condition codes|
+|[rts](instructions/rts.md)|Return from subroutine|
+|[sbcd](instructions/sbcd.md)|Subtract decimal with extend|
+|[scc](instructions/scc.md)|Set according to condition cc|
+|[stop](instructions/stop.md)|Load status register and stop|
+|[sub](instructions/sub.md)|Subtract binary|
+|[suba](instructions/suba.md)|Subtract address|
+|[subi](instructions/subi.md)|Subtract immediate|
+|[subq](instructions/subq.md)|Subtract quick|
+|[subx](instructions/subx.md)|Subtract extended|
+|[swap](instructions/swap.md)|Swap register halves|
+|[tas](instructions/tas.md)|Test and set an operand|
+|[trap](instructions/trap.md)|Trap|
+|[trapv](instructions/trapv.md)|Trap on overflow|
+|[tst](instructions/tst.md)|# TST Test an operand|
+|[unlk](instructions/unlk.md)|Unlink|
+
 
 ## Amiga registers
 | Address  | Name | Description |

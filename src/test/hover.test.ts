@@ -61,7 +61,7 @@ describe("Hover Tests", function () {
                 let elm = result.contents[0];
                 expect(elm instanceof MarkdownString).to.be.true;
                 if (elm instanceof MarkdownString) {
-                    expect(elm.value).to.be.equal("**move**: Copy value");
+                    expect(elm.value).to.contains("# MOVE - Copy data from source to destination");
                 }
             }
         });
@@ -171,17 +171,11 @@ describe("Hover Tests", function () {
     it("Should render a command", function () {
         this.timeout(defaultTimeout);
         let hp = new M68kHoverProvider(documentationManager);
-        let hoverInstruction = new DocumentationInstruction();
+        let hoverInstruction = new DocumentationInstruction("ADD", "parent", "add.md");
         hoverInstruction.name = "ADD";
+        hoverInstruction.parentDir = "parent";
         hoverInstruction.description = "ADD binary";
-        hoverInstruction.syntax = "Dx,Dy";
-        hoverInstruction.size = "BW";
-        hoverInstruction.x = "1";
-        hoverInstruction.n = "2";
-        hoverInstruction.z = "3";
-        hoverInstruction.v = "4";
-        hoverInstruction.c = "5";
-        expect(hp.renderHover(hoverInstruction).value).to.be.equal("`ADD[.BW]` `Dx,Dy` _(x:1,n:2,z:3,v:4,c:5)_");
+        expect(hp.renderHover(hoverInstruction).value).to.be.equal("ADD binary");
     });
     it("Should render a register hover", async function () {
         this.timeout(defaultTimeout);
