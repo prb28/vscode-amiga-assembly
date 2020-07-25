@@ -47,6 +47,19 @@ steps:
 
   - task: PublishCodeCoverageResults@1
     inputs:
-      codeCoverageTool: Cobertura # or JaCoCo
+      codeCoverageTool: Cobertura
       summaryFileLocation: "$(System.DefaultWorkingDirectory)/**/*coverage.xml"
       reportDirectory: "$(System.DefaultWorkingDirectory)/**/coverage"
+
+  - bash: |
+      echo ">>> Publish to coveralls"
+      node_modules/.bin/coveralls < coverage/lcov.info
+    displayName: Publish to Coveralls
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+  - bash: |
+      echo ">>> Publish to SonarCloud"
+      npm run tslint;
+      sonar-scanner;
+    displayName: Publish to SonarCloud
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
