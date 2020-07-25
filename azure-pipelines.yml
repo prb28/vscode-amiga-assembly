@@ -38,3 +38,15 @@ steps:
     displayName: Run Tests
     env:
       DISPLAY: ":99.0"
+
+  - task: PublishTestResults@1
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: "out/**/test-results.xml"
+
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: Cobertura # or JaCoCo
+      summaryFileLocation: "$(System.DefaultWorkingDirectory)/**/*coverage.xml"
+      reportDirectory: "$(System.DefaultWorkingDirectory)/**/coverage"

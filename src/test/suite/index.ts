@@ -27,6 +27,13 @@ export function run(_testsRoot: string, clb: any): Promise<void> {
     // Create the mocha test
     const mocha = new Mocha({
         ui: 'bdd',
+        reporter: 'mocha-multi-reporters',
+        reporterOptions: {
+            reporterEnabled: "spec, mocha-junit-reporter",
+            mochaJunitReporterReporterOptions: {
+                mochaFile: paths.join(_testsRoot, "..", "..", "test-results.xml")
+            }
+        }
     });
     mocha.useColors(true);
 
@@ -195,7 +202,7 @@ class CoverageRunner {
         });
 
         let reporter = new istanbul.Reporter(undefined, reportingDir);
-        let reportTypes = (self.options.reports instanceof Array) ? self.options.reports : ["lcov"];
+        let reportTypes = (self.options.reports instanceof Array) ? self.options.reports : ["lcov", "cobertura"];
         reporter.addAll(reportTypes);
         reporter.write(remappedCollector, true, () => {
             console.log(`reports written to ${reportingDir}`);

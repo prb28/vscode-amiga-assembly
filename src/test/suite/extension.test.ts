@@ -16,6 +16,7 @@ import { fail } from 'assert';
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
+    let defaultTimeout = 10000;
     // Creating the relative path to find the test file
     let testFilesPath = "";
     before(async () => {
@@ -30,7 +31,7 @@ describe("Global Extension Tests", function () {
     });
     context("Formatting command", function () {
         it("Should format a simple file", async () => {
-            this.timeout(2000);
+            this.timeout(defaultTimeout);
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw-toform.s"));
             // Read the expected file
@@ -48,7 +49,7 @@ describe("Global Extension Tests", function () {
             }
         });
         it("Should format another simple file with sprite", async () => {
-            this.timeout(2000);
+            this.timeout(defaultTimeout);
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw2-toform.s"));
             // Read the expected file
@@ -66,7 +67,7 @@ describe("Global Extension Tests", function () {
             }
         });
         it("Should format a file with tabs", async () => {
-            this.timeout(2000);
+            this.timeout(defaultTimeout);
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw-tabs-toform.s"));
             // Read the expected file
@@ -172,7 +173,7 @@ describe("Global Extension Tests", function () {
     });
     context("Webview", function () {
         it("Should show an iff file", async () => {
-            this.timeout(20000);
+            this.timeout(defaultTimeout);
             let imageName = "TRU256.IFF";
             const uri = vscode.Uri.file(path.join(testFilesPath, imageName));
             await vscode.commands.executeCommand("amiga-assembly.view-iff", uri);

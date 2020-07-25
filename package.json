@@ -694,6 +694,8 @@
         "gulp-json-editor": "^2.5.4",
         "istanbul": "^0.4.5",
         "mocha": "^7.2.0",
+        "mocha-junit-reporter": "^2.0.0",
+        "mocha-multi-reporters": "^1.1.7",
         "remap-istanbul": "^0.13.0",
         "source-map-support": "^0.5.19",
         "temp": "^0.9.1",

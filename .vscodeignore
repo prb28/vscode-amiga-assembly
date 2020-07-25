@@ -29,3 +29,4 @@ webpack.config.js
 tslint-report.json
 npm-shrinkwrap.json
 coverconfig.json
+azure-pipelines.yml
