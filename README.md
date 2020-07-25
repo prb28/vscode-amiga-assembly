@@ -1,4 +1,4 @@
-[![Build Status Travis](https://travis-ci.org/prb28/vscode-amiga-assembly.svg?branch=master)](https://travis-ci.org/prb28/vscode-amiga-assembly) [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/github/prb28/vscode-amiga-assembly?branch=master)](https://ci.appveyor.com/project/prb28/vscode-amiga-assembly)
+[![Build Status](https://prb28.visualstudio.com/vscode-amiga-assembly/_apis/build/status/prb28.vscode-amiga-assembly?branchName=master)](https://prb28.visualstudio.com/vscode-amiga-assembly/_build/latest?definitionId=1&branchName=master)
 [![Coverage Status](https://coveralls.io/repos/github/prb28/vscode-amiga-assembly/badge.png?branch=master)](https://coveralls.io/github/prb28/vscode-amiga-assembly?branch=master)
 
 # Amiga Assembly for Visual Studio Code
