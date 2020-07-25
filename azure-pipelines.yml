@@ -9,11 +9,11 @@ trigger:
 strategy:
   matrix:
     linux:
-      imageName: "ubuntu-20.04"
+      imageName: "ubuntu-latest"
     mac:
-      imageName: "macOS-10.15"
+      imageName: "macOS-latest"
     windows:
-      imageName: "windows-2019"
+      imageName: "windows-latest"
 
 pool:
   vmImage: $(imageName)
@@ -55,11 +55,11 @@ steps:
       echo ">>> Publish to coveralls"
       node_modules/.bin/coveralls < coverage/lcov.info
     displayName: Publish to Coveralls
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'ubuntu'))
 
   - bash: |
       echo ">>> Publish to SonarCloud"
       npm run tslint;
       sonar-scanner;
     displayName: Publish to SonarCloud
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'ubuntu'))
