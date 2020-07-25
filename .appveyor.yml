@@ -13,6 +13,7 @@ build_script:
   - vsce package
   
 test_script:
+  - npm run build
   - npm run testonly
 
 artifacts:
