@@ -31,7 +31,6 @@ describe("Global Extension Tests", function () {
     });
     context("Formatting command", function () {
         it("Should format a simple file", async () => {
-            this.timeout(defaultTimeout);
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw-toform.s"));
             // Read the expected file
@@ -47,9 +46,8 @@ describe("Global Extension Tests", function () {
                 await vscode.commands.executeCommand("editor.action.formatDocument");
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
-        });
+        }).timeout(defaultTimeout);
         it("Should format another simple file with sprite", async () => {
-            this.timeout(defaultTimeout);
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw2-toform.s"));
             // Read the expected file
@@ -65,9 +63,8 @@ describe("Global Extension Tests", function () {
                 await vscode.commands.executeCommand("editor.action.formatDocument");
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
-        });
+        }).timeout(defaultTimeout);
         it("Should format a file with tabs", async () => {
-            this.timeout(defaultTimeout);
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw-tabs-toform.s"));
             // Read the expected file
@@ -85,7 +82,7 @@ describe("Global Extension Tests", function () {
                 await vscode.workspace.getConfiguration('amiga-assembly', uri).update('format.useTabs', false, true);
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
-        });
+        }).timeout(defaultTimeout);
     });
     context("Build commands", function () {
         it("Should build the workspace on command", async () => {
@@ -173,7 +170,6 @@ describe("Global Extension Tests", function () {
     });
     context("Webview", function () {
         it("Should show an iff file", async () => {
-            this.timeout(defaultTimeout);
             let imageName = "TRU256.IFF";
             const uri = vscode.Uri.file(path.join(testFilesPath, imageName));
             await vscode.commands.executeCommand("amiga-assembly.view-iff", uri);
@@ -183,6 +179,6 @@ describe("Global Extension Tests", function () {
                 expect(panel.title).to.be.equal(imageName);
                 expect(panel.webview.html).to.contain("iff.min.js");
             }
-        });
+        }).timeout(defaultTimeout);
     });
 });
