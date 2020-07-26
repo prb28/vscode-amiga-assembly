@@ -29,7 +29,7 @@ steps:
       echo ">>> Started xvfb"
     displayName: Start xvfb
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
-    
+
   - task: SonarQubePrepare@4
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
     inputs:
@@ -67,5 +67,5 @@ steps:
 
   - task: SonarQubeAnalyze@4
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
-  - task: SonarCloudPublish@4
+  - task: SonarQubePublish@4
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
