@@ -48,6 +48,7 @@ steps:
       npm install -g vsce
       npm run coverage:disable
       vsce package
+      cp *.vsix $(Build.ArtifactStagingDirectory)
     displayName: Package
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux-package'))
 
@@ -79,15 +80,6 @@ steps:
       node_modules/.bin/coveralls < coverage/lcov.info
     displayName: Publish to Coveralls
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
-
-  - task: PublishBuildArtifacts@1
-    condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux-package'))
-    inputs:
-      PathtoPublish: '$(System.DefaultWorkingDirectory)'
-      ArtifactName: '*.vsix'
-      publishLocation: 'Container'
-    env:
-      DISPLAY: ":99.0"
 
   - task: SonarQubeAnalyze@4
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
