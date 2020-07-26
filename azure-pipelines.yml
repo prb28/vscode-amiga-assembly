@@ -85,7 +85,7 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux-package'))
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      #ArtifactName: '*'
+      ArtifactName: 'extension'
       publishLocation: 'Container'
 
   - task: SonarQubeAnalyze@4
