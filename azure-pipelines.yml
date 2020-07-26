@@ -2,9 +2,6 @@ trigger:
   branches:
     include:
       - master
-  #tags:
-  #  include:
-  #  - v*
 
 strategy:
   matrix:
@@ -32,16 +29,17 @@ steps:
     displayName: Start xvfb
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  - task: SonarQubePrepare@4
+  - task: SonarCloudPrepare@1
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
     inputs:
-      SonarQube: 'Sonar'
-      scannerMode: 'CLI'
-      configMode: 'file'
+      SonarCloud: "sonarcloud"
+      organization: "prb28-github"
+      scannerMode: "CLI"
+      configMode: "file"
 
   - task: Npm@1
     inputs:
-      command: 'install'
+      command: "install"
 
   - bash: |
       echo ">>> Package"
@@ -80,16 +78,18 @@ steps:
       node_modules/.bin/coveralls < coverage/lcov.info
     displayName: Publish to Coveralls
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
-    
+
   - task: PublishBuildArtifacts@1
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux-package'))
     inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      ArtifactName: 'extension'
-      publishLocation: 'Container'
+      PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+      ArtifactName: "extension"
+      publishLocation: "Container"
 
-  - task: SonarQubeAnalyze@4
+  - task: SonarCloudAnalyze@1
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
 
-  - task: SonarQubePublish@4
+  - task: SonarCloudPublish@1
+    inputs:
+      pollingTimeoutSec: "300"
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
