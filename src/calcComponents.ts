@@ -102,21 +102,20 @@ export class CalcComponent {
                         }
                         const text = document.getText(selection);
                         try {
-                            await this.calculate(text).then(value => {
-                                if (value !== undefined) {
-                                    let result: string;
-                                    if (replace) {
-                                        result = this.formatResult(null, value);
-                                        edit.replace(selection, result);
-                                    } else {
-                                        result = this.formatResult(text, value);
-                                        window.showInformationMessage(result);
-                                    }
-                                }
-                            }).catch(err => {
+                            let value = await this.calculate(text).catch(err => {
                                 reject(err);
                                 return;
                             });
+                            if (value !== undefined) {
+                                let result: string;
+                                if (replace) {
+                                    result = this.formatResult(null, value);
+                                    edit.replace(selection, result);
+                                } else {
+                                    result = this.formatResult(text, value);
+                                    window.showInformationMessage(result);
+                                }
+                            }
                         } catch (ex) {
                             reject(ex);
                             return;
