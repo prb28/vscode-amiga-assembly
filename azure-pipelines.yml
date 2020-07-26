@@ -80,6 +80,13 @@ steps:
       node_modules/.bin/coveralls < coverage/lcov.info
     displayName: Publish to Coveralls
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
+    
+  - task: PublishBuildArtifacts@1
+    condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux-package'))
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      #ArtifactName: '*'
+      publishLocation: 'Container'
 
   - task: SonarQubeAnalyze@4
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
