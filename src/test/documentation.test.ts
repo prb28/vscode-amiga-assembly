@@ -22,7 +22,7 @@ describe("Documentation Tests", function () {
     context("Hover instruction file parsing", function () {
         it("Should read the file correctly", async function () {
             let manager = documentationManger.instructionsManager;
-            expect(manager.getCount()).to.be.equal(89);
+            expect(manager.getCount()).to.be.equal(124);
             let addDocumentation = await manager.getInstructionByName("ADD");
             expect(addDocumentation).to.not.be.undefined;
             if (addDocumentation) {
@@ -42,6 +42,26 @@ describe("Documentation Tests", function () {
                 expect(addDocumentation.name).to.be.equal("bne");
                 expect(addDocumentation.filename).to.contain("bcc");
                 expect(addDocumentation.description).to.contain("# Bcc - Branch on condition");
+            }
+        });
+        it("Should resolve dbcc variants", async function () {
+            let manager = documentationManger.instructionsManager;
+            let addDocumentation = await manager.getInstructionByName("DBNE");
+            expect(addDocumentation).to.not.be.undefined;
+            if (addDocumentation) {
+                expect(addDocumentation.name).to.be.equal("dbne");
+                expect(addDocumentation.filename).to.contain("dbcc");
+                expect(addDocumentation.description).to.contain("# DBcc - Test condition, decrement, and branch");
+            }
+        });
+        it("Should resolve scc variants", async function () {
+            let manager = documentationManger.instructionsManager;
+            let addDocumentation = await manager.getInstructionByName("SNE");
+            expect(addDocumentation).to.not.be.undefined;
+            if (addDocumentation) {
+                expect(addDocumentation.name).to.be.equal("sne");
+                expect(addDocumentation.filename).to.contain("scc");
+                expect(addDocumentation.description).to.contain("# Scc - Set according to condition cc");
             }
         });
         it("Should remove images urls", async function () {

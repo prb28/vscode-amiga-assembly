@@ -48,6 +48,8 @@ abstract class DocumentationMDFileFolderManager {
  */
 export class DocumentationInstructionsManager extends DocumentationMDFileFolderManager {
     private static readonly bccVariants = ["bcc", "bcs", "beq", "bge", "bgt", "bhi", "ble", "bls", "blt", "bmi", "bne", "bpl", "bvc", "bvs", "bhs", "blo"];
+    private static readonly dbccVariants = ["dbcc", "dbt", "dbf", "dbra", "dbhi", "dbls", "dbcc", "dbhs", "dbcs", "dblo", "dbne", "dbvs", "dbeq", "dbpl", "dbvc", "dbmi", "dbge", "dblt", "dbgt", "dble"];
+    private static readonly sccVariants = ["scc", "st", "sf", "shi", "sls", "scc", "shs", "scs", "slo", "sne", "seq", "svc", "svs", "spl", "smi", "sge", "slt", "sgt", "sle"];
     private instructions = new Map<string, DocumentationInstruction>();
 
     constructor(extensionPath: string) {
@@ -58,6 +60,10 @@ export class DocumentationInstructionsManager extends DocumentationMDFileFolderM
         let elms = filename.replace(".md", "").split("_");
         if (elms[0] === "bcc") {
             elms = DocumentationInstructionsManager.bccVariants;
+        } else if (elms[0] === "dbcc") {
+            elms = DocumentationInstructionsManager.dbccVariants;
+        } else if (elms[0] === "scc") {
+            elms = DocumentationInstructionsManager.sccVariants;
         }
         elms.forEach(element => {
             let filePath = path.join(this.dirPath, filename);
