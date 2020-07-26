@@ -83,7 +83,7 @@ steps:
   - task: PublishBuildArtifacts@1
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux-package'))
     inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      PathtoPublish: '$(System.DefaultWorkingDirectory)'
       ArtifactName: '*.vsix'
       publishLocation: 'Container'
     env:
