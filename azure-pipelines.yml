@@ -45,6 +45,7 @@ steps:
 
   - bash: |
       echo ">>> Package"
+      npm install -g vsce
       npm run coverage:disable
       vsce package
     displayName: Package
