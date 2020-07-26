@@ -10,6 +10,8 @@ strategy:
   matrix:
     linux:
       imageName: "ubuntu-latest"
+    linux-package:
+      imageName: "ubuntu-latest"
     mac:
       imageName: "macOS-latest"
     windows:
@@ -31,7 +33,7 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   - task: SonarQubePrepare@4
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), eq(variables['Agent.Name'], 'linux'))
     inputs:
       SonarQube: 'Sonar'
       scannerMode: 'CLI'
@@ -42,12 +44,11 @@ steps:
       command: 'install'
 
   - bash: |
-      echo ">>> Compile vscode-test"
+      echo ">>> Package"
       npm run coverage:disable
-      npm run build
-      npm run testonly
+      vsce package
     displayName: Run Tests
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'linux-package'))
     env:
       DISPLAY: ":99.0"
 
@@ -57,7 +58,7 @@ steps:
       npm run test:coverage
       npm run tslint
     displayName: Run Tests
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), ne(variables['Agent.Name'], 'linux-package'))
     env:
       DISPLAY: ":99.0"
 
@@ -77,10 +78,10 @@ steps:
       echo ">>> Publish to coveralls"
       node_modules/.bin/coveralls < coverage/lcov.info
     displayName: Publish to Coveralls
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), eq(variables['Agent.Name'], 'linux'))
 
 
   - task: SonarQubeAnalyze@4
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), eq(variables['Agent.Name'], 'linux'))
   - task: SonarQubePublish@4
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), eq(variables['Agent.Name'], 'linux'))
