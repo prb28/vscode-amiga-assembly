@@ -57,13 +57,13 @@ steps:
     displayName: Publish to Coveralls
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  - task: Prepare Analysis Configuration
-    displayName: "Prepare analysis on SonarCloud"
+  - task: SonarCloudPrepare@1
     inputs:
-      SonarCloud: "SonarCloud-CodeAnalysis-Server"
-      organization: prb28
+      SonarCloud: "SonarCloud"
+      organization: "prb28"
       projectKey: "prb28_vscode-amiga-assembly"
       projectName: "VSCode Amiga Assembly"
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
       extraProperties: |
         sonar.language=typescript
         sonar.sources=src
@@ -78,12 +78,12 @@ steps:
         sonar.typescript.lcov.reportPaths=coverage/lcov.info
         sonar.typescript.tslint.reportPaths=tslint-report.json
         sonar.branch.name=$(Build.SourceBranchName)
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
-  - task: Run Code Analysis
+
+  - task: SonarCloudAnalyze@1
     displayName: "Run Code Analysis"
     continueOnError: false
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
-  - task: Publish Quality Gate Result
+  - task: SonarCloudPublish@1
     displayName: "Publish Quality Gate Result"
     continueOnError: false
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
