@@ -29,6 +29,13 @@ steps:
       echo ">>> Started xvfb"
     displayName: Start xvfb
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    
+  - task: SonarQubePrepare@4
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    inputs:
+      SonarQube: 'Sonar'
+      scannerMode: 'CLI'
+      configMode: 'file'
 
   - bash: |
       echo ">>> Compile vscode-test"
@@ -57,33 +64,8 @@ steps:
     displayName: Publish to Coveralls
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  - task: SonarCloudPrepare@1
-    inputs:
-      SonarCloud: "SonarCloud"
-      organization: "prb28"
-      projectKey: "prb28_vscode-amiga-assembly"
-      projectName: "VSCode Amiga Assembly"
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
-      extraProperties: |
-        sonar.language=typescript
-        sonar.sources=src
-        sonar.tests=src
-        sonar.sourceEncoding=UTF-8
-        sonar.exclusions=src/mathcalc.js
-        #sonar.test.exclusions=src/tests/*
-        sonar.testExecutionReportPaths=out/test-report.xml
-        sonar.coverage.exclusions=src/test/*.ts,src/*.js
-        sonar.test.inclusions=src/test/*.ts
-        sonar.typescript.file.suffixes=.ts,.tsx
-        sonar.typescript.lcov.reportPaths=coverage/lcov.info
-        sonar.typescript.tslint.reportPaths=tslint-report.json
-        sonar.branch.name=$(Build.SourceBranchName)
 
-  - task: SonarCloudAnalyze@1
-    displayName: "Run Code Analysis"
-    continueOnError: false
+  - task: SonarQubeAnalyze@4
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
-  - task: SonarCloudPublish@1
-    displayName: "Publish Quality Gate Result"
-    continueOnError: false
+  - task: SonarCloudPublish@4
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
