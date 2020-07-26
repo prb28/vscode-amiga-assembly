@@ -47,10 +47,8 @@ steps:
       echo ">>> Package"
       npm run coverage:disable
       vsce package
-    displayName: Run Tests
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'linux-package'))
-    env:
-      DISPLAY: ":99.0"
+    displayName: Package
+    condition: and(succeeded(), eq(variables['Agent.Name'], 'linux-package'))
 
   - bash: |
       echo ">>> Compile vscode-test"
@@ -63,16 +61,17 @@ steps:
       DISPLAY: ":99.0"
 
   - task: PublishTestResults@2
-    condition: succeededOrFailed()
     inputs:
       testRunner: JUnit
       testResultsFiles: "out/**/test-results.xml"
+    condition: and(succeededOrFailed(), eq(variables['Agent.Name'], 'linux'))
 
   - task: PublishCodeCoverageResults@1
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: "$(System.DefaultWorkingDirectory)/**/*coverage.xml"
       reportDirectory: "$(System.DefaultWorkingDirectory)/**/coverage"
+    condition: and(succeeded(), eq(variables['Agent.Name'], 'linux'))
 
   - bash: |
       echo ">>> Publish to coveralls"
@@ -80,8 +79,17 @@ steps:
     displayName: Publish to Coveralls
     condition: and(succeeded(), eq(variables['Agent.Name'], 'linux'))
 
+  - task: PublishBuildArtifacts@1
+    condition: and(succeeded(), ne(variables['Agent.Name'], 'linux-package'))
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: '*.vsix'
+      publishLocation: 'Container'
+    env:
+      DISPLAY: ":99.0"
 
   - task: SonarQubeAnalyze@4
     condition: and(succeeded(), eq(variables['Agent.Name'], 'linux'))
+
   - task: SonarQubePublish@4
     condition: and(succeeded(), eq(variables['Agent.Name'], 'linux'))
