@@ -47,7 +47,7 @@ steps:
       npm run build
       npm run testonly
     displayName: Run Tests
-    condition: and(succeeded(), neq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
     env:
       DISPLAY: ":99.0"
 
