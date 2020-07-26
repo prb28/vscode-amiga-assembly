@@ -57,7 +57,7 @@ steps:
     displayName: Publish to Coveralls
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
+  - task: Prepare Analysis Configuration
     displayName: "Prepare analysis on SonarCloud"
     inputs:
       SonarCloud: "SonarCloud-CodeAnalysis-Server"
@@ -79,11 +79,11 @@ steps:
         sonar.typescript.tslint.reportPaths=tslint-report.json
         sonar.branch.name=$(Build.SourceBranchName)
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
-  - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
+  - task: Run Code Analysis
     displayName: "Run Code Analysis"
     continueOnError: false
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
-  - task: SonarSource.sonarcloud.38b27399-a642-40af-bb7d-9971f69712e8.SonarCloudPublish@1
+  - task: Publish Quality Gate Result
     displayName: "Publish Quality Gate Result"
     continueOnError: false
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
