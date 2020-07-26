@@ -81,7 +81,7 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
 
   - task: PublishBuildArtifacts@1
-    condition: and(succeeded(), ne(variables['Agent.JobName'], 'Job linux-package'))
+    condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux-package'))
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
       ArtifactName: '*.vsix'
