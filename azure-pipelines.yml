@@ -57,9 +57,33 @@ steps:
     displayName: Publish to Coveralls
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  - bash: |
-      echo ">>> Publish to SonarCloud"
-      npm run tslint
-      sonar-scanner
-    displayName: Publish to SonarCloud
+  - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
+    displayName: "Prepare analysis on SonarCloud"
+    inputs:
+      SonarCloud: "SonarCloud-CodeAnalysis-Server"
+      organization: prb28
+      projectKey: "prb28_vscode-amiga-assembly"
+      projectName: "VSCode Amiga Assembly"
+      extraProperties: |
+        sonar.language=typescript
+        sonar.sources=src
+        sonar.tests=src
+        sonar.sourceEncoding=UTF-8
+        sonar.exclusions=src/mathcalc.js
+        #sonar.test.exclusions=src/tests/*
+        sonar.testExecutionReportPaths=out/test-report.xml
+        sonar.coverage.exclusions=src/test/*.ts,src/*.js
+        sonar.test.inclusions=src/test/*.ts
+        sonar.typescript.file.suffixes=.ts,.tsx
+        sonar.typescript.lcov.reportPaths=coverage/lcov.info
+        sonar.typescript.tslint.reportPaths=tslint-report.json
+        sonar.branch.name=$(Build.SourceBranchName)
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+  - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
+    displayName: "Run Code Analysis"
+    continueOnError: false
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+  - task: SonarSource.sonarcloud.38b27399-a642-40af-bb7d-9971f69712e8.SonarCloudPublish@1
+    displayName: "Publish Quality Gate Result"
+    continueOnError: false
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
