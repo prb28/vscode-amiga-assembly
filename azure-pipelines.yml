@@ -37,12 +37,27 @@ steps:
       scannerMode: 'CLI'
       configMode: 'file'
 
+  - task: Npm@1
+    inputs:
+      command: 'install'
+
   - bash: |
       echo ">>> Compile vscode-test"
-      npm install
+      npm run coverage:disable
+      npm run build
+      npm run testonly
+    displayName: Run Tests
+    condition: and(succeeded(), neq(variables['Agent.OS'], 'Linux'))
+    env:
+      DISPLAY: ":99.0"
+
+  - bash: |
+      echo ">>> Compile vscode-test"
       npm run vscode:prepublish
       npm run test:coverage
+      npm run tslint
     displayName: Run Tests
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
     env:
       DISPLAY: ":99.0"
 
