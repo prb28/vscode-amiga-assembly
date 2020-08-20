@@ -32,7 +32,11 @@ function padStartWith0(stringToPad: string, targetLength: number): string {
 function getRegistersString(): string {
     let str = "";
     for (let i = 0; i < 18; i++) {
-        str += padStartWith0(i.toString(16), 8);
+        let v = i;
+        if (i === 16) {
+            v = 43690;
+        }
+        str += padStartWith0(v.toString(16), 8);
     }
     return str;
 }
@@ -72,7 +76,7 @@ describe("GdbProxy Tests", function () {
             mockedSocket = mock(Socket);
             when(mockedSocket.once('connect', anything())).thenCall(async (event: string, callback: (() => void)) => {
                 when(mockedSocket.writable).thenReturn(true);
-                await callback();
+                callback();
             });
             when(mockedSocket.on('data', anything())).thenCall(async (event: string, callback: ((data: Buffer) => void)) => {
                 mockedOnData = callback;
@@ -150,7 +154,7 @@ describe("GdbProxy Tests", function () {
             await proxy.load("/home/myh\\myprog", false);
             verify(spiedProxy.sendPacketString(vRunRequest)).once();
             // the stop command arrives  - should send pending breakpoints
-            await mockedOnData(proxy.formatString("S5;0"));
+            mockedOnData(proxy.formatString("S5;0"));
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.continueExecution(anything())).once();
         });
@@ -221,7 +225,7 @@ describe("GdbProxy Tests", function () {
                 await proxy.connect('localhost', 6860);
                 await proxy.load("/home/myh\\myprog", true);
                 // the stop command arrives  - should send pending breakpoints
-                await mockedOnData(proxy.formatString("S05;0"));
+                mockedOnData(proxy.formatString("S05;0"));
             });
             it("Should accept a breakpoint", async function () {
                 when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
@@ -260,27 +264,90 @@ describe("GdbProxy Tests", function () {
                 await expect(proxy.setBreakpoint(bp)).to.be.rejected;
                 verify(spiedProxy.sendPacketString('Z0,4,1')).never();
             });
-            it("Should get the registers", async function () {
+            it.only("Should get the registers", async function () {
                 let registers = await proxy.registers(null);
+                let pos = 0;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "pc",
+                    value: 17
+                });
+                pos += 1;
                 for (let i = 0; i < 8; i++) {
-                    expect(registers[i]).to.be.eql(<GdbRegister>{
+                    expect(registers[pos + i]).to.be.eql(<GdbRegister>{
                         name: "d" + i,
                         value: i
                     });
                 }
                 for (let i = 8; i < 16; i++) {
-                    expect(registers[i]).to.be.eql(<GdbRegister>{
+                    expect(registers[pos + i]).to.be.eql(<GdbRegister>{
                         name: "a" + (i - 8),
                         value: i
                     });
                 }
-                expect(registers[16]).to.be.eql(<GdbRegister>{
+                pos += 16;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
                     name: "sr",
-                    value: 16
+                    value: 43690
                 });
-                expect(registers[17]).to.be.eql(<GdbRegister>{
-                    name: "pc",
-                    value: 17
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "T1",
+                    value: 1
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "T0",
+                    value: 0
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "S",
+                    value: 1
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "M",
+                    value: 0
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "I2",
+                    value: 0
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "I1",
+                    value: 1
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "I0",
+                    value: 0
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "X",
+                    value: 0
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "N",
+                    value: 1
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "Z",
+                    value: 0
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "V",
+                    value: 1
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "C",
+                    value: 0
                 });
             });
             it("Should get the stack frames", async function () {

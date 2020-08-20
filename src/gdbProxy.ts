@@ -32,6 +32,8 @@ export class GdbProxy extends EventEmitter {
     static readonly BINARIES_ERROR = "Please install latest binaries from FS-UAE custom build https://github.com/prb28/vscode-amiga-assembly/releases";
     /** Unexpected return message */
     static readonly UNEXPECTED_RETURN_ERROR = "Unexpected return message for program launch command";
+    /** Labels for SR bits */
+    static readonly SR_LABELS = ["T1", "T0", "S", "M", null, "I2", "I1", "I0", null, null, null, "X", "N", "Z", "V", "C"];
     /** Socket to connect */
     private socket: Socket;
     /** Current source file */
@@ -616,13 +618,30 @@ export class GdbProxy extends EventEmitter {
                 }
                 v = message.slice(pos, pos + 8);
                 pos += 8;
+                let sr = parseInt(v, 16);
                 registers.push({
                     name: "sr",
-                    value: parseInt(v, 16)
+                    value: sr
                 });
+                for (let i = 0; i < GdbProxy.SR_LABELS.length; i++) {
+                    let label = GdbProxy.SR_LABELS[i];
+                    if (label !== null) {
+                        let mask = 1 << (15 - i);
+                        let b = sr & mask;
+                        let vb = 0;
+                        if (b) {
+                            vb = 1;
+                        }
+                        registers.push({
+                            name: label,
+                            value: vb
+                        });
+                    }
+                }
+
                 v = message.slice(pos, pos + 8);
                 let pc = parseInt(v, 16);
-                registers.push({
+                registers.unshift({
                     name: "pc",
                     value: pc
                 });
