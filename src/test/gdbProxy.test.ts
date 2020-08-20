@@ -264,7 +264,7 @@ describe("GdbProxy Tests", function () {
                 await expect(proxy.setBreakpoint(bp)).to.be.rejected;
                 verify(spiedProxy.sendPacketString('Z0,4,1')).never();
             });
-            it.only("Should get the registers", async function () {
+            it("Should get the registers", async function () {
                 let registers = await proxy.registers(null);
                 let pos = 0;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
