@@ -664,10 +664,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         const variablesArray = new Array<DebugProtocol.Variable>();
                         for (let i = 0; i < registers.length; i++) {
                             let r = registers[i];
+                            let v = r.value.toString(10);
+                            if (!GdbProxy.SR_LABELS.includes(r.name)) {
+                                v = StringUtils.padStart(r.value.toString(16), 8, "0");
+                            }
                             variablesArray.push({
                                 name: r.name,
                                 type: "register",
-                                value: StringUtils.padStart(r.value.toString(16), 8, "0"),
+                                value: v,
                                 variablesReference: 0
                             });
                         }
