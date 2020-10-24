@@ -10,7 +10,9 @@ export enum GdbPacketType {
     OK,
     PLUS,
     FRAME,
-    MINUS
+    MINUS,
+    OUTPUT,
+    QTSTATUS
 }
 
 /** Packet sent by the debugging server */
@@ -107,13 +109,18 @@ export class GdbPacket {
         } else if (message.startsWith("E")) {
             return GdbPacketType.ERROR;
         } else if ((message.startsWith("S") || (message.startsWith("T")))) {
+            if (message.includes("tframes")) {
+                return GdbPacketType.QTSTATUS;
+            }
             return GdbPacketType.STOP;
         } else if (message.startsWith("W")) {
             return GdbPacketType.END;
         } else if (message.startsWith("F")) {
             return GdbPacketType.FRAME;
-        } else if (message.startsWith("-")) {
+        } else if (message === "-") {
             return GdbPacketType.MINUS;
+        } else if (message.startsWith("O")) {
+            return GdbPacketType.OUTPUT;
         }
         return GdbPacketType.UNKNOWN;
     }

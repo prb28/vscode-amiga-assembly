@@ -27,6 +27,7 @@ import { DisassembledInstructionAdapter } from './debugExpressionHelper';
 import * as winston from "winston";
 import * as TransportStream from "winston-transport";
 import { FileProxy } from './fsProxy';
+import { WinUAEDebugSession } from './winUAEDebug';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -461,6 +462,8 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('fs-uae', new FsUAEInlineDebugAdapterFactory()));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae-run', new RunFsUAEConfigurationProvider()));
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('fs-uae-run', new RunFsUAEInlineDebugAdapterFactory()));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('winuae', new WinUAEConfigurationProvider()));
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('winuae', new WinUAEInlineDebugAdapterFactory()));
     winston.info("------> done");
 
     context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('disassembly', new DisassemblyContentProvider()));
@@ -570,5 +573,52 @@ class RunFsUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptor
     createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
         return <any>new vscode.DebugAdapterInlineImplementation(new RunFsUAENoDebugSession());
+    }
+}
+
+class WinUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
+	/**
+	 * Massage a debug configuration just before a debug session is being launched,
+	 * e.g. add all missing attributes to the debug configuration.
+	 */
+    resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
+
+        // if launch.json is missing or empty
+        if (!config.type && !config.request && !config.name) {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document.languageId === 'm68k') {
+                config.type = 'winuae';
+                config.name = 'Launch';
+                config.request = 'launch';
+                config.stopOnEntry = true;
+                config.startEmulator = true;
+                config.emulator = "winuae";
+                config.program = "${workspaceFolder}/${command:AskForProgramName}";
+                config.conf = "configuration/dev.winuae";
+                config.buildWorkspace = true;
+                config.serverName = "localhost";
+                config.serverPort = 2345;
+            }
+        }
+
+        if (!config.program) {
+            return vscode.window.showInformationMessage("Cannot find a program to debug").then(_ => {
+                return undefined;	// abort launch
+            });
+        }
+        if (config.buildWorkspace) {
+            return vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace").then(() => {
+                return config;
+            });
+        } else {
+            return config;
+        }
+    }
+}
+
+class WinUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
+    createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
+        // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
+        return <any>new vscode.DebugAdapterInlineImplementation(new WinUAEDebugSession());
     }
 }

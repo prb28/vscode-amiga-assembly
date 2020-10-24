@@ -636,6 +636,148 @@
                         }
                     }
                 ]
+            },
+            {
+                "type": "winuae",
+                "label": "WinUAE Debug",
+                "program": "./out/debugAdapterWinUAE.js",
+                "runtime": "node",
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Path to an amiga program.",
+                                "default": "${workspaceFolder}/${command:AskForProgramName}"
+                            },
+                            "startEmulator": {
+                                "type": "boolean",
+                                "description": "If true the emulator will be started before debugging.",
+                                "default": "true"
+                            },
+                            "emulator": {
+                                "type": "string",
+                                "description": "Path to the WinUAE emulator.",
+                                "default": "Path to WinUAE executable"
+                            },
+                            "emulatorWorkingDir": {
+                                "type": "string",
+                                "description": "Path to the working directory of the emulator.",
+                                "default": "."
+                            },
+                            "buildWorkspace": {
+                                "type": "boolean",
+                                "description": "Build workspace before launch.",
+                                "default": true
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Automatically stop after launch.",
+                                "default": true
+                            },
+                            "trace": {
+                                "type": "boolean",
+                                "description": "Enable logging of the Debug Adapter Protocol.",
+                                "default": true
+                            },
+                            "serverName": {
+                                "type": "string",
+                                "description": "Host running WinUAE",
+                                "default": "localhost"
+                            },
+                            "serverPort": {
+                                "type": "number",
+                                "description": "Socket port to connect to WinUAE",
+                                "default": 6860
+                            },
+                            "sourceFileMap": {
+                                "type": "object",
+                                "description": "Optional source file mappings passed to the debug engine. Example: '{ \"/original/source/path\":\"/current/source/path\" }'",
+                                "default": {
+                                    "<source-path>": "<target-path>"
+                                }
+                            },
+                            "rootSourceFileMap": {
+                                "type": "array",
+                                "description": "Root paths to seek for sources",
+                                "items": {
+                                    "type": "string",
+                                    "title": "Root source path"
+                                },
+                                "default": []
+                            },
+                            "options": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "title": "Emulator option"
+                                },
+                                "default": [],
+                                "description": "Emulator options"
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "winuae",
+                        "request": "launch",
+                        "name": "Debug",
+                        "buildWorkspace": true,
+                        "stopOnEntry": true,
+                        "serverName": "localhost",
+                        "serverPort": 2345,
+                        "startEmulator": true,
+                        "emulator": "winuae-gdb.exe",
+                        "emulatorWorkingDir": "${workspaceFolder}",
+                        "program": "${workspaceFolder}/${command:AskForProgramName}",
+                        "options": [
+                            "--chip_memory=1024",
+                            "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
+                            "--joystick_port_1=none",
+                            "--amiga_model=A1200",
+                            "--slow_memory=1792",
+                            "--remote_debugger=200",
+                            "--use_remote_debugger=true",
+                            "--automatic_input_grab=0"
+                        ]
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "WinUAE Debug: Launch",
+                        "description": "A new configuration for debugging a program in WinUAE.",
+                        "body": {
+                            "type": "winuae",
+                            "request": "launch",
+                            "name": "Debug",
+                            "buildWorkspace": true,
+                            "stopOnEntry": true,
+                            "serverName": "localhost",
+                            "serverPort": 2345,
+                            "startEmulator": true,
+                            "emulator": "Path to WinUAE executable file",
+                            "emulatorWorkingDir": "${workspaceFolder}",
+                            "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
+                            "options": [
+                                "--chip_memory=1024",
+                                "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
+                                "--joystick_port_1=none",
+                                "--amiga_model=A1200",
+                                "--slow_memory=1792",
+                                "--remote_debugger=200",
+                                "--use_remote_debugger=true",
+                                "--automatic_input_grab=0"
+                            ]
+                        }
+                    }
+                ],
+                "variables": {
+                    "AskForProgramName": "amiga-assembly.getProgramName"
+                }
             }
         ],
         "snippets": [

@@ -5,8 +5,8 @@ import {
 import * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
-import { GdbProxy } from './gdbProxy';
-import { GdbRegister, Segment, GdbHaltStatus, GdbAmigaSysThreadIdFsUAE } from './gdbProxyCore';
+import { GdbProxyWinUAE } from './gdbProxyWinUAE';
+import { GdbRegister, Segment, GdbHaltStatus, GdbAmigaSysThreadIdWinUAE } from './gdbProxyCore';
 import { ExecutorHelper } from './execHelper';
 import { CancellationTokenSource, workspace, window, Uri } from 'vscode';
 import { DebugInfo } from './debugInfo';
@@ -19,43 +19,11 @@ import { MemoryLabelsRegistry } from './customMemoryAddresses';
 import { BreakpointManager, GdbBreakpoint } from './breakpointManager';
 import { CopperDisassembler } from './copperDisassembler';
 import { FileProxy } from './fsProxy';
+import { LaunchRequestArguments } from './fsUAEDebug';
 const { Subject } = require('await-notify');
 
 
-/**
- * This interface describes the mock-debug specific launch attributes
- * (which are not part of the Debug Adapter Protocol).
- * The schema for these attributes lives in the package.json of the mock-debug extension.
- * The interface should always match this schema.
- */
-export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
-    /** An absolute path to the "program" to debug. */
-    program: string;
-    /** Automatically stop target after launch. If not specified, target does not stop. */
-    stopOnEntry?: boolean;
-    /** enable logging the Debug Adapter Protocol */
-    trace?: boolean;
-    /** Name of the server */
-    serverName: string;
-    /** Port of the server */
-    serverPort: number;
-    /** Start emulator */
-    startEmulator: boolean;
-    /** emulator program */
-    emulator?: string;
-    /** emulator working directory */
-    emulatorWorkingDir?: string;
-    /** Emulator options */
-    options: Array<string>;
-    /** path replacements for source files */
-    sourceFileMap?: Object;
-    /** root paths for sources */
-    rootSourceFileMap?: Array<string>;
-    /** Build the workspace before debug */
-    buildWorkspace?: boolean;
-}
-
-export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
+export class WinUAEDebugSession extends DebugSession implements DebugVariableResolver {
     // a Mock runtime (or debugger)
     private variableHandles = new Handles<string>();
 
@@ -63,7 +31,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     private configurationDone = new Subject();
 
     /** Proxy to Gdb */
-    private gdbProxy: GdbProxy;
+    private gdbProxy: GdbProxyWinUAE;
 
     /** Variables references map */
     private variableRefMap = new Map<number, DebugProtocol.Variable[]>();
@@ -119,7 +87,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         // this debugger uses zero-based lines and columns
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
-        this.gdbProxy = new GdbProxy(undefined);
+        this.gdbProxy = new GdbProxyWinUAE(undefined);
         this.initProxy();
         this.executor = new ExecutorHelper();
         this.debugDisassembledManager = new DebugDisassembledManager(this.gdbProxy, undefined, this);
@@ -132,7 +100,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
      * @param executor mocked executor
      * @param capstone mocked capstone
      */
-    public setTestContext(gdbProxy: GdbProxy, executor: ExecutorHelper, capstone: Capstone) {
+    public setTestContext(gdbProxy: GdbProxyWinUAE, executor: ExecutorHelper, capstone: Capstone) {
         this.executor = executor;
         this.gdbProxy = gdbProxy;
         this.initProxy();
@@ -398,8 +366,18 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 await debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(async () => {
                     // Loads the program
                     debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
-                    await debAdapter.gdbProxy.load(args.program, args.stopOnEntry).then(() => {
-                        debAdapter.sendResponse(response);
+                    await debAdapter.gdbProxy.initProgram(args.stopOnEntry).then(async () => {
+                        await debAdapter.gdbProxy.sendAllPendingBreakpoints().catch(err => {
+                            debAdapter.sendStringErrorResponse(response, err.message);
+                        });
+                        let thread = this.gdbProxy.getCurrentCpuThread();
+                        if (thread) {
+                            await debAdapter.gdbProxy.continueExecution(thread).then(() => {
+                                debAdapter.sendResponse(response);
+                            }).catch(err => {
+                                debAdapter.sendStringErrorResponse(response, err.message);
+                            });
+                        }
                     }).catch(err => {
                         debAdapter.sendStringErrorResponse(response, err.message);
                     });
@@ -536,7 +514,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         let stackFrames = [];
                         let updatedView = false;
                         for (let f of stk.frames) {
-                            if ((!updatedView) && (thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.CPU)) {
+                            if ((!updatedView) && (thread.getThreadId() === GdbAmigaSysThreadIdWinUAE.CPU)) {
                                 // Update the cpu view
                                 this.updateDisassembledView(f.pc, 100);
                                 updatedView = true;
@@ -562,7 +540,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             }
                             if (!stackFrameDone) {
                                 let line: string = pc;
-                                if (thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.CPU) {
+                                if (thread.getThreadId() === GdbAmigaSysThreadIdWinUAE.CPU) {
                                     let dCode = this.disassembledCache.get(f.pc);
                                     if (dCode) {
                                         line = dCode;
@@ -592,7 +570,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                         }
                                         this.disassembledCache.set(f.pc, line);
                                     }
-                                } else if (thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.COP) {
+                                } else if (thread.getThreadId() === GdbAmigaSysThreadIdWinUAE.COP) {
                                     let dCopperCode = this.disassembledCopperCache.get(f.pc);
                                     if (dCopperCode) {
                                         line = dCopperCode;
@@ -610,7 +588,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                     }
                                 }
                                 // The the stack frame from the manager
-                                let stackFrame = await this.debugDisassembledManager.getStackFrame(f.index, f.pc, line, (thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.COP));
+                                let stackFrame = await this.debugDisassembledManager.getStackFrame(f.index, f.pc, line, (thread.getThreadId() === GdbAmigaSysThreadIdWinUAE.COP));
                                 if (stackFrame) {
                                     stackFrames.push(stackFrame);
                                 }
@@ -660,12 +638,12 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 if (id.startsWith("registers_")) {
                     //Gets the frameId
                     let frameId = parseInt(id.substring(10));
-                    this.gdbProxy.registers(frameId).then((registers: Array<GdbRegister>) => {
+                    this.gdbProxy.registers(frameId, null).then((registers: Array<GdbRegister>) => {
                         const variablesArray = new Array<DebugProtocol.Variable>();
                         for (let i = 0; i < registers.length; i++) {
                             let r = registers[i];
                             let v = r.value.toString(10);
-                            if (!GdbProxy.SR_LABELS.includes(r.name)) {
+                            if (!GdbProxyWinUAE.SR_LABELS.includes(r.name)) {
                                 v = StringUtils.padStart(r.value.toString(16), 8, "0");
                             }
                             variablesArray.push({
@@ -769,10 +747,17 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
-        let thread = this.gdbProxy.getThread(args.threadId);
+        const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
-            this.gdbProxy.stepToRange(thread, 0, 0).then(() => {
-                this.sendResponse(response);
+            this.gdbProxy.stack(thread).then(async stk => {
+                let frame = stk.frames[0];
+                let startAddress = frame.pc;
+                let endAddress = frame.pc;
+                this.gdbProxy.stepToRange(thread, startAddress, endAddress).then(() => {
+                    this.sendResponse(response);
+                }).catch(err => {
+                    this.sendStringErrorResponse(response, err.message);
+                });
             }).catch(err => {
                 this.sendStringErrorResponse(response, err.message);
             });
@@ -1054,7 +1039,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             await this.gdbProxy.getHaltStatus().then((haltStatus) => {
                 let selectedHs: GdbHaltStatus = haltStatus[0];
                 for (let hs of haltStatus) {
-                    if ((hs.thread) && (hs.thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.CPU)) {
+                    if ((hs.thread) && (hs.thread.getThreadId() === GdbAmigaSysThreadIdWinUAE.CPU)) {
                         selectedHs = hs;
                         break;
                     }

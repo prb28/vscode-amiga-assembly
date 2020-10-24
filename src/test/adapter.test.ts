@@ -7,7 +7,7 @@ import { LaunchRequestArguments, FsUAEDebugSession } from '../fsUAEDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
 import { GdbProxy } from '../gdbProxy';
-import { GdbStackFrame, GdbStackPosition, GdbRegister, Segment, GdbHaltStatus, GdbThread, GdbAmigaSysThreadId } from '../gdbProxyCore';
+import { GdbStackFrame, GdbStackPosition, GdbRegister, Segment, GdbHaltStatus, GdbThread, GdbAmigaSysThreadIdFsUAE } from '../gdbProxyCore';
 import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls, capture } from 'ts-mockito/lib/ts-mockito';
 import { ExecutorHelper } from '../execHelper';
 import { Capstone } from '../capstone';
@@ -39,8 +39,8 @@ describe('Node Debug Adapter', () => {
 	let callbacks = new Map<String, any>();
 	let testWithRealEmulator = false;
 	let defaultTimeout = 10000;
-	let th = new GdbThread(0, GdbAmigaSysThreadId.CPU);
-	let thCop = new GdbThread(1, GdbAmigaSysThreadId.COP);
+	let th = new GdbThread(0, GdbAmigaSysThreadIdFsUAE.CPU);
+	let thCop = new GdbThread(1, GdbAmigaSysThreadIdFsUAE.COP);
 
 	before(async function () {
 		this.timeout(defaultTimeout);

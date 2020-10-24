@@ -47,12 +47,16 @@ export class GdbThread {
         this.state = GdbThreadState.RUNNING;
     }
     public marshall(): string {
-        return 'p' + this.processId.toString(16) + '.' + this.threadId.toString(16);
+        if (GdbThread.supportMultiprocess) {
+            return 'p' + this.processId.toString(16) + '.' + this.threadId.toString(16);
+        } else {
+            return this.threadId.toString(16);
+        }
     }
     public static parse(value: string): GdbThread {
         // Thread id has the form : "p<process id in hex>.<thread id in hex>"
         let pth = value.split('.');
-        let pId = 0;
+        let pId = GdbThread.DEFAULT_PROCESS_ID;
         let tId = 0;
         if (pth.length > 1) {
             pId = parseInt(pth[0].substring(1), 16);
@@ -69,34 +73,44 @@ export class GdbThread {
         let name: string;
         if (this.processId === GdbThread.DEFAULT_PROCESS_ID) {
             switch (this.threadId) {
-                case GdbAmigaSysThreadId.AUD0:
+                case GdbAmigaSysThreadIdFsUAE.AUD0:
+                case GdbAmigaSysThreadIdWinUAE.AUD0:
                     name = 'audio 0';
                     break;
-                case GdbAmigaSysThreadId.AUD1:
+                case GdbAmigaSysThreadIdFsUAE.AUD1:
+                case GdbAmigaSysThreadIdWinUAE.AUD1:
                     name = 'audio 1';
                     break;
-                case GdbAmigaSysThreadId.AUD2:
+                case GdbAmigaSysThreadIdFsUAE.AUD2:
+                case GdbAmigaSysThreadIdWinUAE.AUD2:
                     name = 'audio 2';
                     break;
-                case GdbAmigaSysThreadId.AUD3:
+                case GdbAmigaSysThreadIdFsUAE.AUD3:
+                case GdbAmigaSysThreadIdWinUAE.AUD3:
                     name = 'audio 3';
                     break;
-                case GdbAmigaSysThreadId.BLT:
+                case GdbAmigaSysThreadIdFsUAE.BLT:
+                case GdbAmigaSysThreadIdWinUAE.BLT:
                     name = 'blitter';
                     break;
-                case GdbAmigaSysThreadId.BPL:
+                case GdbAmigaSysThreadIdFsUAE.BPL:
+                case GdbAmigaSysThreadIdWinUAE.BPL:
                     name = 'bit-plane';
                     break;
-                case GdbAmigaSysThreadId.COP:
+                case GdbAmigaSysThreadIdFsUAE.COP:
+                case GdbAmigaSysThreadIdWinUAE.COP:
                     name = 'copper';
                     break;
-                case GdbAmigaSysThreadId.CPU:
+                case GdbAmigaSysThreadIdFsUAE.CPU:
+                case GdbAmigaSysThreadIdWinUAE.CPU:
                     name = 'cpu';
                     break;
-                case GdbAmigaSysThreadId.DSK:
+                case GdbAmigaSysThreadIdFsUAE.DSK:
+                case GdbAmigaSysThreadIdWinUAE.DSK:
                     name = 'disk';
                     break;
-                case GdbAmigaSysThreadId.SPR:
+                case GdbAmigaSysThreadIdFsUAE.SPR:
+                case GdbAmigaSysThreadIdWinUAE.SPR:
                     name = 'sprite';
                     break;
                 default:
@@ -209,8 +223,8 @@ export enum GdbSignal {
     GDB_SIGNAL_SEGV = 11
 }
 
-/** System Threads numbers (DMA) */
-export enum GdbAmigaSysThreadId {
+/** System Threads numbers (DMA) for FS_UAE */
+export enum GdbAmigaSysThreadIdFsUAE {
     AUD0 = 0,			// Thread id designating AUDIO 0 interrupt
     AUD1 = 1,			// Thread id designating AUDIO 1 interrupt
     AUD2 = 2,			// Thread id designating AUDIO 2 interrupt
@@ -221,6 +235,20 @@ export enum GdbAmigaSysThreadId {
     COP = 7,			// Thread id designating COPPER interrupt
     BPL = 8,			// Thread id designating BIT-PLANE interrupt
     CPU = 0xf,			// Thread id designating default cpu execution
+}
+
+/** System Threads numbers (DMA) for WinUAE*/
+export enum GdbAmigaSysThreadIdWinUAE {
+    CPU = 1,			// Thread id designating default cpu execution
+    COP = 2,			// Thread id designating COPPER interrupt
+    AUD0 = 3,			// Thread id designating AUDIO 0 interrupt
+    AUD1 = 4,			// Thread id designating AUDIO 1 interrupt
+    AUD2 = 5,			// Thread id designating AUDIO 2 interrupt
+    AUD3 = 6,			// Thread id designating AUDIO 3 interrupt
+    DSK = 7,			// Thread id designating DISK interrupt
+    SPR = 8,			// Thread id designating SPRITE interrupt
+    BLT = 9,			// Thread id designating BLITTER interrupt
+    BPL = 10,			// Thread id designating BIT-PLANE interrupt
 }
 
 /** Possible states of the thread */

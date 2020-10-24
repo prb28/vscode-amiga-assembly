@@ -78,11 +78,12 @@ export class StringUtils {
     /**
      * Converts a string containing hex values to an ascii string
      * @param value string to convert
+     * @param chunkSize Size of the chuck of hex values
      * @return ascii string
      */
-    public static convertHexStringToASCII(value: string): string {
+    public static convertHexStringToASCII(value: string, chunkSize: number): string {
         let asciiContents = "";
-        let chunks = this.chunk(value, 2);
+        let chunks = this.chunk(value, chunkSize);
         for (let c of chunks) {
             let i = parseInt(c, 16);
             asciiContents += StringUtils.convertByteToASCII(i);

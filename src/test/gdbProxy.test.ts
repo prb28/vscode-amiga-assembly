@@ -5,7 +5,7 @@
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { GdbProxy } from '../gdbProxy';
-import { GdbRegister, GdbStackPosition, GdbStackFrame, GdbError, GdbHaltStatus, GdbAmigaSysThreadId, GdbThread } from '../gdbProxyCore';
+import { GdbRegister, GdbStackPosition, GdbStackFrame, GdbError, GdbHaltStatus, GdbAmigaSysThreadIdFsUAE, GdbThread } from '../gdbProxyCore';
 import { Socket } from 'net';
 import { spy, verify, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
@@ -393,7 +393,7 @@ describe("GdbProxy Tests", function () {
                     when(spiedProxy.sendPacketString(`p${regIndex}`)).thenResolve("00000001");
                     when(spiedProxy.sendPacketString('?')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`);
                     when(spiedProxy.sendPacketString('vStopped')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`).thenResolve(RESPONSE_OK);
-                    let thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadId.COP);
+                    let thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadIdFsUAE.COP);
                     if (thread) {
                         return expect(proxy.stack(thread)).to.eventually.eql(<GdbStackFrame>{
                             frames: [<GdbStackPosition>{
@@ -422,7 +422,7 @@ describe("GdbProxy Tests", function () {
                     when(spiedProxy.sendPacketString(`p${regIndex}`)).thenReject(new Error("nope"));
                     when(spiedProxy.sendPacketString('?')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`);
                     when(spiedProxy.sendPacketString('vStopped')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`).thenResolve(RESPONSE_OK);
-                    let thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadId.COP);
+                    let thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadIdFsUAE.COP);
                     if (thread) {
                         return expect(proxy.stack(thread)).to.be.rejected;
                     } else {
@@ -550,13 +550,13 @@ describe("GdbProxy Tests", function () {
                 // tslint:disable-next-line: no-unused-expression
                 expect(haltStatus[0].thread).not.to.be.undefined;
                 if (haltStatus[0].thread) {
-                    expect(haltStatus[0].thread.getThreadId()).to.be.equal(GdbAmigaSysThreadId.CPU);
+                    expect(haltStatus[0].thread.getThreadId()).to.be.equal(GdbAmigaSysThreadIdFsUAE.CPU);
                 }
                 expect(haltStatus[1].code).to.be.equal(5);
                 // tslint:disable-next-line: no-unused-expression
                 expect(haltStatus[1].thread).not.to.be.undefined;
                 if (haltStatus[1].thread) {
-                    expect(haltStatus[1].thread.getThreadId()).to.be.equal(GdbAmigaSysThreadId.COP);
+                    expect(haltStatus[1].thread.getThreadId()).to.be.equal(GdbAmigaSysThreadIdFsUAE.COP);
                 }
                 verify(spiedProxy.sendPacketString('?')).once();
                 verify(spiedProxy.sendPacketString('vStopped')).twice();
