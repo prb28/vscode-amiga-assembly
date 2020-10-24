@@ -89,135 +89,129 @@ describe("GdbProxy Tests", function () {
             reset(mockedSocket);
         });
         it("Should connect to fs-UAE", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
-            when(spiedProxy.sendPacketString("QStartNoAckMode")).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString("QStartNoAckMode", anything())).thenResolve(RESPONSE_OK);
             await proxy.connect('localhost', 6860);
             verify(mockedSocket.connect(6860, 'localhost')).once();
         });
-        it("Should generate an error with an very old fs-uae protocol", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve("vContSupported");
-            when(spiedProxy.sendPacketString("QStartNoAckMode")).thenResolve(RESPONSE_OK);
-            await expect(proxy.connect('localhost', 6860)).to.be.rejectedWith(GdbProxy.BINARIES_ERROR);
-            verify(mockedSocket.connect(6860, 'localhost')).once();
-        });
         it("Should generate an error on support request", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenReject(error);
-            when(spiedProxy.sendPacketString("QStartNoAckMode")).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenReject(error);
+            when(spiedProxy.sendPacketString("QStartNoAckMode", anything())).thenResolve(RESPONSE_OK);
             await expect(proxy.connect('localhost', 6860)).to.be.rejectedWith(error);
             verify(mockedSocket.connect(6860, 'localhost')).once();
         });
         it("Should send an error on QStartNoAckMode not active", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve("multiprocess+;vContSupported+");
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve("multiprocess+;vContSupported+");
             await expect(proxy.connect('localhost', 6860)).to.be.rejected;
         });
         it("Should send an error on connection error to fs-UAE error", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
-            when(spiedProxy.sendPacketString("QStartNoAckMode")).thenReject(error);
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString("QStartNoAckMode", anything())).thenReject(error);
             await expect(proxy.connect('localhost', 6860)).to.be.rejectedWith(error);
             verify(mockedSocket.connect(6860, 'localhost')).once();
-            verify(spiedProxy.sendPacketString('QStartNoAckMode')).once();
+            verify(spiedProxy.sendPacketString('QStartNoAckMode', anything())).once();
         });
         it("Should load a program and stop on entry", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
-            when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString(vRunRequest)).thenResolve(dummyStopResponse);
-            when(spiedProxy.sendPacketString('qOffsets')).thenResolve("TextSeg=aef");
-            when(spiedProxy.sendPacketString('g')).thenResolve(RESPONSE_REGISTERS);
-            when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('Z0,0,0', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString(vRunRequest, anything())).thenResolve(dummyStopResponse);
+            when(spiedProxy.sendPacketString('qOffsets', anything())).thenResolve("TextSeg=aef");
+            when(spiedProxy.sendPacketString('g', anything())).thenResolve(RESPONSE_REGISTERS);
+            when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
             // callback for all pending breakpoint send function
             proxy.setSendPendingBreakpointsCallback((): Promise<void> => {
                 return new Promise((resolve, _) => { resolve(); });
             });
             await proxy.connect('localhost', 6860);
             await proxy.load("/home/myh\\myprog", true);
-            verify(spiedProxy.sendPacketString(vRunRequest)).once();
+            verify(spiedProxy.sendPacketString(vRunRequest, anything())).once();
             // the stop command arrives  - should send pending breakpoints
             mockedOnData(proxy.formatString("S5;0"));
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.continueExecution(anything())).never();
         });
         it("Should load a program and continue if not stop on entry", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
-            when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
-            when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString(vRunRequest)).thenResolve(dummyStopResponse);
-            when(spiedProxy.sendPacketString('qOffsets')).thenResolve("TextSeg=aef;DataSeg=1000");
-            when(spiedProxy.sendPacketString(vContCRequest)).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString('g')).thenResolve(RESPONSE_REGISTERS);
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
+            when(spiedProxy.sendPacketString('Z0,0,0', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString(vRunRequest, anything())).thenResolve(dummyStopResponse);
+            when(spiedProxy.sendPacketString('qOffsets', anything())).thenResolve("TextSeg=aef;DataSeg=1000");
+            when(spiedProxy.sendPacketString(vContCRequest, anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('g', anything())).thenResolve(RESPONSE_REGISTERS);
             // callback for all pending breakpoint send function
             proxy.setSendPendingBreakpointsCallback((): Promise<void> => {
                 return new Promise((resolve, _) => { resolve(); });
             });
             await proxy.connect('localhost', 6860);
             await proxy.load("/home/myh\\myprog", false);
-            verify(spiedProxy.sendPacketString(vRunRequest)).once();
+            verify(spiedProxy.sendPacketString(vRunRequest, anything())).once();
             // the stop command arrives  - should send pending breakpoints
             mockedOnData(proxy.formatString("S5;0"));
             verify(spiedProxy.sendAllPendingBreakpoints()).once();
             verify(spiedProxy.continueExecution(anything())).once();
         });
         it("Should generate an error with an old fs-uae protocol", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
-            when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
-            when(spiedProxy.sendPacketString(vRunRequest)).thenResolve("AS;aef;20");
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
+            when(spiedProxy.sendPacketString(vRunRequest, anything())).thenResolve("AS;aef;20");
             await expect(proxy.load("/home/myh\\myprog", true)).to.be.rejectedWith(GdbProxy.BINARIES_ERROR);
-            verify(spiedProxy.sendPacketString(vRunRequest)).once();
+            verify(spiedProxy.sendPacketString(vRunRequest, anything())).once();
         });
         it("Should generate an error with on expected return message", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
-            when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
-            when(spiedProxy.sendPacketString(vRunRequest)).thenResolve("notExpected");
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
+            when(spiedProxy.sendPacketString(vRunRequest, anything())).thenResolve("notExpected");
             await expect(proxy.load("/home/myh\\myprog", true)).to.be.rejectedWith(GdbProxy.UNEXPECTED_RETURN_ERROR);
-            verify(spiedProxy.sendPacketString(vRunRequest)).once();
+            verify(spiedProxy.sendPacketString(vRunRequest, anything())).once();
         });
         it("Should generate an error with on threadInfo error", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
-            when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
-            when(spiedProxy.sendPacketString(vRunRequest)).thenResolve(dummyStopResponse);
-            when(spiedProxy.sendPacketString('qOffsets')).thenReject(error);
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
+            when(spiedProxy.sendPacketString(vRunRequest, anything())).thenResolve(dummyStopResponse);
+            when(spiedProxy.sendPacketString('qOffsets', anything())).thenReject(error);
             await expect(proxy.load("/home/myh\\myprog", true)).to.be.rejectedWith(error);
-            verify(spiedProxy.sendPacketString(vRunRequest)).once();
+            verify(spiedProxy.sendPacketString(vRunRequest, anything())).once();
         });
         it("Should load a program and reject if there is an error during run command", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
-            when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
-            when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString(vRunRequest)).thenReject(error);
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
+            when(spiedProxy.sendPacketString('Z0,0,0', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString(vRunRequest, anything())).thenReject(error);
             await expect(proxy.load("/home/myh\\myprog", true)).to.be.rejectedWith(error);
-            verify(spiedProxy.sendPacketString(vRunRequest)).once();
+            verify(spiedProxy.sendPacketString(vRunRequest, anything())).once();
         });
         it("Should reject breakpoint when not connected", async function () {
-            when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
-            when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
-            when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
-            when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
+            when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
+            when(spiedProxy.sendPacketString('Z0,4,0', anything())).thenResolve(RESPONSE_OK);
             let bp = createBreakpoint(0, undefined, 4);
             await expect(proxy.setBreakpoint(bp)).to.be.rejected;
-            verify(spiedProxy.sendPacketString('Z0,4,0')).never();
+            verify(spiedProxy.sendPacketString('Z0,4,0', anything())).never();
         });
         it("Should get an error when removing breakpoint without connection", async function () {
             // Remove
-            when(spiedProxy.sendPacketString('z0,5,0')).thenResolve(RESPONSE_OK);
+            when(spiedProxy.sendPacketString('z0,5,0', anything())).thenResolve(RESPONSE_OK);
             let bp = createBreakpoint(0, 0, 5);
             await expect(proxy.removeBreakpoint(bp)).to.be.rejected;
-            verify(spiedProxy.sendPacketString('z0,5,0')).never();
+            verify(spiedProxy.sendPacketString('z0,5,0', anything())).never();
         });
         context('Connection established', function () {
             beforeEach(async function () {
-                when(spiedProxy.sendPacketString(supportRequest)).thenResolve(supportedReply);
-                when(spiedProxy.sendPacketString('QStartNoAckMode')).thenResolve(RESPONSE_OK);
-                when(spiedProxy.sendPacketString('qfThreadInfo')).thenResolve(vThreadInfoResponse);
-                when(spiedProxy.sendPacketString('Z0,0,0')).thenResolve(RESPONSE_OK);
-                when(spiedProxy.sendPacketString(vRunRequest)).thenResolve(dummyStopResponse);
-                when(spiedProxy.sendPacketString('qOffsets')).thenResolve("TextSeg=aef");
-                when(spiedProxy.sendPacketString(vContCRequest)).thenResolve(RESPONSE_OK);
-                when(spiedProxy.sendPacketString('g')).thenResolve(RESPONSE_REGISTERS);
+                when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
+                when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
+                when(spiedProxy.sendPacketString('Z0,0,0', anything())).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString(vRunRequest, anything())).thenResolve(dummyStopResponse);
+                when(spiedProxy.sendPacketString('qOffsets', anything())).thenResolve("TextSeg=aef");
+                when(spiedProxy.sendPacketString(vContCRequest, anything())).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('g', anything())).thenResolve(RESPONSE_REGISTERS);
                 proxy.setSendPendingBreakpointsCallback((): Promise<void> => {
                     return new Promise((resolve, _) => { resolve(); });
                 });
@@ -228,20 +222,20 @@ describe("GdbProxy Tests", function () {
                 mockedOnData(proxy.formatString("S05;0"));
             });
             it("Should accept a breakpoint", async function () {
-                when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
-                when(spiedProxy.sendPacketString('Z0,4')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('Z0,4,0', anything())).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('Z0,4', anything())).thenResolve(RESPONSE_OK);
                 let bp = createBreakpoint(0, undefined, 4);
                 await expect(proxy.setBreakpoint(bp)).to.not.be.rejected;
-                verify(spiedProxy.sendPacketString('Z0,4')).once();
+                verify(spiedProxy.sendPacketString('Z0,4', anything())).once();
                 bp = createBreakpoint(0, 0, 4);
                 await expect(proxy.setBreakpoint(bp)).to.not.be.rejected;
-                verify(spiedProxy.sendPacketString('Z0,4,0')).once();
+                verify(spiedProxy.sendPacketString('Z0,4,0', anything())).once();
             });
             it("Should set an exception breakpoint", async function () {
-                when(spiedProxy.sendPacketString('Z1,0,0;X1,a')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('Z1,0,0;X1,a', anything())).thenResolve(RESPONSE_OK);
                 let bp = createBreakpoint(0, undefined, 0, 10);
                 await expect(proxy.setBreakpoint(bp)).to.not.be.rejected;
-                verify(spiedProxy.sendPacketString('Z1,0,0;X1,a')).once();
+                verify(spiedProxy.sendPacketString('Z1,0,0;X1,a', anything())).once();
             });
             it("Should reject breakpoint when has invalid values", async function () {
                 let bp = createBreakpoint(0, undefined, -1);
@@ -252,20 +246,20 @@ describe("GdbProxy Tests", function () {
                 await expect(proxy.setBreakpoint(bp)).to.be.rejected;
             });
             it("Should return an error when setting a breakpoint", async function () {
-                when(spiedProxy.sendPacketString('Z0,4,0')).thenReject(error);
+                when(spiedProxy.sendPacketString('Z0,4,0', anything())).thenReject(error);
                 let bp = createBreakpoint(0, 0, 4);
                 await expect(proxy.setBreakpoint(bp)).to.be.rejectedWith(error);
-                verify(spiedProxy.sendPacketString('Z0,4,0')).once();
+                verify(spiedProxy.sendPacketString('Z0,4,0', anything())).once();
             });
             it("Should return an error on invalid breakpoint", async function () {
                 // segment 1 is invalid
-                when(spiedProxy.sendPacketString('Z0,4,1')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('Z0,4,1', anything())).thenResolve(RESPONSE_OK);
                 let bp = createBreakpoint(0, 1, 4);
                 await expect(proxy.setBreakpoint(bp)).to.be.rejected;
-                verify(spiedProxy.sendPacketString('Z0,4,1')).never();
+                verify(spiedProxy.sendPacketString('Z0,4,1', anything())).never();
             });
             it("Should get the registers", async function () {
-                let registers = await proxy.registers(null);
+                let registers = await proxy.registers(null, null);
                 let pos = 0;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
                     name: "pc",
@@ -351,13 +345,13 @@ describe("GdbProxy Tests", function () {
                 });
             });
             it("Should get the stack frames", async function () {
-                when(spiedProxy.sendPacketString("QTFrame:-1")).thenResolve("00000001");
+                when(spiedProxy.sendPacketString("QTFrame:-1", anything())).thenResolve("00000001");
                 let rIdx = proxy.getRegisterIndex("pc");
                 expect(rIdx).not.to.be.equal(null);
                 if (rIdx !== null) {
                     let pcGetRegisterMessage = "p" + rIdx.toString(16);
-                    when(spiedProxy.sendPacketString(pcGetRegisterMessage)).thenResolve("0000000a");
-                    when(spiedProxy.sendPacketString("QTFrame:1")).thenResolve("00000001");
+                    when(spiedProxy.sendPacketString(pcGetRegisterMessage, anything())).thenResolve("0000000a");
+                    when(spiedProxy.sendPacketString("QTFrame:1", anything())).thenResolve("00000001");
                     let thread = proxy.getCurrentCpuThread();
                     if (thread) {
                         return expect(proxy.stack(thread)).to.eventually.eql(<GdbStackFrame>{
@@ -382,17 +376,17 @@ describe("GdbProxy Tests", function () {
                 }
             });
             it("Should get the copper stack frame", async function () {
-                when(spiedProxy.sendPacketString("QTFrame:-1")).thenResolve("00000001");
+                when(spiedProxy.sendPacketString("QTFrame:-1", anything())).thenResolve("00000001");
                 let rIdx = proxy.getRegisterIndex("copper");
                 expect(rIdx).not.to.be.equal(null);
                 if (rIdx !== null) {
                     let pcGetRegisterMessage = "p" + rIdx.toString(16);
-                    when(spiedProxy.sendPacketString(pcGetRegisterMessage)).thenResolve("0000000a");
-                    when(spiedProxy.sendPacketString("QTFrame:1")).thenResolve("00000001");
+                    when(spiedProxy.sendPacketString(pcGetRegisterMessage, anything())).thenResolve("0000000a");
+                    when(spiedProxy.sendPacketString("QTFrame:1", anything())).thenResolve("00000001");
                     const regIndex = GdbProxy.REGISTER_COPPER_ADDR_INDEX.toString(16);
-                    when(spiedProxy.sendPacketString(`p${regIndex}`)).thenResolve("00000001");
-                    when(spiedProxy.sendPacketString('?')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`);
-                    when(spiedProxy.sendPacketString('vStopped')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`).thenResolve(RESPONSE_OK);
+                    when(spiedProxy.sendPacketString(`p${regIndex}`, anything())).thenResolve("00000001");
+                    when(spiedProxy.sendPacketString('?', anything())).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`);
+                    when(spiedProxy.sendPacketString('vStopped', anything())).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`).thenResolve(RESPONSE_OK);
                     let thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadIdFsUAE.COP);
                     if (thread) {
                         return expect(proxy.stack(thread)).to.eventually.eql(<GdbStackFrame>{
@@ -411,17 +405,17 @@ describe("GdbProxy Tests", function () {
                 }
             });
             it("Should raise error on get the copper stack frame", async function () {
-                when(spiedProxy.sendPacketString("QTFrame:-1")).thenResolve("00000001");
+                when(spiedProxy.sendPacketString("QTFrame:-1", anything())).thenResolve("00000001");
                 let rIdx = proxy.getRegisterIndex("copper");
                 expect(rIdx).not.to.be.equal(null);
                 if (rIdx !== null) {
                     let pcGetRegisterMessage = "p" + rIdx.toString(16);
-                    when(spiedProxy.sendPacketString(pcGetRegisterMessage)).thenResolve("0000000a");
-                    when(spiedProxy.sendPacketString("QTFrame:1")).thenResolve("00000001");
+                    when(spiedProxy.sendPacketString(pcGetRegisterMessage, anything())).thenResolve("0000000a");
+                    when(spiedProxy.sendPacketString("QTFrame:1", anything())).thenResolve("00000001");
                     const regIndex = GdbProxy.REGISTER_COPPER_ADDR_INDEX.toString(16);
-                    when(spiedProxy.sendPacketString(`p${regIndex}`)).thenReject(new Error("nope"));
-                    when(spiedProxy.sendPacketString('?')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`);
-                    when(spiedProxy.sendPacketString('vStopped')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`).thenResolve(RESPONSE_OK);
+                    when(spiedProxy.sendPacketString(`p${regIndex}`, anything())).thenReject(new Error("nope"));
+                    when(spiedProxy.sendPacketString('?', anything())).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`);
+                    when(spiedProxy.sendPacketString('vStopped', anything())).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`).thenResolve(RESPONSE_OK);
                     let thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadIdFsUAE.COP);
                     if (thread) {
                         return expect(proxy.stack(thread)).to.be.rejected;
@@ -432,23 +426,23 @@ describe("GdbProxy Tests", function () {
             });
             it("Should remove an existing breakpoint", async function () {
                 // Set a breakpoint
-                when(spiedProxy.sendPacketString('Z0,4,0')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('Z0,4,0', anything())).thenResolve(RESPONSE_OK);
                 let bp = createBreakpoint(0, 0, 4);
                 await proxy.setBreakpoint(bp);
                 // Remove
-                when(spiedProxy.sendPacketString('z0,4,0')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('z0,4,0', anything())).thenResolve(RESPONSE_OK);
                 await proxy.removeBreakpoint(bp);
-                verify(spiedProxy.sendPacketString('z0,4,0')).once();
+                verify(spiedProxy.sendPacketString('z0,4,0', anything())).once();
             });
             it("Should remove an existing exception breakpoint", async function () {
                 // Set a breakpoint
-                when(spiedProxy.sendPacketString('Z1,0,0;X1,a')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('Z1,0,0;X1,a', anything())).thenResolve(RESPONSE_OK);
                 let bp = createBreakpoint(0, undefined, 0, 10);
                 await proxy.setBreakpoint(bp);
                 // Remove
-                when(spiedProxy.sendPacketString('z1,a')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('z1,a', anything())).thenResolve(RESPONSE_OK);
                 await proxy.removeBreakpoint(bp);
-                verify(spiedProxy.sendPacketString('z1,a')).once();
+                verify(spiedProxy.sendPacketString('z1,a', anything())).once();
             });
             it("Should reject on error removing a breakpoint", async function () {
                 let bp = createBreakpoint(1, undefined, -5);
@@ -493,37 +487,37 @@ describe("GdbProxy Tests", function () {
                 }
             });
             it("Should get memory contents", async function () {
-                when(spiedProxy.sendPacketString('ma,8')).thenResolve("cccccccc");
+                when(spiedProxy.sendPacketString('ma,8', anything())).thenResolve("cccccccc");
                 await expect(proxy.getMemory(10, 8)).to.eventually.equals("cccccccc");
-                verify(spiedProxy.sendPacketString('ma,8')).once();
+                verify(spiedProxy.sendPacketString('ma,8', anything())).once();
             });
             it("Should send an error if get memory contents fails", async function () {
-                when(spiedProxy.sendPacketString('ma,8')).thenReject(error);
+                when(spiedProxy.sendPacketString('ma,8', anything())).thenReject(error);
                 await expect(proxy.getMemory(10, 8)).to.be.rejectedWith(error);
-                verify(spiedProxy.sendPacketString('ma,8')).once();
+                verify(spiedProxy.sendPacketString('ma,8', anything())).once();
             });
             it("Should set memory contents", async function () {
-                when(spiedProxy.sendPacketString('Ma,2:8aff')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('Ma,2:8aff', anything())).thenResolve(RESPONSE_OK);
                 await expect(proxy.setMemory(10, '8aff')).to.be.fulfilled;
-                verify(spiedProxy.sendPacketString('Ma,2:8aff')).once();
+                verify(spiedProxy.sendPacketString('Ma,2:8aff', anything())).once();
             });
             it("Should send an error if set memory contents fails", async function () {
-                when(spiedProxy.sendPacketString('Ma,2:8aff')).thenReject(error);
+                when(spiedProxy.sendPacketString('Ma,2:8aff', anything())).thenReject(error);
                 await expect(proxy.setMemory(10, '8aff')).to.be.rejectedWith(error);
-                verify(spiedProxy.sendPacketString('Ma,2:8aff')).once();
+                verify(spiedProxy.sendPacketString('Ma,2:8aff', anything())).once();
             });
             it("Should continue execution", async function () {
-                when(spiedProxy.sendPacketString(vContCRequest)).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString(vContCRequest, anything())).thenResolve(RESPONSE_OK);
                 let thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     await expect(proxy.continueExecution(thread)).to.be.fulfilled;
                 } else {
                     fail("Thread not found");
                 }
-                verify(spiedProxy.sendPacketString(vContCRequest)).once();
+                verify(spiedProxy.sendPacketString(vContCRequest, anything())).once();
             });
             it("Should reject continue execution error", async function () {
-                when(spiedProxy.sendPacketString(vContCRequest)).thenReject(error);
+                when(spiedProxy.sendPacketString(vContCRequest, anything())).thenReject(error);
                 let thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     await expect(proxy.continueExecution(thread)).to.be.rejectedWith(error);
@@ -532,18 +526,18 @@ describe("GdbProxy Tests", function () {
                 }
             });
             it("Should set register", async function () {
-                when(spiedProxy.sendPacketString('P0=8aff')).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('P0=8aff', anything())).thenResolve(RESPONSE_OK);
                 await expect(proxy.setRegister('d0', '8aff')).to.be.fulfilled;
-                verify(spiedProxy.sendPacketString('P0=8aff')).once();
+                verify(spiedProxy.sendPacketString('P0=8aff', anything())).once();
             });
             it("Should send an error if set memory contents fails", async function () {
-                when(spiedProxy.sendPacketString('P0=8aff')).thenReject(error);
+                when(spiedProxy.sendPacketString('P0=8aff', anything())).thenReject(error);
                 await expect(proxy.setRegister('d0', '8aff')).to.be.rejectedWith(error);
-                verify(spiedProxy.sendPacketString('P0=8aff')).once();
+                verify(spiedProxy.sendPacketString('P0=8aff', anything())).once();
             });
             it("Should query for halt status", async function () {
-                when(spiedProxy.sendPacketString('?')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`);
-                when(spiedProxy.sendPacketString('vStopped')).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString('?', anything())).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.0f;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`);
+                when(spiedProxy.sendPacketString('vStopped', anything())).thenResolve(`T05;swbreak:;thread:p0${GdbThread.DEFAULT_PROCESS_ID}.07;0e:00c00b00;0f:00c14e18;10:00000000;11:00c034c2;1e:00005860`).thenResolve(RESPONSE_OK);
                 let haltStatus: GdbHaltStatus[] = await proxy.getHaltStatus();
                 expect(haltStatus.length).to.be.equal(2);
                 expect(haltStatus[0].code).to.be.equal(5);
@@ -558,18 +552,18 @@ describe("GdbProxy Tests", function () {
                 if (haltStatus[1].thread) {
                     expect(haltStatus[1].thread.getThreadId()).to.be.equal(GdbAmigaSysThreadIdFsUAE.COP);
                 }
-                verify(spiedProxy.sendPacketString('?')).once();
-                verify(spiedProxy.sendPacketString('vStopped')).twice();
+                verify(spiedProxy.sendPacketString('?', anything())).once();
+                verify(spiedProxy.sendPacketString('vStopped', anything())).twice();
             });
             it("Should query for pause", async function () {
-                when(spiedProxy.sendPacketString(vContTRequest)).thenResolve(RESPONSE_OK);
+                when(spiedProxy.sendPacketString(vContTRequest, anything())).thenResolve(RESPONSE_OK);
                 let thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     await expect(proxy.pause(thread)).to.be.fulfilled;
                 } else {
                     fail("Thread not found");
                 }
-                verify(spiedProxy.sendPacketString(vContTRequest)).once();
+                verify(spiedProxy.sendPacketString(vContTRequest, anything())).once();
             });
         });
     });

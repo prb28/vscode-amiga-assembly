@@ -1,7 +1,7 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
 import { Mutex } from 'ts-simple-mutex/build/lib/mutex';
-import { GdbAmigaSysThreadIdFsUAE, GdbError, GdbHaltStatus, GdbRegister, GdbSignal, GdbStackFrame, GdbStackPosition, GdbThread, Segment, GdbThreadState } from './gdbProxyCore';
+import { GdbAmigaSysThreadIdFsUAE, GdbError, GdbHaltStatus, GdbRegister, GdbSignal, GdbStackFrame, GdbStackPosition, GdbThread, Segment, GdbThreadState, GdbAmigaSysThreadIdWinUAE } from './gdbProxyCore';
 import { GdbBreakpoint } from './breakpointManager';
 import { GdbReceivedDataManager as GdbReceivedDataManager, GdbPacketHandler } from './gdbEvents';
 import { GdbPacket, GdbPacketType } from './gdbPacket';
@@ -35,32 +35,32 @@ export class GdbProxy extends EventEmitter {
     /** Labels for SR bits */
     static readonly SR_LABELS = ["T1", "T0", "S", "M", null, "I2", "I1", "I0", null, null, null, "X", "N", "Z", "V", "C"];
     /** Socket to connect */
-    private socket: Socket;
+    protected socket: Socket;
     /** Current source file */
-    private programFilename?: string;
+    protected programFilename?: string;
     /** Segments of memory */
-    private segments?: Array<Segment>;
+    protected segments?: Array<Segment>;
     /** Stop on entry asked */
-    private stopOnEntryRequested = false;
+    protected stopOnEntryRequested = false;
     /** Flag for the first stop - to install the breakpoints */
-    private firstStop = true;
+    protected firstStop = true;
     /** Mutex to just have one call to gdb */
-    private mutex = new Mutex({
+    protected mutex = new Mutex({
         autoUnlockTimeoutMs: 1200,
         intervalMs: 100,
     });
     /** vCont commands are supported */
-    private supportVCont = false;
+    protected supportVCont = false;
     /** Created threads */
-    private threads = new Map<number, GdbThread>();
+    protected threads = new Map<number, GdbThread>();
     /** Created threads indexed by native ids */
-    private threadsNative = new Map<string, GdbThread>();
+    protected threadsNative = new Map<string, GdbThread>();
     /** function from parent to send all pending breakpoints */
-    private sendPendingBreakpointsCallback: (() => Promise<void>) | undefined = undefined;
+    protected sendPendingBreakpointsCallback: (() => Promise<void>) | undefined = undefined;
     /** Manager for the received socket data */
-    private receivedDataManager: GdbReceivedDataManager;
+    protected receivedDataManager: GdbReceivedDataManager;
     /** Lock for sendPacketString function */
-    private sendPacketStringLock?: any;
+    protected sendPacketStringLock?: any;
 
     /**
      * Constructor 
@@ -87,18 +87,16 @@ export class GdbProxy extends EventEmitter {
         return new Promise((resolve, reject) => {
             self.socket.connect(port, host);
             self.socket.once('connect', async () => {
-                await self.sendPacketString(GdbProxy.SUPPORT_STRING).then(async data => {
+                await self.sendPacketString(GdbProxy.SUPPORT_STRING, GdbPacketType.UNKNOWN).then(async data => {
                     const returnedData = data;
                     if (returnedData.indexOf("multiprocess+") >= 0) {
                         GdbThread.setSupportMultiprocess(true);
-                    } else {
-                        reject(new Error(GdbProxy.BINARIES_ERROR));
                     }
                     if (returnedData.indexOf("vContSupported+") >= 0) {
                         this.supportVCont = true;
                     }
                     if (returnedData.indexOf("QStartNoAckMode+") >= 0) {
-                        await self.sendPacketString('QStartNoAckMode').then(_ => {
+                        await self.sendPacketString('QStartNoAckMode', GdbPacketType.OK).then(_ => {
                             resolve();
                         }).catch(error => {
                             reject(error);
@@ -130,8 +128,8 @@ export class GdbProxy extends EventEmitter {
     }
 
     /** Default handler for the on data event*/
-    private defaultOnDataHandler = (packet: GdbPacket): boolean => {
-        this.sendEvent("output", `defaultOnDataHandler (notification : ${packet.isNotification()}) : --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
+    protected defaultOnDataHandler = (packet: GdbPacket): boolean => {
+        this.sendEvent("output", `defaultOnDataHandler (type : ${GdbPacketType[packet.getType()]}, notification : ${packet.isNotification()}) : --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
         let consumed = false;
         switch (packet.getType()) {
             case GdbPacketType.STOP:
@@ -162,12 +160,15 @@ export class GdbProxy extends EventEmitter {
      * @param proxy A GdbProxy instance
      * @param data Data to parse
      */
-    private onData(proxy: GdbProxy, data: any): Promise<void> {
+    protected onData(proxy: GdbProxy, data: any): Promise<void> {
         return new Promise(async (resolve, reject) => {
             let packets = GdbPacket.parseData(data);
             for (let packet of packets) {
                 // plus packet are acknowledge - to be ignored
-                if (packet.getType() !== GdbPacketType.PLUS) {
+                if (packet.getType() === GdbPacketType.OUTPUT) {
+                    let message = StringUtils.convertHexStringToASCII(packet.getMessage(), 1);
+                    this.sendEvent("output", `server output : ${message}`, undefined, undefined, undefined, 'debug');
+                } else if (packet.getType() !== GdbPacketType.PLUS) {
                     this.receivedDataManager.trigger(packet);
                 }
             }
@@ -191,7 +192,7 @@ export class GdbProxy extends EventEmitter {
                 setTimeout(async function () {
                     self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
                     let encodedProgramName = StringUtils.convertStringToHex("dh0:" + elms[elms.length - 1]);
-                    await self.sendPacketString("vRun;" + encodedProgramName + ";").then(async (message) => {
+                    await self.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP).then(async (message) => {
                         let type = GdbPacket.parseType(message);
                         if (type === GdbPacketType.SEGMENT) {
                             reject(new Error(GdbProxy.BINARIES_ERROR));
@@ -229,7 +230,7 @@ export class GdbProxy extends EventEmitter {
 
     public getQOffsets(): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            await this.sendPacketString('qOffsets').then(segmentReply => {
+            await this.sendPacketString('qOffsets', GdbPacketType.UNKNOWN).then(segmentReply => {
                 // expected return message : TextSeg=00c03350;DataSeg=00c03350
                 let segs = segmentReply.split(";");
                 this.segments = new Array<Segment>();
@@ -296,29 +297,34 @@ export class GdbProxy extends EventEmitter {
      * @param text Text to send
      * @return a Promise with the response contents - or a rejection
      */
-    public sendPacketString(text: string, expectedType?: GdbPacketType): Promise<string> {
+    public sendPacketString(text: string, expectedType: GdbPacketType | null): Promise<string> {
         return new Promise(async (resolve, reject) => {
             let dataToSend = this.formatString(text);
             if (this.socket.writable) {
                 this.sendPacketStringLock = await this.mutex.capture('sendPacketString');
-                let p = this.receivedDataManager.waitData(<GdbPacketHandler>{
-                    handle: (packet: GdbPacket): boolean => {
-                        if (packet.getType() === GdbPacketType.ERROR) {
-                            reject(this.parseError(packet.getMessage()));
-                        } else if ((!expectedType) || (expectedType === packet.getType())) {
-                            resolve(packet.getMessage());
-                            this.sendEvent("output", `${dataToSend} --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
-                            if (this.sendPacketStringLock) {
-                                this.sendPacketStringLock();
-                                this.sendPacketStringLock = undefined;
+                if (expectedType !== null) {
+                    let p = this.receivedDataManager.waitData(<GdbPacketHandler>{
+                        handle: (packet: GdbPacket): boolean => {
+                            if (packet.getType() === GdbPacketType.ERROR) {
+                                reject(this.parseError(packet.getMessage()));
+                            } else if (expectedType === packet.getType()) {
+                                resolve(packet.getMessage());
+                                this.sendEvent("output", `${dataToSend} --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
+                                if (this.sendPacketStringLock) {
+                                    this.sendPacketStringLock();
+                                    this.sendPacketStringLock = undefined;
+                                }
+                                return true;
                             }
-                            return true;
+                            return false;
                         }
-                        return false;
-                    }
-                });
-                this.socket.write(dataToSend);
-                await p;
+                    });
+                    this.sendEvent("output", `${dataToSend} -->`, undefined, undefined, undefined, 'debug');
+                    this.socket.write(dataToSend);
+                    await p;
+                } else {
+                    this.socket.write(dataToSend);
+                }
             } else {
                 reject(new Error("Socket can't be written"));
             }
@@ -355,7 +361,7 @@ export class GdbProxy extends EventEmitter {
                         }
                         message = 'Z0,' + GdbProxy.formatNumber(offset) + segStr;
                     }
-                    await this.sendPacketString(message).then(function (data) {
+                    await this.sendPacketString(message, null).then(function (data) {
                         breakpoint.verified = true;
                         breakpoint.message = undefined;
                         self.sendEvent("breakpointValidated", breakpoint);
@@ -405,7 +411,7 @@ export class GdbProxy extends EventEmitter {
                 reject(new Error("No segments are defined or segmentId is invalid, is the debugger connected?"));
             }
             if (message) {
-                await this.sendPacketString(message).then(data => {
+                await this.sendPacketString(message, null).then(data => {
                     resolve();
                 }).catch(err => {
                     reject(err);
@@ -428,7 +434,7 @@ export class GdbProxy extends EventEmitter {
                 reject(new Error("No arguments to select a frame"));
                 return;
             }
-            await this.sendPacketString(message).then(data => {
+            await this.sendPacketString(message, null).then(data => {
                 if (data === "-1") {
                     resolve(GdbProxy.DEFAULT_FRAME_INDEX);
                 } else {
@@ -441,12 +447,22 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
+     * Retrieves the thread display name
+     * 
+     * @param threadId Thread identifier
+     * @return name
+     */
+    public getThreadDisplayName(thread: GdbThread): string {
+        return thread.getDisplayName(false);
+    }
+
+    /**
      * Retrieves the stack position for a frame
      * 
      * @param threadId Thread identifier
      * @param frameIndex Index of the frame selected
      */
-    private getStackPosition(thread: GdbThread, frameIndex: number): Promise<GdbStackPosition> {
+    protected getStackPosition(thread: GdbThread, frameIndex: number): Promise<GdbStackPosition> {
         return new Promise(async (resolve, reject) => {
             if (thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.CPU) {
                 // Get the current frame
@@ -492,7 +508,7 @@ export class GdbProxy extends EventEmitter {
                     }
                 }
             } else {
-                reject(new Error("No frames for thread: " + thread.getDisplayName()));
+                reject(new Error("No frames for thread: " + this.getThreadDisplayName(thread)));
             }
         });
     }
@@ -586,7 +602,7 @@ export class GdbProxy extends EventEmitter {
     /**
      * Retrieves all the register values
      */
-    public registers(frameId: number | null): Promise<Array<GdbRegister>> {
+    public registers(frameId: number | null, thread: GdbThread | null): Promise<Array<GdbRegister>> {
         return new Promise(async (resolve, reject) => {
             const unlock = await this.mutex.capture('selectFrame');
             if (frameId !== null) {
@@ -597,7 +613,7 @@ export class GdbProxy extends EventEmitter {
                     return;
                 });
             }
-            await this.sendPacketString('g').then(message => {
+            await this.sendPacketString('g', GdbPacketType.UNKNOWN).then(message => {
                 unlock();
                 //console.trace("register : " + data.toString());
                 let registers = new Array<GdbRegister>();
@@ -679,7 +695,7 @@ export class GdbProxy extends EventEmitter {
      */
     public getMemory(address: number, length: number): Promise<string> {
         return new Promise((resolve, reject) => {
-            this.sendPacketString("m" + GdbProxy.formatNumber(address) + ',' + GdbProxy.formatNumber(length)).then(data => {
+            this.sendPacketString("m" + GdbProxy.formatNumber(address) + ',' + GdbProxy.formatNumber(length), GdbPacketType.UNKNOWN).then(data => {
                 resolve(data);
             }).catch(err => {
                 reject(err);
@@ -695,7 +711,7 @@ export class GdbProxy extends EventEmitter {
     public setMemory(address: number, dataToSend: string): Promise<void> {
         let size = dataToSend.length / 2;
         return new Promise((resolve, reject) => {
-            this.sendPacketString("M" + GdbProxy.formatNumber(address) + ',' + size + ':' + dataToSend).then(data => {
+            this.sendPacketString("M" + GdbProxy.formatNumber(address) + ',' + size + ':' + dataToSend, GdbPacketType.OK).then(data => {
                 resolve();
             }).catch(err => { reject(err); });
         });
@@ -710,12 +726,12 @@ export class GdbProxy extends EventEmitter {
             const unlock = await this.mutex.capture('selectFrame');
             let returnedFrameIndex = GdbProxy.DEFAULT_FRAME_INDEX;
             // the current frame
-            if (frameIndex) {
+            if (frameIndex !== undefined) {
                 let sReturnedFrameIndex = await this.selectFrame(frameIndex, null).catch(err => {
                     unlock();
                     reject(err);
                 });
-                if (sReturnedFrameIndex) {
+                if (sReturnedFrameIndex !== undefined) {
                     returnedFrameIndex = sReturnedFrameIndex;
                 }
                 if ((frameIndex !== GdbProxy.DEFAULT_FRAME_INDEX) && (sReturnedFrameIndex !== frameIndex)) {
@@ -725,8 +741,8 @@ export class GdbProxy extends EventEmitter {
                 }
             }
             let regIdx = this.getRegisterIndex(name);
-            if (regIdx) {
-                await this.sendPacketString("p" + GdbProxy.formatNumber(regIdx)).then(data => {
+            if (regIdx !== null) {
+                await this.sendPacketString("p" + GdbProxy.formatNumber(regIdx), GdbPacketType.UNKNOWN).then(data => {
                     unlock();
                     resolve([data, returnedFrameIndex]);
                 }).catch(err => {
@@ -739,6 +755,7 @@ export class GdbProxy extends EventEmitter {
             unlock();
         });
     }
+
 
     /**
      * Reads a register value
@@ -760,7 +777,7 @@ export class GdbProxy extends EventEmitter {
     public getThreadIds(): Promise<Array<GdbThread>> {
         return new Promise(async (resolve, reject) => {
             if (this.threads.size <= 0) {
-                await this.sendPacketString("qfThreadInfo").then(data => {
+                await this.sendPacketString("qfThreadInfo", GdbPacketType.UNKNOWN).then(data => {
                     let pData = data;
                     if (pData.startsWith("m")) {
                         pData = pData.substring(1).trim();
@@ -897,7 +914,7 @@ export class GdbProxy extends EventEmitter {
      * ‘TAAn1:r1;n2:r2;…’
      * @param message Message to be parsed
      */
-    private parseHaltStatus(message: string): GdbHaltStatus {
+    protected parseHaltStatus(message: string): GdbHaltStatus {
         // Retrieve the cause
         let sig = parseInt(message.substring(1, 3), 16);
         let parameters: string | null = null;
@@ -942,7 +959,7 @@ export class GdbProxy extends EventEmitter {
                 posString = " in $" + GdbProxy.formatNumber(pc);
             }
             if (thread) {
-                posString += " thread: " + thread.getDisplayName();
+                posString += " thread: " + this.getThreadDisplayName(thread);
             }
         } else {
             registersMap = new Map<number, number>();
@@ -962,7 +979,7 @@ export class GdbProxy extends EventEmitter {
         return new Promise(async (resolve, reject) => {
             let rejected = false;
             let returnedHaltStatus = new Array<GdbHaltStatus>();
-            let response = await this.sendPacketString('?').catch(err => {
+            let response = await this.sendPacketString('?', GdbPacketType.STOP).catch(err => {
                 reject(err);
                 rejected = true;
             });
@@ -971,7 +988,7 @@ export class GdbProxy extends EventEmitter {
                     returnedHaltStatus.push(this.parseHaltStatus(response));
                     let finished = false;
                     while (!finished && !rejected) {
-                        let vStoppedResponse = await this.sendPacketString('vStopped').catch(err => {
+                        let vStoppedResponse = await this.sendPacketString('vStopped', null).catch(err => {
                             reject(err);
                             rejected = true;
                         });
@@ -1003,7 +1020,7 @@ export class GdbProxy extends EventEmitter {
             message = 'vCtrlC';
         }
         thread.setState(GdbThreadState.STEPPING);
-        return this.sendPacketString(message).then(data => {
+        return this.sendPacketString(message, GdbPacketType.STOP).then(data => {
             this.sendEvent('stopOnPause', thread.getId());
         });
     }
@@ -1020,7 +1037,7 @@ export class GdbProxy extends EventEmitter {
             message = 'c';
         }
         thread.setState(GdbThreadState.RUNNING);
-        return this.sendPacketString(message).then(data => {
+        return this.sendPacketString(message, null).then(data => {
             this.sendEvent('continueThread', thread.getId(), true);
         });
     }
@@ -1061,7 +1078,7 @@ export class GdbProxy extends EventEmitter {
                 if (regIdx !== null) {
                     let message = "P" + regIdx.toString(16) + "=" + value;
                     try {
-                        await this.sendPacketString(message).then(data => {
+                        await this.sendPacketString(message, null).then(data => {
                             resolve(data);
                         });
                     } catch (err) {
@@ -1086,7 +1103,7 @@ export class GdbProxy extends EventEmitter {
     /**
      * Returns the thread with an amiga sys type
      */
-    public getThreadFromSysThreadId(sysThreadId: GdbAmigaSysThreadIdFsUAE): GdbThread | undefined {
+    public getThreadFromSysThreadId(sysThreadId: GdbAmigaSysThreadIdFsUAE | GdbAmigaSysThreadIdWinUAE): GdbThread | undefined {
         for (let t of this.threads.values()) {
             if (t.getThreadId() === sysThreadId) {
                 return t;

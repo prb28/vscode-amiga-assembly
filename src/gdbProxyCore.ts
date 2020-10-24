@@ -69,53 +69,81 @@ export class GdbThread {
     /**
      * Constructs the name of a thread
      */
-    public getDisplayName(): string {
+    public getDisplayName(isWinUAE: boolean): string {
         let name: string;
         if (this.processId === GdbThread.DEFAULT_PROCESS_ID) {
-            switch (this.threadId) {
-                case GdbAmigaSysThreadIdFsUAE.AUD0:
-                case GdbAmigaSysThreadIdWinUAE.AUD0:
-                    name = 'audio 0';
-                    break;
-                case GdbAmigaSysThreadIdFsUAE.AUD1:
-                case GdbAmigaSysThreadIdWinUAE.AUD1:
-                    name = 'audio 1';
-                    break;
-                case GdbAmigaSysThreadIdFsUAE.AUD2:
-                case GdbAmigaSysThreadIdWinUAE.AUD2:
-                    name = 'audio 2';
-                    break;
-                case GdbAmigaSysThreadIdFsUAE.AUD3:
-                case GdbAmigaSysThreadIdWinUAE.AUD3:
-                    name = 'audio 3';
-                    break;
-                case GdbAmigaSysThreadIdFsUAE.BLT:
-                case GdbAmigaSysThreadIdWinUAE.BLT:
-                    name = 'blitter';
-                    break;
-                case GdbAmigaSysThreadIdFsUAE.BPL:
-                case GdbAmigaSysThreadIdWinUAE.BPL:
-                    name = 'bit-plane';
-                    break;
-                case GdbAmigaSysThreadIdFsUAE.COP:
-                case GdbAmigaSysThreadIdWinUAE.COP:
-                    name = 'copper';
-                    break;
-                case GdbAmigaSysThreadIdFsUAE.CPU:
-                case GdbAmigaSysThreadIdWinUAE.CPU:
-                    name = 'cpu';
-                    break;
-                case GdbAmigaSysThreadIdFsUAE.DSK:
-                case GdbAmigaSysThreadIdWinUAE.DSK:
-                    name = 'disk';
-                    break;
-                case GdbAmigaSysThreadIdFsUAE.SPR:
-                case GdbAmigaSysThreadIdWinUAE.SPR:
-                    name = 'sprite';
-                    break;
-                default:
-                    name = this.threadId.toString();
-                    break;
+            if (isWinUAE) {
+                switch (this.threadId) {
+                    case GdbAmigaSysThreadIdWinUAE.AUD0:
+                        name = 'audio 0';
+                        break;
+                    case GdbAmigaSysThreadIdWinUAE.AUD1:
+                        name = 'audio 1';
+                        break;
+                    case GdbAmigaSysThreadIdWinUAE.AUD2:
+                        name = 'audio 2';
+                        break;
+                    case GdbAmigaSysThreadIdWinUAE.AUD3:
+                        name = 'audio 3';
+                        break;
+                    case GdbAmigaSysThreadIdWinUAE.BLT:
+                        name = 'blitter';
+                        break;
+                    case GdbAmigaSysThreadIdWinUAE.BPL:
+                        name = 'bit-plane';
+                        break;
+                    case GdbAmigaSysThreadIdWinUAE.COP:
+                        name = 'copper';
+                        break;
+                    case GdbAmigaSysThreadIdWinUAE.CPU:
+                        name = 'cpu';
+                        break;
+                    case GdbAmigaSysThreadIdWinUAE.DSK:
+                        name = 'disk';
+                        break;
+                    case GdbAmigaSysThreadIdWinUAE.SPR:
+                        name = 'sprite';
+                        break;
+                    default:
+                        name = this.threadId.toString();
+                        break;
+                }
+            } else {
+                switch (this.threadId) {
+                    case GdbAmigaSysThreadIdFsUAE.AUD0:
+                        name = 'audio 0';
+                        break;
+                    case GdbAmigaSysThreadIdFsUAE.AUD1:
+                        name = 'audio 1';
+                        break;
+                    case GdbAmigaSysThreadIdFsUAE.AUD2:
+                        name = 'audio 2';
+                        break;
+                    case GdbAmigaSysThreadIdFsUAE.AUD3:
+                        name = 'audio 3';
+                        break;
+                    case GdbAmigaSysThreadIdFsUAE.BLT:
+                        name = 'blitter';
+                        break;
+                    case GdbAmigaSysThreadIdFsUAE.BPL:
+                        name = 'bit-plane';
+                        break;
+                    case GdbAmigaSysThreadIdFsUAE.COP:
+                        name = 'copper';
+                        break;
+                    case GdbAmigaSysThreadIdFsUAE.CPU:
+                        name = 'cpu';
+                        break;
+                    case GdbAmigaSysThreadIdFsUAE.DSK:
+                        name = 'disk';
+                        break;
+                    case GdbAmigaSysThreadIdFsUAE.SPR:
+                        name = 'sprite';
+                        break;
+                    default:
+                        name = this.threadId.toString();
+                        break;
+                }
             }
         } else {
             if (GdbThread.supportMultiprocess) {

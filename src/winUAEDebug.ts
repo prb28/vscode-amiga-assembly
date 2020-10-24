@@ -491,7 +491,7 @@ export class WinUAEDebugSession extends DebugSession implements DebugVariableRes
             await this.gdbProxy.getThreadIds().then(thIds => {
                 let threads = new Array<Thread>();
                 for (let t of thIds) {
-                    threads.push(new Thread(t.getId(), t.getDisplayName()));
+                    threads.push(new Thread(t.getId(), this.gdbProxy.getThreadDisplayName(t)));
                 }
                 response.body = {
                     threads: threads

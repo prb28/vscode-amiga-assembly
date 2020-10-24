@@ -513,7 +513,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             await this.gdbProxy.getThreadIds().then(thIds => {
                 let threads = new Array<Thread>();
                 for (let t of thIds) {
-                    threads.push(new Thread(t.getId(), t.getDisplayName()));
+                    threads.push(new Thread(t.getId(), this.gdbProxy.getThreadDisplayName(t)));
                 }
                 response.body = {
                     threads: threads
@@ -660,7 +660,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 if (id.startsWith("registers_")) {
                     //Gets the frameId
                     let frameId = parseInt(id.substring(10));
-                    this.gdbProxy.registers(frameId).then((registers: Array<GdbRegister>) => {
+                    this.gdbProxy.registers(frameId, null).then((registers: Array<GdbRegister>) => {
                         const variablesArray = new Array<DebugProtocol.Variable>();
                         for (let i = 0; i < registers.length; i++) {
                             let r = registers[i];

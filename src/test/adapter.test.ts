@@ -487,7 +487,7 @@ describe('Node Debug Adapter', () => {
 				});
 				when(this.mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, _reject) => { resolve(["0", -1]); })).thenReturn(new Promise((resolve, _reject) => { resolve(["a", 1]); }));
 				when(this.mockedGdbProxy.getMemory(10, anyNumber())).thenReturn(Promise.resolve("0000000000c00b0000f8"));
-				when(this.mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
+				when(this.mockedGdbProxy.registers(anything(), anything())).thenReturn(Promise.resolve([<GdbRegister>{
 					name: "d0",
 					value: 1
 				}, <GdbRegister>{
@@ -666,7 +666,7 @@ describe('Node Debug Adapter', () => {
 					count: 1
 				}));
 				when(this.mockedGdbProxy.getRegister(anyString(), anything())).thenReturn(new Promise((resolve, reject) => { resolve(["a", -1]); }));
-				when(this.mockedGdbProxy.registers(anything())).thenReturn(Promise.resolve([<GdbRegister>{
+				when(this.mockedGdbProxy.registers(anything(), anything())).thenReturn(Promise.resolve([<GdbRegister>{
 					name: "d0",
 					value: 1
 				}, <GdbRegister>{
