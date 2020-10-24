@@ -36,7 +36,7 @@ describe('Node Debug Adapter', () => {
 		}
 	};
 	let dc: DebugClient;
-	let callbacks = new Map<String, any>();
+	let callbacks = new Map<string, any>();
 	let testWithRealEmulator = false;
 	let defaultTimeout = 10000;
 	let th = new GdbThread(0, GdbAmigaSysThreadIdFsUAE.CPU);
@@ -518,6 +518,7 @@ describe('Node Debug Adapter', () => {
 					count: 2
 				}));
 			}
+			when(this.mockedGdbProxy.isCPUThread(anything())).thenReturn(true);
 			let launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
@@ -577,6 +578,7 @@ describe('Node Debug Adapter', () => {
 			this.timeout(defaultTimeout);
 			when(this.mockedGdbProxy.getThread(thCop.getId())).thenReturn(thCop);
 			when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th, thCop]));
+			when(this.mockedGdbProxy.isCopperThread(anything())).thenReturn(true);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
@@ -881,12 +883,12 @@ describe('Node Debug Adapter', () => {
 				}, 1);
 				return Promise.resolve();
 			});
-			when(this.mockedGdbProxy.setBreakpoint(anything())).thenCall((bp: GdbBreakpoint) => {
+			when(this.mockedGdbProxy.setBreakpoint(anything())).thenCall((brp: GdbBreakpoint) => {
 				return new Promise((resolve, reject) => {
-					bp.verified = true;
+					brp.verified = true;
 					let cb = callbacks.get('breakpointValidated');
 					if (cb) {
-						cb(bp);
+						cb(brp);
 					}
 					resolve();
 				});
@@ -916,7 +918,7 @@ describe('Node Debug Adapter', () => {
 					return dc.setExceptionBreakpointsRequest({
 						filters: ['all']
 					});
-				}).then(function (response) {
+				}).then(function () {
 					return dc.configurationDoneRequest();
 				}),
 
