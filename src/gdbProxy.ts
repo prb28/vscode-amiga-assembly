@@ -177,6 +177,14 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
+     * Message to initialize the program
+     * @param stopOnEntry If true we will stop on entry
+     */
+    public initProgram(stopOnEntry: boolean | undefined): Promise<void> {
+        return Promise.resolve();
+    }
+
+    /**
      * Message to load the program
      * @param programFilename Filename of the program with the local path
      * @param stopOnEntry If true we will stop on entry
@@ -1117,6 +1125,24 @@ export class GdbProxy extends EventEmitter {
      */
     public getCurrentCpuThread(): GdbThread | undefined {
         return this.getThreadFromSysThreadId(GdbAmigaSysThreadIdFsUAE.CPU);
+    }
+
+    /**
+     * Checks if it is a CPU thread
+     * @param thread Thread to test
+     * @return true if it is a CPU thread
+     */
+    public isCPUThread(thread: GdbThread): boolean {
+        return thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.CPU;
+    }
+
+    /**
+     * Checks if it is a copper thread
+     * @param thread Thread to test
+     * @return true if it is a copper thread
+     */
+    public isCopperThread(thread: GdbThread): boolean {
+        return thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.COP;
     }
 
     /**

@@ -537,5 +537,23 @@ export class GdbProxyWinUAE extends GdbProxy {
     public getCurrentCpuThread(): GdbThread | undefined {
         return this.getThreadFromSysThreadId(GdbAmigaSysThreadIdWinUAE.CPU);
     }
+
+    /**
+     * Checks if it is a CPU thread
+     * @param thread Thread to test
+     * @return true if it is a CPU thread
+     */
+    public isCPUThread(thread: GdbThread): boolean {
+        return thread.getThreadId() === GdbAmigaSysThreadIdWinUAE.CPU;
+    }
+
+    /**
+     * Checks if it is a copper thread
+     * @param thread Thread to test
+     * @return true if it is a copper thread
+     */
+    public isCopperThread(thread: GdbThread): boolean {
+        return thread.getThreadId() === GdbAmigaSysThreadIdWinUAE.COP;
+    }
 }
 
