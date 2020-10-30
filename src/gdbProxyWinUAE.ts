@@ -356,6 +356,7 @@ export class GdbProxyWinUAE extends GdbProxy {
             });
         });
     }
+
     /**
      * Retrieves all the register values
      */

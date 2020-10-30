@@ -68,4 +68,26 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
             this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
+
+    protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
+        const thread = this.gdbProxy.getThread(args.threadId);
+        if (thread) {
+            this.gdbProxy.stack(thread).then(async stk => {
+                let frame = stk.frames[1];
+                let bpArray = this.breakpointManager.createTemporaryBreakpointArray([frame.pc + 1, frame.pc + 2, frame.pc + 4]);
+                await this.breakpointManager.addTemporaryBreakpointArray(bpArray).catch(err => {
+                    this.sendStringErrorResponse(response, err.message);
+                });
+                await this.gdbProxy.continueExecution(thread).catch(err => {
+                    this.sendStringErrorResponse(response, err.message);
+                });
+                this.sendResponse(response);
+            }).catch(err => {
+                this.sendStringErrorResponse(response, err.message);
+            });
+        } else {
+            this.sendStringErrorResponse(response, "Unknown thread");
+        }
+    }
+
 }

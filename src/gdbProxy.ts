@@ -313,25 +313,31 @@ export class GdbProxy extends EventEmitter {
                 if (expectedType !== null) {
                     let p = this.receivedDataManager.waitData(<GdbPacketHandler>{
                         handle: (packet: GdbPacket): boolean => {
+                            if (this.sendPacketStringLock) {
+                                this.sendPacketStringLock();
+                                this.sendPacketStringLock = undefined;
+                            }
                             if (packet.getType() === GdbPacketType.ERROR) {
                                 reject(this.parseError(packet.getMessage()));
+                                return true;
                             } else if (expectedType === packet.getType()) {
                                 resolve(packet.getMessage());
                                 this.sendEvent("output", `${dataToSend} --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
-                                if (this.sendPacketStringLock) {
-                                    this.sendPacketStringLock();
-                                    this.sendPacketStringLock = undefined;
-                                }
                                 return true;
                             }
                             return false;
                         }
                     });
-                    this.sendEvent("output", `${dataToSend} -->`, undefined, undefined, undefined, 'debug');
+                    this.sendEvent("output", `sending ... ${dataToSend} -->`, undefined, undefined, undefined, 'debug');
                     this.socket.write(dataToSend);
                     await p;
                 } else {
                     this.socket.write(dataToSend);
+                    if (this.sendPacketStringLock) {
+                        this.sendPacketStringLock();
+                        this.sendPacketStringLock = undefined;
+                    }
+                    resolve();
                 }
             } else {
                 reject(new Error("Socket can't be written"));

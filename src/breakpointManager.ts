@@ -1,3 +1,4 @@
+import { Mutex } from "ts-simple-mutex";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { DebugDisassembledFile, DebugDisassembledManager } from "./debugDisassembled";
 import { DebugInfo } from "./debugInfo";
@@ -21,6 +22,15 @@ export class BreakpointManager {
     private debugDisassembledManager: DebugDisassembledManager;
     /** Next breakpoint id */
     private nextBreakpointId = 0;
+    /** Temporary breakpoints arrays */
+    private temporaryBreakpointArrays = new Array<GdbTemporaryBreakpointArray>();
+    /** Mutex to just have one call to gdb */
+    protected mutex = new Mutex({
+        autoUnlockTimeoutMs: 1200,
+        intervalMs: 100,
+    });
+    /** Lock for breakpoint management function */
+    protected breakpointLock?: any;
 
     public constructor(gdbProxy: GdbProxy, debugDisassembledManager: DebugDisassembledManager) {
         this.gdbProxy = gdbProxy;
@@ -130,6 +140,75 @@ export class BreakpointManager {
         };
     }
 
+    public createTemporaryBreakpoint(address: number): GdbBreakpoint {
+        return <GdbBreakpoint>{
+            id: this.nextBreakpointId++,
+            segmentId: undefined,
+            offset: address,
+            temporary: true,
+            verified: false
+        };
+    }
+
+    public addTemporaryBreakpointArray(temporaryBreakpointArray: GdbTemporaryBreakpointArray): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            this.temporaryBreakpointArrays.push(temporaryBreakpointArray);
+            for (let debugBp of temporaryBreakpointArray.breakpoints) {
+                await this.gdbProxy.setBreakpoint(debugBp).then(() => {
+                    this.breakpoints.push(debugBp);
+                }).catch((err) => {
+                    reject(err);
+                });
+            }
+            resolve();
+        });
+    }
+
+    public removeTemporaryBreakpointArray(temporaryBreakpointArray: GdbTemporaryBreakpointArray): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            this.breakpointLock = await this.mutex.capture('breakpointLock');
+            for (let debugBp of temporaryBreakpointArray.breakpoints) {
+                await this.gdbProxy.removeBreakpoint(debugBp);
+                this.breakpoints = this.breakpoints.filter(item => item.offset !== debugBp.offset);
+            }
+            this.temporaryBreakpointArrays = this.temporaryBreakpointArrays.filter(item => item !== temporaryBreakpointArray);
+            if (this.breakpointLock) {
+                this.breakpointLock();
+                this.breakpointLock = undefined;
+            }
+            resolve();
+        });
+    }
+
+    public createTemporaryBreakpointArray(offsets: Array<number>): GdbTemporaryBreakpointArray {
+        let tempArray = new GdbTemporaryBreakpointArray();
+        for (let addr of offsets) {
+            let debugBp = this.createTemporaryBreakpoint(addr);
+            tempArray.addBreakpoint(debugBp);
+        }
+        return tempArray;
+    }
+
+    public checkTemporaryBreakpoints(pc: number): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            let arraysToRemove = new Array<GdbTemporaryBreakpointArray>();
+            for (let tempArray of this.temporaryBreakpointArrays) {
+                for (let bp of tempArray.breakpoints) {
+                    if (bp.offset === pc) {
+                        arraysToRemove.push(tempArray);
+                    }
+                }
+            }
+            for (let tempArray of arraysToRemove) {
+                await this.removeTemporaryBreakpointArray(tempArray).catch(err => {
+                    reject(err);
+                });
+            }
+            resolve();
+        });
+    }
+
+
     public createExceptionBreakpoint(): GdbBreakpoint {
         return <GdbBreakpoint>{
             id: this.nextBreakpointId++,
@@ -140,6 +219,7 @@ export class BreakpointManager {
 
     public sendAllPendingBreakpoint = (): Promise<void> => {
         return new Promise(async (resolve, reject) => {
+            this.breakpointLock = await this.mutex.capture('breakpointLock');
             if ((this.pendingBreakpoints) && this.pendingBreakpoints.length > 0) {
                 let pending = this.pendingBreakpoints;
                 this.pendingBreakpoints = new Array<GdbBreakpoint>();
@@ -148,6 +228,10 @@ export class BreakpointManager {
                         //nothing to do - the breakpoint was already added to the pending list
                     });
                 }
+            }
+            if (this.breakpointLock) {
+                this.breakpointLock();
+                this.breakpointLock = undefined;
             }
             resolve();
         });
@@ -172,12 +256,17 @@ export class BreakpointManager {
      */
     public removeExceptionBreakpoint(): Promise<void> {
         return new Promise(async (resolve, reject) => {
+            this.breakpointLock = await this.mutex.capture('breakpointLock');
             let breakpoint = this.createExceptionBreakpoint();
             await this.gdbProxy.removeBreakpoint(breakpoint).then(() => {
                 resolve();
             }).catch((err) => {
                 reject(err);
             });
+            if (this.breakpointLock) {
+                this.breakpointLock();
+                this.breakpointLock = undefined;
+            }
         });
     }
 
@@ -194,6 +283,7 @@ export class BreakpointManager {
         return new Promise(async (resolve, reject) => {
             let hasError = false;
             let remainingBreakpoints = new Array<GdbBreakpoint>();
+            this.breakpointLock = await this.mutex.capture('breakpointLock');
             for (let bp of this.breakpoints) {
                 if (bp.source && this.isSameSource(bp.source, source)) {
                     await this.gdbProxy.removeBreakpoint(bp).catch(err => {
@@ -205,6 +295,10 @@ export class BreakpointManager {
                 }
             }
             this.breakpoints = remainingBreakpoints;
+            if (this.breakpointLock) {
+                this.breakpointLock();
+                this.breakpointLock = undefined;
+            }
             if (hasError) {
                 reject(new Error("Some breakpoints cannot be removed"));
             } else {
@@ -226,4 +320,21 @@ export interface GdbBreakpoint extends DebugProtocol.Breakpoint {
     offset: number;
     /** exception mask : if present it is an exception breakpoint */
     exceptionMask?: number;
+    /** if true it a temporary breakpoint */
+    temporary?: boolean;
+}
+
+/**
+ * Class to store connected temporary breakpoints
+ */
+export class GdbTemporaryBreakpointArray {
+    public breakpoints = new Array<GdbBreakpoint>();
+
+    /**
+     * Adds a breakpoint to the array
+     * @param breakpoint Breakpoint to add
+     */
+    public addBreakpoint(breakpoint: GdbBreakpoint) {
+        this.breakpoints.push(breakpoint);
+    }
 }

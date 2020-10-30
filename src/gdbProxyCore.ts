@@ -187,6 +187,33 @@ export class GdbError extends Error {
     }
     private createMessage() {
         switch (this.errorType) {
+            case 'E01':
+                this.message = "General error during processing";
+                break;
+            case 'E02':
+                this.message = "Error during the packet parse";
+                break;
+            case 'E03':
+                this.message = "Unsupported / unknown command";
+                break;
+            case 'E04':
+                this.message = "Unknown register";
+                break;
+            case 'E05':
+                this.message = "Invalid Frame Id";
+                break;
+            case 'E06':
+                this.message = "Invalid memory location";
+                break;
+            case 'E07':
+                this.message = "Address not safe for a set memory command";
+                break;
+            case 'E08':
+                this.message = "Unknown breakpoint";
+                break;
+            case 'E09':
+                this.message = "The maximum of breakpoints have been reached";
+                break;
             case 'E0F':
                 this.message = "Error during the packet parse for command send memory";
                 break;

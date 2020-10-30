@@ -555,6 +555,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                 // Update the cpu view
                                 this.updateDisassembledView(f.pc, 100);
                                 updatedView = true;
+                                // check temporary breakpoints
+                                this.breakpointManager.checkTemporaryBreakpoints(f.pc);
                             }
                             let stackFrameDone = false;
                             let pc = f.pc.toString(16);
