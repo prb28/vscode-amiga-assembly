@@ -88,12 +88,12 @@ describe('Node Debug Adapter Run', () => {
 		it('should return supported features', function () {
 			return dc.initializeRequest().then(function (response) {
 				response.body = response.body || {};
-				assert.equal(response.body.supportsConfigurationDoneRequest, true);
-				assert.equal(response.body.supportsEvaluateForHovers, false);
-				assert.equal(response.body.supportsStepBack, false);
-				assert.equal(response.body.supportsRestartFrame, false);
-				assert.equal(response.body.supportsConditionalBreakpoints, false);
-				assert.equal(response.body.supportsSetVariable, false);
+				assert.strictEqual(response.body.supportsConfigurationDoneRequest, false);
+				assert.strictEqual(response.body.supportsEvaluateForHovers, false);
+				assert.strictEqual(response.body.supportsStepBack, false);
+				assert.strictEqual(response.body.supportsRestartFrame, false);
+				assert.strictEqual(response.body.supportsConditionalBreakpoints, false);
+				assert.strictEqual(response.body.supportsSetVariable, false);
 			});
 		});
 

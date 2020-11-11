@@ -132,12 +132,12 @@ describe('Node Debug Adapter', () => {
 		it('should return supported features', function () {
 			return dc.initializeRequest().then(function (response) {
 				response.body = response.body || {};
-				assert.equal(response.body.supportsConfigurationDoneRequest, true);
-				assert.equal(response.body.supportsEvaluateForHovers, true);
-				assert.equal(response.body.supportsStepBack, false);
-				assert.equal(response.body.supportsRestartFrame, false);
-				assert.equal(response.body.supportsConditionalBreakpoints, false);
-				assert.equal(response.body.supportsSetVariable, true);
+				assert.strictEqual(response.body.supportsConfigurationDoneRequest, false);
+				assert.strictEqual(response.body.supportsEvaluateForHovers, true);
+				assert.strictEqual(response.body.supportsStepBack, false);
+				assert.strictEqual(response.body.supportsRestartFrame, false);
+				assert.strictEqual(response.body.supportsConditionalBreakpoints, false);
+				assert.strictEqual(response.body.supportsSetVariable, true);
 			});
 		});
 
@@ -323,7 +323,7 @@ describe('Node Debug Adapter', () => {
 			return Promise.all([
 				dc.hitBreakpoint(launchArgsCopy, { path: SOURCE_FILE_NAME, line: 33 }),
 				dc.waitForEvent('breakpoint').then(function (event: DebugProtocol.Event) {
-					assert.equal(event.body.breakpoint.verified, true, "event mismatch: verified");
+					assert.strictEqual(event.body.breakpoint.verified, true, "event mismatch: verified");
 				})
 			]);
 		});
@@ -885,10 +885,12 @@ describe('Node Debug Adapter', () => {
 			});
 			when(this.mockedGdbProxy.setBreakpoint(anything())).thenCall((brp: GdbBreakpoint) => {
 				return new Promise((resolve, reject) => {
-					brp.verified = true;
-					let cb = callbacks.get('breakpointValidated');
-					if (cb) {
-						cb(brp);
+					if (brp.exceptionMask === undefined) {
+						brp.verified = true;
+						let cb = callbacks.get('breakpointValidated');
+						if (cb) {
+							cb(brp);
+						}
 					}
 					resolve();
 				});

@@ -19,8 +19,6 @@ import { MemoryLabelsRegistry } from './customMemoryAddresses';
 import { BreakpointManager, GdbBreakpoint } from './breakpointManager';
 import { CopperDisassembler } from './copperDisassembler';
 import { FileProxy } from './fsProxy';
-const { Subject } = require('await-notify');
-
 
 /**
  * This interface describes the mock-debug specific launch attributes
@@ -58,9 +56,6 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
     // a Mock runtime (or debugger)
     protected variableHandles = new Handles<string>();
-
-    /** Configuration object */
-    protected configurationDone = new Subject();
 
     /** Proxy to Gdb */
     protected gdbProxy: GdbProxy;
@@ -242,7 +237,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         response.body = response.body || {};
 
         // the adapter implements the configurationDoneRequest.
-        response.body.supportsConfigurationDoneRequest = true;
+        response.body.supportsConfigurationDoneRequest = false;
 
         // make VS Code to use 'evaluate' when hovering over source
         response.body.supportsEvaluateForHovers = true;
@@ -290,17 +285,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         // we request them early by sending an 'initializeRequest' to the frontend.
         // The frontend will end the configuration sequence by calling 'configurationDone' request.
         this.sendEvent(new InitializedEvent());
-    }
-
-    /**
-     * Called at the end of the configuration sequence.
-     * Indicates that all breakpoints etc. have been sent to the DA and that the 'launch' can start.
-     */
-    protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
-        super.configurationDoneRequest(response, args);
-
-        // notify the launchRequest that configuration has finished
-        this.configurationDone.notify();
     }
 
     /**
@@ -389,9 +373,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 resolve();
                 return;
             });
-
-            // wait until configuration has finished (and configurationDoneRequest has been called)
-            await this.configurationDone.wait(1000);
 
             await this.connect(response, args);
             resolve();

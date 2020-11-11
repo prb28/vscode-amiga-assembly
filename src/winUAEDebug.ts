@@ -89,5 +89,4 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
             this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
-
 }

@@ -10,8 +10,6 @@ import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { CancellationTokenSource, window, Uri } from 'vscode';
 import { ExecutorHelper } from './execHelper';
 import { FileProxy } from './fsProxy';
-const { Subject } = require('await-notify');
-
 
 /**
  * This interface describes the mock-debug specific launch attributes
@@ -34,8 +32,6 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	options: Array<string>;
 }
 export class RunFsUAENoDebugSession extends DebugSession {
-	private configurationDone = new Subject();
-
 	/** Executor to run fs-uae */
 	private executor: ExecutorHelper;
 
@@ -71,7 +67,7 @@ export class RunFsUAENoDebugSession extends DebugSession {
 
 		// build and return the capabilities of this debug adapter:
 		response.body = response.body || {};
-		response.body.supportsConfigurationDoneRequest = true;
+		response.body.supportsConfigurationDoneRequest = false;
 		response.body.supportsEvaluateForHovers = false;
 		response.body.supportsStepBack = false;
 		response.body.supportsRestartFrame = false;
@@ -84,17 +80,6 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		// we request them early by sending an 'initializeRequest' to the frontend.
 		// The frontend will end the configuration sequence by calling 'configurationDone' request.
 		this.sendEvent(new InitializedEvent());
-	}
-
-	/**
-	 * Called at the end of the configuration sequence.
-	 * Indicates that all breakpoints etc. have been sent to the DA and that the 'launch' can start.
-	 */
-	protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
-		super.configurationDoneRequest(response, args);
-
-		// notify the launchRequest that configuration has finished
-		this.configurationDone.notify();
 	}
 
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
@@ -111,8 +96,6 @@ export class RunFsUAENoDebugSession extends DebugSession {
 			return;
 		});
 
-		// wait until configuration has finished (and configurationDoneRequest has been called)
-		await this.configurationDone.wait(1000);
 		this.sendResponse(response);
 	}
 
@@ -122,29 +105,26 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		return fileProxy.exists();
 	}
 
-	public startEmulator(args: LaunchRequestArguments): Promise<void> {
+	public async startEmulator(args: LaunchRequestArguments): Promise<void> {
 		logger.warn("Starting emulator: " + args.emulator);
 		const emulatorExe = args.emulator;
 		const emulatorWorkingDir = args.emulatorWorkingDir || null;
 		if (emulatorExe) {
 			// Is the emulator exe present in the filesystem ?
 			if (this.checkEmulator(emulatorExe)) {
-				return new Promise(async (resolve, reject) => {
-					this.cancellationTokenSource = new CancellationTokenSource();
-					this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
-						this.sendEvent(new TerminatedEvent());
-						resolve();
-					}).catch((err) => {
-						reject(new Error(`Error raised by the emulator run: ${err.message}`));
-					});
-				});
+				this.cancellationTokenSource = new CancellationTokenSource();
+				try {
+					await this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token);
+					this.sendEvent(new TerminatedEvent());
+				} catch (err) {
+					throw new Error(`Error raised by the emulator run: ${err.message}`);
+				}
 			} else {
-				throw (new Error(`The emulator executable '${emulatorExe}' cannot be found`));
+				throw new Error(`The emulator executable '${emulatorExe}' cannot be found`);
 			}
 		} else {
-			throw (new Error("The emulator executable file path must be defined in the launch settings"));
+			throw new Error("The emulator executable file path must be defined in the launch settings");
 		}
-		return Promise.resolve();
 	}
 
 	protected terminateEmulator() {

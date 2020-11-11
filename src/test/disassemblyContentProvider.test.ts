@@ -18,6 +18,9 @@ class DummyDebugSession implements vscode.DebugSession {
     customRequest(command: string, args?: any): Thenable<any> {
         throw new Error("Method not implemented.");
     }
+    getDebugProtocolBreakpoint(breakpoint: vscode.Breakpoint): Thenable<vscode.DebugProtocolBreakpoint | undefined> {
+        return Promise.resolve(undefined);
+    }
 }
 describe("debug disassembly content provider", function () {
     // tslint:disable:no-unused-expression
