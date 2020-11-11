@@ -371,7 +371,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected connect(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
+    protected async connect(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
         return new Promise(async (resolve) => {
             // temp to use in timeout
             let debAdapter = this;
@@ -415,6 +415,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
                         this.sendEvent(new TerminatedEvent());
                     }).catch(err => {
+                        this.sendEvent(new TerminatedEvent());
                         throw new Error(`Error raised by the emulator run: ${err.message}`);
                     });
                 } else {

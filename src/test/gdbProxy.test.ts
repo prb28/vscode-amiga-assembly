@@ -514,10 +514,10 @@ describe("GdbProxy Tests", function () {
                 } else {
                     fail("Thread not found");
                 }
-                verify(spiedProxy.sendPacketString(vContCRequest, anything())).once();
+                verify(spiedProxy.sendPacketString(vContCRequest, anything(), anything())).once();
             });
             it("Should reject continue execution error", async function () {
-                when(spiedProxy.sendPacketString(vContCRequest, anything())).thenReject(error);
+                when(spiedProxy.sendPacketString(vContCRequest, anything(), anything())).thenReject(error);
                 let thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     await expect(proxy.continueExecution(thread)).to.be.rejectedWith(error);

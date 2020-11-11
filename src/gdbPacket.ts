@@ -108,7 +108,7 @@ export class GdbPacket {
             return GdbPacketType.SEGMENT;
         } else if (message.startsWith("E")) {
             return GdbPacketType.ERROR;
-        } else if ((message.startsWith("S") || (message.startsWith("T")))) {
+        } else if ((message.startsWith("S") || (message.startsWith("T") && !message.startsWith("Te")))) {
             if (message.includes("tframes")) {
                 return GdbPacketType.QTSTATUS;
             }

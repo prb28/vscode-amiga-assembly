@@ -73,7 +73,7 @@ export class GdbReceivedDataManager {
     }
 
     public waitData(handler: GdbPacketHandler): Promise<GdbPacket> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.onData.on((packet): boolean => {
                 if (handler.handle(packet)) {
                     resolve(packet);
