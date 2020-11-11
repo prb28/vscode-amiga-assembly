@@ -412,12 +412,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 if (this.checkEmulator(emulatorExe)) {
                     this.cancellationTokenSource = new CancellationTokenSource();
                     const emulatorWorkingDir = args.emulatorWorkingDir || null;
-                    try {
-                        await this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token);
+                    this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
                         this.sendEvent(new TerminatedEvent());
-                    } catch (err) {
+                    }).catch(err => {
                         throw new Error(`Error raised by the emulator run: ${err.message}`);
-                    }
+                    });
                 } else {
                     throw (new Error(`The emulator executable '${emulatorExe}' cannot be found`));
                 }
