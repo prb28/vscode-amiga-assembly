@@ -12,22 +12,13 @@ export class GdbProxyWinUAE extends GdbProxy {
      * Message to initialize the program
      * @param stopOnEntry If true we will stop on entry
      */
-    public initProgram(stopOnEntry: boolean | undefined): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            await this.getQOffsets().catch(err => {
-                reject(err);
-            });
-            // Call for thread dump
-            let threads = await this.getThreadIds().catch(err => {
-                reject(err);
-            });
-            if (threads) {
-                for (let th of threads) {
-                    this.sendEvent('threadStarted', th.getId());
-                }
-            }
-            resolve();
-        });
+    public async initProgram(stopOnEntry: boolean | undefined): Promise<void> {
+        await this.getQOffsets();
+        // Call for thread dump
+        let threads = await this.getThreadIds();
+        for (let th of threads) {
+            this.sendEvent('threadStarted', th.getId());
+        }
     }
 
     /**
@@ -35,69 +26,50 @@ export class GdbProxyWinUAE extends GdbProxy {
      * @param programFilename Filename of the program with the local path
      * @param stopOnEntry If true we will stop on entry
      */
-    public load(programFilename: string, stopOnEntry: boolean | undefined): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.programFilename !== programFilename) {
-                this.programFilename = programFilename;
-                let elms = this.programFilename.replace(/\\/g, '/').split('/');
-                const self = this;
-                // Let fs-uae terminate before sending the run command
-                // TODO : check if this is necessary
-                setTimeout(async function () {
-                    self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
-                    let encodedProgramName = StringUtils.convertStringToHex("dh0:" + elms[elms.length - 1]);
-                    await self.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP).then(async (message) => {
-                        // Call for segments
-                        await self.initProgram(stopOnEntry).catch(err => {
-                            reject(err);
-                        });
-                        self.parseStop(message).then(async (_) => {
-                            resolve();
-                        }).catch(err => {
-                            reject(err);
-                        });
-                    }).catch(err => {
-                        reject(err);
-                    });
-                }, 100);
-            } else {
-                resolve();
-            }
-        });
+    public async load(programFilename: string, stopOnEntry: boolean | undefined): Promise<void> {
+        if (this.programFilename !== programFilename) {
+            this.programFilename = programFilename;
+            let elms = this.programFilename.replace(/\\/g, '/').split('/');
+            const self = this;
+            // Let fs-uae terminate before sending the run command
+            // TODO : check if this is necessary
+            await new Promise(resolve => setTimeout(async function () {
+                self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
+                let encodedProgramName = StringUtils.convertStringToHex("dh0:" + elms[elms.length - 1]);
+                let message = await self.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP);
+                // Call for segments
+                await self.initProgram(stopOnEntry);
+                await self.parseStop(message);
+            }, 100));
+        }
     }
 
-    public getQOffsets(): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            await this.sendPacketString('qOffsets', GdbPacketType.UNKNOWN).then(segmentReply => {
-                // expected return message : TextSeg=00c03350;DataSeg=00c03350
-                let segs = segmentReply.split(";");
-                this.segments = new Array<Segment>();
-                // The segments message begins with the keyword AS
-                let segIdx = 0;
-                for (let seg of segs) {
-                    segIdx++;
-                    let name: string;
-                    let address: string;
-                    let segElms = seg.split("=");
-                    if (segElms.length > 1) {
-                        name = segElms[0];
-                        address = segElms[1];
-                    } else {
-                        name = `Segment${segIdx}`;
-                        address = segElms[0];
-                    }
-                    this.segments.push(<Segment>{
-                        name: name,
-                        address: parseInt(address, 16),
-                        size: 0,
-                    });
-                }
-                resolve();
-                this.sendEvent("segmentsUpdated", this.segments);
-            }).catch(err => {
-                reject(err);
+    public async getQOffsets(): Promise<void> {
+        let segmentReply = await this.sendPacketString('qOffsets', GdbPacketType.UNKNOWN);
+        // expected return message : TextSeg=00c03350;DataSeg=00c03350
+        let segs = segmentReply.split(";");
+        this.segments = new Array<Segment>();
+        // The segments message begins with the keyword AS
+        let segIdx = 0;
+        for (let seg of segs) {
+            segIdx++;
+            let name: string;
+            let address: string;
+            let segElms = seg.split("=");
+            if (segElms.length > 1) {
+                name = segElms[0];
+                address = segElms[1];
+            } else {
+                name = `Segment${segIdx}`;
+                address = segElms[0];
+            }
+            this.segments.push(<Segment>{
+                name: name,
+                address: parseInt(address, 16),
+                size: 0,
             });
-        });
+        }
+        this.sendEvent("segmentsUpdated", this.segments);
     }
 
 

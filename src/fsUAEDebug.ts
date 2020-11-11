@@ -317,69 +317,61 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
-        return new Promise(async (resolve) => {
-            if (args.trace) {
-                this.trace = args.trace;
-            } else {
-                this.trace = false;
-            }
-            // Does the program exists ? -> Loads the debug info
-            let dInfoLoaded = false;
-            try {
-                dInfoLoaded = await this.loadDebugInfo(args);
-                if (dInfoLoaded && this.debugInfo) {
-                    this.breakpointManager.setDebugInfo(this.debugInfo);
-                    this.breakpointManager.checkPendingBreakpointsAddresses();
-                }
-            } catch (err) {
-                this.sendStringErrorResponse(response, "Invalid program to debug: " + err.message);
-                resolve();
-                return;
+        if (args.trace) {
+            this.trace = args.trace;
+        } else {
+            this.trace = false;
+        }
+        // Does the program exists ? -> Loads the debug info
+        let dInfoLoaded = false;
+        try {
+            dInfoLoaded = await this.loadDebugInfo(args);
+            if (dInfoLoaded && this.debugInfo) {
+                this.breakpointManager.setDebugInfo(this.debugInfo);
+                this.breakpointManager.checkPendingBreakpointsAddresses();
             }
             if ((!args.program) || (!dInfoLoaded)) {
                 this.sendStringErrorResponse(response, "Invalid program to debug - review launch settings");
-                resolve();
-                return;
+            } else {
+                // Showing the help text
+                if (!this.testMode) {
+                    let text = "Commands:\n" +
+                        "    Memory dump:\n" +
+                        "        m address, size[, wordSizeInBytes, rowSizeInWords,ab]\n" +
+                        "        			a: show ascii output, b: show bytes output\n" +
+                        "            example: m 5c50,10,2,4\n" +
+                        "        m ${register|symbol}, #{symbol}, size[, wordSizeInBytes, rowSizeInWords]\n" +
+                        "            example: m ${mycopperlabel},10,2,4\n" +
+                        "    Disassembled Memory dump:\n" +
+                        "        m address|${register|symbol}|#{symbol},size,d\n" +
+                        "            example: m ${pc},10,d\n" +
+                        "    Memory set:\n" +
+                        "        M address=bytes\n" +
+                        "            example: M 5c50=0ff534\n" +
+                        "        M ${register|symbol}=bytes\n" +
+                        "        M #{register|symbol}=bytes\n" +
+                        "            example: M ${mycopperlabel}=0ff534\n" +
+                        "      ${symbol} gives the address of symbol," +
+                        "      #{symbol} gives the pointed value from the symbol\n";
+                    this.sendEvent(new OutputEvent(text));
+                }
+
+                // Launch the emulator
+                try {
+                    await this.startEmulator(args);
+                    await this.connect(response, args);
+                } catch (err) {
+                    window.showErrorMessage(err.message);
+                    this.sendEvent(new TerminatedEvent());
+                    this.sendStringErrorResponse(response, err.message);
+                }
             }
-
-            // Showing the help text
-            if (!this.testMode) {
-                let text = "Commands:\n" +
-                    "    Memory dump:\n" +
-                    "        m address, size[, wordSizeInBytes, rowSizeInWords,ab]\n" +
-                    "        			a: show ascii output, b: show bytes output\n" +
-                    "            example: m 5c50,10,2,4\n" +
-                    "        m ${register|symbol}, #{symbol}, size[, wordSizeInBytes, rowSizeInWords]\n" +
-                    "            example: m ${mycopperlabel},10,2,4\n" +
-                    "    Disassembled Memory dump:\n" +
-                    "        m address|${register|symbol}|#{symbol},size,d\n" +
-                    "            example: m ${pc},10,d\n" +
-                    "    Memory set:\n" +
-                    "        M address=bytes\n" +
-                    "            example: M 5c50=0ff534\n" +
-                    "        M ${register|symbol}=bytes\n" +
-                    "        M #{register|symbol}=bytes\n" +
-                    "            example: M ${mycopperlabel}=0ff534\n" +
-                    "      ${symbol} gives the address of symbol," +
-                    "      #{symbol} gives the pointed value from the symbol\n";
-                this.sendEvent(new OutputEvent(text));
-            }
-
-            // Launch the emulator
-            this.startEmulator(args).catch(err => {
-                window.showErrorMessage(err.message);
-                this.sendEvent(new TerminatedEvent());
-                this.sendStringErrorResponse(response, err.message);
-                resolve();
-                return;
-            });
-
-            await this.connect(response, args);
-            resolve();
-        });
+        } catch (err) {
+            this.sendStringErrorResponse(response, "Invalid program to debug: " + err.message);
+        }
     }
 
-    protected async connect(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
+    protected connect(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
         return new Promise(async (resolve) => {
             // temp to use in timeout
             let debAdapter = this;
@@ -390,17 +382,15 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             }
             setTimeout(async () => {
                 // connects to FS-UAE
-                await debAdapter.gdbProxy.connect(args.serverName, args.serverPort).then(async () => {
+                try {
+                    await debAdapter.gdbProxy.connect(args.serverName, args.serverPort);
                     // Loads the program
                     debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
-                    await debAdapter.gdbProxy.load(args.program, args.stopOnEntry).then(() => {
-                        debAdapter.sendResponse(response);
-                    }).catch(err => {
-                        debAdapter.sendStringErrorResponse(response, err.message);
-                    });
-                }).catch(err => {
+                    await debAdapter.gdbProxy.load(args.program, args.stopOnEntry);
+                    debAdapter.sendResponse(response);
+                } catch (err) {
                     debAdapter.sendStringErrorResponse(response, err.message);
-                });
+                }
                 resolve();
             }, timeoutValue);
         });
@@ -413,23 +403,21 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         return fileProxy.exists();
     }
 
-    public startEmulator(args: LaunchRequestArguments): Promise<void> {
+    public async startEmulator(args: LaunchRequestArguments): Promise<void> {
         if (args.startEmulator) {
             this.sendEvent(new OutputEvent(`Starting emulator: ${args.emulator}`));
             const emulatorExe = args.emulator;
             if (emulatorExe) {
                 // Is the emulator exe present in the filesystem ?
                 if (this.checkEmulator(emulatorExe)) {
-                    return new Promise(async (resolve, reject) => {
-                        this.cancellationTokenSource = new CancellationTokenSource();
-                        const emulatorWorkingDir = args.emulatorWorkingDir || null;
-                        this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
-                            this.sendEvent(new TerminatedEvent());
-                            resolve();
-                        }).catch((err) => {
-                            reject(new Error(`Error raised by the emulator run: ${err.message}`));
-                        });
-                    });
+                    this.cancellationTokenSource = new CancellationTokenSource();
+                    const emulatorWorkingDir = args.emulatorWorkingDir || null;
+                    try {
+                        await this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token);
+                        this.sendEvent(new TerminatedEvent());
+                    } catch (err) {
+                        throw new Error(`Error raised by the emulator run: ${err.message}`);
+                    }
                 } else {
                     throw (new Error(`The emulator executable '${emulatorExe}' cannot be found`));
                 }
@@ -438,7 +426,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             }
         } else {
             this.sendEvent(new OutputEvent("Emulator starting skipped by settings"));
-            return Promise.resolve();
         }
     }
 
@@ -451,19 +438,17 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected disassembleRequestInner(response: DebugProtocol.DisassembleResponse, args: DisassembleAddressArguments): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            await this.debugDisassembledManager.disassembleRequest(args).then(instructions => {
-                response.body = {
-                    instructions: instructions,
-                };
-                this.sendResponse(response);
-                resolve();
-            }).catch((err) => {
-                this.sendStringErrorResponse(response, err.message);
-                reject(err);
-            });
-        });
+    protected async disassembleRequestInner(response: DebugProtocol.DisassembleResponse, args: DisassembleAddressArguments): Promise<void> {
+        try {
+            let instructions = await this.debugDisassembledManager.disassembleRequest(args);
+            response.body = {
+                instructions: instructions,
+            };
+            this.sendResponse(response);
+        } catch (err) {
+            this.sendStringErrorResponse(response, err.message);
+            throw err;
+        }
     }
 
     protected disassembleRequest(response: DebugProtocol.DisassembleResponse, args: DebugProtocol.DisassembleArguments): Promise<void> {
@@ -478,158 +463,149 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            let debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
-            // clear all breakpoints for this file
-            this.breakpointManager.clearBreakpoints(args.source);
-            // set and verify breakpoint locations
-            if (args.breakpoints) {
-                for (let reqBp of args.breakpoints) {
-                    let debugBp = this.breakpointManager.createBreakpoint(args.source, reqBp.line);
-                    await this.breakpointManager.setBreakpoint(debugBp).then(modifiedBp => {
-                        debugBreakPoints.push(modifiedBp);
-                    }).catch(err => {
-                        debugBreakPoints.push(debugBp);
-                    });
+        let debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
+        // clear all breakpoints for this file
+        this.breakpointManager.clearBreakpoints(args.source);
+        // set and verify breakpoint locations
+        if (args.breakpoints) {
+            for (let reqBp of args.breakpoints) {
+                let debugBp = this.breakpointManager.createBreakpoint(args.source, reqBp.line);
+                try {
+                    let modifiedBp = await this.breakpointManager.setBreakpoint(debugBp);
+                    debugBreakPoints.push(modifiedBp);
+                } catch (err) {
+                    debugBreakPoints.push(debugBp);
                 }
             }
-            // send back the actual breakpoint positions
+        }
+        // send back the actual breakpoint positions
+        response.body = {
+            breakpoints: debugBreakPoints
+        };
+        response.success = true;
+        this.sendResponse(response);
+    }
+
+    protected async threadsRequest(response: DebugProtocol.ThreadsResponse): Promise<void> {
+        try {
+            let thIds = await this.gdbProxy.getThreadIds();
+            let threads = new Array<Thread>();
+            for (let t of thIds) {
+                threads.push(new Thread(t.getId(), this.gdbProxy.getThreadDisplayName(t)));
+            }
             response.body = {
-                breakpoints: debugBreakPoints
+                threads: threads
             };
-            response.success = true;
             this.sendResponse(response);
-            resolve();
-        });
-
+        } catch (err) {
+            this.sendStringErrorResponse(response, err.message);
+        }
     }
 
-    protected threadsRequest(response: DebugProtocol.ThreadsResponse): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            await this.gdbProxy.getThreadIds().then(thIds => {
-                let threads = new Array<Thread>();
-                for (let t of thIds) {
-                    threads.push(new Thread(t.getId(), this.gdbProxy.getThreadDisplayName(t)));
-                }
-                response.body = {
-                    threads: threads
-                };
-                this.sendResponse(response);
-            }).catch((err) => {
-                this.sendStringErrorResponse(response, err.message);
-            });
-            resolve();
-        });
-    }
-
-    protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): Promise<void> {
-        return new Promise(async (resolve, _reject) => {
-            if (this.debugInfo) {
-                const dbgInfo = this.debugInfo;
-                const thread = this.gdbProxy.getThread(args.threadId);
-                if (thread) {
-                    this.gdbProxy.stack(thread).then(async stk => {
-                        let stackFrames = [];
-                        let updatedView = false;
-                        for (let f of stk.frames) {
-                            if ((!updatedView) && (this.gdbProxy.isCPUThread(thread))) {
-                                // Update the cpu view
-                                this.updateDisassembledView(f.pc, 100);
-                                updatedView = true;
-                                // check temporary breakpoints
-                                this.breakpointManager.checkTemporaryBreakpoints(f.pc);
-                            }
-                            let stackFrameDone = false;
-                            let pc = f.pc.toString(16);
-                            if (f.segmentId >= 0) {
-                                let values = await dbgInfo.resolveFileLine(f.segmentId, f.offset);
-                                if (values) {
-                                    let line = values[2];
-                                    if (line) {
-                                        let idx = line.indexOf(';');
-                                        if (idx > 0) {
-                                            line = line.substring(0, idx);
-                                        }
-                                        line = pc + ": " + line.trim().replace(/\s\s+/g, ' ');
-                                    } else {
-                                        line = pc;
+    protected async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): Promise<void> {
+        if (this.debugInfo) {
+            const dbgInfo = this.debugInfo;
+            const thread = this.gdbProxy.getThread(args.threadId);
+            if (thread) {
+                try {
+                    let stk = await this.gdbProxy.stack(thread);
+                    let stackFrames = [];
+                    let updatedView = false;
+                    for (let f of stk.frames) {
+                        if ((!updatedView) && (this.gdbProxy.isCPUThread(thread))) {
+                            // Update the cpu view
+                            this.updateDisassembledView(f.pc, 100);
+                            updatedView = true;
+                            // check temporary breakpoints
+                            this.breakpointManager.checkTemporaryBreakpoints(f.pc);
+                        }
+                        let stackFrameDone = false;
+                        let pc = f.pc.toString(16);
+                        if (f.segmentId >= 0) {
+                            let values = await dbgInfo.resolveFileLine(f.segmentId, f.offset);
+                            if (values) {
+                                let line = values[2];
+                                if (line) {
+                                    let idx = line.indexOf(';');
+                                    if (idx > 0) {
+                                        line = line.substring(0, idx);
                                     }
-                                    stackFrames.push(new StackFrame(f.index, line, this.createSource(values[0]), values[1], 1));
-                                    stackFrameDone = true;
+                                    line = pc + ": " + line.trim().replace(/\s\s+/g, ' ');
+                                } else {
+                                    line = pc;
                                 }
-                            }
-                            if (!stackFrameDone) {
-                                let line: string = pc;
-                                if (this.gdbProxy.isCPUThread(thread)) {
-                                    let dCode = this.disassembledCache.get(f.pc);
-                                    if (dCode) {
-                                        line = dCode;
-                                    } else {
-                                        // Get the disassembled line
-                                        line += ": ";
-                                        if (this.capstone) {
-                                            let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
-                                                console.error("Error ignored: " + err.getMessage());
-                                            });
-                                            if (memory) {
-                                                let disassembled = await this.capstone.disassemble(memory);
-                                                let lines = disassembled.split(/\r\n|\r|\n/g);
-                                                let selectedLine = lines[0];
-                                                for (let l of lines) {
-                                                    if (l.trim().length > 0) {
-                                                        selectedLine = l;
-                                                        break;
-                                                    }
-                                                }
-                                                let elms = selectedLine.split("  ");
-                                                if (elms.length > 2) {
-                                                    selectedLine = elms[2];
-                                                }
-                                                line += selectedLine.trim().replace(/\s\s+/g, ' ');
-                                            }
-                                        }
-                                        this.disassembledCache.set(f.pc, line);
-                                    }
-                                } else if (this.gdbProxy.isCopperThread(thread)) {
-                                    let dCopperCode = this.disassembledCopperCache.get(f.pc);
-                                    if (dCopperCode) {
-                                        line = dCopperCode;
-                                    } else {
-                                        // Get the disassembled line
-                                        line += ": ";
-                                        let memory = await this.gdbProxy.getMemory(f.pc, 10).catch((err) => {
-                                            console.error("Error ignored: " + err.getMessage());
-                                        });
-                                        if (memory) {
-                                            let cDis = new CopperDisassembler(memory);
-                                            line = line + cDis.disassemble()[0].toString().split("    ")[0];
-                                            this.disassembledCopperCache.set(f.pc, line);
-                                        }
-                                    }
-                                }
-                                // The the stack frame from the manager
-                                let stackFrame = await this.debugDisassembledManager.getStackFrame(f.index, f.pc, line, (this.gdbProxy.isCopperThread(thread)));
-                                if (stackFrame) {
-                                    stackFrames.push(stackFrame);
-                                }
+                                stackFrames.push(new StackFrame(f.index, line, this.createSource(values[0]), values[1], 1));
+                                stackFrameDone = true;
                             }
                         }
-                        response.body = {
-                            stackFrames: stackFrames,
-                            totalFrames: stk.count
-                        };
-                        this.sendResponse(response);
-                    }).catch((err) => {
-                        this.sendStringErrorResponse(response, err.message);
-                    });
-                } else {
-                    this.sendStringErrorResponse(response, "Unknown thread");
+                        if (!stackFrameDone) {
+                            let line: string = pc;
+                            if (this.gdbProxy.isCPUThread(thread)) {
+                                let dCode = this.disassembledCache.get(f.pc);
+                                if (dCode) {
+                                    line = dCode;
+                                } else {
+                                    // Get the disassembled line
+                                    line += ": ";
+                                    if (this.capstone) {
+                                        try {
+                                            let memory = await this.gdbProxy.getMemory(f.pc, 10);
+                                            let disassembled = await this.capstone.disassemble(memory);
+                                            let lines = disassembled.split(/\r\n|\r|\n/g);
+                                            let selectedLine = lines[0];
+                                            for (let l of lines) {
+                                                if (l.trim().length > 0) {
+                                                    selectedLine = l;
+                                                    break;
+                                                }
+                                            }
+                                            let elms = selectedLine.split("  ");
+                                            if (elms.length > 2) {
+                                                selectedLine = elms[2];
+                                            }
+                                            line += selectedLine.trim().replace(/\s\s+/g, ' ');
+                                        } catch (err) {
+                                            console.error("Error ignored: " + err.getMessage());
+                                        }
+                                    }
+                                    this.disassembledCache.set(f.pc, line);
+                                }
+                            } else if (this.gdbProxy.isCopperThread(thread)) {
+                                let dCopperCode = this.disassembledCopperCache.get(f.pc);
+                                if (dCopperCode) {
+                                    line = dCopperCode;
+                                } else {
+                                    // Get the disassembled line
+                                    line += ": ";
+                                    try {
+                                        let memory = await this.gdbProxy.getMemory(f.pc, 10);
+                                        let cDis = new CopperDisassembler(memory);
+                                        line = line + cDis.disassemble()[0].toString().split("    ")[0];
+                                        this.disassembledCopperCache.set(f.pc, line);
+                                    } catch (err) {
+                                        console.error("Error ignored: " + err.getMessage());
+                                    }
+                                }
+                            }
+                            // The the stack frame from the manager
+                            let stackFrame = await this.debugDisassembledManager.getStackFrame(f.index, f.pc, line, (this.gdbProxy.isCopperThread(thread)));
+                            stackFrames.push(stackFrame);
+                        }
+                    }
+                    response.body = {
+                        stackFrames: stackFrames,
+                        totalFrames: stk.count
+                    };
+                    this.sendResponse(response);
+                } catch (err) {
+                    this.sendStringErrorResponse(response, err.message);
                 }
             } else {
-                this.sendStringErrorResponse(response, "No debug info loaded");
+                this.sendStringErrorResponse(response, "Unknown thread");
             }
-            resolve();
-        });
+        } else {
+            this.sendStringErrorResponse(response, "No debug info loaded");
+        }
     }
 
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
@@ -722,23 +698,21 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            const id = this.variableHandles.get(args.variablesReference);
-            if ((id !== null) && (id.startsWith("registers_"))) {
-                await this.gdbProxy.setRegister(args.name, args.value).then((newValue) => {
-                    response.body = {
-                        value: newValue
-                    };
-                    this.sendResponse(response);
-                }).catch(err => {
-                    this.sendStringErrorResponse(response, err.getMessage());
-                });
-            } else {
-                this.sendStringErrorResponse(response, "Illegal variable request");
+    protected async setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments): Promise<void> {
+        const id = this.variableHandles.get(args.variablesReference);
+        if ((id !== null) && (id.startsWith("registers_"))) {
+            try {
+                let newValue = await this.gdbProxy.setRegister(args.name, args.value);
+                response.body = {
+                    value: newValue
+                };
+                this.sendResponse(response);
+            } catch (err) {
+                this.sendStringErrorResponse(response, err.getMessage());
             }
-            resolve();
-        });
+        } else {
+            this.sendStringErrorResponse(response, "Illegal variable request");
+        }
     }
 
     public terminate() {
@@ -825,49 +799,38 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         });
     }
 
-    protected readMemoryRequest(response: DebugProtocol.ReadMemoryResponse, args: DebugProtocol.ReadMemoryArguments): Promise<void> {
-        return new Promise(async (resolve, _reject) => {
-            let address = parseInt(args.memoryReference);
-            if (args.offset) {
-                address += args.offset;
-            }
-            let memory = await this.gdbProxy.getMemory(address, args.count).catch(err => {
-                this.sendStringErrorResponse(response, err.message);
-            });
-            if (memory) {
-                response.body = {
-                    address: address.toString(),
-                    data: StringUtils.hexToBase64(memory)
-                };
-                this.sendResponse(response);
-            }
-            resolve();
-        });
+    protected async readMemoryRequest(response: DebugProtocol.ReadMemoryResponse, args: DebugProtocol.ReadMemoryArguments): Promise<void> {
+        let address = parseInt(args.memoryReference);
+        if (args.offset) {
+            address += args.offset;
+        }
+        try {
+            let memory = await this.gdbProxy.getMemory(address, args.count);
+            response.body = {
+                address: address.toString(),
+                data: StringUtils.hexToBase64(memory)
+            };
+            this.sendResponse(response);
+        } catch (err) {
+            this.sendStringErrorResponse(response, err.message);
+        }
     }
 
     public getMemory(address: number, size: number): Promise<string> {
         return this.gdbProxy.getMemory(address, size);
     }
 
-    public getVariablePointedMemory(variableName: string, frameIndex?: number, size?: number): Promise<string> {
-        return new Promise(async (resolve, reject) => {
-            await this.getVariableValueAsNumber(variableName, frameIndex).then(async (address) => {
-                let lSize = size;
-                if (lSize === undefined) {
-                    // By default me assume it is an address 32b
-                    lSize = 4;
-                }
-                // call to get the value in memory for this address
-                await this.gdbProxy.getMemory(address, lSize).then((memory) => {
-                    resolve(memory);
-                }).catch(err => {
-                    reject(err);
-                });
-            }).catch(err => {
-                reject(err);
-            });
-        });
+    public async getVariablePointedMemory(variableName: string, frameIndex?: number, size?: number): Promise<string> {
+        let address = await this.getVariableValueAsNumber(variableName, frameIndex);
+        let lSize = size;
+        if (lSize === undefined) {
+            // By default me assume it is an address 32b
+            lSize = 4;
+        }
+        // call to get the value in memory for this address
+        return await this.gdbProxy.getMemory(address, lSize);
     }
+
     public getVariableValue(variableName: string, frameIndex?: number): Promise<string> {
         return new Promise(async (resolve, reject) => {
             await this.getVariableValueAsNumber(variableName, frameIndex).then((value) => {
@@ -878,35 +841,27 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         });
     }
 
-    public getVariableValueAsNumber(variableName: string, frameIndex?: number): Promise<number> {
-        return new Promise(async (resolve, reject) => {
-            // Is it a register?
-            let matches = /^([ad][0-7]|pc|sr)$/i.exec(variableName);
-            if (matches) {
-                let values = await this.gdbProxy.getRegister(variableName, frameIndex).catch(err => {
-                    reject(err);
-                });
-                if (values) {
-                    resolve(parseInt(values[0], 16));
-                } else {
-                    reject(new Error("No value for register " + variableName));
-                }
+    public async getVariableValueAsNumber(variableName: string, frameIndex?: number): Promise<number> {
+        // Is it a register?
+        let matches = /^([ad][0-7]|pc|sr)$/i.exec(variableName);
+        if (matches) {
+            let values = await this.gdbProxy.getRegister(variableName, frameIndex);
+            return parseInt(values[0], 16);
+        } else {
+            // Is it a symbol?
+            let address = this.symbolsMap.get(variableName);
+            if (address !== undefined) {
+                return address;
             } else {
-                // Is it a symbol?
-                let address = this.symbolsMap.get(variableName);
+                // Is it a standard register
+                address = MemoryLabelsRegistry.getCustomAddress(variableName.toUpperCase());
                 if (address !== undefined) {
-                    resolve(address);
+                    return address;
                 } else {
-                    // Is it a standard register
-                    address = MemoryLabelsRegistry.getCustomAddress(variableName.toUpperCase());
-                    if (address !== undefined) {
-                        resolve(address);
-                    } else {
-                        reject(new Error("Unknown symbol " + variableName));
-                    }
+                    throw new Error("Unknown symbol " + variableName);
                 }
             }
-        });
+        }
     }
 
     protected evaluateRequestGetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
@@ -1005,90 +960,79 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            // Evaluate an expression
-            let matches = /^([ad][0-7]|pc|sr)$/i.exec(args.expression);
-            if (matches) {
-                this.evaluateRequestRegister(response, args);
-            } else if (args.expression.startsWith('m')) {
-                this.evaluateRequestGetMemory(response, args);
-            } else if (args.expression.startsWith('M')) {
-                this.evaluateRequestSetMemory(response, args);
-            } else {
-                await this.debugExpressionHelper.getAddressFromExpression(args.expression, args.frameId, this).then((address) => {
-                    response.body = {
-                        result: '$' + address.toString(16),
-                        type: "string",
-                        variablesReference: 0,
-                    };
-                    this.sendResponse(response);
-                }).catch((err) => {
-                    this.sendStringErrorResponse(response, err.message);
-                });
-            }
-            resolve();
-        });
-    }
-
-    protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): Promise<void> {
-        return new Promise(async (resolve, _reject) => {
-            let thread = this.gdbProxy.getThread(args.threadId);
-            if (thread) {
-                await this.gdbProxy.pause(thread).then(() => {
-                    this.sendResponse(response);
-                }).catch(err => {
-                    this.sendStringErrorResponse(response, err.message);
-                });
-            } else {
-                this.sendStringErrorResponse(response, "Unknown thread");
-            }
-            resolve();
-        });
-    }
-
-    protected exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments): Promise<void> {
-        return new Promise(async (resolve, _reject) => {
-            await this.gdbProxy.getHaltStatus().then((haltStatus) => {
-                let selectedHs: GdbHaltStatus = haltStatus[0];
-                for (let hs of haltStatus) {
-                    if ((hs.thread) && (this.gdbProxy.isCPUThread(hs.thread))) {
-                        selectedHs = hs;
-                        break;
-                    }
-                }
+    protected async evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
+        // Evaluate an expression
+        let matches = /^([ad][0-7]|pc|sr)$/i.exec(args.expression);
+        if (matches) {
+            this.evaluateRequestRegister(response, args);
+        } else if (args.expression.startsWith('m')) {
+            this.evaluateRequestGetMemory(response, args);
+        } else if (args.expression.startsWith('M')) {
+            this.evaluateRequestSetMemory(response, args);
+        } else {
+            try {
+                let address = await this.debugExpressionHelper.getAddressFromExpression(args.expression, args.frameId, this);
                 response.body = {
-                    exceptionId: selectedHs.code.toString(),
-                    description: selectedHs.details,
-                    breakMode: 'always'
+                    result: '$' + address.toString(16),
+                    type: "string",
+                    variablesReference: 0,
                 };
                 this.sendResponse(response);
-            }).catch(err => {
+            } catch (err) {
                 this.sendStringErrorResponse(response, err.message);
-            });
-            resolve();
-        });
+            }
+        }
     }
 
-    protected setExceptionBreakPointsRequest(response: DebugProtocol.SetExceptionBreakpointsResponse, args: DebugProtocol.SetExceptionBreakpointsArguments): Promise<void> {
-        return new Promise(async (resolve, _reject) => {
-            if (args.filters.length > 0) {
-                await this.breakpointManager.setExceptionBreakpoint().then(() => {
-                    response.success = true;
-                    this.sendResponse(response);
-                }).catch(err => {
-                    this.sendStringErrorResponse(response, err.message);
-                });
-            } else {
-                await this.breakpointManager.removeExceptionBreakpoint().then(breakpoint => {
-                    response.success = true;
-                    this.sendResponse(response);
-                }).catch(err => {
-                    this.sendStringErrorResponse(response, err.message);
-                });
+    protected async pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): Promise<void> {
+        let thread = this.gdbProxy.getThread(args.threadId);
+        if (thread) {
+            try {
+                await this.gdbProxy.pause(thread);
+                this.sendResponse(response);
+            } catch (err) {
+                this.sendStringErrorResponse(response, err.message);
             }
-            resolve();
-        });
+        } else {
+            this.sendStringErrorResponse(response, "Unknown thread");
+        }
+    }
+
+    protected async exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments): Promise<void> {
+        try {
+            let haltStatus = await this.gdbProxy.getHaltStatus();
+            let selectedHs: GdbHaltStatus = haltStatus[0];
+            for (let hs of haltStatus) {
+                if ((hs.thread) && (this.gdbProxy.isCPUThread(hs.thread))) {
+                    selectedHs = hs;
+                    break;
+                }
+            }
+            response.body = {
+                exceptionId: selectedHs.code.toString(),
+                description: selectedHs.details,
+                breakMode: 'always'
+            };
+            this.sendResponse(response);
+        } catch (err) {
+            this.sendStringErrorResponse(response, err.message);
+        }
+    }
+
+    protected async setExceptionBreakPointsRequest(response: DebugProtocol.SetExceptionBreakpointsResponse, args: DebugProtocol.SetExceptionBreakpointsArguments): Promise<void> {
+        try {
+            if (args.filters.length > 0) {
+                await this.breakpointManager.setExceptionBreakpoint();
+                response.success = true;
+                this.sendResponse(response);
+            } else {
+                await this.breakpointManager.removeExceptionBreakpoint();
+                response.success = true;
+                this.sendResponse(response);
+            }
+        } catch (err) {
+            this.sendStringErrorResponse(response, err.message);
+        }
     }
 
     /**
@@ -1129,18 +1073,12 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    public updateDisassembledView(address: number, length: number): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            if (address !== this.currentMemoryViewPc) {
-                this.currentMemoryViewPc = address;
-                await this.debugDisassembledManager.disassembleNumericalAddressCPU(address, length).then(async dLines => {
-                    await vscode.commands.executeCommand('disassembledMemory.setDisassembledMemory', dLines);
-                    resolve();
-                }).catch((err) => {
-                    reject(err);
-                });
-            }
-        });
+    public async updateDisassembledView(address: number, length: number): Promise<void> {
+        if (address !== this.currentMemoryViewPc) {
+            this.currentMemoryViewPc = address;
+            let dLines = await this.debugDisassembledManager.disassembleNumericalAddressCPU(address, length);
+            await vscode.commands.executeCommand('disassembledMemory.setDisassembledMemory', dLines);
+        }
     }
 
     //---- helpers
