@@ -408,21 +408,18 @@ export class MemoryLabelsRegistry {
         return undefined;
     }
 
-    public static getCopperAddress(copperIndex: number, variableResolver: DebugVariableResolver): Promise<number> {
-        return new Promise(async (resolve, reject) => {
-            let registerName = "COP1LCH";
-            if (copperIndex !== 1) {
-                registerName = "COP2LCH";
-            }
-            let copperHigh = MemoryLabelsRegistry.getCustomAddress(registerName);
-            if (copperHigh !== undefined) {
-                // Getting the value
-                await variableResolver.getMemory(copperHigh, 4).then((memory) => {
-                    resolve(parseInt(memory, 16));
-                }).catch(err => {
-                    reject(err);
-                });
-            }
-        });
+    public static async getCopperAddress(copperIndex: number, variableResolver: DebugVariableResolver): Promise<number> {
+        let registerName = "COP1LCH";
+        if (copperIndex !== 1) {
+            registerName = "COP2LCH";
+        }
+        let copperHigh = MemoryLabelsRegistry.getCustomAddress(registerName);
+        if (copperHigh !== undefined) {
+            // Getting the value
+            let memory = await variableResolver.getMemory(copperHigh, 4);
+            return parseInt(memory, 16);
+        } else {
+            throw new Error("Copper high address not found");
+        }
     }
 }

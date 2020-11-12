@@ -621,7 +621,8 @@ export class GdbProxy extends EventEmitter {
         if (this.segments) {
             if (segmentId < this.segments.length) {
                 const segment = this.segments[segmentId];
-                return await this.getMemory(segment.address, segment.size);
+                let memory = await this.getMemory(segment.address, segment.size);
+                return memory;
             } else {
                 throw new Error(`Segment Id #${segmentId} not found`);
             }
@@ -637,7 +638,8 @@ export class GdbProxy extends EventEmitter {
      * @return String returned by the server = bytes in hexa
      */
     public async getMemory(address: number, length: number): Promise<string> {
-        return await this.sendPacketString("m" + GdbProxy.formatNumber(address) + ',' + GdbProxy.formatNumber(length), GdbPacketType.UNKNOWN);
+        let memory = await this.sendPacketString("m" + GdbProxy.formatNumber(address) + ',' + GdbProxy.formatNumber(length), GdbPacketType.UNKNOWN);
+        return memory;
     }
 
     /**

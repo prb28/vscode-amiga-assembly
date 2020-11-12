@@ -18,14 +18,12 @@ export class DisassembledMemoryDataProvider implements vscode.TreeDataProvider<V
         return element;
     }
 
-    getChildren(element?: ViewLineItem): Thenable<ViewLineItem[]> {
-        return new Promise((resolve, _reject) => {
-            if (!element && this.currentValues) {
-                resolve(this.currentValues);
-            } else {
-                resolve([]);
-            }
-        });
+    async getChildren(element?: ViewLineItem): Promise<ViewLineItem[]> {
+        if (!element && this.currentValues) {
+            return this.currentValues;
+        } else {
+            return [];
+        }
     }
     setDisassembledMemory(memory: DisassembledInstructionAdapter[]) {
         this.currentValues = new Array<ViewLineItem>();

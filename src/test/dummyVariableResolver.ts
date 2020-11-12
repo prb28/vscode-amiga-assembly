@@ -1,17 +1,13 @@
 import { DebugVariableResolver } from "../debugVariableResolver";
 
 export class DummyVariableResolver implements DebugVariableResolver {
-    getMemory(address: number, size: number): Promise<string> {
-        return Promise.resolve("");
+    async getMemory(address: number, size: number): Promise<string> {
+        return "";
     }
-    getVariablePointedMemory(variableName: string, frameIndex: number | undefined, size?: number | undefined): Promise<string> {
-        return new Promise((resolve, reject) => {
-            resolve("a");
-        });
+    async getVariablePointedMemory(variableName: string, frameIndex: number | undefined, size?: number | undefined): Promise<string> {
+        return "a";
     }
-    getVariableValue(variable: string, frameIndex: number | undefined): Promise<string> {
-        return new Promise((resolve, reject) => {
-            resolve("a");
-        });
+    async getVariableValue(variable: string, frameIndex: number | undefined): Promise<string> {
+        return "a";
     }
 }

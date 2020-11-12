@@ -447,7 +447,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.sendResponse(response);
         } catch (err) {
             this.sendStringErrorResponse(response, err.message);
-            throw err;
         }
     }
 
@@ -816,8 +815,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    public getMemory(address: number, size: number): Promise<string> {
-        return this.gdbProxy.getMemory(address, size);
+    public async getMemory(address: number, size: number): Promise<string> {
+        let memory = await this.gdbProxy.getMemory(address, size);
+        return memory;
     }
 
     public async getVariablePointedMemory(variableName: string, frameIndex?: number, size?: number): Promise<string> {
@@ -828,7 +828,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             lSize = 4;
         }
         // call to get the value in memory for this address
-        return await this.gdbProxy.getMemory(address, lSize);
+        let memory = await this.gdbProxy.getMemory(address, lSize);
+        return memory;
     }
 
     public getVariableValue(variableName: string, frameIndex?: number): Promise<string> {

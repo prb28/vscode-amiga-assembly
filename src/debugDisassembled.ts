@@ -182,287 +182,218 @@ export class DebugDisassembledManager {
         this.variableResolver = variableResolver;
     }
 
-    public getStackFrame(stackFrameIndex: number, address: number, stackFrameLabel: string, isCopper: boolean): Promise<StackFrame> {
-        return new Promise(async (resolve, reject) => {
-            let dAsmFile = new DebugDisassembledFile();
-            let url: string;
-            let length = 500;
-            let lineNumber = 1;
-            dAsmFile.setCopper(isCopper);
-            // is the pc on a opened segment ?
-            let [segmentId, offset] = this.gdbProxy.toRelativeOffset(address);
-            if ((segmentId >= 0) && !isCopper) {
-                // We have a segment
-                dAsmFile.setSegmentId(segmentId);
-                let returnedLineNumber = await this.getLineNumberInDisassembledSegment(segmentId, offset).catch((err) => {
-                    // Nothing to do
-                    lineNumber = -1;
-                });
-                if (returnedLineNumber || returnedLineNumber === 0) {
-                    lineNumber = returnedLineNumber;
+    public async getStackFrame(stackFrameIndex: number, address: number, stackFrameLabel: string, isCopper: boolean): Promise<StackFrame> {
+        let dAsmFile = new DebugDisassembledFile();
+        let url: string;
+        let length = 500;
+        let lineNumber = 1;
+        dAsmFile.setCopper(isCopper);
+        // is the pc on a opened segment ?
+        let [segmentId, offset] = this.gdbProxy.toRelativeOffset(address);
+        if ((segmentId >= 0) && !isCopper) {
+            // We have a segment
+            dAsmFile.setSegmentId(segmentId);
+            let returnedLineNumber;
+            try {
+                returnedLineNumber = await this.getLineNumberInDisassembledSegment(segmentId, offset);
+            } catch (err) {
+                // Nothing to do
+                lineNumber = -1;
+            }
+            if (returnedLineNumber || returnedLineNumber === 0) {
+                lineNumber = returnedLineNumber;
+            }
+        } else {
+            let newAddress = address;
+            if (isCopper) {
+                // Search for selected copper list
+                // Read 
+                let lineInCop1 = -1;
+                let lineInCop2 = -1;
+                let cop1Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver);
+                if (cop1Addr) {
+                    lineInCop1 = Math.floor((address - cop1Addr + 4) / 4);
                 }
-            } else {
-                let newAddress = address;
-                if (isCopper) {
-                    // Search for selected copper list
-                    // Read 
-                    let lineInCop1 = -1;
-                    let lineInCop2 = -1;
-                    let cop1Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver).catch(err => {
-                        reject(err);
-                    });
-                    if (cop1Addr) {
-                        lineInCop1 = Math.floor((address - cop1Addr + 4) / 4);
-                    }
-                    let cop2Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver).catch(err => {
-                        reject(err);
-                    });
-                    if (cop2Addr) {
-                        lineInCop2 = Math.floor((address - cop2Addr + 4) / 4);
-                    }
-                    if (cop1Addr && (lineInCop1 >= 0)) {
-                        if (cop2Addr && (lineInCop2 >= 0)) {
-                            if (lineInCop1 <= lineInCop2) {
-                                newAddress = cop1Addr;
-                                lineNumber = lineInCop1;
-                            } else {
-                                newAddress = cop2Addr;
-                                lineNumber = lineInCop2;
-                            }
-                        } else {
+                let cop2Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver);
+                if (cop2Addr) {
+                    lineInCop2 = Math.floor((address - cop2Addr + 4) / 4);
+                }
+                if (cop1Addr && (lineInCop1 >= 0)) {
+                    if (cop2Addr && (lineInCop2 >= 0)) {
+                        if (lineInCop1 <= lineInCop2) {
                             newAddress = cop1Addr;
                             lineNumber = lineInCop1;
+                        } else {
+                            newAddress = cop2Addr;
+                            lineNumber = lineInCop2;
                         }
-                    } else if (cop2Addr && (lineInCop2 >= 0)) {
-                        newAddress = cop2Addr;
-                        lineNumber = lineInCop2;
-                    }
-                }
-                dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(`\$${newAddress.toString(16)}`).setLength(length);
-            }
-            url = `disassembly:///${dAsmFile}`;
-            if (lineNumber >= 0) {
-                resolve(new StackFrame(stackFrameIndex, stackFrameLabel, new Source(dAsmFile.toString(), url), lineNumber, 1));
-            } else {
-                resolve(new StackFrame(stackFrameIndex, stackFrameLabel));
-            }
-        });
-    }
-
-    public getLineNumberInDisassembledSegment(segmentId: number, offset: number): Promise<number> {
-        return new Promise(async (resolve, reject) => {
-            if (this.capstone) {
-                let memory = await this.gdbProxy.getSegmentMemory(segmentId).catch((err) => {
-                    reject(err);
-                    return;
-                });
-                if (memory) {
-                    // disassemble the code 
-                    await this.capstone.disassemble(memory).then((code) => {
-                        let [, instructions] = this.debugExpressionHelper.processOutputFromDisassembler(code, 0);
-                        let line = 1;
-                        for (let instr of instructions) {
-                            if (instr.getNumericalAddress() === offset) {
-                                resolve(line);
-                                return;
-                            }
-                            line++;
-                        }
-                        reject(new Error(`Cannot retrieve line for segment ${segmentId}, offset ${offset}: line not found`));
-                    }).catch((err) => {
-                        reject(err);
-                    });
-                }
-            } else {
-                reject(new Error(`Cannot retrieve line for segment ${segmentId}, offset ${offset} : capstone is not defined`));
-            }
-        });
-    }
-    public disassembleSegment(segmentId: number): Promise<DebugProtocol.DisassembledInstruction[]> {
-        return new Promise(async (resolve, reject) => {
-            if (this.capstone) {
-                const localCapstone = this.capstone;
-                // ask for memory dump
-                this.gdbProxy.getSegmentMemory(segmentId).then((memory) => {
-                    let startAddress = this.gdbProxy.toAbsoluteOffset(segmentId, 0);
-                    // disassemble the code 
-                    localCapstone.disassemble(memory).then((code) => {
-                        let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
-                        resolve(variables);
-                    }).catch((err) => {
-                        reject(err);
-                    });
-                }).catch((err) => {
-                    reject(err);
-                });
-            } else {
-                reject(new Error("Capstone has not been defined"));
-            }
-        });
-    }
-
-    public disassembleAddress(addressExpression: string, length: number, isCopper: boolean): Promise<DebugProtocol.DisassembledInstruction[]> {
-        return new Promise(async (resolve, reject) => {
-            let searchedAddress: number | void;
-            if ((isCopper) && ((addressExpression === '1') || (addressExpression === '2'))) {
-                // Retrieve the copper address
-                searchedAddress = await MemoryLabelsRegistry.getCopperAddress(parseInt(addressExpression), this.variableResolver).catch((err) => {
-                    reject(err);
-                });
-            } else {
-                searchedAddress = await this.debugExpressionHelper.getAddressFromExpression(addressExpression, undefined, this.variableResolver).catch((err) => {
-                    reject(err);
-                });
-            }
-            if (searchedAddress || searchedAddress === 0) {
-                await this.disassembleNumericalAddress(searchedAddress, length, isCopper).then(code => {
-                    resolve(code);
-                }).catch(err => {
-                    reject(err);
-                });
-            } else {
-                reject(new Error("Unable to resolve address expression void returned"));
-            }
-        });
-    }
-
-    public disassembleNumericalAddress(searchedAddress: number, length: number, isCopper: boolean): Promise<DebugProtocol.DisassembledInstruction[]> {
-        return new Promise(async (resolve, reject) => {
-            const address = searchedAddress;
-            if (isCopper) {
-                await this.gdbProxy.getMemory(address, length).then((memory) => {
-                    let startAddress = address;
-                    let copDis = new CopperDisassembler(memory);
-                    let instructions = copDis.disassemble();
-                    let variables = new Array<DebugProtocol.DisassembledInstruction>();
-                    let offset = 0;
-                    for (let i of instructions) {
-                        let addOffset = startAddress + offset;
-                        variables.push({
-                            address: addOffset.toString(16),
-                            instruction: i.toString()
-                        });
-                        // 4 addresses : 32b / address
-                        offset += 4;
-                    }
-                    resolve(variables);
-                }).catch((err) => {
-                    reject(err);
-                });
-            } else if (this.capstone) {
-                const localCapstone = this.capstone;
-                // ask for memory dump
-                await this.gdbProxy.getMemory(address, length).then(async (memory) => {
-                    let startAddress = address;
-                    // disassemble the code 
-                    await localCapstone.disassemble(memory).then((code) => {
-                        let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
-                        resolve(variables);
-                    }).catch((err) => {
-                        reject(err);
-                    });
-                }).catch((err) => {
-                    reject(err);
-                });
-            } else {
-                reject(new Error("Capstone has not been defined"));
-            }
-        });
-    }
-
-    public disassembleNumericalAddressCPU(searchedAddress: number, length: number): Promise<Array<DebugProtocol.DisassembledInstruction>> {
-        return new Promise(async (resolve, reject) => {
-            const address = searchedAddress;
-            if (this.capstone) {
-                const localCapstone = this.capstone;
-                // ask for memory dump
-                await this.gdbProxy.getMemory(address, length).then(async (memory) => {
-                    let startAddress = address;
-                    // disassemble the code 
-                    await localCapstone.disassemble(memory).then((code) => {
-                        let [, lines] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
-                        resolve(lines);
-                    }).catch((err) => {
-                        reject(err);
-                    });
-                }).catch((err) => {
-                    reject(err);
-                });
-            } else {
-                reject(new Error("Capstone has not been defined"));
-            }
-        });
-    }
-
-    public disassembleRequest(args: DisassembleAddressArguments): Promise<DebugProtocol.DisassembledInstruction[]> {
-        return new Promise(async (resolve, reject) => {
-            if (args.copper) {
-                if (args.addressExpression && args.instructionCount) {
-                    await this.disassembleAddress(args.addressExpression, args.instructionCount, args.copper).then(code => {
-                        resolve(code);
-                    }).catch((err) => {
-                        reject(err);
-                    });
-                } else {
-                    reject(new Error(`Unable to disassemble; invalid parameters ${args}`));
-                }
-            } else if (this.capstone) {
-                if (args.segmentId !== undefined) {
-                    await this.disassembleSegment(args.segmentId).then(code => {
-                        resolve(code);
-                    }).catch((err) => {
-                        reject(err);
-                    });
-                } else if (args.addressExpression && args.instructionCount) {
-                    await this.disassembleAddress(args.addressExpression, args.instructionCount, args.copper).then(code => {
-                        resolve(code);
-                    }).catch((err) => {
-                        reject(err);
-                    });
-                } else {
-                    reject(new Error(`Unable to disassemble; invalid parameters ${args}`));
-                }
-            } else {
-                reject(new Error("Capstone cstool must be configured in the settings"));
-            }
-        });
-    }
-
-    public getAddressForFileEditorLine(filePath: string, lineNumber: number): Promise<number> {
-        return new Promise(async (resolve, reject) => {
-            let instructions: void | DebugProtocol.DisassembledInstruction[];
-            if (lineNumber > 0) {
-                let dAsmFile = DebugDisassembledFile.fromPath(filePath);
-                if (dAsmFile.isSegment()) {
-                    let segmentId = dAsmFile.getSegmentId();
-                    if (segmentId !== undefined) {
-                        instructions = await this.disassembleSegment(segmentId).catch((err) => {
-                            reject(err);
-                        });
                     } else {
-                        reject(new Error(`SegmentId undefined in path ${filePath}`));
+                        newAddress = cop1Addr;
+                        lineNumber = lineInCop1;
                     }
-                } else {
-                    // Path from outside segments
-                    let address = dAsmFile.getAddressExpression();
-                    let length = dAsmFile.getLength();
-                    if ((address !== undefined) && (length !== undefined)) {
-                        instructions = await this.disassembleAddress(address, length, dAsmFile.isCopper()).catch((err) => {
-                            reject(err);
-                        });
-                    }
+                } else if (cop2Addr && (lineInCop2 >= 0)) {
+                    newAddress = cop2Addr;
+                    lineNumber = lineInCop2;
                 }
-                if (instructions) {
-                    let searchedLN = lineNumber - 1;
-                    if (searchedLN < instructions.length) {
-                        resolve(parseInt(instructions[searchedLN].address, 16));
-                    } else {
-                        reject(new Error(`Searched line ${searchedLN} greater than file "${filePath}" length: ${instructions.length}`));
-                    }
+            }
+            dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(`\$${newAddress.toString(16)}`).setLength(length);
+        }
+        url = `disassembly:///${dAsmFile}`;
+        if (lineNumber >= 0) {
+            return new StackFrame(stackFrameIndex, stackFrameLabel, new Source(dAsmFile.toString(), url), lineNumber, 1);
+        } else {
+            return new StackFrame(stackFrameIndex, stackFrameLabel);
+        }
+    }
+
+    public async getLineNumberInDisassembledSegment(segmentId: number, offset: number): Promise<number> {
+        if (this.capstone) {
+            let memory = await this.gdbProxy.getSegmentMemory(segmentId);
+            // disassemble the code 
+            let code = await this.capstone.disassemble(memory);
+            let [, instructions] = this.debugExpressionHelper.processOutputFromDisassembler(code, 0);
+            let line = 1;
+            for (let instr of instructions) {
+                if (instr.getNumericalAddress() === offset) {
+                    return line;
+                }
+                line++;
+            }
+            throw new Error(`Cannot retrieve line for segment ${segmentId}, offset ${offset}: line not found`);
+        } else {
+            throw new Error(`Cannot retrieve line for segment ${segmentId}, offset ${offset} : capstone is not defined`);
+        }
+    }
+    public async disassembleSegment(segmentId: number): Promise<DebugProtocol.DisassembledInstruction[]> {
+        if (this.capstone) {
+            const localCapstone = this.capstone;
+            // ask for memory dump
+            let memory = await this.gdbProxy.getSegmentMemory(segmentId);
+            let startAddress = this.gdbProxy.toAbsoluteOffset(segmentId, 0);
+            // disassemble the code 
+            let code = await localCapstone.disassemble(memory);
+            let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+            return variables;
+        } else {
+            throw new Error("Capstone has not been defined");
+        }
+    }
+
+    public async disassembleAddress(addressExpression: string, length: number, isCopper: boolean): Promise<DebugProtocol.DisassembledInstruction[]> {
+        let searchedAddress: number | void;
+        if ((isCopper) && ((addressExpression === '1') || (addressExpression === '2'))) {
+            // Retrieve the copper address
+            searchedAddress = await MemoryLabelsRegistry.getCopperAddress(parseInt(addressExpression), this.variableResolver);
+        } else {
+            searchedAddress = await this.debugExpressionHelper.getAddressFromExpression(addressExpression, undefined, this.variableResolver);
+        }
+        if (searchedAddress || searchedAddress === 0) {
+            return await this.disassembleNumericalAddress(searchedAddress, length, isCopper);
+        } else {
+            throw new Error("Unable to resolve address expression void returned");
+        }
+    }
+
+    public async disassembleNumericalAddress(searchedAddress: number, length: number, isCopper: boolean): Promise<DebugProtocol.DisassembledInstruction[]> {
+        const address = searchedAddress;
+        if (isCopper) {
+            let memory = await this.gdbProxy.getMemory(address, length);
+            let startAddress = address;
+            let copDis = new CopperDisassembler(memory);
+            let instructions = copDis.disassemble();
+            let variables = new Array<DebugProtocol.DisassembledInstruction>();
+            let offset = 0;
+            for (let i of instructions) {
+                let addOffset = startAddress + offset;
+                variables.push({
+                    address: addOffset.toString(16),
+                    instruction: i.toString()
+                });
+                // 4 addresses : 32b / address
+                offset += 4;
+            }
+            return variables;
+        } else if (this.capstone) {
+            const localCapstone = this.capstone;
+            // ask for memory dump
+            let memory = await this.gdbProxy.getMemory(address, length);
+            let startAddress = address;
+            // disassemble the code 
+            let code = await localCapstone.disassemble(memory);
+            let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+            return variables;
+        } else {
+            throw new Error("Capstone has not been defined");
+        }
+    }
+
+    public async disassembleNumericalAddressCPU(searchedAddress: number, length: number): Promise<Array<DebugProtocol.DisassembledInstruction>> {
+        const address = searchedAddress;
+        if (this.capstone) {
+            const localCapstone = this.capstone;
+            // ask for memory dump
+            let memory = await this.gdbProxy.getMemory(address, length);
+            let startAddress = address;
+            // disassemble the code 
+            let code = await localCapstone.disassemble(memory);
+            let [, lines] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+            return lines;
+        } else {
+            throw new Error("Capstone has not been defined");
+        }
+    }
+
+    public async disassembleRequest(args: DisassembleAddressArguments): Promise<DebugProtocol.DisassembledInstruction[]> {
+        if (args.copper) {
+            if (args.addressExpression && args.instructionCount) {
+                return await this.disassembleAddress(args.addressExpression, args.instructionCount, args.copper);
+            } else {
+                throw new Error(`Unable to disassemble; invalid parameters ${args}`);
+            }
+        } else if (this.capstone) {
+            if (args.segmentId !== undefined) {
+                return await this.disassembleSegment(args.segmentId);
+            } else if (args.addressExpression && args.instructionCount) {
+                return await this.disassembleAddress(args.addressExpression, args.instructionCount, args.copper);
+            } else {
+                throw new Error(`Unable to disassemble; invalid parameters ${args}`);
+            }
+        } else {
+            throw new Error("Capstone cstool must be configured in the settings");
+        }
+    }
+
+    public async getAddressForFileEditorLine(filePath: string, lineNumber: number): Promise<number> {
+        let instructions: void | DebugProtocol.DisassembledInstruction[];
+        if (lineNumber > 0) {
+            let dAsmFile = DebugDisassembledFile.fromPath(filePath);
+            if (dAsmFile.isSegment()) {
+                let segmentId = dAsmFile.getSegmentId();
+                if (segmentId !== undefined) {
+                    instructions = await this.disassembleSegment(segmentId);
+                } else {
+                    throw new Error(`SegmentId undefined in path ${filePath}`);
                 }
             } else {
-                reject(new Error(`Invalid line number: '${lineNumber}'`));
+                // Path from outside segments
+                let address = dAsmFile.getAddressExpression();
+                let length = dAsmFile.getLength();
+                if ((address !== undefined) && (length !== undefined)) {
+                    instructions = await this.disassembleAddress(address, length, dAsmFile.isCopper());
+                }
             }
-        });
+            if (instructions) {
+                let searchedLN = lineNumber - 1;
+                if (searchedLN < instructions.length) {
+                    return parseInt(instructions[searchedLN].address, 16);
+                } else {
+                    throw new Error(`Searched line ${searchedLN} greater than file "${filePath}" length: ${instructions.length}`);
+                }
+            } else {
+                throw new Error(`Searched line ${lineNumber} has no instructions`);
+            }
+        } else {
+            throw new Error(`Invalid line number: '${lineNumber}'`);
+        }
     }
 }
