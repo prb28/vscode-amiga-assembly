@@ -30,7 +30,11 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
                 await debAdapter.gdbProxy.sendAllPendingBreakpoints();
                 let thread = this.gdbProxy.getCurrentCpuThread();
                 if (thread) {
-                    await debAdapter.gdbProxy.continueExecution(thread);
+                    if (args.stopOnEntry) {
+                        await debAdapter.gdbProxy.stepIn(thread);
+                    } else {
+                        await debAdapter.gdbProxy.continueExecution(thread);
+                    }
                     debAdapter.sendResponse(response);
                 }
             } catch (err) {
