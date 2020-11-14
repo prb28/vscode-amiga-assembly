@@ -9,7 +9,9 @@ import { GdbProxy } from "./gdbProxy";
  */
 export class BreakpointManager {
     // Default selection mask for exception : each bit is a exception code
-    static readonly DEFAULT_EXCEPTION_MASK = 0xFFFFFFFF00FFFFFF;
+    static readonly DEFAULT_EXCEPTION_MASK = 0b1111111111100;
+    /** exception mask */
+    private exceptionMask = BreakpointManager.DEFAULT_EXCEPTION_MASK;
     /** Proxy to Gdb */
     private gdbProxy: GdbProxy;
     /** Breakpoints selected */
@@ -36,6 +38,10 @@ export class BreakpointManager {
         this.gdbProxy = gdbProxy;
         this.debugDisassembledManager = debugDisassembledManager;
         this.gdbProxy.setSendPendingBreakpointsCallback(this.sendAllPendingBreakpoint);
+    }
+
+    public setExceptionMask(exceptionMask: number) {
+        this.exceptionMask = exceptionMask;
     }
 
     public setDebugInfo(debugInfo: DebugInfo) {
@@ -182,7 +188,7 @@ export class BreakpointManager {
     public createExceptionBreakpoint(): GdbBreakpoint {
         return <GdbBreakpoint>{
             id: this.nextBreakpointId++,
-            exceptionMask: BreakpointManager.DEFAULT_EXCEPTION_MASK,
+            exceptionMask: this.exceptionMask,
             verified: false
         };
     }

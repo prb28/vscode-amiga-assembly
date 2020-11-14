@@ -469,6 +469,16 @@
                                 "description": "Socket port to connect to FS-UAE",
                                 "default": 6860
                             },
+                            "exceptionMask": {
+                                "type": "number",
+                                "description": "Mask used to catch the exceptions",
+                                "default": 8188
+                            },
+                            "emulatorStartDelay": {
+                                "type": "number",
+                                "description": "Mask used to catch the exceptions",
+                                "default": 100
+                            },
                             "sourceFileMap": {
                                 "type": "object",
                                 "description": "Optional source file mappings passed to the debug engine. Example: '{ \"/original/source/path\":\"/current/source/path\" }'",
@@ -501,7 +511,7 @@
                     {
                         "type": "fs-uae",
                         "request": "launch",
-                        "name": "Debug",
+                        "name": "FSUAE Debug",
                         "buildWorkspace": true,
                         "stopOnEntry": true,
                         "serverName": "localhost",
@@ -602,7 +612,7 @@
                     {
                         "type": "fs-uae-run",
                         "request": "launch",
-                        "name": "Run",
+                        "name": "FSUAE Run",
                         "buildWorkspace": true,
                         "emulator": "Path to fs-uae executable file",
                         "emulatorWorkingDir": "${workspaceFolder}",
@@ -693,6 +703,16 @@
                                 "description": "Socket port to connect to WinUAE",
                                 "default": 6860
                             },
+                            "exceptionMask": {
+                                "type": "number",
+                                "description": "Mask used to catch the exceptions",
+                                "default": 8188
+                            },
+                            "emulatorStartDelay": {
+                                "type": "number",
+                                "description": "Mask used to catch the exceptions",
+                                "default": 100
+                            },
                             "sourceFileMap": {
                                 "type": "object",
                                 "description": "Optional source file mappings passed to the debug engine. Example: '{ \"/original/source/path\":\"/current/source/path\" }'",
@@ -725,24 +745,22 @@
                     {
                         "type": "winuae",
                         "request": "launch",
-                        "name": "Debug",
+                        "name": "WinUAE Debug",
                         "buildWorkspace": true,
                         "stopOnEntry": true,
                         "serverName": "localhost",
                         "serverPort": 2345,
                         "startEmulator": true,
-                        "emulator": "winuae-gdb.exe",
-                        "emulatorWorkingDir": "${workspaceFolder}",
+                        "emulator": "${workspaceFolder}/bin/winuae.exe",
+                        "emulatorWorkingDir": "${workspaceFolder}/bin",
                         "program": "${workspaceFolder}/${command:AskForProgramName}",
                         "options": [
-                            "--chip_memory=1024",
-                            "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
-                            "--joystick_port_1=none",
-                            "--amiga_model=A1200",
-                            "--slow_memory=1792",
-                            "--remote_debugger=200",
-                            "--use_remote_debugger=true",
-                            "--automatic_input_grab=0"
+                            "-s",
+                            "debugging_trigger=SYS:${command:AskForProgramName}",
+                            "-s",
+                            "filesystem=rw,dh0:${workspaceFolder}\\uae\\dh0",
+                            "-s",
+                            "debugging_features=gdbserver"
                         ]
                     }
                 ],

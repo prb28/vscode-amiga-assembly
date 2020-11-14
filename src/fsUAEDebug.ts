@@ -51,6 +51,11 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     rootSourceFileMap?: Array<string>;
     /** Build the workspace before debug */
     buildWorkspace?: boolean;
+    /** default exception's mask */
+    exceptionMask?: number;
+    /** Waiting time for emulator start */
+    emulatorStartDelay?: number;
+
 }
 
 export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
@@ -325,6 +330,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         // Does the program exists ? -> Loads the debug info
         let dInfoLoaded = false;
         try {
+            if (args.exceptionMask) {
+                this.breakpointManager.setExceptionMask(args.exceptionMask);
+            }
             dInfoLoaded = await this.loadDebugInfo(args);
             if (dInfoLoaded && this.debugInfo) {
                 this.breakpointManager.setDebugInfo(this.debugInfo);
@@ -359,7 +367,17 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 // Launch the emulator
                 try {
                     await this.startEmulator(args);
-                    await this.connect(response, args);
+                    let startDelay: number;
+                    if (args.emulatorStartDelay) {
+                        startDelay = args.emulatorStartDelay;
+                    } else {
+                        startDelay = 1500;
+                    }
+                    await new Promise(resolve => {
+                        setTimeout(async () => {
+                            await this.connect(response, args);
+                        }, startDelay);
+                    });
                 } catch (err) {
                     window.showErrorMessage(err.message);
                     this.sendEvent(new TerminatedEvent());
