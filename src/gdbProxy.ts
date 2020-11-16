@@ -163,8 +163,17 @@ export class GdbProxy extends EventEmitter {
         for (let packet of packets) {
             // plus packet are acknowledge - to be ignored
             if (packet.getType() === GdbPacketType.OUTPUT) {
-                let message = StringUtils.convertHexStringToASCII(packet.getMessage(), 1);
-                this.sendEvent("output", `server output : ${message}`, undefined, undefined, undefined, 'debug');
+                try {
+                    let msg = StringUtils.convertHexUTF8StringToUTF8(packet.getMessage().substring(1));
+                    if (!msg.startsWith("PRF: ")) { // don't display profiler output, handled by profiler
+                        if (msg.startsWith("DBG: ")) { // user output (KPrintF, etc.)
+                            msg = msg.substr(5); // remove "DBG: " prefix added by uaelib.cpp
+                        }
+                        this.sendEvent("output", `server output : ${msg}`, undefined, undefined, undefined, 'debug');
+                    }
+                } catch (err) {
+                    this.sendEvent("output", `Error parsing server output : ${err}`, undefined, undefined, undefined, 'debug');
+                }
             } else if (packet.getType() !== GdbPacketType.PLUS) {
                 this.receivedDataManager.trigger(packet);
             }
@@ -560,7 +569,6 @@ export class GdbProxy extends EventEmitter {
                 await this.selectFrame(frameId, null);
             }
             let message = await this.sendPacketString('g', GdbPacketType.UNKNOWN);
-            //console.trace("register : " + data.toString());
             let registers = new Array<GdbRegister>();
             let pos = 0;
             let letter = 'd';

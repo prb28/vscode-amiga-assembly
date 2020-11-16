@@ -13,34 +13,38 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
     }
 
     protected async connect(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
-        // temp to use in timeout
-        let debAdapter = this;
+        return new Promise(async (resolve) => {
+            // temp to use in timeout
+            let debAdapter = this;
 
-        let timeoutValue = 3000;
-        if (this.testMode) {
-            timeoutValue = 1;
-        }
-        setTimeout(async () => {
-            // connects to WinUAE
-            try {
-                await debAdapter.gdbProxy.connect(args.serverName, args.serverPort);
-                // Loads the program
-                debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
-                await debAdapter.gdbProxy.initProgram(args.stopOnEntry);
-                await debAdapter.gdbProxy.sendAllPendingBreakpoints();
-                let thread = this.gdbProxy.getCurrentCpuThread();
-                if (thread) {
-                    if (args.stopOnEntry) {
-                        await debAdapter.gdbProxy.stepIn(thread);
-                    } else {
-                        await debAdapter.gdbProxy.continueExecution(thread);
-                    }
-                    debAdapter.sendResponse(response);
-                }
-            } catch (err) {
-                debAdapter.sendStringErrorResponse(response, err.message);
+            let timeoutValue = 3000;
+            if (this.testMode) {
+                timeoutValue = 1;
             }
-        }, timeoutValue);
+            setTimeout(async () => {
+                // connects to WinUAE
+                try {
+                    await debAdapter.gdbProxy.connect(args.serverName, args.serverPort);
+                    // Loads the program
+                    debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
+                    await debAdapter.gdbProxy.initProgram(args.stopOnEntry);
+                    await debAdapter.gdbProxy.sendAllPendingBreakpoints();
+                    let thread = this.gdbProxy.getCurrentCpuThread();
+                    if (thread) {
+                        if (args.stopOnEntry) {
+                            await debAdapter.gdbProxy.stepIn(thread);
+                        } else {
+                            await debAdapter.gdbProxy.continueExecution(thread);
+                        }
+                        debAdapter.sendResponse(response);
+                    }
+                } catch (err) {
+                    debAdapter.sendStringErrorResponse(response, err.message);
+                } finally {
+                    resolve();
+                }
+            }, timeoutValue);
+        });
     }
 
     protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {

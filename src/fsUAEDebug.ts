@@ -376,6 +376,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     await new Promise(resolve => {
                         setTimeout(async () => {
                             await this.connect(response, args);
+                            resolve();
                         }, startDelay);
                     });
                 } catch (err) {

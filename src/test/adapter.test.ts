@@ -44,6 +44,7 @@ describe('Node Debug Adapter', () => {
 
 	before(async function () {
 		this.timeout(defaultTimeout);
+		GdbThread.setSupportMultiprocess(false);
 		// activate the extension
 		let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
 		if (ext) {

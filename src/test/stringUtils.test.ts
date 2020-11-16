@@ -32,6 +32,9 @@ describe("String Utils tests", function () {
         expect(StringUtils.convertInt32ToASCII(0x60006162)).to.be.equal("`.ab");
         expect(StringUtils.convertInt32ToASCII(0x6385FF00)).to.be.equal("c.ÿ.");
     });
+    it("Should convert a hex string containing an utf8 string to utf8 string", function () {
+        expect(StringUtils.convertHexUTF8StringToUTF8("C385E282AC")).to.be.equal("Å€");
+    });
     it("Should pad a string", function () {
         let str = "abc";
         expect(StringUtils.padEnd(str, 5)).to.be.equal("abc  ");

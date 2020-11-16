@@ -11,12 +11,12 @@ export class StringUtils {
     }
 
     /**
-	 * Create pad of the good size for string
-	 * @param stringToPad String to pad
-	 * @param targetLength Length targeted
+     * Create pad of the good size for string
+     * @param stringToPad String to pad
+     * @param targetLength Length targeted
      * @param padString Char as string to fill default to space
-	 * @return Padding string
-	 */
+     * @return Padding string
+     */
     public static createPad(stringToPad: string, targetLength: number, padString: string = " "): string {
         targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
         if (stringToPad.length > targetLength) {
@@ -32,12 +32,12 @@ export class StringUtils {
     }
 
     /**
-	 * Getting a padded string
-	 * @param stringToPad String to pad
-	 * @param targetLength Length targeted
+     * Getting a padded string
+     * @param stringToPad String to pad
+     * @param targetLength Length targeted
      * @param padString Char as string to fill default to space
-	 * @return Padded string
-	 */
+     * @return Padded string
+     */
     public static padEnd(stringToPad: string, targetLength: number, padString: string = " "): string {
         return stringToPad + StringUtils.createPad(stringToPad, targetLength, padString);
     }
@@ -89,6 +89,25 @@ export class StringUtils {
             asciiContents += StringUtils.convertByteToASCII(i);
         }
         return asciiContents;
+    }
+
+    /**
+     * Converts a string containing hex values to an ascii string
+     * @param value string to convert
+     * @return ascii string
+     */
+    public static convertHexUTF8StringToUTF8(value: string): string {
+        // split input into groups of two
+        let hex = value.match(/[\s\S]{2}/g) || [];
+        let output = '';
+        // build a hex-encoded representation of your string
+        let j = hex.length;
+        for (let i = 0; i < j; i++) {
+            output += '%' + ('0' + hex[i]).slice(-2);
+        }
+        // decode it using this trick
+        output = decodeURIComponent(output);
+        return output;
     }
 
     /**
