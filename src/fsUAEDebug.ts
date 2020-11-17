@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
 import { GdbProxy } from './gdbProxy';
-import { GdbRegister, Segment, GdbHaltStatus } from './gdbProxyCore';
+import { Segment, GdbHaltStatus } from './gdbProxyCore';
 import { ExecutorHelper } from './execHelper';
 import { CancellationTokenSource, workspace, window, Uri } from 'vscode';
 import { DebugInfo } from './debugInfo';
@@ -366,7 +366,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
                 // Launch the emulator
                 try {
-                    await this.startEmulator(args);
+                    this.startEmulator(args);
                     let startDelay: number;
                     if (args.emulatorStartDelay) {
                         startDelay = args.emulatorStartDelay;
@@ -422,7 +422,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         return fileProxy.exists();
     }
 
-    public async startEmulator(args: LaunchRequestArguments): Promise<void> {
+    public startEmulator(args: LaunchRequestArguments): void {
         if (args.startEmulator) {
             this.sendEvent(new OutputEvent(`Starting emulator: ${args.emulator}`));
             const emulatorExe = args.emulator;
@@ -639,7 +639,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.sendResponse(response);
     }
 
-    protected variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments): void {
+    protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments): Promise<void> {
         let variables = this.variableRefMap.get(args.variablesReference);
         if (variables) {
             response.body = {
@@ -650,9 +650,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             const id = this.variableHandles.get(args.variablesReference);
             if (id !== null) {
                 if (id.startsWith("registers_")) {
-                    //Gets the frameId
-                    let frameId = parseInt(id.substring(10));
-                    this.gdbProxy.registers(frameId, null).then((registers: Array<GdbRegister>) => {
+                    try {
+                        //Gets the frameId
+                        let frameId = parseInt(id.substring(10));
+                        let registers = await this.gdbProxy.registers(frameId, null);
                         const variablesArray = new Array<DebugProtocol.Variable>();
                         for (let i = 0; i < registers.length; i++) {
                             let r = registers[i];
@@ -671,9 +672,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             variables: variablesArray
                         };
                         this.sendResponse(response);
-                    }).catch(err => {
+                    } catch (err) {
                         this.sendStringErrorResponse(response, err.message);
-                    });
+                    }
                 } else if (id.startsWith("segments_")) {
                     const variablesArray = new Array<DebugProtocol.Variable>();
                     const segments = this.gdbProxy.getSegments();
@@ -711,7 +712,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         variables: variablesArray
                     };
                     this.sendResponse(response);
+                } else {
+                    this.sendStringErrorResponse(response, "Unknown variable");
                 }
+            } else {
+                this.sendStringErrorResponse(response, "No id to variable");
             }
         }
     }
@@ -742,79 +747,81 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.terminate();
     }
 
-    protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
+    protected async continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): Promise<void> {
         let thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
-            this.gdbProxy.continueExecution(thread).then(() => {
+            try {
+                await this.gdbProxy.continueExecution(thread);
                 response.body = {
                     allThreadsContinued: false
                 };
                 this.sendResponse(response);
-            }).catch(err => {
+            } catch (err) {
                 this.sendStringErrorResponse(response, err.message);
-            });
+            }
         } else {
             this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
 
-    protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
+    protected async nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): Promise<void> {
         let thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
-            this.gdbProxy.stepToRange(thread, 0, 0).then(() => {
+            try {
+                await this.gdbProxy.stepToRange(thread, 0, 0);
                 this.sendResponse(response);
-            }).catch(err => {
+            } catch (err) {
                 this.sendStringErrorResponse(response, err.message);
-            });
+            }
         } else {
             this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
 
-    protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments): void {
+    protected async stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments): Promise<void> {
         let thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
-            this.gdbProxy.stepIn(thread).then(() => {
+            try {
+                await this.gdbProxy.stepIn(thread);
                 this.sendResponse(response);
-            }).catch(err => {
+            } catch (err) {
                 this.sendStringErrorResponse(response, err.message);
-            });
+            }
         } else {
             this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
 
-    protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
+    protected async stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): Promise<void> {
         const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
-            this.gdbProxy.stack(thread).then(async stk => {
+            try {
+                let stk = await this.gdbProxy.stack(thread);
                 let frame = stk.frames[1];
                 let startAddress = frame.pc + 1;
                 let endAddress = frame.pc + 10;
-                this.gdbProxy.stepToRange(thread, startAddress, endAddress).then(() => {
-                    this.sendResponse(response);
-                }).catch(err => {
-                    this.sendStringErrorResponse(response, err.message);
-                });
-            }).catch(err => {
+                await this.gdbProxy.stepToRange(thread, startAddress, endAddress);
+                this.sendResponse(response);
+            } catch (err) {
                 this.sendStringErrorResponse(response, err.message);
-            });
+            }
         } else {
             this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
 
-    protected evaluateRequestRegister(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+    protected async evaluateRequestRegister(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
         // It's a reg value
-        this.gdbProxy.getRegister(args.expression, args.frameId).then(value => {
+        try {
+            let value = await this.gdbProxy.getRegister(args.expression, args.frameId);
             response.body = {
                 result: value[0],
                 variablesReference: 0,
             };
             this.sendResponse(response);
-        }).catch(err => {
+        } catch (err) {
             this.sendStringErrorResponse(response, err.message);
-        });
+        }
     }
 
     protected async readMemoryRequest(response: DebugProtocol.ReadMemoryResponse, args: DebugProtocol.ReadMemoryArguments): Promise<void> {
@@ -884,7 +891,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected evaluateRequestGetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+    protected async evaluateRequestGetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
         const matches = /m\s*([\{\}\$#0-9a-z_\+\-\*\/\%\(\)]+)\s*,\s*([0-9]+)(,\s*([0-9]+),\s*([0-9]+))?(,([abd]+))?/i.exec(args.expression);
         if (matches) {
             let rowLength = 4;
@@ -899,54 +906,47 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 mode = matches[7];
             }
             if (length !== null) {
-                // replace the address if it is a variable
-                this.debugExpressionHelper.getAddressFromExpression(matches[1], args.frameId, this).then((address) => {
+                try {
+                    // replace the address if it is a variable
+                    let address = await this.debugExpressionHelper.getAddressFromExpression(matches[1], args.frameId, this);
                     // ask for memory dump
-                    this.gdbProxy.getMemory(address, length).then((memory) => {
-                        let key = this.variableExpressionMap.get(args.expression);
-                        if (!key) {
-                            key = this.variableHandles.create(args.expression);
-                        }
-                        let startAddress = address;
-                        if (mode !== "d") {
-                            let [firstRow, variables] = this.debugExpressionHelper.processOutputFromMemoryDump(memory, startAddress, mode, wordLength, rowLength);
-                            this.variableRefMap.set(key, variables);
-                            this.variableExpressionMap.set(args.expression, key);
+                    let memory = await this.gdbProxy.getMemory(address, length);
+                    let key = this.variableExpressionMap.get(args.expression);
+                    if (!key) {
+                        key = this.variableHandles.create(args.expression);
+                    }
+                    let startAddress = address;
+                    if (mode !== "d") {
+                        let [firstRow, variables] = this.debugExpressionHelper.processOutputFromMemoryDump(memory, startAddress, mode, wordLength, rowLength);
+                        this.variableRefMap.set(key, variables);
+                        this.variableExpressionMap.set(args.expression, key);
+                        response.body = {
+                            result: firstRow,
+                            type: "array",
+                            variablesReference: key,
+                        };
+                        this.sendResponse(response);
+                    } else {
+                        if (this.capstone) {
+                            const constKey = key;
+                            // disassemble the code 
+                            let code = await this.capstone.disassemble(memory);
+                            let [firstRow, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, startAddress);
+                            this.variableRefMap.set(constKey, variables);
+                            this.variableExpressionMap.set(args.expression, constKey);
                             response.body = {
                                 result: firstRow,
                                 type: "array",
-                                variablesReference: key,
+                                variablesReference: constKey,
                             };
                             this.sendResponse(response);
                         } else {
-                            if (this.capstone) {
-                                const constKey = key;
-                                // disassemble the code 
-                                this.capstone.disassemble(memory).then((code) => {
-                                    let [firstRow, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, startAddress);
-                                    this.variableRefMap.set(constKey, variables);
-                                    this.variableExpressionMap.set(args.expression, constKey);
-                                    response.body = {
-                                        result: firstRow,
-                                        type: "array",
-                                        variablesReference: constKey,
-                                    };
-                                    this.sendResponse(response);
-                                }).catch((err) => {
-                                    response.success = false;
-                                    response.message = err.toString();
-                                    this.sendResponse(response);
-                                });
-                            } else {
-                                this.sendStringErrorResponse(response, "Capstone cstool must be configured in the settings");
-                            }
+                            this.sendStringErrorResponse(response, "Capstone cstool must be configured in the settings");
                         }
-                    }).catch((err) => {
-                        this.sendStringErrorResponse(response, err.message);
-                    });
-                }).catch((err) => {
+                    }
+                } catch (err) {
                     this.sendStringErrorResponse(response, err.message);
-                });
+                }
             } else {
                 this.sendStringErrorResponse(response, "Invalid memory dump expression");
             }
@@ -955,23 +955,21 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected evaluateRequestSetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+    protected async evaluateRequestSetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
         const matches = /M\s*([\{\}\$#0-9a-z_]+)\s*=\s*([0-9a-z_]+)/i.exec(args.expression);
         if (matches) {
             let addrStr = matches[1];
             let data = matches[2];
             if ((addrStr !== null) && (data !== null) && (data.length > 0)) {
-                // replace the address if it is a variable
-                this.debugExpressionHelper.getAddressFromExpression(addrStr, args.frameId, this).then((address) => {
-                    this.gdbProxy.setMemory(address, data).then(() => {
-                        args.expression = 'm' + addrStr + ',' + data.length.toString(16);
-                        return this.evaluateRequestGetMemory(response, args);
-                    }).catch((err) => {
-                        this.sendStringErrorResponse(response, err.message);
-                    });
-                }).catch((err) => {
+                try {
+                    // replace the address if it is a variable
+                    let address = await this.debugExpressionHelper.getAddressFromExpression(addrStr, args.frameId, this);
+                    await this.gdbProxy.setMemory(address, data);
+                    args.expression = 'm' + addrStr + ',' + data.length.toString(16);
+                    return this.evaluateRequestGetMemory(response, args);
+                } catch (err) {
                     this.sendStringErrorResponse(response, err.message);
-                });
+                }
             } else {
                 this.sendStringErrorResponse(response, "Invalid memory set expression");
             }

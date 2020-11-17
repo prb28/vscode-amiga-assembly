@@ -1,5 +1,3 @@
-import assert = require('assert');
-import { expect } from 'chai';
 import * as Path from 'path';
 import { DebugClient } from 'vscode-debugadapter-testsupport/lib/main';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
@@ -7,12 +5,10 @@ import { LaunchRequestArguments } from '../fsUAEDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
 import { GdbProxy } from '../gdbProxy';
-import { GdbStackFrame, GdbStackPosition, GdbRegister, Segment, GdbHaltStatus, GdbThread, GdbAmigaSysThreadIdWinUAE } from '../gdbProxyCore';
-import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls, capture } from 'ts-mockito/lib/ts-mockito';
+import { GdbStackFrame, GdbStackPosition, GdbThread, GdbAmigaSysThreadIdWinUAE } from '../gdbProxyCore';
+import { spy, anyString, instance, when, anything, mock, anyNumber, reset, } from 'ts-mockito/lib/ts-mockito';
 import { ExecutorHelper } from '../execHelper';
 import { Capstone } from '../capstone';
-import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
-import { DebugDisassembledFile } from '../debugDisassembled';
 import { ExtensionState } from '../extension';
 import { WinUAEDebugSession } from '../winUAEDebug';
 
@@ -22,7 +18,6 @@ describe('Node Debug Adapter for WinUAE', () => {
 	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug').replace(/\\+/g, '/');
 	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae').replace(/\\+/g, '/');
 	const UAE_DRIVE = Path.join(FSUAE_ROOT, 'hd0').replace(/\\+/g, '/');
-	const SOURCE_FILE_NAME = Path.join(DATA_ROOT, 'gencop.s').replace(/\\+/g, '/');
 	let launchArgs = <LaunchRequestArguments>{
 		program: Path.join(UAE_DRIVE, 'hello'),
 		stopOnEntry: false,
@@ -39,9 +34,8 @@ describe('Node Debug Adapter for WinUAE', () => {
 	let dc: DebugClient;
 	let callbacks = new Map<string, any>();
 	let testWithRealEmulator = false;
-	let defaultTimeout = 10000;
+	let defaultTimeout = 5000;
 	let th = new GdbThread(0, GdbAmigaSysThreadIdWinUAE.CPU);
-	let thCop = new GdbThread(1, GdbAmigaSysThreadIdWinUAE.COP);
 
 	before(async function () {
 		this.timeout(defaultTimeout);
@@ -179,139 +173,253 @@ describe('Node Debug Adapter for WinUAE', () => {
 		});
 	});
 
-	// describe('stepping', function () {
-	// 	beforeEach(function () {
-	// 		if (!testWithRealEmulator) {
-	// 			when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
-	// 			when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));
-	// 			when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
-	// 			when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
-	// 			when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
-	// 				setTimeout(function () {
-	// 					let cb = callbacks.get('stopOnEntry');
-	// 					if (cb) {
-	// 						cb(th.getId());
-	// 					}
-	// 				}, 1);
-	// 				return Promise.resolve();
-	// 			});
-	// 		}
-	// 	});
-	// 	it.only('should step out', async function () {
-	// 		this.timeout(defaultTimeout);
-	// 		if (!testWithRealEmulator) {
-	// 			when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
-	// 				frames: [<GdbStackPosition>{
-	// 					index: 1,
-	// 					segmentId: 0,
-	// 					offset: 0,
-	// 					pc: 0,
-	// 					stackFrameIndex: 0
-	// 				}],
-	// 				count: 1
-	// 			})).thenReturn(Promise.resolve(<GdbStackFrame>{
-	// 				frames: [<GdbStackPosition>{
-	// 					index: 1,
-	// 					segmentId: 0,
-	// 					offset: 4,
-	// 					pc: 4,
-	// 					stackFrameIndex: 0
-	// 				}],
-	// 				count: 1
-	// 			})).thenReturn(Promise.resolve(<GdbStackFrame>{
-	// 				frames: [<GdbStackPosition>{
-	// 					index: 1,
-	// 					segmentId: 0,
-	// 					offset: 8,
-	// 					pc: 8,
-	// 					stackFrameIndex: 0
-	// 				}],
-	// 				count: 1
-	// 			}));
-	// 			when(this.mockedGdbProxy.stepToRange(th, 0, 0)).thenCall(() => {
-	// 				setTimeout(function () {
-	// 					let cb = callbacks.get('stopOnBreakpoint');
-	// 					if (cb) {
-	// 						cb(th.getId());
-	// 					}
-	// 				}, 1);
-	// 				return Promise.resolve();
-	// 			});
-	// 			when(this.mockedGdbProxy.stepIn(th)).thenCall(() => {
-	// 				setTimeout(function () {
-	// 					let cb = callbacks.get('stopOnBreakpoint');
-	// 					if (cb) {
-	// 						cb(th.getId());
-	// 					}
-	// 				}, 1);
-	// 				return Promise.resolve();
-	// 			});
-	// 		}
-	// 		let launchArgsCopy = launchArgs;
-	// 		launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
-	// 		launchArgsCopy.stopOnEntry = true;
-	// 		await Promise.all([
-	// 			dc.configurationSequence(),
-	// 			dc.launch(launchArgsCopy),
-	// 			dc.assertStoppedLocation('entry', { line: 32 })
-	// 		]);
-	// 		await Promise.all([
-	// 			dc.nextRequest(<DebugProtocol.StepInArguments>{ threadId: th.getId() }),
-	// 			dc.assertStoppedLocation('breakpoint', { line: 33 }),
-	// 		]);
-	// 		return Promise.all([
-	// 			dc.stepInRequest(<DebugProtocol.StepInArguments>{ threadId: th.getId() }),
-	// 			dc.assertStoppedLocation('breakpoint', { line: 37 }),
-	// 		]);
-	// 	});
-	// 	it('should continue and stop', async function () {
-	// 		this.timeout(defaultTimeout);
-	// 		if (!testWithRealEmulator) {
-	// 			when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
-	// 				frames: [<GdbStackPosition>{
-	// 					index: 1,
-	// 					segmentId: 0,
-	// 					offset: 0,
-	// 					pc: 0,
-	// 					stackFrameIndex: 0
-	// 				}],
-	// 				count: 1
-	// 			})).thenReturn(Promise.resolve(<GdbStackFrame>{
-	// 				frames: [<GdbStackPosition>{
-	// 					index: 1,
-	// 					segmentId: 0,
-	// 					offset: 4,
-	// 					pc: 4,
-	// 					stackFrameIndex: 0
-	// 				}],
-	// 				count: 1
-	// 			}));
-	// 			when(this.mockedGdbProxy.continueExecution(th)).thenCall(() => {
-	// 				return Promise.resolve();
-	// 			});
-	// 			when(this.mockedGdbProxy.pause(th)).thenCall(() => {
-	// 				setTimeout(function () {
-	// 					let cb = callbacks.get('stopOnBreakpoint');
-	// 					if (cb) {
-	// 						cb(th.getId());
-	// 					}
-	// 				}, 1);
-	// 				return Promise.resolve();
-	// 			});
-	// 		}
-	// 		let launchArgsCopy = launchArgs;
-	// 		launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
-	// 		launchArgsCopy.stopOnEntry = true;
-	// 		await Promise.all([
-	// 			dc.configurationSequence(),
-	// 			dc.launch(launchArgsCopy),
-	// 			dc.assertStoppedLocation('entry', { line: 32 })
-	// 		]);
-	// 		await Promise.all([
-	// 			dc.continueRequest(<DebugProtocol.ContinueArguments>{ threadId: th.getId() }),
-	// 			dc.pauseRequest(<DebugProtocol.PauseArguments>{ threadId: th.getId() }),
-	// 			dc.assertStoppedLocation('breakpoint', { line: 33 }),
-	// 		]);
-	// 	});
-	// });
+	describe('stepping', function () {
+		beforeEach(function () {
+			if (!testWithRealEmulator) {
+				when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
+				when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));
+				when(this.mockedGdbProxy.connect(anyString(), anyNumber())).thenReturn(Promise.resolve());
+				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
+				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnEntry');
+						if (cb) {
+							cb(th.getId());
+						}
+					}, 1);
+					return Promise.resolve();
+				});
+			}
+		});
+		it('should step next', async function () {
+			this.timeout(defaultTimeout);
+			if (!testWithRealEmulator) {
+				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 0,
+						pc: 0,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				})).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 0,
+						pc: 0,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				})).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 4,
+						pc: 4,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				})).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 8,
+						pc: 8,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				}));
+				when(this.mockedGdbProxy.stepToRange(th, anything(), anything())).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnBreakpoint');
+						if (cb) {
+							cb(th.getId());
+						}
+					}, 1);
+					return Promise.resolve();
+				});
+				when(this.mockedGdbProxy.stepIn(th)).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnEntry');
+						if (cb) {
+							cb(th.getId());
+						}
+					}, 1);
+					return Promise.resolve();
+				}).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnBreakpoint');
+						if (cb) {
+							cb(th.getId());
+						}
+					}, 1);
+					return Promise.resolve();
+				});
+			}
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			launchArgsCopy.stopOnEntry = true;
+			await Promise.all([
+				dc.configurationSequence(),
+				dc.launch(launchArgsCopy),
+				dc.assertStoppedLocation('entry', { line: 32 })
+			]);
+			await Promise.all([
+				dc.nextRequest(<DebugProtocol.StepInArguments>{ threadId: th.getId() }),
+				dc.assertStoppedLocation('breakpoint', { line: 33 }),
+			]);
+			return Promise.all([
+				dc.stepInRequest(<DebugProtocol.StepInArguments>{ threadId: th.getId() }),
+				dc.assertStoppedLocation('breakpoint', { line: 37 }),
+			]);
+		});
+		it('should continue and stop', async function () {
+			this.timeout(defaultTimeout);
+			if (!testWithRealEmulator) {
+				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 0,
+						pc: 0,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				})).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 4,
+						pc: 4,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				}));
+				when(this.mockedGdbProxy.continueExecution(th)).thenCall(() => {
+					return Promise.resolve();
+				});
+				when(this.mockedGdbProxy.pause(th)).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnBreakpoint');
+						if (cb) {
+							cb(th.getId());
+						}
+					}, 1);
+					return Promise.resolve();
+				});
+				when(this.mockedGdbProxy.stepIn(th)).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnEntry');
+						if (cb) {
+							cb(th.getId());
+						}
+					}, 1);
+					return Promise.resolve();
+				});
+			}
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			launchArgsCopy.stopOnEntry = true;
+			await Promise.all([
+				dc.configurationSequence(),
+				dc.launch(launchArgsCopy),
+				dc.assertStoppedLocation('entry', { line: 32 })
+			]);
+			await Promise.all([
+				dc.continueRequest(<DebugProtocol.ContinueArguments>{ threadId: th.getId() }),
+				dc.pauseRequest(<DebugProtocol.PauseArguments>{ threadId: th.getId() }),
+				dc.assertStoppedLocation('breakpoint', { line: 33 }),
+			]);
+		});
+		it('should step out', async function () {
+			this.timeout(defaultTimeout);
+			if (!testWithRealEmulator) {
+				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 0,
+						pc: 0,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				})).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 0,
+						segmentId: 0,
+						offset: 20,
+						pc: 20,
+						stackFrameIndex: 0
+					}, <GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 4,
+						pc: 4,
+						stackFrameIndex: 0
+					}],
+					count: 2
+				})).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 0,
+						segmentId: 0,
+						offset: 20,
+						pc: 20,
+						stackFrameIndex: 0
+					}, <GdbStackPosition>{
+						index: 1,
+						segmentId: 0,
+						offset: 4,
+						pc: 4,
+						stackFrameIndex: 0
+					}],
+					count: 2
+				})).thenReturn(Promise.resolve(<GdbStackFrame>{
+					frames: [<GdbStackPosition>{
+						index: 0,
+						segmentId: 0,
+						offset: 8,
+						pc: 8,
+						stackFrameIndex: 0
+					}],
+					count: 1
+				}));
+				when(this.mockedGdbProxy.continueExecution(anything())).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnBreakpoint');
+						if (cb) {
+							cb(th.getId());
+						}
+					}, 1);
+					return Promise.resolve();
+				});
+				when(this.mockedGdbProxy.stepIn(th)).thenCall(() => {
+					setTimeout(function () {
+						let cb = callbacks.get('stopOnEntry');
+						if (cb) {
+							cb(th.getId());
+						}
+					}, 1);
+					return Promise.resolve();
+				});
+			}
+			let launchArgsCopy = launchArgs;
+			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
+			launchArgsCopy.stopOnEntry = true;
+			await Promise.all([
+				dc.configurationSequence(),
+				dc.launch(launchArgsCopy),
+				dc.assertStoppedLocation('entry', { line: 32 })
+			]);
+			await Promise.all([
+				dc.continueRequest(<DebugProtocol.ContinueArguments>{ threadId: th.getId() }),
+				dc.assertStoppedLocation('breakpoint', { line: 39 }),
+			]);
+			await Promise.all([
+				dc.stepOutRequest(<DebugProtocol.StepOutArguments>{ threadId: th.getId() }),
+				dc.assertStoppedLocation('breakpoint', { line: 37 }),
+			]);
+		});
+	});
 });

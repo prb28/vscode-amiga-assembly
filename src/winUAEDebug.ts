@@ -47,42 +47,41 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
         });
     }
 
-    protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
+    protected async nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): Promise<void> {
         const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
-            this.gdbProxy.stack(thread).then(async stk => {
+            try {
+                let stk = await this.gdbProxy.stack(thread);
                 let frame = stk.frames[0];
                 let startAddress = frame.pc;
                 let endAddress = frame.pc;
-                this.gdbProxy.stepToRange(thread, startAddress, endAddress).then(() => {
-                    this.sendResponse(response);
-                }).catch(err => {
-                    this.sendStringErrorResponse(response, err.message);
-                });
-            }).catch(err => {
+                await this.gdbProxy.stepToRange(thread, startAddress, endAddress);
+                this.sendResponse(response);
+            } catch (err) {
                 this.sendStringErrorResponse(response, err.message);
-            });
+            }
         } else {
             this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
 
-    protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
+    protected async stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): Promise<void> {
         const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
-            this.gdbProxy.stack(thread).then(async stk => {
-                let frame = stk.frames[1];
-                let bpArray = this.breakpointManager.createTemporaryBreakpointArray([frame.pc + 1, frame.pc + 2, frame.pc + 4]);
-                await this.breakpointManager.addTemporaryBreakpointArray(bpArray).catch(err => {
-                    this.sendStringErrorResponse(response, err.message);
-                });
-                await this.gdbProxy.continueExecution(thread).catch(err => {
-                    this.sendStringErrorResponse(response, err.message);
-                });
-                this.sendResponse(response);
-            }).catch(err => {
+            try {
+                let stk = await this.gdbProxy.stack(thread);
+                if (stk.frames.length > 0) {
+                    let frame = stk.frames[1];
+                    let bpArray = this.breakpointManager.createTemporaryBreakpointArray([frame.pc + 1, frame.pc + 2, frame.pc + 4]);
+                    await this.breakpointManager.addTemporaryBreakpointArray(bpArray);
+                    await this.gdbProxy.continueExecution(thread);
+                    this.sendResponse(response);
+                } else {
+                    this.sendStringErrorResponse(response, "No frame to step out");
+                }
+            } catch (err) {
                 this.sendStringErrorResponse(response, err.message);
-            });
+            }
         } else {
             this.sendStringErrorResponse(response, "Unknown thread");
         }
