@@ -675,7 +675,7 @@ export class GdbProxy extends EventEmitter {
                     returnedFrameIndex = sReturnedFrameIndex;
                 }
                 if ((frameIndex !== GdbProxy.DEFAULT_FRAME_INDEX) && (sReturnedFrameIndex !== frameIndex)) {
-                    throw new Error("Error during frame selection: " + frameIndex);
+                    throw new Error(`Error during frame selection asking ${frameIndex} returned ${sReturnedFrameIndex}`);
                 }
             }
             let regIdx = this.getRegisterIndex(name);

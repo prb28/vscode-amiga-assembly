@@ -144,31 +144,35 @@ export class GdbProxyWinUAE extends GdbProxy {
      * Ask the frame index for pc offset
      */
     public async selectFrame(num: number | null, pc: number | null): Promise<number> {
-        let message = "QTFrame:";
-        if (num !== null) {
-            if (num < 0) {
-                message += "ffffffff";
-                await this.sendPacketString(message, GdbPacketType.OK);
+        try {
+            let message = "QTFrame:";
+            if (num !== null) {
+                if (num < 0) {
+                    message += "ffffffff";
+                    await this.sendPacketString(message, GdbPacketType.OK);
+                    return GdbProxy.DEFAULT_FRAME_INDEX;
+                } else {
+                    message += GdbProxy.formatNumber(num);
+                }
+            } else if (pc !== null) {
+                message += "pc:" + GdbProxy.formatNumber(pc);
+            } else {
+                throw new Error("No arguments to select a frame");
+            }
+            let data = await this.sendPacketString(message, GdbPacketType.FRAME);
+            if (data === "F-1") {
+                // No frame found
                 return GdbProxy.DEFAULT_FRAME_INDEX;
             } else {
-                message += GdbProxy.formatNumber(num);
+                let v = data.substring(1);
+                let tPos = v.indexOf("T");
+                if (tPos >= 0) {
+                    v = v.substring(0, tPos);
+                }
+                return parseInt(v, 16);
             }
-        } else if (pc !== null) {
-            message += "pc:" + GdbProxy.formatNumber(pc);
-        } else {
-            throw new Error("No arguments to select a frame");
-        }
-        let data = await this.sendPacketString(message, GdbPacketType.FRAME);
-        if (data === "F-1") {
-            // No frame found
+        } catch (err) {
             return GdbProxy.DEFAULT_FRAME_INDEX;
-        } else {
-            let v = data.substring(1);
-            let tPos = v.indexOf("T");
-            if (tPos >= 0) {
-                v = v.substring(0, tPos);
-            }
-            return parseInt(v, 16);
         }
     }
 
@@ -241,7 +245,7 @@ export class GdbProxyWinUAE extends GdbProxy {
                     }
                     return <GdbStackPosition>{
                         index: frameIndex * 1000,
-                        stackFrameIndex: 0,
+                        stackFrameIndex: 1,
                         segmentId: -10,
                         offset: 0,
                         pc: copperPcValue
@@ -260,22 +264,31 @@ export class GdbProxyWinUAE extends GdbProxy {
      * @param thread Thread identifier
      */
     public async stack(thread: GdbThread): Promise<GdbStackFrame> {
-        let frames = new Array<GdbStackPosition>();
-        // Retrieve the current frame
-        let stackPosition = await this.getStackPosition(thread, GdbProxy.DEFAULT_FRAME_INDEX);
-        frames.push(stackPosition);
-        if (thread.getThreadId() === GdbAmigaSysThreadIdWinUAE.CPU) {
-            // Retrieve the current frame count
-            let stackSize = await this.getFramesCount(thread);
-            for (let i = stackSize - 1; i >= 0; i--) {
-                stackPosition = await this.getStackPosition(thread, i);
-                frames.push(stackPosition);
+        const unlock = await this.mutex.capture('stack');
+        try {
+            let frames = new Array<GdbStackPosition>();
+            // Retrieve the current frame
+            let stackPosition = await this.getStackPosition(thread, GdbProxy.DEFAULT_FRAME_INDEX);
+            frames.push(stackPosition);
+            if (thread.getThreadId() === GdbAmigaSysThreadIdWinUAE.CPU) {
+                // Retrieve the current frame count
+                let stackSize = await this.getFramesCount(thread);
+                for (let i = stackSize - 1; i >= 0; i--) {
+                    try {
+                        stackPosition = await this.getStackPosition(thread, i);
+                        frames.push(stackPosition);
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
             }
+            return <GdbStackFrame>{
+                frames: frames,
+                count: frames.length
+            };
+        } finally {
+            unlock();
         }
-        return <GdbStackFrame>{
-            frames: frames,
-            count: frames.length
-        };
     }
 
     /**

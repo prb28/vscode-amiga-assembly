@@ -25,24 +25,18 @@ export class Capstone {
      * @param buffer Buffer to disassemble
      * @param cancellationToken Token to cancel the process
      */
-    public disassemble(buffer: string, cancellationToken?: CancellationToken): Promise<string> {
+    public async disassemble(buffer: string, cancellationToken?: CancellationToken): Promise<string> {
         let args = ["m68k", buffer];
         const workspaceRootDir = this.getWorkspaceRootDir();
         let rootPath: string | null = null;
         if (workspaceRootDir) {
             rootPath = workspaceRootDir.fsPath;
         }
-        return new Promise((resolve, reject) => {
-            this.executor.runToolRetrieveStdout(args, rootPath, this.cstoolPath, null, cancellationToken).then((code) => {
-                if (code.indexOf("ERROR") >= 0) {
-                    reject(new Error(code));
-                } else {
-                    resolve(code);
-                }
-            }).catch((err) => {
-                reject(err);
-            });
-        });
+        let code = await this.executor.runToolRetrieveStdout(args, rootPath, this.cstoolPath, null, cancellationToken);
+        if (code.indexOf("ERROR") >= 0) {
+            throw new Error(code);
+        }
+        return code;
     }
 
     /**
@@ -50,30 +44,23 @@ export class Capstone {
      * @param filename File to disassemble
      * @param cancellationToken Token to cancel the process
      */
-    public disassembleFile(filename: Uri, cancellationToken?: CancellationToken): Promise<string> {
-        return new Promise(async (resolve, reject) => {
-            let di = new DebugInfo(filename);
-            try {
-                if (await di.load()) {
-                    let codeDataArray = di.getCodeData();
-                    let allCode = "";
-                    for (let codeData of codeDataArray) {
-                        let s = "";
-                        for (let b of codeData) {
-                            s += this.padStartWith0(b.toString(16), 8);
-                        }
-                        await this.disassemble(s, cancellationToken).then((data) => {
-                            allCode += data + "\n";
-                        });
-                    }
-                    resolve(allCode);
-                } else {
-                    reject(new Error(`File '${filename}' could not be parsed`));
+    public async disassembleFile(filename: Uri, cancellationToken?: CancellationToken): Promise<string> {
+        let di = new DebugInfo(filename);
+        if (await di.load()) {
+            let codeDataArray = di.getCodeData();
+            let allCode = "";
+            for (let codeData of codeDataArray) {
+                let s = "";
+                for (let b of codeData) {
+                    s += this.padStartWith0(b.toString(16), 8);
                 }
-            } catch (err) {
-                reject(err);
+                let data = await this.disassemble(s, cancellationToken);
+                allCode += data + "\n";
             }
-        });
+            return allCode;
+        } else {
+            throw new Error(`File '${filename}' could not be parsed`);
+        }
     }
 
     /**

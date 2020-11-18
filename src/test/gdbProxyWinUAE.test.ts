@@ -372,7 +372,7 @@ describe("GdbProxyWinUAE Tests", function () {
                                 offset: 0,
                                 pc: 1,
                                 segmentId: -10,
-                                stackFrameIndex: 0,
+                                stackFrameIndex: 1,
                             }],
                             count: 1
                         });

@@ -141,7 +141,6 @@ export class BreakpointManager {
         this.temporaryBreakpointArrays.push(temporaryBreakpointArray);
         for (let debugBp of temporaryBreakpointArray.breakpoints) {
             await this.gdbProxy.setBreakpoint(debugBp);
-            this.breakpoints.push(debugBp);
         }
     }
 
@@ -150,7 +149,6 @@ export class BreakpointManager {
             this.breakpointLock = await this.mutex.capture('breakpointLock');
             for (let debugBp of temporaryBreakpointArray.breakpoints) {
                 await this.gdbProxy.removeBreakpoint(debugBp);
-                this.breakpoints = this.breakpoints.filter(item => item.offset !== debugBp.offset);
             }
             this.temporaryBreakpointArrays = this.temporaryBreakpointArrays.filter(item => item !== temporaryBreakpointArray);
         } finally {
