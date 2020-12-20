@@ -33,7 +33,7 @@ export class GdbProxyWinUAE extends GdbProxy {
             const self = this;
             // Let fs-uae terminate before sending the run command
             // TODO : check if this is necessary
-            await new Promise((resolve, reject) => setTimeout(async function () {
+            await new Promise<void>((resolve, reject) => setTimeout(async function () {
                 self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
                 let encodedProgramName = StringUtils.convertStringToHex("dh0:" + elms[elms.length - 1]);
                 // Call for segments
@@ -392,22 +392,12 @@ export class GdbProxyWinUAE extends GdbProxy {
      * Ask for the status of the current stop
      */
     public async getHaltStatus(): Promise<GdbHaltStatus[]> {
-        return new Promise(async (resolve, reject) => {
-            let rejected = false;
-            let returnedHaltStatus = new Array<GdbHaltStatus>();
-            let response = await this.sendPacketString('?', GdbPacketType.STOP).catch(err => {
-                reject(err);
-                rejected = true;
-            });
-            if (response) {
-                if (response.indexOf("OK") < 0) {
-                    returnedHaltStatus.push(this.parseHaltStatus(response));
-                }
-            }
-            if (!rejected) {
-                resolve(returnedHaltStatus);
-            }
-        });
+        let returnedHaltStatus = new Array<GdbHaltStatus>();
+        let response = await this.sendPacketString('?', GdbPacketType.STOP);
+        if (response.indexOf("OK") < 0) {
+            returnedHaltStatus.push(this.parseHaltStatus(response));
+        }
+        return returnedHaltStatus;
     }
 
     /**
