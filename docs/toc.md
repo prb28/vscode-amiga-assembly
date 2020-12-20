@@ -1,8 +1,8 @@
 # Documentation
 
-## Motorolla 68000 assembler
+## Motorola 68000 assembler
 
-| Insctructions  | Description |
+| Instructions  | Description |
 |:---|:---|
 |[abcd](instructions/abcd.md)|Add decimal with extend|
 |[add](instructions/add.md)|Add binary|
@@ -911,5 +911,5 @@ Source: [Amiga Developer Docs from elowar](http://amigadev.elowar.com/)
 ## Licences
 
 The amiga libraries ara part of development tools of Commodore Amiga Incorporated licensed by [Cloanto Coporation](https://cloanto.com)
-These files are made available here free of charge for learning purpose and without the intention of doing any harm.
-Please contact the extension developper to discuss any issues.
+These files are made available here free of charge for learning purposes and without the intention of doing any harm.
+Please contact the extension developer to discuss any issues.
