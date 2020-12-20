@@ -1,6 +1,7 @@
 # Documentation
 
 ## Motorolla 68000 assembler
+
 | Insctructions  | Description |
 |:---|:---|
 |[abcd](instructions/abcd.md)|Add decimal with extend|
@@ -72,8 +73,8 @@
 |[tst](instructions/tst.md)|# TST Test an operand|
 |[unlk](instructions/unlk.md)|Unlink|
 
-
 ## Amiga registers
+
 | Address  | Name | Description |
 |:---|:---|:---|
 |BFD000|[PRA](hardware/BFD000_PRA.md)|CIAB Peripheral Data Register A|
@@ -373,10 +374,10 @@
 |DFF1EE|[BPLHPTL](hardware/DFF1EE_BPLHPTL.md)|UHRES (VRAM) bit plane pointer (low 15 bits)|
 |DFF1FC|[FMODE](hardware/DFF1FC_FMODE.md)|Memory Fetch Mode|
 
-
 ## Amiga libraries
 
 ### diskfont
+
 | Function | Description |
 |:---|:---|
 |[AvailFonts](libs/diskfont/AvailFonts)|Inquire available memory &#038; disk fonts.|
@@ -386,6 +387,7 @@
 |[OpenDiskFont](libs/diskfont/OpenDiskFont)|OpenDiskFont - load and get a pointer to a disk font.|
 
 ### dos
+
 | Function | Description |
 |:---|:---|
 |[AbortPkt](libs/dos/AbortPkt)|Aborts an asynchronous packet, if possible. (V36)|
@@ -470,7 +472,7 @@
 |[LockRecords](libs/dos/LockRecords)|Lock a series of records (V36)|
 |[MakeDosEntry](libs/dos/MakeDosEntry)|Creates a [DosList](_0078) structure (V36)|
 |[MakeLink](libs/dos/MakeLink)|Creates a filesystem link (V36)|
-|[MatchEnd](libs/dos/MatchEnd)|Free storage allocated for <a href="../Includes_and_Autodocs_2._guide/node02CE.html">MatchFirst()/MatchNext() (V36)|
+|[MatchEnd](libs/dos/MatchEnd)|Free storage allocated for [MatchFirst()/MatchNext()](http://amiga.nvg.org/amiga/reference/Includes_and_Autodocs_2._guide/node02CE.html) (V36)|
 |[MatchFirst](libs/dos/MatchFirst)|Finds file that matches pattern (V36)|
 |[MatchNext](libs/dos/MatchNext)|MatchNext - Finds the next file or directory that matches pattern (V36)|
 |[MatchPattern](libs/dos/MatchPattern)|Checks for a pattern match with a string (V36)|
@@ -542,6 +544,7 @@
 |[WriteChars](libs/dos/WriteChars)|Writes bytes to the the default output (buffered) (V36)|
 
 ### exec
+
 | Function | Description |
 |:---|:---|
 |[AbortIO](libs/exec/AbortIO)|AbortIO - attempt to abort an in-progress I/O request|
@@ -652,6 +655,7 @@
 |[WaitPort](libs/exec/WaitPort)|wait for a given port to be non-empty|
 
 ### graphics
+
 | Function | Description |
 |:---|:---|
 |[AddAnimOb](libs/graphics/AddAnimOb)|Add an [AnimOb](_00C3) to the linked list of AnimObs.|
@@ -788,6 +792,7 @@
 |[XorRegionRegion](libs/graphics/XorRegionRegion)|Perform 2d XOR operation of one regionwith second region, leaving result in second region|
 
 ### intuition
+
 | Function | Description |
 |:---|:---|
 |[ActivateGadget](libs/intuition/ActivateGadget)|Activate a (string or custom) gadget.|
@@ -901,10 +906,10 @@
 |[WindowToFront](libs/intuition/WindowToFront)|Ask Intuition to bring a window to the front.|
 |[ZipWindow](libs/intuition/ZipWindow)|Change window to &#034;alternate&#034; position anddimensions. (V36)|
 
-
 Source: [Amiga Developer Docs from elowar](http://amigadev.elowar.com/)
 
 ## Licences
+
 The amiga libraries ara part of development tools of Commodore Amiga Incorporated licensed by [Cloanto Coporation](https://cloanto.com)
 These files are made available here free of charge for learning purpose and without the intention of doing any harm.
 Please contact the extension developper to discuss any issues.
