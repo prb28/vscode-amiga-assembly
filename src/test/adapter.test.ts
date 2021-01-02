@@ -239,7 +239,7 @@ describe('Node Debug Adapter', () => {
 				return Promise.resolve();
 			});
 			when(this.mockedGdbProxy.setBreakpoint(anything())).thenCall((bp: GdbBreakpoint) => {
-				return new Promise((resolve, reject) => {
+				return new Promise<void>((resolve, reject) => {
 					bp.verified = true;
 					let cb = callbacks.get('breakpointValidated');
 					if (cb) {
@@ -296,7 +296,7 @@ describe('Node Debug Adapter', () => {
 				return Promise.resolve();
 			});
 			when(this.mockedGdbProxy.setBreakpoint(anything())).thenCall((bp: GdbBreakpoint) => {
-				return new Promise((resolve, reject) => {
+				return new Promise<void>((resolve, reject) => {
 					bp.verified = true;
 					let cb = callbacks.get('breakpointValidated');
 					if (cb) {
@@ -518,6 +518,20 @@ describe('Node Debug Adapter', () => {
 					}],
 					count: 2
 				}));
+				when(this.mockedGdbProxy.registers(anything(), anything())).thenReturn(Promise.resolve([<GdbRegister>{
+					name: "d0",
+					value: 1
+				}, <GdbRegister>{
+					name: "a0",
+					value: 10
+				}, <GdbRegister>{
+					name: "SR_T1",
+					value: 1
+				}, <GdbRegister>{
+					name: "SR_T0",
+					value: 0
+				}]));
+
 			}
 			when(this.mockedGdbProxy.isCPUThread(anything())).thenReturn(true);
 			let launchArgsCopy = launchArgs;
@@ -554,20 +568,27 @@ describe('Node Debug Adapter', () => {
 			expect(stackFrames[1].name).to.be.equal("a: sub.l	(a1), d0");
 			let responseScopes: DebugProtocol.ScopesResponse = await dc.scopesRequest(<DebugProtocol.ScopesArguments>{ frameId: 0 });
 			expect(responseScopes.body.scopes[0].name).to.be.equal('Registers');
-			expect(responseScopes.body.scopes[1].name).to.be.equal('Segments');
-			expect(responseScopes.body.scopes[2].name).to.be.equal('Symbols');
+			expect(responseScopes.body.scopes[1].name).to.be.equal('Status Register');
+			expect(responseScopes.body.scopes[2].name).to.be.equal('Segments');
+			expect(responseScopes.body.scopes[3].name).to.be.equal('Symbols');
 			let vRegistersResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[0].variablesReference });
 			expect(vRegistersResponse.body.variables[0].name).to.be.equal("d0");
 			expect(vRegistersResponse.body.variables[0].type).to.be.equal("register");
 			expect(vRegistersResponse.body.variables[0].value).to.be.equal("00000001");
 			expect(vRegistersResponse.body.variables[0].variablesReference).to.be.equal(0);
 			expect(vRegistersResponse.body.variables[1].name).to.be.equal("a0");
-			let vSegmentsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[1].variablesReference });
+			let vSRRegistersResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[1].variablesReference });
+			expect(vSRRegistersResponse.body.variables[0].name).to.be.equal("T1");
+			expect(vSRRegistersResponse.body.variables[0].type).to.be.equal("register");
+			expect(vSRRegistersResponse.body.variables[0].value).to.be.equal("1");
+			expect(vSRRegistersResponse.body.variables[0].variablesReference).to.be.equal(0);
+			expect(vSRRegistersResponse.body.variables[1].name).to.be.equal("T0");
+			let vSegmentsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[2].variablesReference });
 			expect(vSegmentsResponse.body.variables[0].name).to.be.equal("Segment #0");
 			expect(vSegmentsResponse.body.variables[0].type).to.be.equal("segment");
 			expect(vSegmentsResponse.body.variables[0].value).to.be.equal("a {size:10}");
 			expect(vSegmentsResponse.body.variables[0].variablesReference).to.be.equal(0);
-			let vSymbolsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[2].variablesReference });
+			let vSymbolsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[3].variablesReference });
 			expect(vSymbolsResponse.body.variables[0].name).to.be.equal("init");
 			expect(vSymbolsResponse.body.variables[0].type).to.be.equal("symbol");
 			expect(vSymbolsResponse.body.variables[0].value).to.be.equal("a");
@@ -885,7 +906,7 @@ describe('Node Debug Adapter', () => {
 				return Promise.resolve();
 			});
 			when(this.mockedGdbProxy.setBreakpoint(anything())).thenCall((brp: GdbBreakpoint) => {
-				return new Promise((resolve, reject) => {
+				return new Promise<void>((resolve, reject) => {
 					if (brp.exceptionMask === undefined) {
 						brp.verified = true;
 						let cb = callbacks.get('breakpointValidated');

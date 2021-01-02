@@ -263,62 +263,52 @@ describe("GdbProxyWinUAE Tests", function () {
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "T1",
+                    name: "SR_T1",
                     value: 1
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "T0",
+                    name: "SR_T0",
                     value: 0
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "S",
+                    name: "SR_S",
                     value: 1
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "M",
+                    name: "SR_M",
                     value: 0
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "I2",
+                    name: "SR_intmask",
+                    value: 2
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "SR_X",
                     value: 0
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "I1",
+                    name: "SR_N",
                     value: 1
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "I0",
+                    name: "SR_Z",
                     value: 0
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "X",
-                    value: 0
-                });
-                pos += 1;
-                expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "N",
+                    name: "SR_V",
                     value: 1
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "Z",
-                    value: 0
-                });
-                pos += 1;
-                expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "V",
-                    value: 1
-                });
-                pos += 1;
-                expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "C",
+                    name: "SR_C",
                     value: 0
                 });
             });

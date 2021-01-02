@@ -33,7 +33,7 @@ export class GdbProxy extends EventEmitter {
     /** Unexpected return message */
     static readonly UNEXPECTED_RETURN_ERROR = "Unexpected return message for program launch command";
     /** Labels for SR bits */
-    static readonly SR_LABELS = ["T1", "T0", "S", "M", null, "I2", "I1", "I0", null, null, null, "X", "N", "Z", "V", "C"];
+    static readonly SR_LABELS = ["T1", "T0", "S", "M", null, "I", "I", "I", null, null, null, "X", "N", "Z", "V", "C"];
     /** Socket to connect */
     protected socket: Socket;
     /** Current source file */
@@ -559,6 +559,43 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
+     * Retrieve the details of the status register
+     * @param srValue Status Register value
+     */
+    public static getSRDetailedValues(srValue: number): Array<GdbRegister> {
+        let registers = new Array<GdbRegister>();
+        let intMask = 0;
+        let intPos = 2;
+        for (let i = 0; i < GdbProxy.SR_LABELS.length; i++) {
+            let label = GdbProxy.SR_LABELS[i];
+            if (label !== null) {
+                let mask = 1 << (15 - i);
+                let b = srValue & mask;
+                let vb = 0;
+                if (b) {
+                    vb = 1;
+                }
+                if (label.startsWith("I")) {
+                    intMask = intMask | vb << intPos;
+                    intPos--;
+                    if (intPos < 0) {
+                        registers.push({
+                            name: "SR_intmask",
+                            value: intMask
+                        });
+                    }
+                } else {
+                    registers.push({
+                        name: `SR_${label}`,
+                        value: vb
+                    });
+                }
+            }
+        }
+        return registers;
+    }
+
+    /**
      * Retrieves all the register values
      */
     public async registers(frameId: number | null, thread: GdbThread | null): Promise<Array<GdbRegister>> {
@@ -592,22 +629,7 @@ export class GdbProxy extends EventEmitter {
                 name: "sr",
                 value: sr
             });
-            for (let i = 0; i < GdbProxy.SR_LABELS.length; i++) {
-                let label = GdbProxy.SR_LABELS[i];
-                if (label !== null) {
-                    let mask = 1 << (15 - i);
-                    let b = sr & mask;
-                    let vb = 0;
-                    if (b) {
-                        vb = 1;
-                    }
-                    registers.push({
-                        name: label,
-                        value: vb
-                    });
-                }
-            }
-
+            registers = registers.concat(GdbProxy.getSRDetailedValues(sr));
             v = message.slice(pos, pos + 8);
             let pc = parseInt(v, 16);
             registers.unshift({

@@ -373,7 +373,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     } else {
                         startDelay = 1500;
                     }
-                    await new Promise(resolve => {
+                    await new Promise<void>(resolve => {
                         setTimeout(async () => {
                             await this.connect(response, args);
                             resolve();
@@ -630,6 +630,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         const frameReference = args.frameId;
         const scopes = new Array<Scope>();
         scopes.push(new Scope("Registers", this.variableHandles.create("registers_" + frameReference), false));
+        scopes.push(new Scope("Status Register", this.variableHandles.create("status_register_" + frameReference), false));
         scopes.push(new Scope("Segments", this.variableHandles.create("segments_" + frameReference), true));
         scopes.push(new Scope("Symbols", this.variableHandles.create("symbols_" + frameReference), true));
 
@@ -649,7 +650,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         } else {
             const id = this.variableHandles.get(args.variablesReference);
             if (id !== null) {
-                if (id.startsWith("registers_")) {
+                if (id.includes("register")) {
+                    let is_sr_request = id.startsWith("status_register_");
                     try {
                         //Gets the frameId
                         let frameId = parseInt(id.substring(10));
@@ -657,16 +659,22 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         const variablesArray = new Array<DebugProtocol.Variable>();
                         for (let i = 0; i < registers.length; i++) {
                             let r = registers[i];
-                            let v = r.value.toString(10);
-                            if (!GdbProxy.SR_LABELS.includes(r.name)) {
-                                v = StringUtils.padStart(r.value.toString(16), 8, "0");
+                            if ((is_sr_request && r.name.startsWith("SR_")) || (!is_sr_request && !r.name.startsWith("SR_"))) {
+                                let v;
+                                if (is_sr_request) {
+                                    r.name = r.name.replace("SR_", "");
+                                    v = r.value.toString(10);
+                                } else {
+                                    v = StringUtils.padStart(r.value.toString(16), 8, "0");
+                                }
+                                variablesArray.push({
+                                    name: r.name,
+                                    type: "register",
+                                    value: v,
+                                    variablesReference: 0
+                                });
                             }
-                            variablesArray.push({
-                                name: r.name,
-                                type: "register",
-                                value: v,
-                                variablesReference: 0
-                            });
+
                         }
                         response.body = {
                             variables: variablesArray

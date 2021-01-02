@@ -287,62 +287,52 @@ describe("GdbProxy Tests", function () {
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "T1",
+                    name: "SR_T1",
                     value: 1
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "T0",
+                    name: "SR_T0",
                     value: 0
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "S",
+                    name: "SR_S",
                     value: 1
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "M",
+                    name: "SR_M",
                     value: 0
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "I2",
+                    name: "SR_intmask",
+                    value: 2
+                });
+                pos += 1;
+                expect(registers[pos]).to.be.eql(<GdbRegister>{
+                    name: "SR_X",
                     value: 0
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "I1",
+                    name: "SR_N",
                     value: 1
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "I0",
+                    name: "SR_Z",
                     value: 0
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "X",
-                    value: 0
-                });
-                pos += 1;
-                expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "N",
+                    name: "SR_V",
                     value: 1
                 });
                 pos += 1;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "Z",
-                    value: 0
-                });
-                pos += 1;
-                expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "V",
-                    value: 1
-                });
-                pos += 1;
-                expect(registers[pos]).to.be.eql(<GdbRegister>{
-                    name: "C",
+                    name: "SR_C",
                     value: 0
                 });
             });
@@ -580,6 +570,44 @@ describe("GdbProxy Tests", function () {
             expect(GdbProxy.calculateChecksum("mc187e0,1a0")).to.be.equal("f3");
             expect(GdbProxy.calculateChecksum("n")).to.be.equal("6e");
             expect(GdbProxy.calculateChecksum("")).to.be.equal("00");
+        });
+        it("Should get the detailed value of the SR register", function () {
+            let registers = GdbProxy.getSRDetailedValues(0);
+            let i = 0;
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_T1", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_T0", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_S", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_M", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_intmask", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_X", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_N", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_Z", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_V", value: 0 });
+            expect(registers[i]).to.been.eql(<GdbRegister>{ name: "SR_C", value: 0 });
+            registers = GdbProxy.getSRDetailedValues(0b1010111110101010);
+            i = 0;
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_T1", value: 1 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_T0", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_S", value: 1 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_M", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_intmask", value: 7 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_X", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_N", value: 1 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_Z", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_V", value: 1 });
+            expect(registers[i]).to.been.eql(<GdbRegister>{ name: "SR_C", value: 0 });
+            registers = GdbProxy.getSRDetailedValues(0b0101001110010101);
+            i = 0;
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_T1", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_T0", value: 1 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_S", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_M", value: 1 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_intmask", value: 3 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_X", value: 1 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_N", value: 0 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_Z", value: 1 });
+            expect(registers[i++]).to.been.eql(<GdbRegister>{ name: "SR_V", value: 0 });
+            expect(registers[i]).to.been.eql(<GdbRegister>{ name: "SR_C", value: 1 });
         });
     });
     context('GdbError', function () {
