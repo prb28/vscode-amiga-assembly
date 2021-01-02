@@ -525,6 +525,9 @@ describe('Node Debug Adapter', () => {
 					name: "a0",
 					value: 10
 				}, <GdbRegister>{
+					name: "sr",
+					value: 0b1000000000000000
+				}, <GdbRegister>{
 					name: "SR_T1",
 					value: 1
 				}, <GdbRegister>{
@@ -568,27 +571,30 @@ describe('Node Debug Adapter', () => {
 			expect(stackFrames[1].name).to.be.equal("a: sub.l	(a1), d0");
 			let responseScopes: DebugProtocol.ScopesResponse = await dc.scopesRequest(<DebugProtocol.ScopesArguments>{ frameId: 0 });
 			expect(responseScopes.body.scopes[0].name).to.be.equal('Registers');
-			expect(responseScopes.body.scopes[1].name).to.be.equal('Status Register');
-			expect(responseScopes.body.scopes[2].name).to.be.equal('Segments');
-			expect(responseScopes.body.scopes[3].name).to.be.equal('Symbols');
+			expect(responseScopes.body.scopes[1].name).to.be.equal('Segments');
+			expect(responseScopes.body.scopes[2].name).to.be.equal('Symbols');
 			let vRegistersResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[0].variablesReference });
+			expect(vRegistersResponse.body.variables.length).to.be.equal(3);
 			expect(vRegistersResponse.body.variables[0].name).to.be.equal("d0");
 			expect(vRegistersResponse.body.variables[0].type).to.be.equal("register");
 			expect(vRegistersResponse.body.variables[0].value).to.be.equal("00000001");
 			expect(vRegistersResponse.body.variables[0].variablesReference).to.be.equal(0);
 			expect(vRegistersResponse.body.variables[1].name).to.be.equal("a0");
-			let vSRRegistersResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[1].variablesReference });
+			expect(vRegistersResponse.body.variables[2].name).to.be.equal("sr");
+			expect(vRegistersResponse.body.variables[2].variablesReference).not.to.be.equal(0);
+			//retrieve the sr values
+			let vSRRegistersResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: vRegistersResponse.body.variables[2].variablesReference });
 			expect(vSRRegistersResponse.body.variables[0].name).to.be.equal("T1");
 			expect(vSRRegistersResponse.body.variables[0].type).to.be.equal("register");
 			expect(vSRRegistersResponse.body.variables[0].value).to.be.equal("1");
 			expect(vSRRegistersResponse.body.variables[0].variablesReference).to.be.equal(0);
 			expect(vSRRegistersResponse.body.variables[1].name).to.be.equal("T0");
-			let vSegmentsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[2].variablesReference });
+			let vSegmentsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[1].variablesReference });
 			expect(vSegmentsResponse.body.variables[0].name).to.be.equal("Segment #0");
 			expect(vSegmentsResponse.body.variables[0].type).to.be.equal("segment");
 			expect(vSegmentsResponse.body.variables[0].value).to.be.equal("a {size:10}");
 			expect(vSegmentsResponse.body.variables[0].variablesReference).to.be.equal(0);
-			let vSymbolsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[3].variablesReference });
+			let vSymbolsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[2].variablesReference });
 			expect(vSymbolsResponse.body.variables[0].name).to.be.equal("init");
 			expect(vSymbolsResponse.body.variables[0].type).to.be.equal("symbol");
 			expect(vSymbolsResponse.body.variables[0].value).to.be.equal("a");
