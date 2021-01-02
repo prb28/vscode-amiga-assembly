@@ -1,6 +1,7 @@
 //
 // For ADFTools class
 //
+import * as vscode from 'vscode';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { ADFTools } from '../adf';
@@ -16,6 +17,13 @@ chai.use(chaiAsPromised);
 describe("ADFTools test", function () {
     let mockedExecutor: ExecutorHelper;
     let executor: ExecutorHelper;
+    before(async () => {
+        // activate the extension
+        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
+    });
     beforeEach(function () {
         mockedExecutor = mock(ExecutorHelper);
         executor = instance(mockedExecutor);
@@ -47,7 +55,7 @@ describe("ADFTools test", function () {
         expect(args[0]).to.be.equal(adfDiskName);
         // tslint:disable-next-line:no-unused-expression
         expect(args[1]).to.be.equal("s");
-        [args, , commandFilename, ,] = capture(mockedExecutor.runToolRetrieveStdout).byCallIndex(i++);
+        [args, , commandFilename, ,] = capture(mockedExecutor.runToolRetrieveStdout).byCallIndex(i);
         expect(commandFilename).to.be.equal(path.join(rootToolsDir, "adfcopy"));
         expect(args[0]).to.be.equal(adfDiskName);
         // tslint:disable-next-line:no-unused-expression
