@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - [Issue #80](https://github.com/prb28/vscode-amiga-assembly/issues/80) Source file names always upper case on windows when debugging
 - [Feat #78](https://github.com/prb28/vscode-amiga-assembly/issues/78) Implement supportsReadMemoryRequest and supportsDisassembleRequest
 - [Feat #73](https://github.com/prb28/vscode-amiga-assembly/issues/73) Format ASM files with tabs
-- [Feat #72](https://github.com/prb28/vscode-amiga-assembly/issues/72) Enhance formating for generated data #72
+- [Feat #72](https://github.com/prb28/vscode-amiga-assembly/issues/72) Enhance formatting for generated data #72
 
 ### [0.17.0] - 2019-05-15
 - [Issue #74](https://github.com/prb28/vscode-amiga-assembly/issues/74) Contextual documentation: not all mnemonics are recognized
@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### [0.14.0] - 2019-04-07
 - [Issue #59](https://github.com/prb28/vscode-amiga-assembly/issues/59) Missing vasm Link Error
-- [Issue #56](https://github.com/prb28/vscode-amiga-assembly/issues/56) Wrong tool tip formating of values
+- [Issue #56](https://github.com/prb28/vscode-amiga-assembly/issues/56) Wrong tool tip formatting of values
 - [Feat #55](https://github.com/prb28/vscode-amiga-assembly/issues/55) Copper debugging
 
 ### [0.13.0] - 2019-02-09
