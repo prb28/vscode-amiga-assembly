@@ -18,8 +18,8 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 - Bug fixes
 
 ### Other features
-### Run and Debug with FS-UAE
-- Run a program in [FS-UAE](https://fs-uae.net/)
+### Run and Debug with FS-UAE or WinUAE
+- Run a program in [FS-UAE](https://fs-uae.net/) or [WinUAE](https://www.winuae.net/)
 - Disassemble a file with capstone
 - Show disassembled code in editor for stack trace selection without source, breakpoints on disassembled code
 
@@ -31,6 +31,9 @@ You can compile your program with [VASM](http://sun.hasenbraten.de/vasm/) and [V
 
 ### Motorola 68K Assembly Language Support
 This feature is based on the work of Steve Saunders for Sublime Text m68k extension, it's available at https://github.com/stevenjs/M68k-Assembly. Some keywords have been added to be more accurate with the Amiga assembly.
+
+### Inline documentation
+Contains a set of markdown documentations for m68k instructions and basic libraries of the Amiga.
 
 ### Document Formatting
 #### Format a document
