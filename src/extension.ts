@@ -460,8 +460,8 @@ export async function activate(context: vscode.ExtensionContext) {
     // register a configuration provider for 'fs-uae' debug type
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', new FsUAEConfigurationProvider()));
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('fs-uae', new FsUAEInlineDebugAdapterFactory()));
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae-run', new RunFsUAEConfigurationProvider()));
-    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('fs-uae-run', new RunFsUAEInlineDebugAdapterFactory()));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('uae-run', new RunFsUAEConfigurationProvider()));
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('uae-run', new RunFsUAEInlineDebugAdapterFactory()));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('winuae', new WinUAEConfigurationProvider()));
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('winuae', new WinUAEInlineDebugAdapterFactory()));
     winston.info("------> done");
@@ -494,10 +494,10 @@ export function deactivate() {
 }
 
 class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
-	/**
-	 * Massage a debug configuration just before a debug session is being launched,
-	 * e.g. add all missing attributes to the debug configuration.
-	 */
+    /**
+     * Massage a debug configuration just before a debug session is being launched,
+     * e.g. add all missing attributes to the debug configuration.
+     */
     resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
 
         // if launch.json is missing or empty
@@ -541,21 +541,20 @@ class FsUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFac
 }
 
 class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
-	/**
-	 * Massage a debug configuration just before a debug session is being launched,
-	 * e.g. add all missing attributes to the debug configuration.
-	 */
+    /**
+     * Massage a debug configuration just before a debug session is being launched,
+     * e.g. add all missing attributes to the debug configuration.
+     */
     resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
 
         // if launch.json is missing or empty
         if (!config.type && !config.request && !config.name) {
             const editor = vscode.window.activeTextEditor;
             if (editor && editor.document.languageId === 'm68k') {
-                config.type = 'fs-uae-run';
+                config.type = 'uae-run';
                 config.name = 'Launch';
                 config.request = 'launch';
-                config.emulator = "fs-uae";
-                config.conf = "configuration/dev.fs-uae";
+                config.emulator = 'fs-uae';
                 config.buildWorkspace = true;
             }
         }
@@ -577,10 +576,10 @@ class RunFsUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptor
 }
 
 class WinUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
-	/**
-	 * Massage a debug configuration just before a debug session is being launched,
-	 * e.g. add all missing attributes to the debug configuration.
-	 */
+    /**
+     * Massage a debug configuration just before a debug session is being launched,
+     * e.g. add all missing attributes to the debug configuration.
+     */
     resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
 
         // if launch.json is missing or empty

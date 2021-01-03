@@ -522,7 +522,7 @@
                         "program": "${workspaceFolder}/${command:AskForProgramName}",
                         "options": [
                             "--chip_memory=1024",
-                            "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
+                            "--hard_drive_0=${workspaceFolder}/uae/dh0",
                             "--joystick_port_1=none",
                             "--amiga_model=A1200",
                             "--slow_memory=1792",
@@ -550,7 +550,7 @@
                             "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
                             "options": [
                                 "--chip_memory=1024",
-                                "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
+                                "--hard_drive_0=${workspaceFolder}/uae/dh0",
                                 "--joystick_port_1=none",
                                 "--amiga_model=A1200",
                                 "--slow_memory=1792",
@@ -566,8 +566,8 @@
                 }
             },
             {
-                "type": "fs-uae-run",
-                "label": "FS-UAE Run",
+                "type": "uae-run",
+                "label": "UAE Run",
                 "program": "./out/runNoDebugAdapter.js",
                 "runtime": "node",
                 "configurationAttributes": {
@@ -578,8 +578,8 @@
                         "properties": {
                             "emulator": {
                                 "type": "string",
-                                "description": "Path to the fs-uae emulator.",
-                                "default": "Path to fs-uae executable"
+                                "description": "Path to the uae emulator.",
+                                "default": "Path to uae executable"
                             },
                             "emulatorWorkingDir": {
                                 "type": "string",
@@ -610,19 +610,13 @@
                 },
                 "initialConfigurations": [
                     {
-                        "type": "fs-uae-run",
+                        "type": "uae-run",
                         "request": "launch",
-                        "name": "FSUAE Run",
+                        "name": "UAE Run",
                         "buildWorkspace": true,
-                        "emulator": "Path to fs-uae executable file",
-                        "emulatorWorkingDir": "${workspaceFolder}",
-                        "options": [
-                            "--chip_memory=1024",
-                            "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
-                            "--joystick_port_1=none",
-                            "--amiga_model=A1200",
-                            "--slow_memory=1792"
-                        ]
+                        "emulator": "Path to uae executable file",
+                        "emulatorWorkingDir": "${workspaceFolder}/bin",
+                        "options": []
                     }
                 ],
                 "configurationSnippets": [
@@ -630,18 +624,45 @@
                         "label": "FS-UAE Run",
                         "description": "A new configuration for running FS-UAE.",
                         "body": {
-                            "type": "fs-uae-run",
+                            "type": "uae-run",
                             "request": "launch",
                             "name": "Run",
                             "buildWorkspace": true,
-                            "emulator": "Path to fs-uae executable file",
-                            "emulatorWorkingDir": "${workspaceFolder}",
+                            "emulator": "${workspaceFolder}/bin/fs-uae",
+                            "windows": {
+                                "emulator": "${workspaceFolder}/bin/fs-uae.exe"
+                            },
+                            "osx": {
+                                "emulator": "${workspaceFolder}/bin/fs-uae"
+                            },
+                            "linux": {
+                                "emulator": "${workspaceFolder}/bin/fs-uae"
+                            },
+                            "emulatorWorkingDir": "${workspaceFolder}/bin",
                             "options": [
                                 "--chip_memory=1024",
-                                "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
+                                "--hard_drive_0=${workspaceFolder}/uae/dh0",
                                 "--joystick_port_1=none",
                                 "--amiga_model=A1200",
                                 "--slow_memory=1792"
+                            ]
+                        }
+                    },
+                    {
+                        "label": "WinUAE Run",
+                        "description": "A new configuration for running WinUAE.",
+                        "body": {
+                            "type": "uae-run",
+                            "request": "launch",
+                            "name": "Run",
+                            "buildWorkspace": true,
+                            "emulator": "${workspaceFolder}/bin/winuae.exe",
+                            "emulatorWorkingDir": "${workspaceFolder}/bin",
+                            "options": [
+                                "-s",
+                                "quickstart=a500,1",
+                                "-s",
+                                "filesystem=rw,dh0:${workspaceFolder}\\uae\\dh0"
                             ]
                         }
                     }
@@ -782,7 +803,7 @@
                             "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
                             "options": [
                                 "--chip_memory=1024",
-                                "--hard_drive_0=${workspaceFolder}/fs-uae/hd0",
+                                "--hard_drive_0=${workspaceFolder}/uae/dh0",
                                 "--joystick_port_1=none",
                                 "--amiga_model=A1200",
                                 "--slow_memory=1792",
