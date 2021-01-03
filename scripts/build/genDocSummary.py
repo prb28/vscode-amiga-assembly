@@ -25,7 +25,7 @@ def process_libs(libs_path):
     for dir in os.listdir(libs_path):
         parent = os.path.join(libs_path, dir)
         if (not dir.startswith(".")):
-            md += "\n### %s\n" % dir
+            md += "\n### %s\n\n" % dir
             md += "| Function | Description |\n|:---|:---|\n"
             for f in os.listdir(parent):
                 if (not f.startswith('_')):
@@ -38,7 +38,7 @@ def process_libs(libs_path):
 
 
 def process_instructions(instructions_path):
-    md = "| Insctructions  | Description |\n|:---|:---|\n"
+    md = "| Instructions  | Description |\n|:---|:---|\n"
     # list all the files from the hardware dir
     for fname in os.listdir(instructions_path):
         if (fname.endswith(".md")):
@@ -84,7 +84,7 @@ def create_toc(dest_path, instructions_md, libs_md, registers_md):
     with open("toc.md", "r", encoding="utf-8") as source:
         contents = source.read()
     contents = contents.replace(
-        "@amiga_insctructions_replacement@", instructions_md)
+        "@amiga_instructions_replacement@", instructions_md)
     contents = contents.replace("@amiga_registers_replacement@", registers_md)
     contents = contents.replace("@amiga_libs_replacement@", libs_md)
     with open(os.path.join(dest_path, "toc.md"), "w", encoding="utf-8") as destination:

@@ -1,7 +1,7 @@
 
 **NAME**
 
-MatchEnd -- Free storage allocated for <a href="../Includes_and_Autodocs_2._guide/node02CE.html">MatchFirst()/MatchNext() (V36)
+MatchEnd -- Free storage allocated for MatchFirst()/MatchNext() (V36)
 
 **SYNOPSIS**
 
@@ -20,8 +20,7 @@ Return all storage associated with a given search.
 
 **INPUTS**
 
-[AnchorPath](_0070) - Anchor used for <a href="../Includes_and_Autodocs_2._guide/node02CE.html">MatchFirst()/MatchNext()
-MUST be longword aligned!
+[AnchorPath](_0070) - Anchor used for MatchFirst()/MatchNext() MUST be longword aligned!
 
 **SEE ALSO**
 

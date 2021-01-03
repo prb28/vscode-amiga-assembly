@@ -45,7 +45,7 @@
 |[moveq](instructions/moveq.md)|Move quick (copy a small literal to a destination)|
 |[muls mulu](instructions/muls_mulu.md)|Signed multiply, unsigned multiply|
 |[nbcd](instructions/nbcd.md)|Negate decimal with sign extend|
-|[neg](instructions/neg.md)|# NEG Negate|
+|[neg](instructions/neg.md)|Negate|
 |[negx](instructions/negx.md)|Negate with extend|
 |[nop](instructions/nop.md)|No operation|
 |[not](instructions/not.md)|Logical complement|
@@ -472,7 +472,7 @@
 |[LockRecords](libs/dos/LockRecords)|Lock a series of records (V36)|
 |[MakeDosEntry](libs/dos/MakeDosEntry)|Creates a [DosList](_0078) structure (V36)|
 |[MakeLink](libs/dos/MakeLink)|Creates a filesystem link (V36)|
-|[MatchEnd](libs/dos/MatchEnd)|Free storage allocated for [MatchFirst()/MatchNext()](http://amiga.nvg.org/amiga/reference/Includes_and_Autodocs_2._guide/node02CE.html) (V36)|
+|[MatchEnd](libs/dos/MatchEnd)|Free storage allocated for MatchFirst()/MatchNext() (V36)|
 |[MatchFirst](libs/dos/MatchFirst)|Finds file that matches pattern (V36)|
 |[MatchNext](libs/dos/MatchNext)|MatchNext - Finds the next file or directory that matches pattern (V36)|
 |[MatchPattern](libs/dos/MatchPattern)|Checks for a pattern match with a string (V36)|
@@ -908,7 +908,7 @@
 
 Source: [Amiga Developer Docs from elowar](http://amigadev.elowar.com/)
 
-## Licences
+## Licenses
 
 The amiga libraries ara part of development tools of Commodore Amiga Incorporated licensed by [Cloanto Coporation](https://cloanto.com)
 These files are made available here free of charge for learning purposes and without the intention of doing any harm.
