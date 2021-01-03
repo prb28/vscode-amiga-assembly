@@ -41,7 +41,7 @@ export class ExecutorHelper {
             let p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
                     if (err && (<any>err).code === 'ENOENT') {
-                        return reject(new Error(`Cannot find ${cmd} : ${err.message}`));
+                        throw new Error(`Cannot find ${cmd} : ${err.message}`);
                     }
                     if (stdout) {
                         winston.info(stdout.toString());
@@ -54,7 +54,7 @@ export class ExecutorHelper {
                     if (err && stderr && !useStdErr) {
                         let errorMessage = ['Error while running tool:', cmd, ...args].join(' ');
                         winston.info(['Error while running tool:', cmd, ...args].join(' '));
-                        return reject(errorMessage);
+                        throw new Error(errorMessage);
                     }
                     let text = (useStdErr ? stderr : stdout).toString();
                     winston.info([cwd + '>Finished running tool:', cmd, ...args].join(' '));
@@ -110,8 +110,8 @@ export class ExecutorHelper {
                     let bufferOut = "";
                     if (err) {
                         if ((<any>err).code === 'ENOENT') {
-                            return reject(new Error(`Cannot find ${cmd} : ${err.message}`));
-                        } else {
+                            throw new Error(`Cannot find ${cmd}`);
+                        } else if (err.message) {
                             bufferOut += err.message;
                         }
                     }
