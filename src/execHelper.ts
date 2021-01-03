@@ -260,7 +260,7 @@ export class ExecutorHelper {
             try {
                 p.kill();
             } catch (e) {
-                console.log('Error killing process: ' + e);
+                winston.error(`Error killing process '${e}'`);
             }
         }
     }
@@ -272,16 +272,18 @@ export class ExecutorHelper {
             // when killing a process in Windows its child processes are *not* killed but become root processes.
             // Therefore we use TASKKILL.EXE
             try {
+                winston.info(`Killing process with command ${TASK_KILL} /F /T /PID ${processId}'`);
                 cp.execSync(`${TASK_KILL} /F /T /PID ${processId}`);
             } catch (err) {
+                winston.error(`Error killing process '${err}'`);
             }
         } else {
-            // on linux and OS X we kill all direct and indirect child processes as well
+            // on linux and OS X we kill the process
             try {
-                let extensionPath = ExtensionState.getCurrent().getExtensionPath();
-                const cmd = path.join(extensionPath, 'scripts', 'terminateProcess.sh');
-                cp.spawnSync(cmd, [processId.toString()]);
+                winston.info(`Killing process with command 'kill -9 ${processId}'`);
+                cp.spawnSync('kill', ['-9', processId.toString(), '>', '/dev/null', '2>&1']);
             } catch (err) {
+                winston.error(`Error killing process '${err}'`);
             }
         }
     }

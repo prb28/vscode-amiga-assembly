@@ -16,7 +16,7 @@ tslint.json
 .cover*
 test-report*
 build-scripts
-scripts/build/
+scripts/
 old.visx/
 sonar-project.properties
 .scannerwork
