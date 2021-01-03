@@ -2,7 +2,6 @@ trigger:
   branches:
     include:
       - master
-      - dev_0.21
 
 strategy:
   matrix:
