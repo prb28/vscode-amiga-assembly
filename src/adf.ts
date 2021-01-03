@@ -66,7 +66,7 @@ export class ADFTools {
             if (conf.bootBlockSourceFile) {
                 bootBlockSourceFileName = conf.bootBlockSourceFile;
             }
-            await this.createBootableADFDiskFromDir(filename, rootSourceDir, includes, excludes, adfCreateOptions, bootBlockSourceFileName, compiler, cancellationToken)
+            await this.createBootableADFDiskFromDir(filename, rootSourceDir, includes, excludes, adfCreateOptions, bootBlockSourceFileName, compiler, cancellationToken);
         } else {
             throw new Error("Configuration of the ADF file generator not set");
         }
