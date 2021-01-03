@@ -9,7 +9,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 **For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases) or the [VBCC workspace](https://github.com/prb28/vscode-amiga-vbcc-example).
 
-### Run and Debug with FS-UAE
+### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
 ## New in 0.21
