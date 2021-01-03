@@ -12,24 +12,9 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE
 ![Debug](images/debug.gif)
 
-## New in 0.20
-
-![Instructions documentations](images/instruct_hover.png)
-
-- Better instruction's documentation
-- Bug fixes
-
-## New in 0.19.1
-- Bug fixes
-
-## New in 0.19.0
-- Generate Boot Block Code and integrate it to ADF file
-- Modify marked data with expression or defaults
-- Vasm can be completely disabled
-- Register addresses in hover data
-- Add Bitwise operators to calculations &(AND), |(OR), ^|(XOR), <<(Left shift), >>(Sign-propagating right shift), >>>(Zero-fill right shift), ~(NOT)
-- Modify build dir location
-- Add "step out" command in debugger
+## New in 0.21
+- Integration WinUAE (custom build)
+- Show CCR codes (Status register)
 - Bug fixes
 
 ### Other features
@@ -92,6 +77,11 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## 0.21
+- Integration WinUAE (custom build)
+- Show CCR codes (Status register)
+- Bug fixes
+
 ## 0.20
 - Better instruction's documentation
 - Bug fixes

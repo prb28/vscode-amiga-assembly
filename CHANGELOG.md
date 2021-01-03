@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [0.21] -
+- [Issue #130](https://github.com/prb28/vscode-amiga-assembly/issues/130) Buildin ADFGenerator failures
+- [Feat #122](https://github.com/prb28/vscode-amiga-assembly/issues/122) Feature: Show CCR (Conditional Code Register) at debugging
+- [Feat #114](https://github.com/prb28/vscode-amiga-assembly/issues/114) WinUAE GDB Support
+
 ### [0.20] - 2020-07-27
 - [Issue #117](https://github.com/prb28/vscode-amiga-assembly/issues/117) _ in variable
 - [Issue #116](https://github.com/prb28/vscode-amiga-assembly/issues/116) Support blitter wait in copperDisassembler
