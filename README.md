@@ -80,6 +80,9 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## 0.21.1
+- Bug fixes
+
 ## 0.21
 - Integration WinUAE (custom build)
 - Show CCR codes (Status register)

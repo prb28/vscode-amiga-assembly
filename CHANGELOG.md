@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [0.21.1] - 2021-01-10
+- [Issue #135](https://github.com/prb28/vscode-amiga-assembly/issues/135) Regressions with 0.21 (default exceptions mask fix)
+
 ### [0.21] - 2021-01-04
 - [Issue #130](https://github.com/prb28/vscode-amiga-assembly/issues/130) Builtin ADFGenerator failures
 - [Feat #122](https://github.com/prb28/vscode-amiga-assembly/issues/122) Feature: Show CCR (Conditional Code Register) at debugging

@@ -9,7 +9,7 @@ import { GdbProxy } from "./gdbProxy";
  */
 export class BreakpointManager {
     // Default selection mask for exception : each bit is a exception code
-    static readonly DEFAULT_EXCEPTION_MASK = 0b1111111111100;
+    static readonly DEFAULT_EXCEPTION_MASK = 0b111100;
     /** exception mask */
     private exceptionMask = BreakpointManager.DEFAULT_EXCEPTION_MASK;
     /** Proxy to Gdb */
