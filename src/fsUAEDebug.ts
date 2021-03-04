@@ -49,8 +49,6 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     sourceFileMap?: Object;
     /** root paths for sources */
     rootSourceFileMap?: Array<string>;
-    /** Build the workspace before debug */
-    buildWorkspace?: boolean;
     /** default exception's mask */
     exceptionMask?: number;
     /** Waiting time for emulator start */

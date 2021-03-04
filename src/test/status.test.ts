@@ -15,6 +15,7 @@ describe("Status Tests", function () {
     it("Should status show on command", () => {
         let state = ExtensionState.getCurrent();
         let statusManager = state.getStatusManager();
+        statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', 'Build Workspace');
         statusManager.diagnosticsStatusBarItem.show();
         // status is shown
         expect(statusManager.statusBarEntry).not.to.be.null;
@@ -49,6 +50,7 @@ describe("Status Tests", function () {
         let spiedWindow = spy(vscode.window);
         let state = ExtensionState.getCurrent();
         let statusManager = state.getStatusManager();
+        statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', 'Build Workspace');
         expect(statusManager.statusBarEntry).not.to.be.null;
         if (statusManager.statusBarEntry) {
             // onError
@@ -61,6 +63,7 @@ describe("Status Tests", function () {
     it("Should show react to a success", () => {
         let state = ExtensionState.getCurrent();
         let statusManager = state.getStatusManager();
+        statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', 'Build Workspace');
         expect(statusManager.statusBarEntry).not.to.be.null;
         if (statusManager.statusBarEntry) {
             // onError

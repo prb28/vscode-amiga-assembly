@@ -444,11 +444,6 @@
                                 "description": "Path to the working directory of the emulator.",
                                 "default": "."
                             },
-                            "buildWorkspace": {
-                                "type": "boolean",
-                                "description": "Build workspace before launch.",
-                                "default": true
-                            },
                             "stopOnEntry": {
                                 "type": "boolean",
                                 "description": "Automatically stop after launch.",
@@ -512,7 +507,6 @@
                         "type": "fs-uae",
                         "request": "launch",
                         "name": "FSUAE Debug",
-                        "buildWorkspace": true,
                         "stopOnEntry": true,
                         "serverName": "localhost",
                         "serverPort": 6860,
@@ -529,7 +523,8 @@
                             "--remote_debugger=200",
                             "--use_remote_debugger=true",
                             "--automatic_input_grab=0"
-                        ]
+                        ],
+                        "preLaunchTask": "amigaassembly: build"
                     }
                 ],
                 "configurationSnippets": [
@@ -540,7 +535,6 @@
                             "type": "fs-uae",
                             "request": "launch",
                             "name": "Debug",
-                            "buildWorkspace": true,
                             "stopOnEntry": true,
                             "serverName": "localhost",
                             "serverPort": 6860,
@@ -557,7 +551,8 @@
                                 "--remote_debugger=200",
                                 "--use_remote_debugger=true",
                                 "--automatic_input_grab=0"
-                            ]
+                            ],
+                            "preLaunchTask": "amigaassembly: build"
                         }
                     }
                 ],
@@ -586,11 +581,6 @@
                                 "description": "Path to the working directory of the emulator.",
                                 "default": "."
                             },
-                            "buildWorkspace": {
-                                "type": "boolean",
-                                "description": "Build workspace before launch.",
-                                "default": true
-                            },
                             "trace": {
                                 "type": "boolean",
                                 "description": "Enable logging of the Debug Adapter Protocol.",
@@ -613,10 +603,10 @@
                         "type": "uae-run",
                         "request": "launch",
                         "name": "UAE Run",
-                        "buildWorkspace": true,
                         "emulator": "Path to uae executable file",
                         "emulatorWorkingDir": "${workspaceFolder}/bin",
-                        "options": []
+                        "options": [],
+                        "preLaunchTask": "amigaassembly: build"
                     }
                 ],
                 "configurationSnippets": [
@@ -627,7 +617,6 @@
                             "type": "uae-run",
                             "request": "launch",
                             "name": "Run",
-                            "buildWorkspace": true,
                             "emulator": "${workspaceFolder}/bin/fs-uae",
                             "windows": {
                                 "emulator": "${workspaceFolder}/bin/fs-uae.exe"
@@ -645,7 +634,8 @@
                                 "--joystick_port_1=none",
                                 "--amiga_model=A1200",
                                 "--slow_memory=1792"
-                            ]
+                            ],
+                            "preLaunchTask": "amigaassembly: build"
                         }
                     },
                     {
@@ -655,7 +645,6 @@
                             "type": "uae-run",
                             "request": "launch",
                             "name": "Run",
-                            "buildWorkspace": true,
                             "emulator": "${workspaceFolder}/bin/winuae.exe",
                             "emulatorWorkingDir": "${workspaceFolder}/bin",
                             "options": [
@@ -663,7 +652,8 @@
                                 "quickstart=a500,1",
                                 "-s",
                                 "filesystem=rw,dh0:${workspaceFolder}\\uae\\dh0"
-                            ]
+                            ],
+                            "preLaunchTask": "amigaassembly: build"
                         }
                     }
                 ]
@@ -698,11 +688,6 @@
                                 "type": "string",
                                 "description": "Path to the working directory of the emulator.",
                                 "default": "."
-                            },
-                            "buildWorkspace": {
-                                "type": "boolean",
-                                "description": "Build workspace before launch.",
-                                "default": true
                             },
                             "stopOnEntry": {
                                 "type": "boolean",
@@ -767,7 +752,6 @@
                         "type": "winuae",
                         "request": "launch",
                         "name": "WinUAE Debug",
-                        "buildWorkspace": true,
                         "stopOnEntry": true,
                         "serverName": "localhost",
                         "serverPort": 2345,
@@ -782,7 +766,8 @@
                             "filesystem=rw,dh0:${workspaceFolder}\\uae\\dh0",
                             "-s",
                             "debugging_features=gdbserver"
-                        ]
+                        ],
+                        "preLaunchTask": "amigaassembly: build"
                     }
                 ],
                 "configurationSnippets": [
@@ -793,7 +778,6 @@
                             "type": "winuae",
                             "request": "launch",
                             "name": "Debug",
-                            "buildWorkspace": true,
                             "stopOnEntry": true,
                             "serverName": "localhost",
                             "serverPort": 2345,
@@ -810,7 +794,8 @@
                                 "--remote_debugger=200",
                                 "--use_remote_debugger=true",
                                 "--automatic_input_grab=0"
-                            ]
+                            ],
+                            "preLaunchTask": "amigaassembly: build"
                         }
                     }
                 ],
@@ -841,7 +826,13 @@
                     "name": "DISASSEMBLED MEMORY"
                 }
             ]
-        }
+        },
+        "taskDefinitions": [
+            {
+                "type": "amigaassembly",
+                "properties": {}
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

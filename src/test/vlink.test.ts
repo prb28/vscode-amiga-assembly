@@ -19,7 +19,7 @@ describe("VLINK Tests", function () {
             linker = new VLINKLinker();
             // installing a spy
             executor = spy(linker.executor);
-            when(executor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenResolve([]);
+            when(executor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenResolve([]);
         });
         after(function () {
             reset(executor);
@@ -31,7 +31,7 @@ describe("VLINK Tests", function () {
             when(spiedLinker.mayLink(anything())).thenReturn(true);
             let filesUri = [vscode.Uri.parse("file:///file1.s"), vscode.Uri.parse("file:///file2")];
             await linker.linkFiles(filesUri, "myprog", undefined, vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build"));
-            verify(executor.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything())).once();
+            verify(executor.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything(), anything(), anything())).once();
             let args = capture(executor.runTool).last();
             let buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
             expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", buildPath + "myprog", buildPath + "file1.o", buildPath + "file2.o"]);

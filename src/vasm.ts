@@ -5,7 +5,8 @@ import {
   DiagnosticSeverity,
   TextDocument,
   Uri,
-  WorkspaceConfiguration
+  WorkspaceConfiguration,
+  EventEmitter
 } from "vscode";
 import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import { ExtensionState } from "./extension";
@@ -37,28 +38,18 @@ export class VASMCompiler {
   /**
    * Builds the file in the current editor
    */
-  public buildCurrentEditorFile(): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      const editor = window.activeTextEditor;
-      if (editor) {
-        let conf = workspace.getConfiguration("amiga-assembly.vasm");
-        if (this.mayCompile(conf)) {
-          await this.buildDocument(editor.document, true)
-            .then(() => {
-              resolve();
-            })
-            .catch(err => {
-              reject(err);
-            });
-        } else {
-          reject(
-            new Error("VASM compilation is disabled in the configuration")
-          );
-        }
+  public async buildCurrentEditorFile(): Promise<void> {
+    const editor = window.activeTextEditor;
+    if (editor) {
+      let conf = workspace.getConfiguration("amiga-assembly.vasm");
+      if (this.mayCompile(conf)) {
+        await this.buildDocument(editor.document, true);
       } else {
-        reject(new Error("There is no active editor"));
+        throw new Error("VASM compilation is disabled in the configuration");
       }
-    });
+    } else {
+      throw new Error("There is no active editor");
+    }
   }
 
   /**
@@ -66,26 +57,15 @@ export class VASMCompiler {
    * @param document The document to build
    * @param temporaryBuild If true the build will be done in the tmp dir
    */
-  public buildDocument(document: TextDocument, temporaryBuild: boolean): Promise<ICheckResult[]> {
-    return new Promise((resolve, reject) => {
-      this.buildFile(document.uri, false, temporaryBuild)
-        .then(([_objectFile, errors]) => {
-          this.processGlobalErrors(document, errors);
-          this.executor.handleDiagnosticErrors(
-            document,
-            errors,
-            DiagnosticSeverity.Error
-          );
-          if (errors) {
-            resolve(errors);
-          } else {
-            resolve(new Array<ICheckResult>());
-          }
-        })
-        .catch(err => {
-          reject(err);
-        });
-    });
+  public async buildDocument(document: TextDocument, temporaryBuild: boolean, logEmitter?: EventEmitter<string>): Promise<ICheckResult[]> {
+    let [, errors] = await this.buildFile(document.uri, false, temporaryBuild, undefined, logEmitter);
+    this.processGlobalErrors(document, errors);
+    this.executor.handleDiagnosticErrors(document, errors, DiagnosticSeverity.Error);
+    if (errors) {
+      return errors;
+    } else {
+      return new Array<ICheckResult>();
+    }
   }
 
   /**
@@ -120,76 +100,59 @@ export class VASMCompiler {
     }
   }
 
-  public buildWorkspace(): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      let state = ExtensionState.getCurrent();
-      let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
-      let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
-      errorDiagnosticCollection.clear();
-      warningDiagnosticCollection.clear();
-      let configuration = workspace.getConfiguration("amiga-assembly", null);
-      let conf: any = configuration.get("vasm");
-      if (this.mayCompile(conf)) {
-        let confVLINK: any = configuration.get("vlink");
-        if (confVLINK) {
-          let includes = confVLINK.includes;
-          let excludes = confVLINK.excludes;
-          let exefilename = confVLINK.exefilename;
-          let entrypoint = confVLINK.entrypoint;
-          await this.buildWorkspaceInner(
-            includes,
-            excludes,
-            exefilename,
-            entrypoint
-          )
-            .then(() => {
-              resolve();
-            })
-            .catch(err => {
-              reject(err);
-            });
-        } else {
-          reject(new Error("Please configure VLINK compiler files selection"));
-        }
-      } else if (!this.disabledInConf(conf)) {
-        reject(VASMCompiler.CONFIGURE_VASM_ERROR);
+  public async buildWorkspace(logEmitter?: EventEmitter<string>): Promise<void> {
+    let state = ExtensionState.getCurrent();
+    let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
+    let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
+    errorDiagnosticCollection.clear();
+    warningDiagnosticCollection.clear();
+    let configuration = workspace.getConfiguration("amiga-assembly", null);
+    let conf: any = configuration.get("vasm");
+    if (this.mayCompile(conf)) {
+      let confVLINK: any = configuration.get("vlink");
+      if (confVLINK) {
+        let includes = confVLINK.includes;
+        let excludes = confVLINK.excludes;
+        let exefilename = confVLINK.exefilename;
+        let entrypoint = confVLINK.entrypoint;
+        await this.buildWorkspaceInner(includes, excludes, exefilename, entrypoint, logEmitter);
       } else {
-        resolve();
+        let message = "Please configure VLINK compiler files selection";
+        if (logEmitter) {
+          logEmitter.fire(message);
+        }
+        throw new Error(message);
       }
-    });
+    } else if (!this.disabledInConf(conf)) {
+      throw VASMCompiler.CONFIGURE_VASM_ERROR;
+    }
   }
 
   /**
    * CLeans the workspace
    */
-  public cleanWorkspace(): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      let state = ExtensionState.getCurrent();
-      let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
-      let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
-      winston.info("Cleaning workspace");
-      errorDiagnosticCollection.clear();
-      warningDiagnosticCollection.clear();
-      let configuration = workspace.getConfiguration("amiga-assembly", null);
-      let conf: any = configuration.get("vasm");
-      if (this.mayCompile(conf)) {
-        const buildDir = this.getBuildDir();
-        await buildDir.findFiles("**/*.o", "").then(filesProxies => {
-          for (let i = 0; i < filesProxies.length; i++) {
-            const fileUri = filesProxies[i];
-            winston.info(
-              `Deleting ${fileUri.getPath()}`
-            );
-            fileUri.delete();
-          }
-          resolve();
-        });
-      } else if (!this.disabledInConf(conf)) {
-        reject(VASMCompiler.CONFIGURE_VASM_ERROR);
-      } else {
-        resolve();
+  public async cleanWorkspace(): Promise<void> {
+    let state = ExtensionState.getCurrent();
+    let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
+    let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
+    winston.info("Cleaning workspace");
+    errorDiagnosticCollection.clear();
+    warningDiagnosticCollection.clear();
+    let configuration = workspace.getConfiguration("amiga-assembly", null);
+    let conf: any = configuration.get("vasm");
+    if (this.mayCompile(conf)) {
+      const buildDir = this.getBuildDir();
+      let filesProxies = await buildDir.findFiles("**/*.o", "");
+      for (let i = 0; i < filesProxies.length; i++) {
+        const fileUri = filesProxies[i];
+        winston.info(
+          `Deleting ${fileUri.getPath()}`
+        );
+        fileUri.delete();
       }
-    });
+    } else if (!this.disabledInConf(conf)) {
+      throw VASMCompiler.CONFIGURE_VASM_ERROR;
+    }
   }
 
   /**
@@ -216,83 +179,69 @@ export class VASMCompiler {
     return ExtensionState.getCurrent().getWorkspaceRootDir();
   }
 
-  private buildWorkspaceInner(
-    includes: string,
-    excludes: string,
-    exefilename: string,
-    entrypoint: string | undefined
-  ): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      const workspaceRootDir = this.getWorkspaceRootDir();
-      const buildDir = this.getBuildDir();
-      const configuration = workspace.getConfiguration("amiga-assembly", null);
-      const confVLINK: any = configuration.get("vlink");
-      const ASMOneEnabled = this.isASMOneEnabled();
+  private async buildWorkspaceInner(includes: string, excludes: string, exefilename: string, entrypoint: string | undefined, logEmitter?: EventEmitter<string>): Promise<void> {
+    const workspaceRootDir = this.getWorkspaceRootDir();
+    const buildDir = this.getBuildDir();
+    const configuration = workspace.getConfiguration("amiga-assembly", null);
+    const confVLINK: any = configuration.get("vlink");
+    const ASMOneEnabled = this.isASMOneEnabled();
+    try {
       if (workspaceRootDir && buildDir) {
-        await workspace.findFiles(includes, excludes).then(async filesURI => {
-          let promises: Thenable<ICheckResult[]>[] = [];
-          for (let i = 0; i < filesURI.length; i++) {
-            const fileUri = filesURI[i];
-            promises.push(
-              workspace.openTextDocument(fileUri).then(document => {
-                return this.buildDocument(document, false);
-              })
-            );
-          }
-          await Promise.all(promises)
-            .then(async errorsArray => {
-              for (let i = 0; i < errorsArray.length; i += 1) {
-                let errors: ICheckResult[] = errorsArray[i];
-                if (ASMOneEnabled) {
-                  errors = this.asmONE.filterErrors(errors);
-                }
-                if (errors && errors.length > 0) {
-                  reject(new Error("Build aborted: there are compile errors"));
-                }
-              }
-              // Call the linker
-              if (this.linker.mayLink(confVLINK)) {
-                await this.linker
-                  .linkFiles(
-                    filesURI,
-                    exefilename,
-                    entrypoint,
-                    workspaceRootDir,
-                    buildDir.getUri()
-                  )
-                  .then(errors => {
-                    if (errors && errors.length > 0) {
-                      reject(new Error(`Linker error: ${errors[0].msg}`));
-                    } else {
-                      if (ASMOneEnabled) {
-                        this.asmONE.Auto(
-                          filesURI,
-                          buildDir.getRelativeFile(exefilename).getUri()
-                        );
-                      }
-                      resolve();
-                    }
-                  })
-                  .catch(err => {
-                    reject(err);
-                  });
-              } else {
-                // The linker is not mandatory
-                // show a warning in the output
-                winston.warn(
-                  "Warning : the linker vlink is not configured"
-                );
-                resolve();
-              }
+        let filesURI = await workspace.findFiles(includes, excludes);
+        let promises: Thenable<ICheckResult[]>[] = [];
+        for (let i = 0; i < filesURI.length; i++) {
+          const fileUri = filesURI[i];
+          promises.push(
+            workspace.openTextDocument(fileUri).then(document => {
+              return this.buildDocument(document, false, logEmitter);
             })
-            .catch(err => {
-              reject(err);
-            });
-        });
+          );
+        }
+        if (logEmitter) {
+          logEmitter.fire("Compiling_________________________________________\r\n");
+        }
+        let errorsArray = await Promise.all(promises);
+        for (let i = 0; i < errorsArray.length; i += 1) {
+          let errors: ICheckResult[] = errorsArray[i];
+          if (ASMOneEnabled) {
+            errors = this.asmONE.filterErrors(errors);
+          }
+          if (errors && errors.length > 0) {
+            throw new Error("Build Error");
+          }
+        }
+        // Call the linker
+        if (this.linker.mayLink(confVLINK)) {
+          if (logEmitter) {
+            logEmitter.fire("Linking_________________________________________\r\n");
+          }
+          let errors = await this.linker.linkFiles(filesURI, exefilename, entrypoint, workspaceRootDir, buildDir.getUri(), logEmitter);
+          if (errors && errors.length > 0) {
+            throw new Error(`Linker error: ${errors[0].msg}`);
+          } else if (ASMOneEnabled) {
+            this.asmONE.Auto(filesURI, buildDir.getRelativeFile(exefilename).getUri());
+          }
+        } else {
+          // The linker is not mandatory
+          // show a warning in the output
+          let message = "Warning : the linker vlink is not configured";
+          if (logEmitter) {
+            logEmitter.fire(`\u001b[33m${message}\u001b[0m`);
+          }
+          winston.warn(message);
+        }
       } else {
-        reject(new Error("Root workspace or build path not found"));
+        throw new Error("Root workspace or build path not found");
       }
-    });
+      if (logEmitter) {
+        logEmitter.fire("\u001b[32mBuild Success\u001b[0m\r\n");
+      }
+    } catch (e) {
+      if (logEmitter) {
+        logEmitter.fire(`\u001b[31m${e.message}\u001b[0m\r\n`);
+      }
+      throw e;
+    }
   }
 
   /**
@@ -302,89 +251,78 @@ export class VASMCompiler {
    * @param temporaryBuild If true the ile will go to the temp folder
    * @param bootblock If true it will build a bootblock 
    */
-  public buildFile(fileUri: Uri, debug: boolean, temporaryBuild: boolean, bootblock?: boolean): Promise<[string | null, ICheckResult[]]> {
-    return new Promise(async (resolve, reject) => {
-      const workspaceRootDir = this.getWorkspaceRootDir();
-      let buildDir: FileProxy;
-      if (temporaryBuild) {
-        buildDir = this.getTmpDir();
-      } else {
-        buildDir = this.getBuildDir();
-      }
-      if (workspaceRootDir && buildDir) {
-        let filename = path.basename(fileUri.fsPath);
-        let configuration = workspace.getConfiguration("amiga-assembly", null);
-        let conf: any = configuration.get("vasm");
-        if (this.mayCompile(conf)) {
+  public async buildFile(fileUri: Uri, debug: boolean, temporaryBuild: boolean, bootblock?: boolean, logEmitter?: EventEmitter<string>): Promise<[string | null, ICheckResult[]]> {
+    const workspaceRootDir = this.getWorkspaceRootDir();
+    let buildDir: FileProxy;
+    if (temporaryBuild) {
+      buildDir = this.getTmpDir();
+    } else {
+      buildDir = this.getBuildDir();
+    }
+    if (workspaceRootDir && buildDir) {
+      let filename = path.basename(fileUri.fsPath);
+      let configuration = workspace.getConfiguration("amiga-assembly", null);
+      let conf: any = configuration.get("vasm");
+      if (this.mayCompile(conf)) {
+        if (!await buildDir.exists()) {
           try {
+            if (logEmitter) {
+              logEmitter.fire(`Creating directory ${buildDir.getName()}\r\n`);
+            }
             await buildDir.mkdir();
           } catch (err) {
-            reject(new Error(`Error creating the  build dir "${buildDir}: ` + err.toString()));
-            return;
-          }
-          let state = ExtensionState.getCurrent();
-          let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
-          let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
-          let vasmExecutableName: string = conf.file;
-          let extSep = filename.indexOf(".");
-          let objFilename: string;
-          if (extSep > 0) {
-            objFilename = path.join(
-              buildDir.getPath(),
-              filename.substr(0, filename.lastIndexOf(".")) + ".o"
-            );
-          } else {
-            objFilename = path.join(buildDir.getPath(), filename + ".o");
-          }
-          let confArgs: any;
-          if (bootblock) {
-            if (conf.options && (conf.options.length > 0)) {
-              confArgs = conf.options;
-            } else {
-              confArgs = new Array<string>();
-              confArgs.push("-m68000");
+            let message = `Error creating the build dir "${buildDir.getName()}": ${err.toString()}`;
+            if (logEmitter) {
+              logEmitter.fire(message);
             }
-            confArgs.push("-Fbin");
-          } else {
-            confArgs = conf.options;
+            throw new Error(message);
           }
-          if (debug) {
-            confArgs.push("-linedebug");
-          }
-          let args: Array<string> = confArgs.concat([
-            "-o",
-            objFilename,
-            fileUri.fsPath
-          ]);
-          errorDiagnosticCollection.delete(fileUri);
-          warningDiagnosticCollection.delete(fileUri);
-          await this.executor
-            .runTool(
-              args,
-              workspaceRootDir.fsPath,
-              "warning",
-              true,
-              vasmExecutableName,
-              null,
-              true,
-              this.parser
-            )
-            .then(results => {
-              resolve([objFilename, results]);
-            })
-            .catch(err => {
-              reject(err);
-              return;
-            });
-        } else if (!this.disabledInConf(conf)) {
-          reject(VASMCompiler.CONFIGURE_VASM_ERROR);
-        } else {
-          resolve(["", new Array<ICheckResult>()]);
         }
+        let state = ExtensionState.getCurrent();
+        let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
+        let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
+        let vasmExecutableName: string = conf.file;
+        let extSep = filename.indexOf(".");
+        let objFilename: string;
+        if (extSep > 0) {
+          objFilename = path.join(
+            buildDir.getPath(),
+            filename.substr(0, filename.lastIndexOf(".")) + ".o"
+          );
+        } else {
+          objFilename = path.join(buildDir.getPath(), filename + ".o");
+        }
+        let confArgs: any;
+        if (bootblock) {
+          if (conf.options && (conf.options.length > 0)) {
+            confArgs = conf.options;
+          } else {
+            confArgs = new Array<string>();
+            confArgs.push("-m68000");
+          }
+          confArgs.push("-Fbin");
+        } else {
+          confArgs = conf.options;
+        }
+        if (debug) {
+          confArgs.push("-linedebug");
+        }
+        let args: Array<string> = confArgs.concat(["-o", objFilename, fileUri.fsPath]);
+        errorDiagnosticCollection.delete(fileUri);
+        warningDiagnosticCollection.delete(fileUri);
+        if (logEmitter) {
+          logEmitter.fire(`building ${objFilename}\r\n`);
+        }
+        let results = await this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vasmExecutableName, null, true, this.parser, undefined, logEmitter);
+        return [objFilename, results];
+      } else if (!this.disabledInConf(conf)) {
+        throw VASMCompiler.CONFIGURE_VASM_ERROR;
       } else {
-        reject(new Error("Root workspace path not found"));
+        return ["", new Array<ICheckResult>()];
       }
-    });
+    } else {
+      throw new Error("Root workspace path not found");
+    }
   }
 
   /**
@@ -502,6 +440,7 @@ export class VASMParser implements ExecutorParser {
                 if (match) {
                   // It's an included file
                   error.parentFile = match[2];
+                  error.parentFileLine = parseInt(match[1]);
                 }
               }
             }

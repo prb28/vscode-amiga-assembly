@@ -52,11 +52,15 @@ describe("VASM Tests", function () {
           anything(),
           anything(),
           anything(),
+          anything(),
+          anything(),
           anything()
         )
       ).thenResolve([]);
       when(
         executorLinker.runTool(
+          anything(),
+          anything(),
           anything(),
           anything(),
           anything(),
@@ -106,6 +110,8 @@ describe("VASM Tests", function () {
           anyString(),
           anything(),
           anything(),
+          anything(),
+          anything(),
           anything()
         )
       ).once();
@@ -129,6 +135,8 @@ describe("VASM Tests", function () {
             anyString(),
             anything(),
             anyString(),
+            anything(),
+            anything(),
             anything(),
             anything(),
             anything()
@@ -192,6 +200,8 @@ describe("VASM Tests", function () {
           anyString(),
           anything(),
           anything(),
+          anything(),
+          anything(),
           anything()
         )
       ).twice();
@@ -202,6 +212,8 @@ describe("VASM Tests", function () {
           anyString(),
           anything(),
           anyString(),
+          anything(),
+          anything(),
           anything(),
           anything(),
           anything()
@@ -216,6 +228,8 @@ describe("VASM Tests", function () {
           anyString(),
           anything(),
           anything(),
+          anything(),
+          anything(),
           anything()
         )
       ).calledAfter(
@@ -225,6 +239,8 @@ describe("VASM Tests", function () {
           anyString(),
           anything(),
           anyString(),
+          anything(),
+          anything(),
           anything(),
           anything(),
           anything()
@@ -269,6 +285,8 @@ describe("VASM Tests", function () {
       );
       const error = new Error("Not possible");
       when(buildDirMock.mkdir()).thenReject(error);
+      when(buildDirMock.exists()).thenResolve(false);
+      when(spiedCompiler.getBuildDir()).thenReturn(instance(buildDirMock));
       when(spiedCompiler.mayCompile(anything())).thenReturn(true);
       let fileUri = vscode.Uri.file("file1.s");
       return compiler
@@ -276,8 +294,8 @@ describe("VASM Tests", function () {
         .then(() => {
           expect.fail("Should reject");
         })
-        .catch(error => {
-          expect(error).to.be.equal(error);
+        .catch(lError => {
+          expect(lError.message.includes(error.message)).to.be.true;
         });
     });
     it("Should return an error on build document if the compiler is not configured", async function () {
@@ -435,7 +453,7 @@ describe("VASM Tests", function () {
       error = errors[i++];
       expect(error.msg).to.be.equal("error 5 : This is not good too");
       expect(error.severity).to.be.equal("error");
-      error = errors[i++];
+      error = errors[i];
       expect(error.msg).to.be.equal("warning 5: oh no");
       expect(error.severity).to.be.equal("warning");
       expect(error.line).to.be.equal(2);
@@ -459,7 +477,7 @@ describe("VASM Tests", function () {
       expect(error.severity).to.be.equal("error");
       expect(error.file).to.be.equal("/myfolder/src/mysource.s");
       expect(error.line).to.be.equal(798);
-      error = errors[i++];
+      error = errors[i];
       expect(error.msg).to.be.equal("error 2: unknown mnemonic <CALLEXEC>");
       expect(error.severity).to.be.equal("error");
       expect(error.file).to.be.equal("/myfolder/src/mysource.s");
