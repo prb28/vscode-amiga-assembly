@@ -28,42 +28,26 @@ export class FileProxy {
      * Gets stats of the uri
      * @return file stats
      */
-    public stat(): Promise<FileStat> {
-        return new Promise(async (resolve, reject) => {
-            if (this.useDirectAccess) {
-                try {
-                    let fDirectStat = fs.statSync(this.uri.fsPath);
-                    resolve(<FileStat>{
-                        ctime: fDirectStat.ctime.valueOf(),
-                        size: fDirectStat.size,
-                        mtime: fDirectStat.mtimeMs,
-                        type: fDirectStat.isFile() ? FileType.File : FileType.Directory
-                    });
-                } catch (err) {
-                    reject(err);
-                }
-            } else {
-                try {
-                    resolve(await workspace.fs.stat(this.uri));
-                } catch (err) {
-                    reject(err);
-                }
-            }
-        });
+    public async stat(): Promise<FileStat> {
+        if (this.useDirectAccess) {
+            let fDirectStat = fs.statSync(this.uri.fsPath);
+            return <FileStat>{
+                ctime: fDirectStat.ctime.valueOf(),
+                size: fDirectStat.size,
+                mtime: fDirectStat.mtimeMs,
+                type: fDirectStat.isFile() ? FileType.File : FileType.Directory
+            };
+        } else {
+            return await workspace.fs.stat(this.uri);
+        }
     }
 
     /**
      * Read a text file.
      */
-    public readFileText(encoding?: string): Promise<string> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let buffer = await this.readFile();
-                resolve(buffer.toString(encoding));
-            } catch (err) {
-                reject(err);
-            }
-        });
+    public async readFileText(encoding?: string): Promise<string> {
+        let buffer = await this.readFile();
+        return buffer.toString(encoding);
     }
 
 
@@ -71,32 +55,22 @@ export class FileProxy {
      * Read the file contents
      * @return buffer containing the file
      */
-    public readFile(): Promise<Buffer> {
-        return new Promise(async (resolve, reject) => {
-            if (this.useDirectAccess) {
-                try {
-                    let contents = fs.readFileSync(this.uri.fsPath);
-                    if (contents) {
-                        resolve(contents);
-                    } else {
-                        reject(FileSystemError.FileNotFound(this.uri));
-                    }
-                } catch (err) {
-                    reject(err);
-                }
+    public async readFile(): Promise<Buffer> {
+        if (this.useDirectAccess) {
+            let contents = fs.readFileSync(this.uri.fsPath);
+            if (contents) {
+                return contents;
             } else {
-                try {
-                    let contents = await workspace.fs.readFile(this.uri);
-                    if (contents) {
-                        resolve(Buffer.from(contents));
-                    } else {
-                        reject(FileSystemError.FileNotFound(this.uri));
-                    }
-                } catch (err) {
-                    reject(err);
-                }
+                throw FileSystemError.FileNotFound(this.uri);
             }
-        });
+        } else {
+            let contents = await workspace.fs.readFile(this.uri);
+            if (contents) {
+                return Buffer.from(contents);
+            } else {
+                throw FileSystemError.FileNotFound(this.uri);
+            }
+        }
     }
 
     /**
@@ -104,79 +78,50 @@ export class FileProxy {
      * @param contents Contents to be written
      * @return buffer containing the file
      */
-    public writeFile(contents: Buffer): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            if (this.useDirectAccess) {
-                try {
-                    fs.writeFile(this.uri.fsPath, contents, (err) => {
-                        if (err === null) {
-                            resolve();
-                        } else {
-                            reject(err);
-                        }
-                    });
-                } catch (err) {
-                    reject(err);
-                }
-            } else {
-                try {
-                    await workspace.fs.writeFile(this.uri, contents);
-                    resolve();
-                } catch (err) {
-                    reject(err);
-                }
-            }
-        });
+    public async writeFile(contents: Buffer): Promise<void> {
+        if (this.useDirectAccess) {
+            fs.writeFileSync(this.uri.fsPath, contents);
+        } else {
+            await workspace.fs.writeFile(this.uri, contents);
+        }
     }
 
     /**
      * Check it the uri exists
      */
-    public exists(): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            if (this.useDirectAccess) {
-                try {
-                    resolve(fs.existsSync(this.uri.fsPath));
-                } catch (err) {
-                    resolve(false);
-                }
-            } else {
-                try {
-                    await this.stat();
-                    resolve(true);
-                } catch (err) {
-                    resolve(false);
-                }
+    public async exists(): Promise<boolean> {
+        if (this.useDirectAccess) {
+            try {
+                return fs.existsSync(this.uri.fsPath);
+            } catch (err) {
+                return false;
             }
-        });
+        } else {
+            try {
+                await this.stat();
+                return true;
+            } catch (err) {
+                return false;
+            }
+        }
     }
 
     /**
      * List directory files
      * @return buffer containing the list of filenames and types
      */
-    public readDirectory(): Promise<Array<[string, FileType]>> {
-        return new Promise(async (resolve, reject) => {
-            if (this.useDirectAccess) {
-                try {
-                    let results = fs.readdirSync(this.uri.fsPath, { withFileTypes: true });
-                    let values = new Array<[string, FileType]>();
-                    for (let dir of results) {
-                        let fType = dir.isFile() ? FileType.File : FileType.Directory;
-                        values.push([dir.name, fType]);
-                    }
-                    resolve(values);
-                } catch (err) {
-                    reject(err);
-                }
-            } else {
-                try {
-                    resolve(await workspace.fs.readDirectory(this.uri));
-                } catch (err) {
-                    reject(err);
-                }
+    public async readDirectory(): Promise<Array<[string, FileType]>> {
+        if (this.useDirectAccess) {
+            let results = fs.readdirSync(this.uri.fsPath, { withFileTypes: true });
+            let values = new Array<[string, FileType]>();
+            for (let dir of results) {
+                let fType = dir.isFile() ? FileType.File : FileType.Directory;
+                values.push([dir.name, fType]);
             }
-        });
+            return values;
+        } else {
+            return await workspace.fs.readDirectory(this.uri);
+        }
     }
 
     /**
@@ -190,32 +135,26 @@ export class FileProxy {
     /**
      * Find the files matching patterns in the directory
      */
-    public findFiles(includes: string, excludes: string): Promise<Array<FileProxy>> {
-        return new Promise(async (resolve, reject) => {
-            if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
-                try {
-                    let values = new Array<FileProxy>();
-                    // List the source dir
-                    let files = glob.sync(includes, {
-                        cwd: this.uri.fsPath,
-                        ignore: excludes
-                    });
-                    for (let f of files) {
-                        values.push(this.getRelativeFile(f));
-                    }
-                    resolve(values);
-                } catch (err) {
-                    reject(err);
-                }
-            } else {
-                let values = new Array<FileProxy>();
-                let files = await workspace.findFiles(includes, excludes);
-                for (let f of files) {
-                    values.push(new FileProxy(f));
-                }
-                resolve(values);
+    public async findFiles(includes: string, excludes: string): Promise<Array<FileProxy>> {
+        if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
+            let values = new Array<FileProxy>();
+            // List the source dir
+            let files = glob.sync(includes, {
+                cwd: this.uri.fsPath,
+                ignore: excludes
+            });
+            for (let f of files) {
+                values.push(this.getRelativeFile(f));
             }
-        });
+            return values;
+        } else {
+            let values = new Array<FileProxy>();
+            let files = await workspace.findFiles(includes, excludes);
+            for (let f of files) {
+                values.push(new FileProxy(f));
+            }
+            return values;
+        }
     }
 
     /**
@@ -268,75 +207,49 @@ export class FileProxy {
     /**
      * Check if the file is a directory
      */
-    public isDirectory(): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            let stat = await this.stat();
-            resolve((stat.type & FileType.Directory) > 0);
-        });
+    public async isDirectory(): Promise<boolean> {
+        let stat = await this.stat();
+        return (stat.type & FileType.Directory) > 0;
     }
 
     /**
      * Check if the file is a file
      */
-    public isFile(): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            let stat = await this.stat();
-            resolve((stat.type & FileType.File) > 0);
-        });
+    public async isFile(): Promise<boolean> {
+        let stat = await this.stat();
+        return (stat.type & FileType.File) > 0;
     }
 
     /**
      * Deletes a file
      */
-    delete() {
-        return new Promise(async (resolve, reject) => {
-            if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
-                try {
-                    if (await this.isDirectory()) {
-                        fs.rmdirSync(this.uri.fsPath);
-                    } else {
-                        fs.unlinkSync(this.uri.fsPath);
-                    }
-                    resolve();
-                } catch (err) {
-                    reject(err);
-                }
+    public async delete() {
+        if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
+            if (await this.isDirectory()) {
+                fs.rmdirSync(this.uri.fsPath);
             } else {
-                try {
-                    await workspace.fs.delete(this.uri);
-                    resolve();
-                } catch (err) {
-                    reject(err);
-                }
+                fs.unlinkSync(this.uri.fsPath);
             }
-        });
+        } else {
+            await workspace.fs.delete(this.uri);
+        }
     }
 
     /**
      * Creates a directory
      */
-    mkdir(): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
-                try {
-                    fs.mkdirSync(this.uri.fsPath);
-                    resolve();
-                } catch (err) {
-                    if (err.code !== 'EEXIST') {
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                }
-            } else {
-                try {
-                    await workspace.fs.createDirectory(this.uri);
-                    resolve();
-                } catch (err) {
-                    reject(err);
+    public async mkdir(): Promise<void> {
+        if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
+            try {
+                fs.mkdirSync(this.uri.fsPath);
+            } catch (err) {
+                if (err.code !== 'EEXIST') {
+                    throw err;
                 }
             }
-        });
+        } else {
+            await workspace.fs.createDirectory(this.uri);
+        }
     }
 
     /**
