@@ -93,6 +93,8 @@ describe("Definition handler Tests", function () {
             document.addLine(" move.w d0,d1");
             document.addLine(" movem.l	(a0)+,d1-d7/a2");
             document.addLine(" movem.l	d1-d7/a2,(a1)");
+            document.addLine("doslib  EQUR   d4");
+            document.addLine("        move.l d0,doslib");
             let selections = new Array<Selection>();
             selections.push(new Selection(new Position(0, 0), new Position(1, 0)));
             expect(dHnd.findUsedRegisters(document, selections)).to.be.eql(["d0", "d1"]);
@@ -100,6 +102,10 @@ describe("Definition handler Tests", function () {
             selections = new Array<Selection>();
             selections.push(new Selection(new Position(1, 0), new Position(2, 0)));
             expect(dHnd.findUsedRegisters(document, selections)).to.be.eql(["a0", "a2", "d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
+
+            selections = new Array<Selection>();
+            selections.push(new Selection(new Position(3, 0), new Position(5, 0)));
+            expect(dHnd.findUsedRegisters(document, selections)).to.be.eql(["d0", "d4"]);
         });
     });
 });

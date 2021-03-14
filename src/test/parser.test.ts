@@ -41,6 +41,21 @@ describe("Parser Tests", function () {
             expect(asmLine.instruction).to.be.empty;
             expect(asmLine.lineType).to.be.equal(ASMLineType.LABEL);
         });
+
+
+        it("Should parse a line with no known instruction", function () {
+            let asmLine = new ASMLine("doslib EQUR d4 ;my comment");
+            expect(asmLine.label).to.be.equal("doslib");
+            expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 6)));
+            expect(asmLine.instruction).to.be.equal("EQUR");
+            expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 7), new Position(0, 11)));
+            expect(asmLine.data).to.be.equal("d4");
+            expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 12), new Position(0, 14)));
+            expect(asmLine.comment).to.be.equal(";my comment");
+            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 15), new Position(0, 26)));
+            expect(asmLine.lineType).to.be.equal(ASMLineType.INSTRUCTION);
+        });
+
         it("Should retrieve the symbol from a label line", function () {
             let asmLine = new ASMLine("mylabel");
             let [symbol, range] = asmLine.getSymbolFromLabelOrVariable();

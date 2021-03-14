@@ -191,10 +191,45 @@ export class ASMLine {
                 }
             } else {
                 // no keyword
-                // Consider it is a label
-                this.lineType = ASMLineType.LABEL;
-                this.label = l;
-                this.labelRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + this.label.length));
+                let startPosValue = leadingSpacesCount;
+                let lastPos = startPosValue;
+                let pos = 0;
+                let match;
+                let regexp = /([^\s]+)/g;
+                while (match = regexp.exec(l)) {
+                    let word = match[0];
+                    let startPos = startPosValue + match.index;
+                    let endPos = startPos + word.length;
+                    let spacesCount = startPos - lastPos;
+                    let range = new Range(new Position(lineNumber, startPos), new Position(lineNumber, endPos));
+                    if (pos === 0) {
+                        if (leadingSpacesCount <= 0) {
+                            //this.label = l.substring(0, keywordIndex).trim();
+                            //this.labelRange = new Range(new Position(lineNumber, startPosValue), new Position(lineNumber, startPosInstruction + this.label.length));
+                            this.label = word;
+                            this.labelRange = range;
+                        } else {
+                            this.instruction = word;
+                            this.instructionRange = range;
+                        }
+                    } else if (pos === 1) {
+                        this.instruction = word;
+                        this.instructionRange = range;
+                        this.spacesLabelToInstructionRange = new Range(new Position(lineNumber, endPos), new Position(lineNumber, endPos + spacesCount));
+                    } else {
+                        this.data = word;
+                        this.dataRange = range;//new Range(new Position(lineNumber, startPos), new Position(lineNumber, endPosData));
+                        this.spacesInstructionToDataRange = new Range(new Position(lineNumber, endPos), new Position(lineNumber, endPos + spacesCount));
+                        break;
+                    }
+                    lastPos = endPos;
+                    pos++;
+                }
+                if (pos > 1) {
+                    this.lineType = ASMLineType.INSTRUCTION;
+                } else {
+                    this.lineType = ASMLineType.LABEL;
+                }
             }
         }
     }
@@ -221,7 +256,7 @@ export class ASMLine {
      * @return RegExpExecArray if found or null
      */
     search(regexps: Array<RegExp>, value: string): RegExpExecArray | null {
-        let firstMatch: any | null = null;
+        let firstMatch: RegExpExecArray | null = null;
         for (let regexp of regexps) {
             let r = regexp.exec(value);
             if (r) {

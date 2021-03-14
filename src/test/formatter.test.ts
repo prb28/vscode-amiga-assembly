@@ -326,15 +326,14 @@ describe("Formatter Tests", function () {
         let i = 0;
         expect(edits.length).to.be.equal(2);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 13), new Position(0, 22)), " ".repeat(9)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 8)), " ".repeat(2)));
+        expect(edits[i]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 8)), " ".repeat(2)));
         edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[1], conf);
-        i = 0;
-        expect(edits.length).to.be.equal(0);
+        expect(edits.length).to.be.equal(1);
         edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[4], conf);
         i = 0;
         expect(edits.length).to.be.equal(2);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(4, 18), new Position(4, 22)), " ".repeat(4)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(4, 0), new Position(4, 8)), " ".repeat(2)));
+        expect(edits[i]).to.be.eql(TextEdit.replace(new Range(new Position(4, 0), new Position(4, 8)), " ".repeat(2)));
     });
 
 });
