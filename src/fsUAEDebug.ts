@@ -345,7 +345,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         "    Memory dump:\n" +
                         "        m address, size[, wordSizeInBytes, rowSizeInWords,ab]\n" +
                         "        			a: show ascii output, b: show bytes output\n" +
-                        "            example: m 5c50,10,2,4\n" +
+                        "            example: m $5c50,10,2,4\n" +
                         "        m ${register|symbol}, #{symbol}, size[, wordSizeInBytes, rowSizeInWords]\n" +
                         "            example: m ${mycopperlabel},10,2,4\n" +
                         "    Disassembled Memory dump:\n" +
@@ -353,7 +353,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         "            example: m ${pc},10,d\n" +
                         "    Memory set:\n" +
                         "        M address=bytes\n" +
-                        "            example: M 5c50=0ff534\n" +
+                        "            example: M $5c50=0ff534\n" +
                         "        M ${register|symbol}=bytes\n" +
                         "        M #{register|symbol}=bytes\n" +
                         "            example: M ${mycopperlabel}=0ff534\n" +
