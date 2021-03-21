@@ -389,6 +389,18 @@
                 "description": "Display an IFF/ILBM image"
             },
             {
+                "command": "amiga-assembly.showVariableAsDec",
+                "title": "View as Decimal"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsHex",
+                "title": "View as Hex"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsBin",
+                "title": "View as Binary"
+            },
+            {
                 "command": "amiga-assembly.showdoc-toc",
                 "title": "Amiga Assembly: Show documentation",
                 "description": "Display the documentation table of contents"
@@ -816,6 +828,23 @@
                     "when": "resourceExtname =~ /\\.iff/i",
                     "command": "amiga-assembly.view-iff",
                     "group": "3_preview"
+                }
+            ],
+            "debug/variables/context": [
+                {
+                    "command": "amiga-assembly.showVariableAsDec",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsHex",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsBin",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view"
                 }
             ]
         },

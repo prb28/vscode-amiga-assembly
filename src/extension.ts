@@ -29,6 +29,7 @@ import * as TransportStream from "winston-transport";
 import { FileProxy } from './fsProxy';
 import { WinUAEDebugSession } from './winUAEDebug';
 import { AmigaBuildTaskProvider } from './customTaskProvider';
+import { VariableDisplayFormat, VariableDisplayFormatRequest } from './variableFormatter';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -459,6 +460,30 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(AMIGA_ASM_MODE, state.getDataGenerator()));
+
+    // Debugger View commands
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDec', (variable) => {
+        const ds = vscode.debug.activeDebugSession;
+        if (ds) {
+            ds.customRequest('modifyVariableFormat', <VariableDisplayFormatRequest>{ variableInfo: variable, variableDisplayFormat: VariableDisplayFormat.DECIMAL });
+        }
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsBin', (variable) => {
+        const ds = vscode.debug.activeDebugSession;
+        if (ds) {
+            ds.customRequest('modifyVariableFormat', <VariableDisplayFormatRequest>{ variableInfo: variable, variableDisplayFormat: VariableDisplayFormat.BINARY });
+        }
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHex', (variable) => {
+        const ds = vscode.debug.activeDebugSession;
+        if (ds) {
+            ds.customRequest('modifyVariableFormat', <VariableDisplayFormatRequest>{ variableInfo: variable, variableDisplayFormat: VariableDisplayFormat.HEXADECIMAL });
+        }
+    });
+    context.subscriptions.push(disposable);
+
 
     // Views
     const disassembledMemoryDataProvider = new DisassembledMemoryDataProvider();

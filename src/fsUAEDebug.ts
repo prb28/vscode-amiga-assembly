@@ -1,6 +1,6 @@
 import {
     InitializedEvent, TerminatedEvent, BreakpointEvent,
-    Thread, StackFrame, Scope, Source, Handles, DebugSession, OutputEvent, ContinuedEvent
+    Thread, StackFrame, Scope, Source, Handles, DebugSession, OutputEvent, ContinuedEvent, InvalidatedEvent
 } from 'vscode-debugadapter/lib/main';
 import * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
@@ -19,6 +19,7 @@ import { MemoryLabelsRegistry } from './customMemoryAddresses';
 import { BreakpointManager, GdbBreakpoint } from './breakpointManager';
 import { CopperDisassembler } from './copperDisassembler';
 import { FileProxy } from './fsProxy';
+import { VariableDisplayFormat, VariableDisplayFormatRequest, VariableFormatter } from './variableFormatter';
 
 /**
  * This interface describes the mock-debug specific launch attributes
@@ -53,7 +54,6 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     exceptionMask?: number;
     /** Waiting time for emulator start */
     emulatorStartDelay?: number;
-
 }
 
 export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
@@ -68,6 +68,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     /** Variables expression map */
     protected variableExpressionMap = new Map<string, number>();
+
+    /** Variables format map */
+    protected variableFormatterMap = new Map<string, VariableFormatter | null>();
 
     /** All the symbols in the file */
     protected symbolsMap = new Map<string, number>();
@@ -449,9 +452,27 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     protected customRequest(command: string, response: DebugProtocol.Response, args: any): void {
         if (command === 'disassembleInner') {
             this.disassembleRequestInner(response, args);
-        } else {
-            response.body = { error: 'Invalid command.' };
+        } else if (command === 'modifyVariableFormat') {
+            let variableReq: VariableDisplayFormatRequest = args;
+            switch (variableReq.variableDisplayFormat) {
+                case VariableDisplayFormat.BINARY:
+                    this.variableFormatterMap.set(variableReq.variableInfo.variable.name, VariableFormatter.BINARY_FORMATTER);
+                    break;
+                case VariableDisplayFormat.HEXADECIMAL:
+                    this.variableFormatterMap.set(variableReq.variableInfo.variable.name, VariableFormatter.HEXADECIMAL_FORMATTER);
+                    break;
+                case VariableDisplayFormat.DECIMAL:
+                    this.variableFormatterMap.set(variableReq.variableInfo.variable.name, VariableFormatter.DECIMAL_FORMATTER);
+                    break;
+                default:
+                    this.variableFormatterMap.set(variableReq.variableInfo.variable.name, null);
+                    break;
+
+            }
+            this.sendEvent(new InvalidatedEvent(['variables']));
             this.sendResponse(response);
+        } else {
+            super.customRequest(command, response, args);
         }
     }
 
@@ -536,7 +557,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             this.breakpointManager.checkTemporaryBreakpoints(f.pc);
                         }
                         let stackFrameDone = false;
-                        let pc = f.pc.toString(16);
+                        let pc = VariableFormatter.ADDRESS_FORMATTER.format(f.pc);
                         if (f.segmentId >= 0) {
                             let values = await dbgInfo.resolveFileLine(f.segmentId, f.offset);
                             if (values) {
@@ -657,11 +678,17 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         const srVRef = this.variableHandles.create("status_register_" + frameId);
                         for (let i = 0; i < registers.length; i++) {
                             let r = registers[i];
+                            let variableName = r.name;
                             if (r.name.startsWith("SR_")) {
+                                variableName = variableName.replace("SR_", "");
+                                let formatter = this.variableFormatterMap.get(variableName);
+                                if (!formatter) {
+                                    formatter = VariableFormatter.DECIMAL_FORMATTER;
+                                }
                                 srVariablesArray.push({
-                                    name: r.name.replace("SR_", ""),
+                                    name: variableName,
                                     type: "register",
-                                    value: r.value.toString(10),
+                                    value: formatter.format(r.value),
                                     variablesReference: 0
                                 });
                             } else {
@@ -669,10 +696,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                 if (r.name.startsWith("sr")) {
                                     vRef = srVRef;
                                 }
+                                let formatter = this.variableFormatterMap.get(variableName);
+                                if (!formatter) {
+                                    formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
+                                }
                                 variablesArray.push({
-                                    name: r.name,
+                                    name: variableName,
                                     type: "register",
-                                    value: StringUtils.padStart(r.value.toString(16), 8, "0"),
+                                    value: formatter.format(r.value),
                                     variablesReference: vRef
                                 });
                             }
@@ -691,10 +722,15 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     if (segments) {
                         for (let i = 0; i < segments.length; i++) {
                             let s = segments[i];
+                            let variableName = `Segment #${i}`;
+                            let formatter = this.variableFormatterMap.get(variableName);
+                            if (!formatter) {
+                                formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
+                            }
                             variablesArray.push({
-                                name: "Segment #" + i,
+                                name: variableName,
                                 type: "segment",
-                                value: s.address.toString(16) + " {size:" + s.size + "}",
+                                value: `${formatter.format(s.address)} {size:${s.size}}`,
                                 variablesReference: 0
                             });
                         }
@@ -711,10 +747,15 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     for (let entry of Array.from(this.symbolsMap.entries())) {
                         let key = entry[0];
                         let value = entry[1];
+                        let variableName = key;
+                        let formatter = this.variableFormatterMap.get(variableName);
+                        if (!formatter) {
+                            formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
+                        }
                         variablesArray.push({
                             name: key,
                             type: "symbol",
-                            value: value.toString(16),
+                            value: formatter.format(value),
                             variablesReference: 0
                         });
                     }
@@ -868,14 +909,13 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         return memory;
     }
 
-    public getVariableValue(variableName: string, frameIndex?: number): Promise<string> {
-        return new Promise(async (resolve, reject) => {
-            await this.getVariableValueAsNumber(variableName, frameIndex).then((value) => {
-                resolve(value.toString(16));
-            }).catch(err => {
-                reject(err);
-            });
-        });
+    public async getVariableValue(variableName: string, frameIndex?: number): Promise<string> {
+        let value = await this.getVariableValueAsNumber(variableName, frameIndex);
+        let formatter = this.variableFormatterMap.get(variableName);
+        if (!formatter) {
+            formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
+        }
+        return formatter.format(value);
     }
 
     public async getVariableValueAsNumber(variableName: string, frameIndex?: number): Promise<number> {
@@ -1001,7 +1041,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             try {
                 let address = await this.debugExpressionHelper.getAddressFromExpression(args.expression, args.frameId, this);
                 response.body = {
-                    result: '$' + address.toString(16),
+                    result: VariableFormatter.HEXADECIMAL_FORMATTER.format(address),
                     type: "string",
                     variablesReference: 0,
                 };
