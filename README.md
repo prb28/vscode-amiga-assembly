@@ -12,9 +12,17 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
-## New in 0.21
-- Integration WinUAE (custom build)
-- Show CCR codes (Status register)
+## Breaking change 0.22!
+
+The build system has been reviewed :
+- Build are triggered in a terminal to show the output
+- there is no more the "Build" button in the bottom of the window
+- A build task has been created `amigaassembly: build`. Type F1 and select to run this task.
+- The launch parameter `"buildWorkspace": true,` is replaced by `"preLaunchTask": "amigaassembly: build"`
+
+## New in 0.22
+- Build sequence review with output displayed
+- Selection of display format for variables
 - Bug fixes
 
 ### Other features
@@ -80,6 +88,11 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## New in 0.22
+- Build sequence review with output displayed
+- Selection of display format for variables
+- Bug fixes
+
 ## 0.21.1
 - Bug fixes
 
