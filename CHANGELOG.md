@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [0.22.0] -
+- [Issue #150](https://github.com/prb28/vscode-amiga-assembly/issues/150) Copper disassemble does not work with winuae 
 - [Feat #149](https://github.com/prb28/vscode-amiga-assembly/issues/149) Select variable view format during debug
 - [Issue #142](https://github.com/prb28/vscode-amiga-assembly/issues/142) Consider register aliases in "List used registers in selection"
 - [Issue #141](https://github.com/prb28/vscode-amiga-assembly/issues/141) If there are any compile/linker errors stop the emulation from running
