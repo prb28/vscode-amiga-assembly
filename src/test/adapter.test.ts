@@ -551,7 +551,7 @@ describe('Node Debug Adapter', () => {
 			let stackFrames = response.body.stackFrames;
 			expect(stackFrames[0].id).to.be.equal(-1);
 			expect(stackFrames[0].line).to.be.equal(32);
-			expect(stackFrames[0].name).to.be.equal("0: move.l 4.w,a6");
+			expect(stackFrames[0].name).to.be.equal("$0: move.l 4.w,a6");
 			let src = stackFrames[0].source;
 			// tslint:disable-next-line: no-unused-expression
 			expect(src).to.not.be.undefined;
@@ -568,7 +568,7 @@ describe('Node Debug Adapter', () => {
 			}
 			expect(stackFrames[1].id).to.be.equal(1);
 			expect(stackFrames[1].line).to.be.equal(1);
-			expect(stackFrames[1].name).to.be.equal("a: sub.l	(a1), d0");
+			expect(stackFrames[1].name).to.be.equal("$a: sub.l	(a1), d0");
 			let responseScopes: DebugProtocol.ScopesResponse = await dc.scopesRequest(<DebugProtocol.ScopesArguments>{ frameId: 0 });
 			expect(responseScopes.body.scopes[0].name).to.be.equal('Registers');
 			expect(responseScopes.body.scopes[1].name).to.be.equal('Segments');
@@ -577,7 +577,7 @@ describe('Node Debug Adapter', () => {
 			expect(vRegistersResponse.body.variables.length).to.be.equal(3);
 			expect(vRegistersResponse.body.variables[0].name).to.be.equal("d0");
 			expect(vRegistersResponse.body.variables[0].type).to.be.equal("register");
-			expect(vRegistersResponse.body.variables[0].value).to.be.equal("00000001");
+			expect(vRegistersResponse.body.variables[0].value).to.be.equal("0x00000001");
 			expect(vRegistersResponse.body.variables[0].variablesReference).to.be.equal(0);
 			expect(vRegistersResponse.body.variables[1].name).to.be.equal("a0");
 			expect(vRegistersResponse.body.variables[2].name).to.be.equal("sr");
@@ -592,12 +592,12 @@ describe('Node Debug Adapter', () => {
 			let vSegmentsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[1].variablesReference });
 			expect(vSegmentsResponse.body.variables[0].name).to.be.equal("Segment #0");
 			expect(vSegmentsResponse.body.variables[0].type).to.be.equal("segment");
-			expect(vSegmentsResponse.body.variables[0].value).to.be.equal("a {size:10}");
+			expect(vSegmentsResponse.body.variables[0].value).to.be.equal("0x0000000a {size:10}");
 			expect(vSegmentsResponse.body.variables[0].variablesReference).to.be.equal(0);
 			let vSymbolsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[2].variablesReference });
 			expect(vSymbolsResponse.body.variables[0].name).to.be.equal("init");
 			expect(vSymbolsResponse.body.variables[0].type).to.be.equal("symbol");
-			expect(vSymbolsResponse.body.variables[0].value).to.be.equal("a");
+			expect(vSymbolsResponse.body.variables[0].value).to.be.equal("0x0000000a");
 			expect(vSymbolsResponse.body.variables[0].variablesReference).to.be.equal(0);
 		});
 		it('should retrieve a copper stack', async function () {
@@ -643,7 +643,7 @@ describe('Node Debug Adapter', () => {
 			let stackFrames = response.body.stackFrames;
 			expect(stackFrames[0].id).to.be.equal(-1);
 			expect(stackFrames[0].line).to.be.equal(5);
-			expect(stackFrames[0].name).to.be.equal("5860: dc.w $0180,$056c");
+			expect(stackFrames[0].name).to.be.equal("$5860: dc.w $0180,$056c");
 			let src = stackFrames[0].source;
 			// tslint:disable-next-line: no-unused-expression
 			expect(src).to.not.be.undefined;

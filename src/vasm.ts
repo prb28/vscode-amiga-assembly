@@ -15,6 +15,7 @@ import { AsmONE } from "./asmONE";
 import * as path from "path";
 import * as winston from 'winston';
 import { FileProxy } from "./fsProxy";
+import { ConfigurationHelper } from "./configurationHelper";
 
 /**
  * Class to manage the VASM compiler
@@ -106,10 +107,9 @@ export class VASMCompiler {
     let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
     errorDiagnosticCollection.clear();
     warningDiagnosticCollection.clear();
-    let configuration = workspace.getConfiguration("amiga-assembly", null);
-    let conf: any = configuration.get("vasm");
+    let conf: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vasm");
     if (this.mayCompile(conf)) {
-      let confVLINK: any = configuration.get("vlink");
+      let confVLINK: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vlink");
       if (confVLINK) {
         let includes = confVLINK.includes;
         let excludes = confVLINK.excludes;
@@ -138,8 +138,7 @@ export class VASMCompiler {
     winston.info("Cleaning workspace");
     errorDiagnosticCollection.clear();
     warningDiagnosticCollection.clear();
-    let configuration = workspace.getConfiguration("amiga-assembly", null);
-    let conf: any = configuration.get("vasm");
+    let conf: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vasm");
     if (this.mayCompile(conf)) {
       const buildDir = this.getBuildDir();
       let filesProxies = await buildDir.findFiles("**/*.o", "");
@@ -182,8 +181,7 @@ export class VASMCompiler {
   private async buildWorkspaceInner(includes: string, excludes: string, exefilename: string, entrypoint: string | undefined, logEmitter?: EventEmitter<string>): Promise<void> {
     const workspaceRootDir = this.getWorkspaceRootDir();
     const buildDir = this.getBuildDir();
-    const configuration = workspace.getConfiguration("amiga-assembly", null);
-    const confVLINK: any = configuration.get("vlink");
+    const confVLINK: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vlink");
     const ASMOneEnabled = this.isASMOneEnabled();
     try {
       if (workspaceRootDir && buildDir) {
@@ -261,8 +259,7 @@ export class VASMCompiler {
     }
     if (workspaceRootDir && buildDir) {
       let filename = path.basename(fileUri.fsPath);
-      let configuration = workspace.getConfiguration("amiga-assembly", null);
-      let conf: any = configuration.get("vasm");
+      let conf: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vasm");
       if (this.mayCompile(conf)) {
         if (!await buildDir.exists()) {
           try {
@@ -346,7 +343,7 @@ export class VASMCompiler {
    * Checks if ASMOne compatibility is enabled.
    */
   isASMOneEnabled(): boolean {
-    let conf = workspace.getConfiguration("amiga-assembly", null);
+    let conf = ConfigurationHelper.getDefaultConfiguration(null);
     if (conf) {
       return conf.ASMOneCompatibilityEnabled === true;
     }

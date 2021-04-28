@@ -2,6 +2,7 @@ import { window, OpenDialogOptions, InputBoxOptions, Uri, workspace, Position } 
 import { Capstone } from './capstone';
 import * as path from 'path';
 import { DebugDisassembledFile } from './debugDisassembled';
+import { ConfigurationHelper } from './configurationHelper';
 
 export enum DisassembleRequestType {
     MEMORY,
@@ -10,7 +11,7 @@ export enum DisassembleRequestType {
 }
 export class Disassembler {
     public getCapstone(): (Capstone | null) {
-        let conf: any = workspace.getConfiguration('amiga-assembly', null).get('cstool');
+        let conf: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('cstool');
         if (conf && (conf.length > 5)) {
             return new Capstone(conf);
         }

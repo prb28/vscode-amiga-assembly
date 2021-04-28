@@ -54,6 +54,7 @@ describe("Definition handler Tests", function () {
                     await workspace.applyEdit(edit).then(async (success) => {
                         if (success) {
                             await window.showTextDocument(document);
+                            await commands.executeCommand("cursorMove", { to: 'up', by: 'line', value: 20, select: false });
                             await commands.executeCommand("cursorMove", { to: 'down', by: 'line', value: 20, select: true });
                         } else {
                             expect.fail("Edit not successful");

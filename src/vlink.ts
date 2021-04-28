@@ -1,6 +1,7 @@
-import { workspace, Uri, EventEmitter } from "vscode";
+import { Uri, EventEmitter } from "vscode";
 import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import * as path from "path";
+import { ConfigurationHelper } from "./configurationHelper";
 
 /**
  * Class to manage the VLINK linker
@@ -24,8 +25,7 @@ export class VLINKLinker {
      * @param logEmitter Log emitter
      */
     public async linkFiles(filesURI: Uri[], exeFilepathname: string, entrypoint: string | undefined, workspaceRootDir: Uri, buildDir: Uri, logEmitter?: EventEmitter<string>): Promise<ICheckResult[]> {
-        let configuration = workspace.getConfiguration('amiga-assembly', null);
-        let conf: any = configuration.get('vlink');
+        let conf: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf('vlink');
         if (this.mayLink(conf)) {
             let vlinkExecutableName: string = conf.file;
             let confArgs = conf.options;

@@ -14,35 +14,31 @@ export class CalcComponent {
             this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
         }
     }
-    public updateCalc(): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            if (!this.statusBarItem) {
-                this.activate();
+    public async updateCalc(): Promise<void> {
+        if (!this.statusBarItem) {
+            this.activate();
+        }
+        if (this.statusBarItem) {
+            const statusBarItemConst = this.statusBarItem;
+            // Get the current text editor
+            let editor = window.activeTextEditor;
+            if (!editor) {
+                this.statusBarItem.hide();
+                return;
             }
-            if (this.statusBarItem) {
-                const statusBarItemConst = this.statusBarItem;
-                // Get the current text editor
-                let editor = window.activeTextEditor;
-                if (!editor) {
-                    this.statusBarItem.hide();
-                    resolve();
-                    return;
-                }
-                let docContent = editor.document.getText(editor.selection);
-                // Replace hex / bin
-                if (docContent.length > 0) {
-                    let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
-                    await definitionHandler.evaluateFormula(docContent).then(result => {
-                        // Update the status bar
-                        statusBarItemConst.text = this.formatResult(docContent, result);
-                        statusBarItemConst.show();
-                    }).catch(err => {
-                        statusBarItemConst.hide();
-                    });
-                }
+            let docContent = editor.document.getText(editor.selection);
+            // Replace hex / bin
+            if (docContent.length > 0) {
+                let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                await definitionHandler.evaluateFormula(docContent).then(result => {
+                    // Update the status bar
+                    statusBarItemConst.text = this.formatResult(docContent, result);
+                    statusBarItemConst.show();
+                }).catch(err => {
+                    statusBarItemConst.hide();
+                });
             }
-            resolve();
-        });
+        }
     }
 
     /**
@@ -68,16 +64,10 @@ export class CalcComponent {
      * Performs the calculation
      * @param expression Expression to calculate
      */
-    public calculate(expression: string): Promise<number> {
-        return new Promise((resolve, reject) => {
-            // call the function to calculate the expression
-            let dHnd = ExtensionState.getCurrent().getDefinitionHandler();
-            dHnd.evaluateFormula(expression).then(result => {
-                resolve(result);
-            }).catch(err => {
-                reject(err);
-            });
-        });
+    public async calculate(expression: string): Promise<number> {
+        // call the function to calculate the expression
+        let dHnd = ExtensionState.getCurrent().getDefinitionHandler();
+        return await dHnd.evaluateFormula(expression);
     }
 
     /**
@@ -86,45 +76,34 @@ export class CalcComponent {
      * @param replace Replaces the selection
      * @return Thenable object
      */
-    private iterateSelections(all: boolean, replace: boolean): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            // Get the current text editor
-            let editor = window.activeTextEditor;
-            if (editor === undefined) {
-                reject(new Error("Cannot access to editor"));
-            } else {
-                const document = editor.document;
-                const selections = editor.selections;
-                await editor.edit(async (edit) => {
-                    for (const selection of selections) {
-                        if (selection.isEmpty && !all) {
-                            continue;
-                        }
-                        const text = document.getText(selection);
-                        try {
-                            let value = await this.calculate(text).catch(err => {
-                                reject(err);
-                                return;
-                            });
-                            if (value !== undefined) {
-                                let result: string;
-                                if (replace) {
-                                    result = this.formatResult(null, value);
-                                    edit.replace(selection, result);
-                                } else {
-                                    result = this.formatResult(text, value);
-                                    window.showInformationMessage(result);
-                                }
-                            }
-                        } catch (ex) {
-                            reject(ex);
-                            return;
+    private async iterateSelections(all: boolean, replace: boolean): Promise<void> {
+        // Get the current text editor
+        let editor = window.activeTextEditor;
+        if (editor === undefined) {
+            throw new Error("Cannot access to editor");
+        } else {
+            const document = editor.document;
+            const selections = editor.selections;
+            await editor.edit(async (edit) => {
+                for (const selection of selections) {
+                    if (selection.isEmpty && !all) {
+                        continue;
+                    }
+                    const text = document.getText(selection);
+                    let value = await this.calculate(text);
+                    if (value !== undefined) {
+                        let result: string;
+                        if (replace) {
+                            result = this.formatResult(null, value);
+                            edit.replace(selection, result);
+                        } else {
+                            result = this.formatResult(text, value);
+                            window.showInformationMessage(result);
                         }
                     }
-                });
-                resolve();
-            }
-        });
+                }
+            });
+        }
     }
 
     /**
@@ -163,71 +142,61 @@ export class CalcComponent {
      * Applies a formula to selected numerical values and generates edits
      */
     public async getReplaceValuesForFormula(formula: string, document: TextDocument, selections: Selection[]): Promise<Array<[string, Range]>> {
-        return new Promise(async (resolve, reject) => {
-            let numberParser = new NumberParser();
-            let replaceValues = new Array<[string, Range]>();
-            for (const selection of selections) {
-                if (!selection.isEmpty) {
-                    for (let lineIdx = selection.start.line; lineIdx < selection.end.line + 1; lineIdx++) {
-                        const line = document.lineAt(lineIdx);
-                        let asmLine = new ASMLine(line.text, line);
-                        let numbers = asmLine.getNumbersFromData();
-                        for (let i = numbers.length - 1; i >= 0; i--) {
-                            let [value, range] = numbers[i];
-                            if (selection.contains(range)) {
-                                let result = numberParser.parseWithType(value);
-                                if (result !== null) {
-                                    let num = result[0];
-                                    let tp = result[1];
-                                    let modifiedFormula = formula.replace('x', num.toString());
-                                    try {
-                                        let resultValue = await this.calculate(modifiedFormula);
-                                        replaceValues.push([numberParser.numberToTypedString(resultValue, tp), range]);
-                                    } catch (err) {
-                                        reject(err);
-                                    }
-                                }
+        let numberParser = new NumberParser();
+        let replaceValues = new Array<[string, Range]>();
+        for (const selection of selections) {
+            if (!selection.isEmpty) {
+                for (let lineIdx = selection.start.line; lineIdx < selection.end.line + 1; lineIdx++) {
+                    const line = document.lineAt(lineIdx);
+                    let asmLine = new ASMLine(line.text, line);
+                    let numbers = asmLine.getNumbersFromData();
+                    for (let i = numbers.length - 1; i >= 0; i--) {
+                        let [value, range] = numbers[i];
+                        if (selection.contains(range)) {
+                            let result = numberParser.parseWithType(value);
+                            if (result !== null) {
+                                let num = result[0];
+                                let tp = result[1];
+                                let modifiedFormula = formula.replace('x', num.toString());
+                                let resultValue = await this.calculate(modifiedFormula);
+                                replaceValues.push([numberParser.numberToTypedString(resultValue, tp), range]);
                             }
                         }
                     }
                 }
             }
-            resolve(replaceValues);
-        });
+        }
+        return replaceValues;
     }
 
     /**
      * Applies a formula to selected numerical values
      */
-    public applyFormulaToSelections(formula?: string): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            let selectedFormula: string | undefined;
-            if (!formula) {
-                selectedFormula = await window.showInputBox({
-                    prompt: "Enter a formula to apply : 'x' is the variable",
-                    placeHolder: "Formula"
+    public async applyFormulaToSelections(formula?: string): Promise<void> {
+        let selectedFormula: string | undefined;
+        if (!formula) {
+            selectedFormula = await window.showInputBox({
+                prompt: "Enter a formula to apply : 'x' is the variable",
+                placeHolder: "Formula"
+            });
+        } else {
+            selectedFormula = formula;
+        }
+        if (selectedFormula) {
+            // Get the current text editor
+            const editor = window.activeTextEditor;
+            if (editor !== undefined) {
+                const document = editor.document;
+                const selections = editor.selections;
+                // calculate all edits
+                let replaceValues = await this.getReplaceValuesForFormula(selectedFormula, document, selections);
+                await editor.edit((edit) => {
+                    for (let [value, range] of replaceValues) {
+                        edit.replace(range, value);
+                    }
                 });
-            } else {
-                selectedFormula = formula;
             }
-            if (selectedFormula) {
-                // Get the current text editor
-                const editor = window.activeTextEditor;
-                if (editor !== undefined) {
-                    const document = editor.document;
-                    const selections = editor.selections;
-                    // calculate all edits
-                    await this.getReplaceValuesForFormula(selectedFormula, document, selections).then(async (replaceValues) => {
-                        await editor.edit(async (edit) => {
-                            for (let [value, range] of replaceValues) {
-                                edit.replace(range, value);
-                            }
-                        });
-                    });
-                }
-            }
-            resolve();
-        });
+        }
     }
 
     /**

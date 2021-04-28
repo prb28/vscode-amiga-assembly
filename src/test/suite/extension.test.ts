@@ -13,6 +13,7 @@ import { ExtensionState } from '../../extension';
 import { Capstone } from '../../capstone';
 import { IFFViewerPanel } from '../../iffImageViewer';
 import { fail } from 'assert';
+import { ConfigurationHelper } from '../../configurationHelper';
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
@@ -77,9 +78,9 @@ describe("Global Extension Tests", function () {
             if (editor) {
                 // Editor opened
                 // Call the formatting command
-                await vscode.workspace.getConfiguration('amiga-assembly', uri).update('format.useTabs', true, true);
+                await ConfigurationHelper.getDefaultConfiguration(uri).update('format.useTabs', true, true);
                 await vscode.commands.executeCommand("editor.action.formatDocument");
-                await vscode.workspace.getConfiguration('amiga-assembly', uri).update('format.useTabs', false, true);
+                await ConfigurationHelper.getDefaultConfiguration(uri).update('format.useTabs', false, true);
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
         }).timeout(defaultTimeout);

@@ -20,7 +20,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @return Hover results
      */
     public async provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | null> {
-        let configuration = vscode.workspace.getConfiguration('amiga-assembly', document.uri);
+        let configuration = ConfigurationHelper.getDefaultConfiguration(document.uri);
         let numberDisplayFormat = ConfigurationHelper.retrieveStringProperty(configuration, 'hover.numberDisplayFormat', M68kHoverProvider.DEFAULT_NUMBER_DISPLAY_FORMAT);
         // Parse the line
         let line = document.lineAt(position.line);

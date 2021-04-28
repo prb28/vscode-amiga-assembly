@@ -4,6 +4,7 @@ import * as path from 'path';
 import { VASMCompiler } from "./vasm";
 import { FileProxy } from "./fsProxy";
 import { ExtensionState } from "./extension";
+import { ConfigurationHelper } from "./configurationHelper";
 
 /**
  * Class to Generate an ADF file
@@ -42,8 +43,7 @@ export class ADFTools {
      * @param cancellationToken Token to cancel the process
      */
     public async createBootableADFDisk(compiler?: VASMCompiler, cancellationToken?: CancellationToken): Promise<void> {
-        const rootConf = workspace.getConfiguration('amiga-assembly', null);
-        const conf: any = rootConf.get('adfgenerator');
+        const conf: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('adfgenerator');
         if (conf) {
             this.setToolsRootPath(conf.ADFToolsParentDir);
             let filename = conf.outputADFFile;
@@ -52,7 +52,7 @@ export class ADFTools {
                 rootSourceDir = conf.sourceRootDir;
             } else {
                 // retrieve VLINK conf
-                const confVLINK: any = rootConf.get('vlink');
+                const confVLINK: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('vlink');
                 if (confVLINK && confVLINK.exefilename) {
                     rootSourceDir = path.parse(confVLINK.exefilename).dir;
                 } else {
@@ -275,8 +275,7 @@ export class ADFTools {
      * Create a new ADFTools class with vscode configuration
      */
     public static create(): ADFTools {
-        const rootConf = workspace.getConfiguration('amiga-assembly', null);
-        const conf: any = rootConf.get('adfgenerator');
+        const conf: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('adfgenerator');
         let rootToolsDir = "";
         if (conf && conf.ADFToolsParentDir) {
             rootToolsDir = conf.ADFToolsParentDir;

@@ -45,7 +45,7 @@ export class DocumentFormatterConfiguration {
      * @return new configuration
      */
     public static create(documentUri: vscode.Uri, tabSize: number): DocumentFormatterConfiguration {
-        let configuration = vscode.workspace.getConfiguration('amiga-assembly', documentUri);
+        let configuration = ConfigurationHelper.getDefaultConfiguration(documentUri);
         let labelToInstructionDistance = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.labelToInstructionDistance', 2);
         let instructionToDataDistance = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.instructionToDataDistance', 4);
         let dataToCommentsDistance = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.dataToCommentsDistance', 4);

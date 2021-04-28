@@ -19,7 +19,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
-                "--disable-extensions",
+                //                "--disable-extensions",
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
             "outFiles": [

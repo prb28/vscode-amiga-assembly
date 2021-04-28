@@ -8,7 +8,7 @@ import { basename } from 'path';
 import { GdbProxy } from './gdbProxy';
 import { Segment, GdbHaltStatus } from './gdbProxyCore';
 import { ExecutorHelper } from './execHelper';
-import { CancellationTokenSource, workspace, window, Uri } from 'vscode';
+import { CancellationTokenSource, window, Uri } from 'vscode';
 import { DebugInfo } from './debugInfo';
 import { Capstone } from './capstone';
 import { DebugVariableResolver } from './debugVariableResolver';
@@ -20,6 +20,7 @@ import { BreakpointManager, GdbBreakpoint } from './breakpointManager';
 import { CopperDisassembler } from './copperDisassembler';
 import { FileProxy } from './fsProxy';
 import { VariableDisplayFormat, VariableDisplayFormatRequest, VariableFormatter } from './variableFormatter';
+import { ConfigurationHelper } from './configurationHelper';
 
 /**
  * This interface describes the mock-debug specific launch attributes
@@ -278,7 +279,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         response.body.supportsSetVariable = true;
 
         // Sets the capstone path
-        let conf: any = workspace.getConfiguration('amiga-assembly', null).get('cstool');
+        let conf: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('cstool');
         if (!this.capstone && conf && (conf.length > 5)) {
             this.capstone = new Capstone(conf);
         }

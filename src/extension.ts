@@ -30,6 +30,8 @@ import { FileProxy } from './fsProxy';
 import { WinUAEDebugSession } from './winUAEDebug';
 import { AmigaBuildTaskProvider } from './customTaskProvider';
 import { VariableDisplayFormat, VariableDisplayFormatRequest } from './variableFormatter';
+import { BinariesManager } from './nativeBinariesManager';
+import { ConfigurationHelper } from './configurationHelper';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
@@ -51,7 +53,6 @@ class SimpleConsoleTransport extends TransportStream {
 }
 
 export class ExtensionState {
-    public static readonly CONFIGURATION_NAME = 'amiga-assembly';
     private compiler: VASMCompiler | undefined;
     private errorDiagnosticCollection: vscode.DiagnosticCollection | undefined;
     private warningDiagnosticCollection: vscode.DiagnosticCollection | undefined;
@@ -67,6 +68,8 @@ export class ExtensionState {
     private outputChannel: vscode.OutputChannel;
     private buildDir: FileProxy | undefined;
     private tmpDir: FileProxy | undefined;
+    private context: vscode.ExtensionContext | undefined;
+    private version: string;
 
     private extensionPath: string = path.join(__dirname, "..");
 
@@ -78,9 +81,10 @@ export class ExtensionState {
             transport.level = level;
         }
         winston.add(transport);
+        this.version = vscode.extensions.getExtension('prb28.amiga-assembly')?.packageJSON.version;
     }
     public getLogLevel(): string | undefined {
-        return vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('logLevel');
+        return ConfigurationHelper.retrieveStringPropertyInDefaultConf('logLevel');
     }
     public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
         if (this.errorDiagnosticCollection === undefined) {
@@ -155,15 +159,18 @@ export class ExtensionState {
         }
         return this.dataGenerator;
     }
-    public getDocumentationManager(): Promise<DocumentationManager> {
-        return new Promise(async (resolve, reject) => {
-            if (this.documentationManager === undefined) {
-                this.documentationManager = new DocumentationManager(this.extensionPath);
-                await this.documentationManager.load();
-            }
-            resolve(this.documentationManager);
-        });
+    public async getDocumentationManager(): Promise<DocumentationManager> {
+        if (this.documentationManager === undefined) {
+            this.documentationManager = new DocumentationManager(this.extensionPath);
+            await this.documentationManager.load();
+        }
+        return this.documentationManager;
     }
+
+    public getBinariesManager(): BinariesManager {
+        return new BinariesManager(this.extensionPath, "binaries");
+    }
+
     public setExtensionPath(extensionPath: string) {
         this.extensionPath = extensionPath;
         // reset language
@@ -172,15 +179,13 @@ export class ExtensionState {
     public getExtensionPath(): string {
         return this.extensionPath;
     }
-    public getLanguage(): Promise<M68kLanguage> {
+    public async getLanguage(): Promise<M68kLanguage> {
         if (this.language === undefined) {
-            return new Promise(async (resolve, _reject) => {
-                this.language = new M68kLanguage(this.extensionPath);
-                await this.language.load();
-                resolve(this.language);
-            });
+            this.language = new M68kLanguage(this.extensionPath);
+            await this.language.load();
+            return this.language;
         }
-        return Promise.resolve(this.language);
+        return this.language;
     }
     public getOutputChannel(): vscode.OutputChannel {
         return this.outputChannel;
@@ -219,7 +224,7 @@ export class ExtensionState {
      * Returns the temporary directory
      */
     public getTmpDir(): FileProxy {
-        let tmpDirPath: any = vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('tmpDir');
+        let tmpDirPath: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('tmpDir');
         if (tmpDirPath) {
             this.tmpDir = this.getPathOrRelative(tmpDirPath);
         } else {
@@ -232,7 +237,7 @@ export class ExtensionState {
      * Returns the build directory
      */
     public getBuildDir(): FileProxy {
-        let buildDirPath: any = vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('buildDir');
+        let buildDirPath: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('buildDir');
         if (buildDirPath) {
             this.buildDir = this.getPathOrRelative(buildDirPath);
         } else {
@@ -249,6 +254,27 @@ export class ExtensionState {
             return vscode.workspace.workspaceFolders[0].uri;
         }
         return null;
+    }
+
+    /**
+     * Set the extension context
+     */
+    setExtensionContext(context: vscode.ExtensionContext) {
+        this.context = context;
+    }
+
+    /**
+     * Get the extension context
+     */
+    getExtensionContext(): vscode.ExtensionContext | undefined {
+        return this.context;
+    }
+
+    /**
+     * Get the extension version
+     */
+    getExtensionVersion(): string {
+        return this.version;
     }
 }
 
@@ -522,11 +548,43 @@ export async function activate(context: vscode.ExtensionContext) {
             IFFViewerPanel.create(context.extensionPath, imageUri);
         })
     );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('amiga-assembly.download-binaries', async () => {
+            let binariesManager = state.getBinariesManager();
+            let ctx = state.getExtensionContext();
+            let version = state.getExtensionVersion();
+            if (ctx) {
+                try {
+                    ConfigurationHelper.setBinariesPath((await binariesManager.downloadBinaries(ctx, version)).fsPath);
+                } catch (error) {
+                    vscode.window.showErrorMessage(error.message);
+                }
+            }
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('amiga-assembly.clean-downloaded-binaries', async () => {
+            let binariesManager = state.getBinariesManager();
+            let ctx = state.getExtensionContext();
+            if (ctx) {
+                try {
+                    await binariesManager.deleteAllDownloadedFiles(ctx);
+                } catch (error) {
+                    vscode.window.showErrorMessage(error.message);
+                }
+            }
+        })
+    );
+    state.setExtensionContext(context);
     let api = {
         getState(): ExtensionState {
             return state;
         }
     };
+
+    if (ConfigurationHelper.retrieveBooleanProperty(ConfigurationHelper.getDefaultConfiguration(null), 'downloadBinaries', true)) {
+        await vscode.commands.executeCommand('amiga-assembly.download-binaries');
+    }
     return api;
 }
 

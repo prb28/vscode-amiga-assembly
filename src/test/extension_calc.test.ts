@@ -123,15 +123,15 @@ describe("Global Extension Tests", function () {
                 edit.insert(newFile, new vscode.Position(0, 0), " dc.b $1, #10, #-1, $a, %1010, @1\n");
                 edit.insert(newFile, new vscode.Position(1, 0), " move.l #$80,d7\n");
                 edit.insert(newFile, new vscode.Position(2, 0), " dc.b $10,$21,$10,$41,$10,$61\n");
-                await vscode.workspace.applyEdit(edit).then(async (success) => {
-                    if (success) {
-                        await vscode.window.showTextDocument(document);
-                        await vscode.commands.executeCommand("cursorMove", { to: 'right', by: 'character', value: 12, select: true });
-                        await vscode.commands.executeCommand("cursorMove", { to: 'down', by: 'line', value: 1, select: true });
-                    } else {
-                        expect.fail("Edit not successful");
-                    }
-                });
+                let success = await vscode.workspace.applyEdit(edit);
+                if (success) {
+                    await vscode.window.showTextDocument(document);
+                    await vscode.commands.executeCommand("cursorMove", { to: 'up', by: 'line', value: 3, select: false });
+                    await vscode.commands.executeCommand("cursorMove", { to: 'right', by: 'character', value: 12, select: true });
+                    await vscode.commands.executeCommand("cursorMove", { to: 'down', by: 'line', value: 1, select: true });
+                } else {
+                    expect.fail("Edit not successful");
+                }
             });
         });
         it("Should apply a formula to a selection and replace with the result", async () => {

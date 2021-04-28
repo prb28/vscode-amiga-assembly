@@ -1,6 +1,17 @@
 import * as vscode from 'vscode';
 
 export class ConfigurationHelper {
+    public static readonly CONFIGURATION_NAME = 'amiga-assembly';
+    public static readonly BINARIES_PATH_KEY = 'binDir';
+
+    /**
+     * Set the current binaries path
+     * @param path Path of the downloaded binaries
+     */
+    public static setBinariesPath(path: string) {
+        ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, path);
+    }
+
     /**
      * Retrieve a configuration value
      * @param configuration Configuration
@@ -47,6 +58,70 @@ export class ConfigurationHelper {
         let confValue = configuration.get(key);
         if (confValue) {
             value = Boolean(confValue);
+        }
+        return value;
+    }
+
+    /**
+     * Update the configuration if it is empty
+     * @param key Keyword for property
+     * @param newValue Value to update
+     */
+    public static updateProperty(key: string, newValue: string): void {
+        ConfigurationHelper.getDefaultConfiguration(null).update(key, newValue);
+    }
+
+    /**
+     * Retrieves the configuration
+     * @param documentUri Uri of the document to select the vscode settings
+     * @returns new configuration
+     */
+    public static getDefaultConfiguration(documentUri: vscode.Uri | null): vscode.WorkspaceConfiguration {
+        return vscode.workspace.getConfiguration(ConfigurationHelper.CONFIGURATION_NAME, documentUri);
+    }
+
+    /**
+     * Retrieve a configuration value as string
+     * @param key Keyword for property
+     * @return Value or undefined
+     */
+    public static retrieveStringPropertyInDefaultConf(key: string): string | undefined {
+        let configuration = ConfigurationHelper.getDefaultConfiguration(null);
+        let confValue = configuration.get<string>(key);
+        if (confValue) {
+            return ConfigurationHelper.replaceBinDirVariable(confValue);
+        }
+        return undefined;
+    }
+
+    /**
+     * Retrieve a configuration value as string
+     * @param key Keyword for property
+     * @return Value or undefined
+     */
+    public static retrieveObjectPropertyInDefaultConf(key: string): any | undefined {
+        let conf: any = ConfigurationHelper.getDefaultConfiguration(null).get(key);
+        // replace the binary path setting
+        if (conf) {
+            if ((key === 'vlink') || (key === 'vasm')) {
+                conf.file = ConfigurationHelper.replaceBinDirVariable(conf.file);
+            } else if (key === 'adfgenerator') {
+                conf.ADFToolsParentDir = ConfigurationHelper.replaceBinDirVariable(conf.ADFToolsParentDir);
+            }
+        }
+        return conf;
+    }
+
+    /**
+     * 
+     * @param value Replaces a variable with the binaries directory path
+     * @returns Replaced value or undefined
+     */
+    protected static replaceBinDirVariable(value: string): string {
+        let configuration = ConfigurationHelper.getDefaultConfiguration(null);
+        let binariesPath = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
+        if (binariesPath) {
+            return value.replace("${config:amiga-assembly.binDir}", binariesPath);
         }
         return value;
     }

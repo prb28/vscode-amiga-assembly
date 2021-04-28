@@ -100,7 +100,7 @@ export class DocumentationInstructionsManager extends DocumentationMDFileFolderM
 }
 
 /**
- * Class representing an intruction documentation
+ * Class representing an instruction documentation
  */
 export class DocumentationInstruction extends DocumentationElement {
     filename: string;
