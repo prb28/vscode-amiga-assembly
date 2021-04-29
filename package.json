@@ -223,8 +223,8 @@
                         }
                     },
                     "default": {
-                        "ADFToolsParentDir": "bin",
-                        "sourceRootDir": "",
+                        "ADFToolsParentDir": "${config:amiga-assembly.binDir}",
+                        "sourceRootDir": "uae/dh0",
                         "outputADFFile": "./build/disk.adf",
                         "includes": "**/*",
                         "excludes": "**/.*",
@@ -263,8 +263,8 @@
                         }
                     },
                     "default": {
-                        "enabled": false,
-                        "file": "my/path/to/vasmm68k_mot",
+                        "enabled": true,
+                        "file": "${config:amiga-assembly.binDir}/vasmm68k_mot",
                         "options": [
                             "-m68000",
                             "-Fhunk",
@@ -312,11 +312,11 @@
                         }
                     },
                     "default": {
-                        "enabled": false,
-                        "file": "my/path/to/vlink",
+                        "enabled": true,
+                        "file": "${config:amiga-assembly.binDir}/vlink",
                         "includes": "**/*.{s,S,asm,ASM}",
                         "excludes": "",
-                        "exefilename": "a.out",
+                        "exefilename": "../uae/dh0/a.out",
                         "options": [
                             "-bamigahunk",
                             "-Bstatic"
@@ -651,15 +651,15 @@
                             "name": "Run",
                             "emulator": "F/fs-uae",
                             "windows": {
-                                "emulator": "${config:amiga-assembly.binDir}//fs-uae.exe"
+                                "emulator": "${config:amiga-assembly.binDir}/fs-uae.exe"
                             },
                             "osx": {
-                                "emulator": "${config:amiga-assembly.binDir}//fs-uae"
+                                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
                             },
                             "linux": {
-                                "emulator": "${config:amiga-assembly.binDir}//fs-uae"
+                                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
                             },
-                            "emulatorWorkingDir": "${config:amiga-assembly.binDir}/",
+                            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
                             "options": [
                                 "--chip_memory=1024",
                                 "--hard_drive_0=${workspaceFolder}/uae/dh0",
@@ -677,8 +677,8 @@
                             "type": "uae-run",
                             "request": "launch",
                             "name": "Run",
-                            "emulator": "${config:amiga-assembly.binDir}//winuae.exe",
-                            "emulatorWorkingDir": "${config:amiga-assembly.binDir}/",
+                            "emulator": "${config:amiga-assembly.binDir}/winuae.exe",
+                            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
                             "options": [
                                 "-s",
                                 "quickstart=a500,1",
@@ -788,8 +788,8 @@
                         "serverName": "localhost",
                         "serverPort": 2345,
                         "startEmulator": true,
-                        "emulator": "${config:amiga-assembly.binDir}//winuae.exe",
-                        "emulatorWorkingDir": "${config:amiga-assembly.binDir}/",
+                        "emulator": "${config:amiga-assembly.binDir}/winuae.exe",
+                        "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
                         "program": "${workspaceFolder}/${command:AskForProgramName}",
                         "options": [
                             "-s",

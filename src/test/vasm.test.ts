@@ -273,7 +273,7 @@ describe("VASM Tests", function () {
         "-bamigahunk",
         "-Bstatic",
         "-o",
-        buildPath + "a.out",
+        "/workdir/uae/dh0/".replace(/\/+/g, Path.sep) + "a.out",
         buildPath + "file1.o",
         buildPath + "file2.o"
       ]);

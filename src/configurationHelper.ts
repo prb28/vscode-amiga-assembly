@@ -8,8 +8,8 @@ export class ConfigurationHelper {
      * Set the current binaries path
      * @param path Path of the downloaded binaries
      */
-    public static setBinariesPath(path: string) {
-        ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, path);
+    public static setBinariesPath(path: string): Thenable<void> {
+        return ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, path);
     }
 
     /**
@@ -67,8 +67,8 @@ export class ConfigurationHelper {
      * @param key Keyword for property
      * @param newValue Value to update
      */
-    public static updateProperty(key: string, newValue: string): void {
-        ConfigurationHelper.getDefaultConfiguration(null).update(key, newValue);
+    public static updateProperty(key: string, newValue: string): Thenable<void> {
+        return ConfigurationHelper.getDefaultConfiguration(null).update(key, newValue);
     }
 
     /**

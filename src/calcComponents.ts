@@ -84,25 +84,25 @@ export class CalcComponent {
         } else {
             const document = editor.document;
             const selections = editor.selections;
-            await editor.edit(async (edit) => {
-                for (const selection of selections) {
-                    if (selection.isEmpty && !all) {
-                        continue;
-                    }
-                    const text = document.getText(selection);
-                    let value = await this.calculate(text);
-                    if (value !== undefined) {
-                        let result: string;
-                        if (replace) {
-                            result = this.formatResult(null, value);
+            for (const selection of selections) {
+                if (selection.isEmpty && !all) {
+                    continue;
+                }
+                const text = document.getText(selection);
+                const value = await this.calculate(text);
+                if (value !== undefined) {
+                    let result: string;
+                    if (replace) {
+                        result = this.formatResult(null, value);
+                        await editor.edit((edit) => {
                             edit.replace(selection, result);
-                        } else {
-                            result = this.formatResult(text, value);
-                            window.showInformationMessage(result);
-                        }
+                        });
+                    } else {
+                        result = this.formatResult(text, value);
+                        window.showInformationMessage(result);
                     }
                 }
-            });
+            }
         }
     }
 

@@ -37,9 +37,12 @@ describe("Global Extension Tests", function () {
             // Set the editor contents
             const editor = vscode.window.activeTextEditor;
             if (editor) {
-                await editor.edit(edit => {
-                    edit.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 3)));
-                    edit.insert(new vscode.Position(0, 0), "3+2");
+                await new Promise<void>((resolve) => {
+                    editor.edit(edit => {
+                        edit.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 3)));
+                        edit.insert(new vscode.Position(0, 0), "3+2");
+                        resolve();
+                    });
                 });
                 await vscode.commands.executeCommand("cursorMove", { to: 'left', by: 'character', value: 3, select: true });
             } else {
@@ -99,10 +102,11 @@ describe("Global Extension Tests", function () {
             }
         });
         it("Should evaluate a selection and replace with the result", async () => {
+            this.timeout(60000);
             const editor = vscode.window.activeTextEditor;
             if (editor) {
                 await vscode.commands.executeCommand("amiga-assembly.evaluate-selection-replace");
-                expect(editor.document.getText()).to.be.equal("3+2");
+                expect(editor.document.getText()).to.be.equal("#5/$5/%101");
             } else {
                 expect.fail("Editor not available");
             }
