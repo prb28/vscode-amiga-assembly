@@ -106,7 +106,7 @@ export class ADFTools {
             }
             if (sourceFullPath) {
                 // Call the build command
-                let results = await compiler.buildFile(sourceFullPath, false, true, true);
+                let results = await compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, sourceFullPath, true, true);
                 if (results && results[0]) {
                     let bootBlockDataFilename = results[0];
                     bootBlockFilename = bootBlockDataFilename.replace(".o", ".bb");

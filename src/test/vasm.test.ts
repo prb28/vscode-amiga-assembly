@@ -13,7 +13,7 @@ import {
   mock,
   instance
 } from "ts-mockito/lib/ts-mockito";
-import { VASMCompiler, VASMParser, VASMController } from "../vasm";
+import { VASMCompiler, VASMParser } from "../vasm";
 import { ExecutorHelper, ICheckResult } from "../execHelper";
 import { DummyTextDocument } from "./dummy";
 import { ExtensionState } from "../extension";
@@ -100,7 +100,7 @@ describe("VASM Tests", function () {
     });
     it("Should call the compiler command", async function () {
       let fileUri = vscode.Uri.file("file1.s");
-      await compiler.buildFile(fileUri, false, false);
+      await compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false);
       verify(
         executorCompiler.runTool(
           anything(),
@@ -290,7 +290,7 @@ describe("VASM Tests", function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(true);
       let fileUri = vscode.Uri.file("file1.s");
       return compiler
-        .buildFile(fileUri, false, false)
+        .buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false)
         .then(() => {
           expect.fail("Should reject");
         })
@@ -302,7 +302,7 @@ describe("VASM Tests", function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);
       when(spiedCompiler.disabledInConf(anything())).thenReturn(false);
       let fileUri = vscode.Uri.file("file1.s");
-      await expect(compiler.buildFile(fileUri, false, false)).to.be.rejectedWith(
+      await expect(compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false)).to.be.rejectedWith(
         VASMCompiler.CONFIGURE_VASM_ERROR
       );
     });
@@ -310,7 +310,7 @@ describe("VASM Tests", function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(true);
       when(spiedCompiler.disabledInConf(anything())).thenReturn(true);
       let fileUri = vscode.Uri.file("file1.s");
-      await expect(compiler.buildFile(fileUri, false, false)).to.be.fulfilled;
+      await expect(compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false)).to.be.fulfilled;
     });
     it("Should return an error on build workspace if the compiler is not configured", async function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);
@@ -373,24 +373,6 @@ describe("VASM Tests", function () {
         return Promise.resolve();
       });
     });
-    it("Should get an error when cleaning the workspace", async function () {
-      let state = ExtensionState.getCurrent();
-      let spiedOutputChannel = spy(state.getOutputChannel());
-      spiedCompiler = spy(compiler);
-      when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
-        vscode.Uri.parse("file:///workdir")
-      );
-      when(buildDirMock.mkdir()).thenResolve();
-      when(spiedCompiler.mayCompile(anything())).thenReturn(false);
-      when(spiedCompiler.disabledInConf(anything())).thenReturn(false);
-      when(buildDirMock.delete()).thenResolve();
-      await expect(compiler.cleanWorkspace()).to.be.rejectedWith(
-        VASMCompiler.CONFIGURE_VASM_ERROR
-      );
-      verify(buildDirMock.delete()).never();
-      verify(spiedOutputChannel.appendLine(anyString())).once();
-      resetCalls(spiedOutputChannel);
-    });
     it("Should not get an error when cleaning the workspace and vasm disabled", async function () {
       spiedCompiler = spy(compiler);
       when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
@@ -401,35 +383,6 @@ describe("VASM Tests", function () {
       when(spiedCompiler.disabledInConf(anything())).thenReturn(true);
       when(buildDirMock.delete()).thenResolve();
       await expect(compiler.cleanWorkspace()).to.be.fulfilled;
-    });
-  });
-  context("VASMController", function () {
-    it("Should build the current document on save", async () => {
-      let compiler = new VASMCompiler();
-      const spiedCompiler = spy(compiler);
-      let state = ExtensionState.getCurrent();
-      const spiedStatus = spy(state.getStatusManager());
-      let controller = new VASMController(compiler);
-      let document = new DummyTextDocument();
-
-      when(spiedCompiler.buildDocument(anything(), anything())).thenCall(() => {
-        return Promise.resolve();
-      });
-      await controller.onSaveDocument(document);
-      verify(spiedCompiler.buildDocument(anything(), anything())).once();
-      verify(spiedStatus.onDefault()).once();
-      verify(spiedStatus.onSuccess()).never(); // On success is only for the workspace
-      // Generating a build error
-      resetCalls(spiedCompiler);
-      resetCalls(spiedStatus);
-      const error = new Error("nope");
-      when(spiedCompiler.buildDocument(anything(), anything())).thenCall(() => {
-        return Promise.reject(error);
-      });
-      await controller.onSaveDocument(document);
-      verify(spiedCompiler.buildDocument(anything(), anything())).once();
-      verify(spiedStatus.onDefault()).once();
-      verify(spiedStatus.onError("nope")).once();
     });
   });
   context("VASMParser", function () {

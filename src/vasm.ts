@@ -1,21 +1,28 @@
 import {
   window,
   workspace,
-  Disposable,
   DiagnosticSeverity,
   TextDocument,
   Uri,
-  WorkspaceConfiguration,
   EventEmitter
 } from "vscode";
 import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import { ExtensionState } from "./extension";
-import { VLINKLinker } from "./vlink";
+import { VlinkBuildProperties, VLINKLinker } from "./vlink";
 import { AsmONE } from "./asmONE";
 import * as path from "path";
 import * as winston from 'winston';
 import { FileProxy } from "./fsProxy";
 import { ConfigurationHelper } from "./configurationHelper";
+
+/**
+ * Definition of the vasm build properties
+ */
+export interface VasmBuildProperties {
+  enabled: boolean;
+  command: string;
+  args: Array<string>;
+}
 
 /**
  * Class to manage the VASM compiler
@@ -24,6 +31,15 @@ export class VASMCompiler {
   static readonly CONFIGURE_VASM_ERROR = new Error(
     "Please configure VASM compiler in the Workspace"
   );
+  static readonly DEFAULT_BUILD_CONFIGURATION = <VasmBuildProperties>{
+    enabled: true,
+    command: "${config:amiga-assembly.binDir}/vasmm68k_mot",
+    args: [
+      "-m68000",
+      "-Fhunk",
+      "-linedebug"
+    ]
+  };
   executor: ExecutorHelper;
   parser: VASMParser;
   linker: VLINKLinker;
@@ -38,13 +54,15 @@ export class VASMCompiler {
 
   /**
    * Builds the file in the current editor
+   * @param conf Configuration
+   * @param logEmitter Emitter listening to the logs
    */
-  public async buildCurrentEditorFile(): Promise<void> {
+  public async buildCurrentEditorFile(vasmConf?: VasmBuildProperties, logEmitter?: EventEmitter<string>): Promise<void> {
     const editor = window.activeTextEditor;
     if (editor) {
-      let conf = workspace.getConfiguration("amiga-assembly.vasm");
+      let conf = this.getConfiguration("vasm", vasmConf);
       if (this.mayCompile(conf)) {
-        await this.buildDocument(editor.document, true);
+        await this.buildDocument(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, editor.document, true, logEmitter);
       } else {
         throw new Error("VASM compilation is disabled in the configuration");
       }
@@ -55,11 +73,13 @@ export class VASMCompiler {
 
   /**
    * Build the selected document
+   * @param conf Configuration
    * @param document The document to build
    * @param temporaryBuild If true the build will be done in the tmp dir
+   * @param logEmitter Emitter listening to the logs
    */
-  public async buildDocument(document: TextDocument, temporaryBuild: boolean, logEmitter?: EventEmitter<string>): Promise<ICheckResult[]> {
-    let [, errors] = await this.buildFile(document.uri, false, temporaryBuild, undefined, logEmitter);
+  public async buildDocument(conf: VasmBuildProperties, document: TextDocument, temporaryBuild: boolean, logEmitter?: EventEmitter<string>): Promise<ICheckResult[]> {
+    let [, errors] = await this.buildFile(conf, document.uri, temporaryBuild, undefined, logEmitter);
     this.processGlobalErrors(document, errors);
     this.executor.handleDiagnosticErrors(document, errors, DiagnosticSeverity.Error);
     if (errors) {
@@ -101,21 +121,28 @@ export class VASMCompiler {
     }
   }
 
-  public async buildWorkspace(logEmitter?: EventEmitter<string>): Promise<void> {
+  private getConfiguration(key: string, properties?: any): any {
+    if (properties) {
+      return properties;
+    } else if (key === "vasm") {
+      return VASMCompiler.DEFAULT_BUILD_CONFIGURATION;
+    } else if (key === "vlink") {
+      return VLINKLinker.DEFAULT_BUILD_CONFIGURATION;
+    }
+    return properties;
+  }
+
+  public async buildWorkspace(logEmitter?: EventEmitter<string>, vasmBuildProperties?: VasmBuildProperties, vlinkBuildProperties?: VlinkBuildProperties): Promise<void> {
     let state = ExtensionState.getCurrent();
     let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
     let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
     errorDiagnosticCollection.clear();
     warningDiagnosticCollection.clear();
-    let conf: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vasm");
+    let conf: any = this.getConfiguration("vasm", vasmBuildProperties);
     if (this.mayCompile(conf)) {
-      let confVLINK: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vlink");
+      let confVLINK: any = this.getConfiguration("vlink", vlinkBuildProperties);
       if (confVLINK) {
-        let includes = confVLINK.includes;
-        let excludes = confVLINK.excludes;
-        let exefilename = confVLINK.exefilename;
-        let entrypoint = confVLINK.entrypoint;
-        await this.buildWorkspaceInner(includes, excludes, exefilename, entrypoint, logEmitter);
+        await this.buildWorkspaceInner(conf, confVLINK, logEmitter);
       } else {
         let message = "Please configure VLINK compiler files selection";
         if (logEmitter) {
@@ -129,7 +156,7 @@ export class VASMCompiler {
   }
 
   /**
-   * CLeans the workspace
+   * Clean the workspace
    */
   public async cleanWorkspace(): Promise<void> {
     let state = ExtensionState.getCurrent();
@@ -138,19 +165,14 @@ export class VASMCompiler {
     winston.info("Cleaning workspace");
     errorDiagnosticCollection.clear();
     warningDiagnosticCollection.clear();
-    let conf: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vasm");
-    if (this.mayCompile(conf)) {
-      const buildDir = this.getBuildDir();
-      let filesProxies = await buildDir.findFiles("**/*.o", "");
-      for (let i = 0; i < filesProxies.length; i++) {
-        const fileUri = filesProxies[i];
-        winston.info(
-          `Deleting ${fileUri.getPath()}`
-        );
-        fileUri.delete();
-      }
-    } else if (!this.disabledInConf(conf)) {
-      throw VASMCompiler.CONFIGURE_VASM_ERROR;
+    const buildDir = this.getBuildDir();
+    let filesProxies = await buildDir.findFiles("**/*.o", "");
+    for (let i = 0; i < filesProxies.length; i++) {
+      const fileUri = filesProxies[i];
+      winston.info(
+        `Deleting ${fileUri.getPath()}`
+      );
+      fileUri.delete();
     }
   }
 
@@ -178,20 +200,19 @@ export class VASMCompiler {
     return ExtensionState.getCurrent().getWorkspaceRootDir();
   }
 
-  private async buildWorkspaceInner(includes: string, excludes: string, exefilename: string, entrypoint: string | undefined, logEmitter?: EventEmitter<string>): Promise<void> {
+  private async buildWorkspaceInner(conf: VasmBuildProperties, vlinkConf: VlinkBuildProperties, logEmitter?: EventEmitter<string>): Promise<void> {
     const workspaceRootDir = this.getWorkspaceRootDir();
     const buildDir = this.getBuildDir();
-    const confVLINK: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vlink");
     const ASMOneEnabled = this.isASMOneEnabled();
     try {
       if (workspaceRootDir && buildDir) {
-        let filesURI = await workspace.findFiles(includes, excludes);
+        let filesURI = await workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
         let promises: Thenable<ICheckResult[]>[] = [];
         for (let i = 0; i < filesURI.length; i++) {
           const fileUri = filesURI[i];
           promises.push(
             workspace.openTextDocument(fileUri).then(document => {
-              return this.buildDocument(document, false, logEmitter);
+              return this.buildDocument(conf, document, false, logEmitter);
             })
           );
         }
@@ -209,15 +230,15 @@ export class VASMCompiler {
           }
         }
         // Call the linker
-        if (this.linker.mayLink(confVLINK)) {
+        if (vlinkConf.enabled) {
           if (logEmitter) {
             logEmitter.fire("Linking_________________________________________\r\n");
           }
-          let errors = await this.linker.linkFiles(filesURI, exefilename, entrypoint, workspaceRootDir, buildDir.getUri(), logEmitter);
+          let errors = await this.linker.linkFiles(vlinkConf, filesURI, vlinkConf.exefilename, vlinkConf.entrypoint, workspaceRootDir, buildDir.getUri(), logEmitter);
           if (errors && errors.length > 0) {
             throw new Error(`Linker error: ${errors[0].msg}`);
           } else if (ASMOneEnabled) {
-            this.asmONE.Auto(filesURI, buildDir.getRelativeFile(exefilename).getUri());
+            this.asmONE.Auto(filesURI, buildDir.getRelativeFile(vlinkConf.exefilename).getUri());
           }
         } else {
           // The linker is not mandatory
@@ -244,12 +265,12 @@ export class VASMCompiler {
 
   /**
    * Build the selected file
+   * @param conf Vasm configurations
    * @param filepathname Path of the file to build
-   * @param debug If true debug symbols are added
    * @param temporaryBuild If true the ile will go to the temp folder
    * @param bootblock If true it will build a bootblock 
    */
-  public async buildFile(fileUri: Uri, debug: boolean, temporaryBuild: boolean, bootblock?: boolean, logEmitter?: EventEmitter<string>): Promise<[string | null, ICheckResult[]]> {
+  public async buildFile(conf: VasmBuildProperties, fileUri: Uri, temporaryBuild: boolean, bootblock?: boolean, logEmitter?: EventEmitter<string>): Promise<[string | null, ICheckResult[]]> {
     const workspaceRootDir = this.getWorkspaceRootDir();
     let buildDir: FileProxy;
     if (temporaryBuild) {
@@ -259,7 +280,6 @@ export class VASMCompiler {
     }
     if (workspaceRootDir && buildDir) {
       let filename = path.basename(fileUri.fsPath);
-      let conf: any = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vasm");
       if (this.mayCompile(conf)) {
         if (!await buildDir.exists()) {
           try {
@@ -278,7 +298,7 @@ export class VASMCompiler {
         let state = ExtensionState.getCurrent();
         let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
         let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
-        let vasmExecutableName: string = conf.file;
+        let vasmExecutableName: string = ConfigurationHelper.replaceBinDirVariable(conf.command);
         let extSep = filename.indexOf(".");
         let objFilename: string;
         if (extSep > 0) {
@@ -291,18 +311,15 @@ export class VASMCompiler {
         }
         let confArgs: any;
         if (bootblock) {
-          if (conf.options && (conf.options.length > 0)) {
-            confArgs = conf.options;
+          if (conf.args && (conf.args.length > 0)) {
+            confArgs = conf.args;
           } else {
             confArgs = new Array<string>();
             confArgs.push("-m68000");
           }
           confArgs.push("-Fbin");
         } else {
-          confArgs = conf.options;
-        }
-        if (debug) {
-          confArgs.push("-linedebug");
+          confArgs = conf.args;
         }
         let args: Array<string> = confArgs.concat(["-o", objFilename, fileUri.fsPath]);
         errorDiagnosticCollection.delete(fileUri);
@@ -327,7 +344,7 @@ export class VASMCompiler {
    * Useful for mocking
    * @param conf Configuration
    */
-  mayCompile(conf: WorkspaceConfiguration) {
+  mayCompile(conf: any) {
     return conf && conf.enabled;
   }
 
@@ -335,7 +352,7 @@ export class VASMCompiler {
    * Function to check if it is explicitly disabled
    * @param conf Configuration
    */
-  disabledInConf(conf: WorkspaceConfiguration) {
+  disabledInConf(conf: any) {
     return conf && !conf.enabled;
   }
 
@@ -348,42 +365,6 @@ export class VASMCompiler {
       return conf.ASMOneCompatibilityEnabled === true;
     }
     return false;
-  }
-}
-
-export class VASMController {
-  private disposable: Disposable;
-  private compiler: VASMCompiler;
-
-  constructor(compiler: VASMCompiler) {
-    this.compiler = compiler;
-    // subscribe to selection change and editor activation events
-    let subscriptions: Disposable[] = [];
-    workspace.onDidSaveTextDocument(
-      document => {
-        this.onSaveDocument(document);
-      },
-      null,
-      subscriptions
-    );
-
-    // create a combined disposable from both event subscriptions
-    this.disposable = Disposable.from(...subscriptions);
-  }
-
-  public async onSaveDocument(document: TextDocument) {
-    let state = ExtensionState.getCurrent();
-    let statusManager = state.getStatusManager();
-    if (document.languageId === "m68k") {
-      statusManager.onDefault();
-      await this.compiler.buildDocument(document, true).catch(error => {
-        statusManager.onError(error.message);
-      });
-    }
-  }
-
-  dispose() {
-    this.disposable.dispose();
   }
 }
 

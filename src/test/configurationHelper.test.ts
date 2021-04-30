@@ -11,12 +11,8 @@ describe("ConfigurationHelper Tests", function () {
         expect(value).to.be.equal("default");
     });
     it("Should retrieve an object configuration", function () {
-        let value = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vasm");
-        // ${config:amiga-assembly.binDir}/vasmm68k_mot will be replaced by ${workspaceFolder}/bin/vasmm68k_mot
-        expect(value.file).to.be.equal("${workspaceFolder}/bin/vasmm68k_mot");
-        value = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("vlink");
-        expect(value.file).to.be.equal("${workspaceFolder}/bin/vlink");
-        value = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("adfgenerator");
+        // ${config:amiga-assembly.binDir} will be replaced by ${workspaceFolder}/bin
+        let value = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("adfgenerator");
         expect(value.ADFToolsParentDir).to.be.equal("${workspaceFolder}/bin");
     });
     it("Should retrieve a boolean configuration", function () {

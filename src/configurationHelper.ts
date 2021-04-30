@@ -102,12 +102,8 @@ export class ConfigurationHelper {
     public static retrieveObjectPropertyInDefaultConf(key: string): any | undefined {
         let conf: any = ConfigurationHelper.getDefaultConfiguration(null).get(key);
         // replace the binary path setting
-        if (conf) {
-            if ((key === 'vlink') || (key === 'vasm')) {
-                conf.file = ConfigurationHelper.replaceBinDirVariable(conf.file);
-            } else if (key === 'adfgenerator') {
-                conf.ADFToolsParentDir = ConfigurationHelper.replaceBinDirVariable(conf.ADFToolsParentDir);
-            }
+        if (conf && key === 'adfgenerator') {
+            conf.ADFToolsParentDir = ConfigurationHelper.replaceBinDirVariable(conf.ADFToolsParentDir);
         }
         return conf;
     }
@@ -117,7 +113,7 @@ export class ConfigurationHelper {
      * @param value Replaces a variable with the binaries directory path
      * @returns Replaced value or undefined
      */
-    protected static replaceBinDirVariable(value: string): string {
+    public static replaceBinDirVariable(value: string): string {
         let configuration = ConfigurationHelper.getDefaultConfiguration(null);
         let binariesPath = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
         if (binariesPath) {

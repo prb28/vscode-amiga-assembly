@@ -26,38 +26,22 @@ describe("VLINK Tests", function () {
         });
         it("Should call the link command", async function () {
             let spiedLinker = spy(linker);
-            let spiedfs = spy(fs);
-            when(spiedfs.existsSync(anyString())).thenReturn(true);
+            let spiedFs = spy(fs);
+            when(spiedFs.existsSync(anyString())).thenReturn(true);
             when(spiedLinker.mayLink(anything())).thenReturn(true);
             let filesUri = [vscode.Uri.parse("file:///file1.s"), vscode.Uri.parse("file:///file2")];
-            await linker.linkFiles(filesUri, "myprog", undefined, vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build"));
+            await linker.linkFiles(VLINKLinker.DEFAULT_BUILD_CONFIGURATION, filesUri, "myprog", undefined, vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build"));
             verify(executor.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything(), anything(), anything())).once();
             let args = capture(executor.runTool).last();
             let buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
             expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", buildPath + "myprog", buildPath + "file1.o", buildPath + "file2.o"]);
-            reset(spiedfs);
+            reset(spiedFs);
             reset(spiedLinker);
-        });
-        it("Should reject if the linker is disable", async function () {
-            let spiedLinker = spy(linker);
-            let spiedfs = spy(fs);
-            when(spiedfs.existsSync(anyString())).thenReturn(true);
-            let filesUri = [vscode.Uri.parse("file:///file1.s")];
-            when(spiedLinker.mayLink(anything())).thenReturn(false);
-            return linker.linkFiles(filesUri, "myprog", undefined, vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build")).then(() => {
-                expect.fail("Should reject");
-                reset(spiedfs);
-                reset(spiedLinker);
-            }).catch(error => {
-                expect(error.message).to.be.equal("Please configure VLINK linker");
-                reset(spiedfs);
-                reset(spiedLinker);
-            });
         });
         it('Should sort objects according to the entrypoint', async function () {
             let spiedLinker = spy(linker);
-            let spiedfs = spy(fs);
-            when(spiedfs.existsSync(anyString())).thenReturn(true);
+            let spiedFs = spy(fs);
+            when(spiedFs.existsSync(anyString())).thenReturn(true);
             when(spiedLinker.mayLink(anything())).thenReturn(true);
             let filesUri = [
                 vscode.Uri.parse('file:///file1.s'),
@@ -65,7 +49,7 @@ describe("VLINK Tests", function () {
                 vscode.Uri.parse('file:///file3.s'),
                 vscode.Uri.parse('file:///file4.s')
             ];
-            await linker.linkFiles(
+            await linker.linkFiles(VLINKLinker.DEFAULT_BUILD_CONFIGURATION,
                 filesUri, 'myprog', 'file2.o', vscode.Uri.parse('file:///workdir'),
                 vscode.Uri.parse('file:///workdir/build'));
             let args = capture(executor.runTool).last();
@@ -75,7 +59,7 @@ describe("VLINK Tests", function () {
                 buildPath + 'file2.o', buildPath + 'file1.o', buildPath + 'file3.o', buildPath + 'file4.o'
             ]);
             // Test the need of .o
-            await linker.linkFiles(
+            await linker.linkFiles(VLINKLinker.DEFAULT_BUILD_CONFIGURATION,
                 filesUri, 'myprog', 'file2', vscode.Uri.parse('file:///workdir'),
                 vscode.Uri.parse('file:///workdir/build'));
             args = capture(executor.runTool).last();
@@ -84,7 +68,7 @@ describe("VLINK Tests", function () {
                 '-bamigahunk', '-Bstatic', '-o', buildPath + 'myprog',
                 buildPath + 'file2.o', buildPath + 'file1.o', buildPath + 'file3.o', buildPath + 'file4.o'
             ]);
-            reset(spiedfs);
+            reset(spiedFs);
             reset(spiedLinker);
         });
     });
@@ -105,7 +89,7 @@ describe("VLINK Tests", function () {
             error = errors[i++];
             expect(error.msg).to.be.equal("error 5 : This is not good too");
             expect(error.severity).to.be.equal("error");
-            error = errors[i++];
+            error = errors[i];
             expect(error.msg).to.be.equal("warning 5: oh no");
             expect(error.severity).to.be.equal("warning");
             expect(error.line).to.be.equal(2);

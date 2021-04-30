@@ -6,7 +6,6 @@ import { M68kFormatter } from './formatter';
 import { M68kHoverProvider } from './hover';
 import { M86kColorProvider } from './color';
 import { CalcController } from './calcComponents';
-import { VASMController } from './vasm';
 import { FsUAEDebugSession } from './fsUAEDebug';
 import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
 import { CalcComponent } from './calcComponents';
@@ -28,7 +27,7 @@ import * as winston from "winston";
 import * as TransportStream from "winston-transport";
 import { FileProxy } from './fsProxy';
 import { WinUAEDebugSession } from './winUAEDebug';
-import { AmigaBuildTaskProvider } from './customTaskProvider';
+import { AmigaBuildTaskProvider, CompilerController } from './customTaskProvider';
 import { VariableDisplayFormat, VariableDisplayFormatRequest } from './variableFormatter';
 import { BinariesManager } from './nativeBinariesManager';
 import { ConfigurationHelper } from './configurationHelper';
@@ -438,30 +437,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // VASM Command
     let compiler = state.getCompiler();
-    // Build a file
-    disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', async () => {
-        statusManager.onDefault();
-        try {
-            await compiler.buildCurrentEditorFile();
-        } catch (error) {
-            statusManager.onError(error.message);
-        }
-    });
-    context.subscriptions.push(disposable);
     // Build on save
-    let vController = new VASMController(compiler);
+    let vController = new CompilerController();
     context.subscriptions.push(vController);
-    // Build the workspace
-    vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', async () => {
-        statusManager.onDefault();
-        try {
-            await compiler.buildWorkspace();
-            statusManager.onSuccess();
-        } catch (error) {
-            statusManager.onError(error.message);
-        }
-    });
-    context.subscriptions.push(disposable);
     // Clean the workspace
     disposable = vscode.commands.registerCommand('amiga-assembly.clean-vasm-workspace', async () => {
         try {

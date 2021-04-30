@@ -86,43 +86,6 @@ describe("Global Extension Tests", function () {
         }).timeout(defaultTimeout);
     });
     context("Build commands", function () {
-        it("Should build the workspace on command", async () => {
-            let state = ExtensionState.getCurrent();
-            let spiedCompiler = spy(state.getCompiler());
-            let spiedStatus = spy(state.getStatusManager());
-            when(spiedCompiler.buildWorkspace()).thenCall(() => { return Promise.resolve(); });
-            await vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace");
-            verify(spiedCompiler.buildWorkspace()).once();
-            verify(spiedStatus.onDefault()).once();
-            verify(spiedStatus.onSuccess()).once();
-            // Generating a build error
-            resetCalls(spiedCompiler);
-            resetCalls(spiedStatus);
-            when(spiedCompiler.buildWorkspace()).thenReject(new Error("nope"));
-            await vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace");
-            verify(spiedCompiler.buildWorkspace()).once();
-            verify(spiedStatus.onDefault()).once();
-            verify(spiedStatus.onSuccess()).never();
-            verify(spiedStatus.onError("nope")).once();
-        });
-        it("Should build the current document on command", async () => {
-            let state = ExtensionState.getCurrent();
-            let spiedCompiler = spy(state.getCompiler());
-            let spiedStatus = spy(state.getStatusManager());
-            when(spiedCompiler.buildCurrentEditorFile()).thenCall(() => { return Promise.resolve(); });
-            await vscode.commands.executeCommand("amiga-assembly.build-vasm");
-            verify(spiedCompiler.buildCurrentEditorFile()).once();
-            verify(spiedStatus.onDefault()).once();
-            verify(spiedStatus.onSuccess()).never(); // On success is only for the workspace
-            // Generating a build error
-            resetCalls(spiedCompiler);
-            resetCalls(spiedStatus);
-            when(spiedCompiler.buildCurrentEditorFile()).thenCall(() => { return Promise.reject(new Error("nope")); });
-            await vscode.commands.executeCommand("amiga-assembly.build-vasm");
-            verify(spiedCompiler.buildCurrentEditorFile()).once();
-            verify(spiedStatus.onDefault()).once();
-            verify(spiedStatus.onError("nope")).once();
-        });
         it("Should clean the current workspace on command", async () => {
             let state = ExtensionState.getCurrent();
             let spiedCompiler = spy(state.getCompiler());

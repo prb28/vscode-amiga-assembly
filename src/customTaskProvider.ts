@@ -1,77 +1,145 @@
-import * as vscode from 'vscode';
+import { commands, CustomExecution, Disposable, Event, EventEmitter, Pseudoterminal, Task, TaskDefinition, TaskProvider, TaskScope, TerminalDimensions, TextDocument, workspace } from 'vscode';
 import { ExtensionState } from './extension';
+import { VasmBuildProperties, VASMCompiler } from './vasm';
+import { VlinkBuildProperties, VLINKLinker } from './vlink';
 
-interface AmigaBuildTaskDefinition extends vscode.TaskDefinition {
+interface AmigaBuildTaskDefinition extends TaskDefinition {
+	vasm: VasmBuildProperties;
+	vlink?: VlinkBuildProperties;
 }
 
-export class AmigaBuildTaskProvider implements vscode.TaskProvider {
+export class AmigaBuildTaskProvider implements TaskProvider {
 	static readonly AMIGA_BUILD_TASK_NAME = 'build';
+	static readonly AMIGA_COMPILE_CURRENT_TASK_NAME = 'compile current file';
 	static readonly AMIGA_BUILD_SCRIPT_TYPE = 'amigaassembly';
+	static readonly AMIGA_COMPILE_FULL_TASK_NAME = `${AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE}: ${AmigaBuildTaskProvider.AMIGA_COMPILE_CURRENT_TASK_NAME}`;
 	static readonly AMIGA_BUILD_PRELAUNCH_TASK_NAME = `${AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE}: ${AmigaBuildTaskProvider.AMIGA_BUILD_TASK_NAME}`;
 
-	private tasks: vscode.Task[] | undefined;
+	private tasks: Task[] | undefined;
 	private extensionState: ExtensionState;
 
 	constructor(extensionState: ExtensionState) {
 		this.extensionState = extensionState;
 	}
 
-	public async provideTasks(): Promise<vscode.Task[]> {
+	public async provideTasks(): Promise<Task[]> {
 		return this.getTasks();
 	}
 
-	public resolveTask(_task: vscode.Task): vscode.Task | undefined {
+	public resolveTask(_task: Task): Task | undefined {
 		const definition: AmigaBuildTaskDefinition = <any>_task.definition;
 		return this.getTask(definition);
 	}
 
-	private getTasks(): vscode.Task[] {
+	private getTasks(): Task[] {
 		if (this.tasks !== undefined) {
 			return this.tasks;
 		}
-		this.tasks = [this.getTask()];
+		this.tasks = [this.getTask(), this.getTask(undefined, true)];
 		return this.tasks;
 	}
 
-	private getTask(definition?: AmigaBuildTaskDefinition): vscode.Task {
-		if (definition === undefined) {
-			definition = {
-				type: AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE
+	private getTask(definition?: AmigaBuildTaskDefinition, isCompileTask?: boolean): Task {
+		let lDefinition: AmigaBuildTaskDefinition;
+		if (!definition) {
+			lDefinition = {
+				type: AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE,
+				watch: false,
+				vasm: VASMCompiler.DEFAULT_BUILD_CONFIGURATION
 			};
+			if (!isCompileTask) {
+				lDefinition.vlink = VLINKLinker.DEFAULT_BUILD_CONFIGURATION;
+			}
+		} else {
+			lDefinition = definition;
 		}
-		return new vscode.Task(definition, vscode.TaskScope.Workspace, AmigaBuildTaskProvider.AMIGA_BUILD_TASK_NAME,
-			AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE, new vscode.CustomExecution(async (): Promise<vscode.Pseudoterminal> => {
-				// When the task is executed, this callback will run. Here, we setup for running the task.
-				return new AmigaBuildTaskTerminal(this.extensionState);
+		let taskName: string;
+		if (isCompileTask) {
+			taskName = AmigaBuildTaskProvider.AMIGA_COMPILE_CURRENT_TASK_NAME;
+		} else {
+			taskName = AmigaBuildTaskProvider.AMIGA_BUILD_TASK_NAME;
+		}
+		return new Task(lDefinition, TaskScope.Workspace, taskName,
+			AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE, new CustomExecution(async (): Promise<Pseudoterminal> => {
+				return new AmigaBuildTaskTerminal(this.extensionState, lDefinition.vasm, lDefinition.vlink, isCompileTask);
 			}));
 	}
 }
 
-class AmigaBuildTaskTerminal implements vscode.Pseudoterminal {
-	private writeEmitter = new vscode.EventEmitter<string>();
-	onDidWrite: vscode.Event<string> = this.writeEmitter.event;
-	private closeEmitter = new vscode.EventEmitter<number>();
-	onDidClose?: vscode.Event<number> = this.closeEmitter.event;
+class AmigaBuildTaskTerminal implements Pseudoterminal {
+	private writeEmitter = new EventEmitter<string>();
+	onDidWrite: Event<string> = this.writeEmitter.event;
+	private closeEmitter = new EventEmitter<number>();
+	onDidClose?: Event<number> = this.closeEmitter.event;
+	private vasmBuildProperties: VasmBuildProperties;
+	private vlinkBuildProperties?: VlinkBuildProperties;
+	private compileCurrentFile?: boolean;
 
-	constructor(private extensionState: ExtensionState) {
+	constructor(private extensionState: ExtensionState, vasmBuildProperties: VasmBuildProperties, vlinkBuildProperties?: VlinkBuildProperties, compileCurrentFile?: boolean) {
+		this.vasmBuildProperties = vasmBuildProperties;
+		this.vlinkBuildProperties = vlinkBuildProperties;
+		this.compileCurrentFile = compileCurrentFile;
 	}
 
-	open(initialDimensions: vscode.TerminalDimensions | undefined): void {
-		// At this point we can start using the terminal.
+	open(initialDimensions: TerminalDimensions | undefined): void {
 		this.doBuild();
 	}
 
 	close(): void {
-		// The terminal has been closed. Shutdown the build.
 	}
 
 	private async doBuild(): Promise<void> {
-		this.writeEmitter.fire('\u001b[36mStarting build...\r\n\u001b[0m');
 		try {
-			await this.extensionState.getCompiler().buildWorkspace(this.writeEmitter);
+			if (this.compileCurrentFile) {
+				this.writeEmitter.fire('\u001b[Compiling current editor file...\r\n\u001b[0m');
+				await this.extensionState.getCompiler().buildCurrentEditorFile(this.vasmBuildProperties, this.writeEmitter);
+			} else {
+				this.writeEmitter.fire('\u001b[36mStarting build...\r\n\u001b[0m');
+				await this.extensionState.getCompiler().buildWorkspace(this.writeEmitter, this.vasmBuildProperties, this.vlinkBuildProperties);
+			}
 			this.closeEmitter.fire(0);
 		} catch (e) {
 			this.closeEmitter.fire(1);
 		}
+	}
+}
+
+export class CompilerController {
+	private disposable: Disposable;
+
+	constructor() {
+		// subscribe to selection change and editor activation events
+		let subscriptions: Disposable[] = [];
+		workspace.onDidSaveTextDocument(
+			document => {
+				this.onSaveDocument(document);
+			},
+			null,
+			subscriptions
+		);
+
+		// create a combined disposable from both event subscriptions
+		this.disposable = Disposable.from(...subscriptions);
+	}
+
+	public compile(): Thenable<unknown> {
+		return commands.executeCommand("workbench.action.tasks.runTask", AmigaBuildTaskProvider.AMIGA_COMPILE_FULL_TASK_NAME);
+	}
+
+	public async onSaveDocument(document: TextDocument): Promise<void> {
+		let state = ExtensionState.getCurrent();
+		let statusManager = state.getStatusManager();
+		if (document.languageId === "m68k") {
+			statusManager.onDefault();
+			try {
+				await this.compile();
+			} catch (error) {
+				statusManager.onError(error.message);
+			}
+		}
+	}
+
+	dispose() {
+		this.disposable.dispose();
 	}
 }
