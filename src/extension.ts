@@ -14,7 +14,6 @@ import { StatusManager } from "./status";
 import { Disassembler, DisassembleRequestType } from './disassemble';
 import { M68kDefinitionHandler } from './definitionHandler';
 import { DisassemblyContentProvider } from './disassemblyContentProvider';
-import { ADFTools } from './adf';
 import { DataGeneratorCodeLensProvider } from './expressionDataGenerator';
 import { IFFViewerPanel } from './iffImageViewer';
 import { M68kCompletionItemProvider } from './completion';
@@ -58,7 +57,6 @@ export class ExtensionState {
     private statusManager: StatusManager | undefined;
     private calc: CalcComponent | undefined;
     private disassembler: Disassembler | undefined;
-    private adfTools: ADFTools | undefined;
     private definitionHandler: M68kDefinitionHandler | undefined;
     private dataGenerator: DataGeneratorCodeLensProvider | undefined;
     private documentationManager: DocumentationManager | undefined;
@@ -120,12 +118,6 @@ export class ExtensionState {
             this.disassembler = new Disassembler();
         }
         return this.disassembler;
-    }
-    public getADFTools(): ADFTools {
-        if (this.adfTools === undefined) {
-            this.adfTools = ADFTools.create();
-        }
-        return this.adfTools;
     }
     public static getCurrent(): ExtensionState {
         // activate the extension
@@ -336,16 +328,6 @@ export async function activate(context: vscode.ExtensionContext) {
     disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-memory', async () => {
         try {
             await disassembler.showInputPanel(DisassembleRequestType.MEMORY);
-        } catch (err) {
-            vscode.window.showErrorMessage(err.message);
-        }
-    });
-    context.subscriptions.push(disposable);
-
-    // create ADF file creator command
-    disposable = vscode.commands.registerCommand('amiga-assembly.create-adffile', async () => {
-        try {
-            await state.getADFTools().createBootableADFDisk(state.getCompiler());
         } catch (err) {
             vscode.window.showErrorMessage(err.message);
         }

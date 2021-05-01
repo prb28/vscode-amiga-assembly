@@ -10,11 +10,6 @@ describe("ConfigurationHelper Tests", function () {
         value = ConfigurationHelper.retrieveStringProperty(conf, "xxxxx", "default");
         expect(value).to.be.equal("default");
     });
-    it("Should retrieve an object configuration", function () {
-        // ${config:amiga-assembly.binDir} will be replaced by ${workspaceFolder}/bin
-        let value = ConfigurationHelper.retrieveObjectPropertyInDefaultConf("adfgenerator");
-        expect(value.ADFToolsParentDir).to.be.equal("${workspaceFolder}/bin");
-    });
     it("Should retrieve a boolean configuration", function () {
         let conf = ConfigurationHelper.getDefaultConfiguration(null);
         expect(conf).to.be.not.undefined;

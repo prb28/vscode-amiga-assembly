@@ -38,7 +38,6 @@
         "onCommand:amiga-assembly.disassemble-file",
         "onCommand:amiga-assembly.disassemble-copper",
         "onCommand:amiga-assembly.disassemble-memory",
-        "onCommand:amiga-assembly.create-adffile",
         "onCommand:amiga-assembly.list-used-registers",
         "onCommand:amiga-assembly.view-iff",
         "onWebviewPanel:iffView"
@@ -181,56 +180,6 @@
                     "scope": "window",
                     "default": "build",
                     "description": "Specifies the path to the temporary build directory."
-                },
-                "amiga-assembly.adfgenerator": {
-                    "type": "object",
-                    "scope": "window",
-                    "properties": {
-                        "ADFToolsParentDir": {
-                            "type": "string",
-                            "description": "Path to the parent dir of the adftools binaries"
-                        },
-                        "outputADFFile": {
-                            "type": "string",
-                            "description": "File with absolute path to new ADF disk file"
-                        },
-                        "sourceRootDir": {
-                            "type": "string",
-                            "description": "Path to the root dir of the files to copy"
-                        },
-                        "includes": {
-                            "type": "string",
-                            "description": "GlobPattern to select the files to include in the ADF disk"
-                        },
-                        "excludes": {
-                            "type": "string",
-                            "description": "GlobPattern to select the files to exclude in the ADF disk"
-                        },
-                        "adfCreateOptions": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "title": "adfCreate option"
-                            },
-                            "default": [],
-                            "description": "adfCreate options"
-                        },
-                        "bootBlockSourceFile": {
-                            "type": "string",
-                            "description": "Source file containing the code of the bootblock"
-                        }
-                    },
-                    "default": {
-                        "ADFToolsParentDir": "${config:amiga-assembly.binDir}",
-                        "sourceRootDir": "uae/dh0",
-                        "outputADFFile": "./build/disk.adf",
-                        "includes": "**/*",
-                        "excludes": "**/.*",
-                        "adfCreateOptions": [
-                            "--label=MYDISK"
-                        ]
-                    },
-                    "description": "ADFFile generation from the destination build dir"
                 },
                 "amiga-assembly.ASMOneCompatibilityEnabled": {
                     "type": "boolean",
@@ -783,15 +732,8 @@
         "taskDefinitions": [
             {
                 "type": "amigaassembly",
-                "required": [
-                    "vasm"
-                ],
+                "required": [],
                 "properties": {
-                    "file": {
-                        "type": "string",
-                        "default": "${file}",
-                        "description": "File to compile"
-                    },
                     "vasm": {
                         "type": "object",
                         "properties": {
@@ -873,6 +815,56 @@
                             ]
                         },
                         "description": "VLINK linker configuration"
+                    },
+                    "adfgenerator": {
+                        "type": "object",
+                        "scope": "window",
+                        "properties": {
+                            "ADFToolsParentDir": {
+                                "type": "string",
+                                "description": "Path to the parent dir of the adftools binaries"
+                            },
+                            "outputADFFile": {
+                                "type": "string",
+                                "description": "File with absolute path to new ADF disk file"
+                            },
+                            "sourceRootDir": {
+                                "type": "string",
+                                "description": "Path to the root dir of the files to copy"
+                            },
+                            "includes": {
+                                "type": "string",
+                                "description": "GlobPattern to select the files to include in the ADF disk"
+                            },
+                            "excludes": {
+                                "type": "string",
+                                "description": "GlobPattern to select the files to exclude in the ADF disk"
+                            },
+                            "adfCreateOptions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "title": "adfCreate option"
+                                },
+                                "default": [],
+                                "description": "adfCreate options"
+                            },
+                            "bootBlockSourceFile": {
+                                "type": "string",
+                                "description": "Source file containing the code of the bootblock"
+                            }
+                        },
+                        "default": {
+                            "ADFToolsParentDir": "${config:amiga-assembly.binDir}",
+                            "sourceRootDir": "uae/dh0",
+                            "outputADFFile": "./build/disk.adf",
+                            "includes": "**/*",
+                            "excludes": "**/.*",
+                            "adfCreateOptions": [
+                                "--label=MYDISK"
+                            ]
+                        },
+                        "description": "ADFFile generation from the destination build dir"
                     }
                 }
             }

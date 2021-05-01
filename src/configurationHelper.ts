@@ -95,20 +95,6 @@ export class ConfigurationHelper {
     }
 
     /**
-     * Retrieve a configuration value as string
-     * @param key Keyword for property
-     * @return Value or undefined
-     */
-    public static retrieveObjectPropertyInDefaultConf(key: string): any | undefined {
-        let conf: any = ConfigurationHelper.getDefaultConfiguration(null).get(key);
-        // replace the binary path setting
-        if (conf && key === 'adfgenerator') {
-            conf.ADFToolsParentDir = ConfigurationHelper.replaceBinDirVariable(conf.ADFToolsParentDir);
-        }
-        return conf;
-    }
-
-    /**
      * 
      * @param value Replaces a variable with the binaries directory path
      * @returns Replaced value or undefined
