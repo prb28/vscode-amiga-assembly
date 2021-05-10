@@ -223,15 +223,15 @@ export class FileProxy {
     /**
      * Deletes a file
      */
-    public async delete() {
+    public async delete(): Promise<void> {
         if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
             if (await this.isDirectory()) {
-                fs.rmdirSync(this.uri.fsPath);
+                fs.rmdirSync(this.uri.fsPath, { recursive: true });
             } else {
                 fs.unlinkSync(this.uri.fsPath);
             }
         } else {
-            await workspace.fs.delete(this.uri);
+            await workspace.fs.delete(this.uri, { recursive: true });
         }
     }
 
