@@ -33,9 +33,9 @@ export function run(_testsRoot: string, clb: any): Promise<void> {
             mochaJunitReporterReporterOptions: {
                 mochaFile: paths.join(_testsRoot, "..", "..", "test-results.xml")
             }
-        }
+        },
+        color: true
     });
-    mocha.useColors(true);
 
     const testsRoot = path.resolve(__dirname, '..');
 
