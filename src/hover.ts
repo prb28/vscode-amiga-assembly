@@ -22,108 +22,100 @@ export class M68kHoverProvider implements vscode.HoverProvider {
     public async provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> {
         let configuration = vscode.workspace.getConfiguration('amiga-assembly', document.uri);
         let numberDisplayFormat = ConfigurationHelper.retrieveStringProperty(configuration, 'hover.numberDisplayFormat', M68kHoverProvider.DEFAULT_NUMBER_DISPLAY_FORMAT);
-        return new Promise(async (resolve, reject) => {
-            // Parse the line
-            let line = document.lineAt(position.line);
-            let asmLine = new ASMLine(line.text, line);
-            // Detect where is the cursor
-            if (asmLine.instructionRange && asmLine.instructionRange.contains(position) && (asmLine.instruction.length > 0)) {
-                let keyInstruction = asmLine.instruction;
-                let idx = keyInstruction.indexOf('.');
-                if (idx > 0) {
-                    keyInstruction = keyInstruction.substr(0, idx);
-                }
-                if (token.isCancellationRequested) {
-                    resolve();
-                }
-                let hoverInstruction = await this.documentationManager.getInstruction(keyInstruction.toUpperCase());
-                if (hoverInstruction) {
-                    let hoverRendered = this.renderHover(hoverInstruction);
-                    resolve(new vscode.Hover(hoverRendered, asmLine.instructionRange));
-                }
-            } else if (asmLine.dataRange && asmLine.dataRange.contains(position)) {
-                // get the word
-                let word = document.getWordRangeAtPosition(position);
-                if (word) {
-                    // Text to search in
-                    let text = document.getText(word);
-                    let rendered = await this.renderWordHover(text.toUpperCase());
-                    let renderedLine2 = null;
-                    if (!rendered) {
-                        // Translate to get the control character
-                        text = document.getText(word.with(word.start.translate(undefined, -1)));
-                        rendered = this.renderNumberForWord(text, numberDisplayFormat);
-                    } else {
-                        // Is there a value next to the register ?
-                        let elms = asmLine.data.split(",");
-                        for (let elm of elms) {
-                            if (elm.match(/[$#%@]([\dA-F]+)/i)) {
-                                renderedLine2 = this.renderRegisterValue(elm);
+        // Parse the line
+        let line = document.lineAt(position.line);
+        let asmLine = new ASMLine(line.text, line);
+        // Detect where is the cursor
+        if (asmLine.instructionRange && asmLine.instructionRange.contains(position) && (asmLine.instruction.length > 0)) {
+            let keyInstruction = asmLine.instruction;
+            let idx = keyInstruction.indexOf('.');
+            if (idx > 0) {
+                keyInstruction = keyInstruction.substr(0, idx);
+            }
+            if (token.isCancellationRequested) {
+                return new vscode.Hover(new vscode.MarkdownString());
+            }
+            let hoverInstruction = await this.documentationManager.getInstruction(keyInstruction.toUpperCase());
+            if (hoverInstruction) {
+                let hoverRendered = this.renderHover(hoverInstruction);
+                return new vscode.Hover(hoverRendered, asmLine.instructionRange);
+            }
+        } else if (asmLine.dataRange && asmLine.dataRange.contains(position)) {
+            // get the word
+            let word = document.getWordRangeAtPosition(position);
+            if (word) {
+                // Text to search in
+                let text = document.getText(word);
+                let rendered = await this.renderWordHover(text.toUpperCase());
+                let renderedLine2 = null;
+                if (!rendered) {
+                    // Translate to get the control character
+                    text = document.getText(word.with(word.start.translate(undefined, -1)));
+                    rendered = this.renderNumberForWord(text, numberDisplayFormat);
+                } else {
+                    // Is there a value next to the register ?
+                    let elms = asmLine.data.split(",");
+                    for (let elm of elms) {
+                        if (elm.match(/[$#%@]([\dA-F]+)/i)) {
+                            renderedLine2 = this.renderRegisterValue(elm);
+                            if (renderedLine2) {
+                                break;
+                            }
+                        } else if (elm.match(/[$#%@+-/*]([\dA-Z_]+)/i)) {
+                            // Try to evaluate a formula
+                            // Evaluate the formula value
+                            let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                            let value = await definitionHandler.evaluateFormula(elm).catch(err => {
+                                // nothing to do
+                            });
+                            if (value || value === 0) {
+                                renderedLine2 = this.renderRegisterValueNumber(value);
                                 if (renderedLine2) {
                                     break;
-                                }
-                            } else if (elm.match(/[$#%@+-/*]([\dA-Z_]+)/i)) {
-                                // Try to evaluate a formula
-                                // Evaluate the formula value
-                                let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
-                                let value = await definitionHandler.evaluateFormula(elm).catch(err => {
-                                    // nothing to do
-                                });
-                                if (value || value === 0) {
-                                    renderedLine2 = this.renderRegisterValueNumber(value);
-                                    if (renderedLine2) {
-                                        break;
-                                    }
                                 }
                             }
                         }
                     }
-                    if (rendered) {
-                        if (renderedLine2) {
-                            resolve(new vscode.Hover([renderedLine2, rendered], word));
-                        } else {
-                            resolve(new vscode.Hover(rendered, word));
-                        }
-                    } else {
-                        // try to evaluate a formula
-                        let match = /\w+/.exec(text);
-                        if (match) {
-                            let variable = match[0];
-                            let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
-                            await definitionHandler.evaluateVariable(variable).then(value => {
-                                let renderedNumber = this.renderNumber(value, numberDisplayFormat);
-                                if (renderedNumber) {
-                                    resolve(new vscode.Hover(renderedNumber));
-                                }
-                            }).catch(err => {
-                                // nothing to do
-                            });
-                        }
-                    }
                 }
-            } else if ((asmLine.variable && asmLine.variableRange.contains(position)) ||
-                (asmLine.value && asmLine.valueRange.contains(position))) {
-                // Evaluate the variable value
-                let word = document.getWordRangeAtPosition(position);
-                if (word) {
-                    let text = document.getText(word);
+                if (rendered) {
+                    if (renderedLine2) {
+                        return new vscode.Hover([renderedLine2, rendered], word);
+                    } else {
+                        return new vscode.Hover(rendered, word);
+                    }
+                } else {
+                    // try to evaluate a formula
                     let match = /\w+/.exec(text);
                     if (match) {
                         let variable = match[0];
                         let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
-                        await definitionHandler.evaluateVariable(variable).then(value => {
-                            let rendered = this.renderNumber(value, numberDisplayFormat);
-                            if (rendered) {
-                                resolve(new vscode.Hover(rendered));
-                            }
-                        }).catch(err => {
-                            // nothing to do
-                        });
+                        let value = await definitionHandler.evaluateVariable(variable);
+                        let renderedNumber = this.renderNumber(value, numberDisplayFormat);
+                        if (renderedNumber) {
+                            return new vscode.Hover(renderedNumber);
+                        }
                     }
                 }
             }
-            resolve();
-        });
+        } else if ((asmLine.variable && asmLine.variableRange.contains(position)) ||
+            (asmLine.value && asmLine.valueRange.contains(position))) {
+            // Evaluate the variable value
+            let word = document.getWordRangeAtPosition(position);
+            if (word) {
+                let text = document.getText(word);
+                let match = /\w+/.exec(text);
+                if (match) {
+                    let variable = match[0];
+                    let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                    let value = await definitionHandler.evaluateVariable(variable);
+                    let rendered = this.renderNumber(value, numberDisplayFormat);
+                    if (rendered) {
+                        return new vscode.Hover(rendered);
+                    }
+                }
+            }
+        }
+        return new vscode.Hover(new vscode.MarkdownString());
     }
 
     /**

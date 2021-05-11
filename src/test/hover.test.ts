@@ -38,14 +38,13 @@ describe("Hover Tests", function () {
         await dHnd.scanFile(Uri.file(MAIN_SOURCE));
     });
     describe("HoverProvider api", function () {
-        it("Should return no hover on a empty document", function () {
+        it("Should return no hover on a empty document", async function () {
             this.timeout(defaultTimeout);
             let hp = new M68kHoverProvider(documentationManager);
             const document = new DummyTextDocument();
             let position: Position = new Position(0, 1);
             let tokenEmitter = new CancellationTokenSource();
-            let results = hp.provideHover(document, position, tokenEmitter.token);
-            return expect(results).to.be.fulfilled;
+            return expect(hp.provideHover(document, position, tokenEmitter.token)).to.be.fulfilled;
         });
         it("Should return a hover on an instruction", async function () {
             this.timeout(defaultTimeout);
@@ -98,7 +97,7 @@ describe("Hover Tests", function () {
             let elm = result.contents[0];
             expect(elm instanceof MarkdownString).to.be.true;
             if (elm instanceof MarkdownString) {
-                expect(elm.value.indexOf("Bits") > 0).to.be.true;
+                expect(elm.value.includes("Bits")).to.be.true;
             }
         }
     });
@@ -146,7 +145,7 @@ describe("Hover Tests", function () {
             let elm = result.contents[0];
             expect(elm instanceof MarkdownString).to.be.true;
             if (elm instanceof MarkdownString) {
-                expect(elm.value.indexOf("|  | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1|") > 0).to.be.true;
+                expect(elm.value.includes("|  | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1|")).to.be.true;
             }
         }
     });
