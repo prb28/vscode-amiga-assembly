@@ -62,7 +62,8 @@ describe('Node Debug Adapter Run', () => {
 		return dc.stop();
 	});
 
-	after(function () {
+	after(async function () {
+		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 		this.session.removeAllListeners();
 		this.session.shutdown();
 		this.server.close();

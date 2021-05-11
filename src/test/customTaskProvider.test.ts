@@ -20,6 +20,9 @@ describe("Task Provider tests", function () {
         const newFile = vscode.Uri.parse("untitled://./vasm.s");
         return vscode.window.showTextDocument(newFile);
     });
+    after(async () => {
+        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    });
     context("CompileController", function () {
         it("Should build the current document on save", async () => {
             let state = ExtensionState.getCurrent();

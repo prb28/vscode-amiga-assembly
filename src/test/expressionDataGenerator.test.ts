@@ -1,7 +1,7 @@
 // The module 'chai' provides assertion methods from node
 import { expect } from 'chai';
 import { ExpressionDataGenerator, ExpressionDataVariable, OutputDataType, ExpressionDataGeneratorSerializer, DataGeneratorCodeLensProvider } from '../expressionDataGenerator';
-import { Uri, Position, window, CancellationTokenSource } from "vscode";
+import { Uri, Position, window, CancellationTokenSource, commands } from "vscode";
 import { fail } from 'assert';
 
 describe("Expression data generator", function () {
@@ -197,6 +197,9 @@ describe("Expression data generator", function () {
                     edit.insert(new Position(0, 0), text);
                 });
             });
+        });
+        after(async () => {
+            await commands.executeCommand('workbench.action.closeActiveEditor');
         });
         it("should locate codelens / resolve and apply", async () => {
             let tokenEmitter = new CancellationTokenSource();

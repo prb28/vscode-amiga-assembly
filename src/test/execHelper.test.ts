@@ -22,6 +22,9 @@ describe("Executor Tests", function () {
         const newFile = vscode.Uri.parse("untitled://./exe.s");
         return vscode.window.showTextDocument(newFile).then(() => { spiedOutputChannel = spy(ExtensionState.getCurrent().getOutputChannel()); });
     });
+    after(async () => {
+        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    });
     it("Should execute a command and parse stdout", async () => {
         resetCalls(spiedOutputChannel);
         const stdoutText = 'My Stdout\ntext';

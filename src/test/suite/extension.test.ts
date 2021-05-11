@@ -47,6 +47,7 @@ describe("Global Extension Tests", function () {
                 await vscode.commands.executeCommand("editor.action.formatDocument");
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
         }).timeout(defaultTimeout);
         it("Should format another simple file with sprite", async () => {
             // Simple test file
@@ -64,6 +65,7 @@ describe("Global Extension Tests", function () {
                 await vscode.commands.executeCommand("editor.action.formatDocument");
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
         }).timeout(defaultTimeout);
         it("Should format a file with tabs", async () => {
             // Simple test file
@@ -83,6 +85,7 @@ describe("Global Extension Tests", function () {
                 await ConfigurationHelper.getDefaultConfiguration(uri).update('format.useTabs', false, true);
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
         }).timeout(defaultTimeout);
     });
     context("Build commands", function () {
@@ -130,6 +133,7 @@ describe("Global Extension Tests", function () {
                 // Editor opened
                 expect(editor.document.getText().replace('\r', '')).to.be.equal(expectedFileContents.replace('\r', ''));
             }
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
         });
     });
     context("Webview", function () {

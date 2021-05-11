@@ -62,6 +62,9 @@ describe("Definition handler Tests", function () {
                     });
                 });
             });
+            after(async () => {
+                await commands.executeCommand('workbench.action.closeActiveEditor');
+            });
             it("Should find the used and free registers", async () => {
                 await expect(dHnd.provideUsedRegistersSymbols()).to.be.eventually.equal("Registers used: none - free: d0-d7/a0-a7");
             });

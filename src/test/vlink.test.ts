@@ -12,6 +12,9 @@ describe("VLINK Tests", function () {
         const newFile = vscode.Uri.parse("untitled://./vlink.s");
         return vscode.window.showTextDocument(newFile);
     });
+    after(async () => {
+        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    });
     context("VLINKLinker", function () {
         let linker: VLINKLinker;
         let executor: ExecutorHelper;

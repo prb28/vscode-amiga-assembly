@@ -30,6 +30,9 @@ describe("VASM Tests", function () {
     const newFile = vscode.Uri.parse("untitled://./vasm.s");
     return vscode.window.showTextDocument(newFile);
   });
+  after(async () => {
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+  });
   context("VASMCompiler", function () {
     let compiler: VASMCompiler;
     let spiedCompiler: VASMCompiler;

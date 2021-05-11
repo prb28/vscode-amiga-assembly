@@ -33,6 +33,9 @@ describe("Global Extension Tests", function () {
                 });
             });
         });
+        after(async () => {
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+        });
         beforeEach(async () => {
             // Set the editor contents
             const editor = vscode.window.activeTextEditor;
@@ -137,6 +140,9 @@ describe("Global Extension Tests", function () {
                     expect.fail("Edit not successful");
                 }
             });
+        });
+        after(async () => {
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
         });
         it("Should apply a formula to a selection and replace with the result", async () => {
             const editor = vscode.window.activeTextEditor;
