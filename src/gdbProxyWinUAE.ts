@@ -19,6 +19,7 @@ export class GdbProxyWinUAE extends GdbProxy {
         for (let th of threads) {
             this.sendEvent('threadStarted', th.getId());
         }
+        this.setReady();
     }
 
     /**
@@ -41,6 +42,7 @@ export class GdbProxyWinUAE extends GdbProxy {
                     let message = await self.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP);
                     await self.initProgram(stopOnEntry);
                     await self.parseStop(message);
+                    self.sendEvent("ready");
                     resolve();
                 } catch (err) {
                     reject(err);
@@ -91,6 +93,7 @@ export class GdbProxyWinUAE extends GdbProxy {
         if (!this.socket.writable) {
             throw new Error("The Gdb connection is not opened");
         } else {
+            await this.waitReady();
             if (this.segments && (segmentId !== undefined) && (segmentId >= this.segments.length)) {
                 throw new Error("Invalid breakpoint segment id: " + segmentId);
             } else if ((offset >= 0) || exceptionMask) {
@@ -128,6 +131,7 @@ export class GdbProxyWinUAE extends GdbProxy {
         let offset = breakpoint.offset;
         let exceptionMask = breakpoint.exceptionMask;
         let message: string | undefined = undefined;
+        await this.waitReady();
         if (this.segments && (segmentId !== undefined) && (segmentId < this.segments.length)) {
             message = 'z0,' + GdbProxy.formatNumber(this.toAbsoluteOffset(segmentId, offset));
         } else if (offset > 0) {

@@ -45,9 +45,15 @@ export class FileProxy {
     /**
      * Read a text file.
      */
-    public async readFileText(encoding?: string): Promise<string> {
-        let buffer = await this.readFile();
-        return buffer.toString(encoding);
+    public readFileText(encoding?: BufferEncoding): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let buffer = await this.readFile();
+                resolve(buffer.toString(encoding));
+            } catch (err) {
+                reject(err);
+            }
+        });
     }
 
 
