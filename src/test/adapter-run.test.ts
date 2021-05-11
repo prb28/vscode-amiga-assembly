@@ -21,13 +21,8 @@ describe('Node Debug Adapter Run', () => {
 	};
 	let dc: DebugClient;
 	let testWithRealEmulator = false;
-	let defaultTimeout = 10000;
 
 	before(function () {
-		if (testWithRealEmulator) {
-			defaultTimeout = 60000;
-		}
-		this.timeout(this.defaultTimeout);
 		// Opening file to activate the extension
 		const newFile = vscode.Uri.parse("untitled://./debug.s");
 		return vscode.window.showTextDocument(newFile);
@@ -37,7 +32,6 @@ describe('Node Debug Adapter Run', () => {
 		this.mockedExecutor = mock(ExecutorHelper);
 		this.executor = instance(this.mockedExecutor);
 		when(this.mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
-		this.timeout(this.defaultTimeout);
 		// start port listener on launch of first debug this.session
 		if (!this.server) {
 			// start listening on a random port
@@ -114,7 +108,6 @@ describe('Node Debug Adapter Run', () => {
 
 	describe('launch', () => {
 		it('should run program to the end', function () {
-			this.timeout(defaultTimeout);
 			return Promise.all([
 				dc.configurationSequence(),
 				dc.launch(launchArgs),

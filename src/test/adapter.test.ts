@@ -43,7 +43,7 @@ describe('Node Debug Adapter', () => {
 	let thCop = new GdbThread(1, GdbAmigaSysThreadIdFsUAE.COP);
 
 	before(async function () {
-		this.timeout(defaultTimeout);
+		//this.timeout(defaultTimeout);
 		GdbThread.setSupportMultiprocess(false);
 		// activate the extension
 		let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
@@ -54,25 +54,11 @@ describe('Node Debug Adapter', () => {
 		if (testWithRealEmulator) {
 			defaultTimeout = 60000;
 		}
-		// Opening file to activate the extension
-		this.timeout(this.defaultTimeout);
-		// start listening on a random port
-		this.server = Net.createServer(socket => {
-			this.session = new FsUAEDebugSession();
-			if (!testWithRealEmulator) {
-				this.session.setTestContext(this.gdbProxy, this.executor, this.capstone);
-			}
-			this.session.setRunAsServer(true);
-			this.session.start(<NodeJS.ReadableStream>socket, socket);
-			this.spiedSession = spy(this.session);
-			when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
-			when(this.spiedSession.updateDisassembledView(anything(), anything())).thenReturn(Promise.resolve());
-		}).listen(0);
 	});
 
 
-	beforeEach(function () {
-		this.timeout(defaultTimeout);
+	beforeEach(async function () {
+		//this.timeout(defaultTimeout);
 		this.mockedExecutor = mock(ExecutorHelper);
 		this.executor = instance(this.mockedExecutor);
 		this.mockedGdbProxy = mock(GdbProxy);
@@ -81,51 +67,65 @@ describe('Node Debug Adapter', () => {
 		when(this.mockedGdbProxy.on(anyString(), anything())).thenCall(async (event: string, callback: (() => void)) => {
 			callbacks.set(event, callback);
 		});
+		when(this.mockedGdbProxy.waitReady()).thenResolve();
 		this.gdbProxy = instance(this.mockedGdbProxy);
 		when(this.mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
-		this.timeout(this.defaultTimeout);
+		//this.timeout(this.defaultTimeout);
 		// start port listener on launch of first debug this.session
-		if (!this.server) {
-			// start listening on a random port
+		// start listening on a random port
+		return new Promise<void>(async (resolve) => {
 			this.server = Net.createServer(socket => {
 				this.session = new FsUAEDebugSession();
+				this.spiedSession = spy(this.session);
+				when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
+				when(this.spiedSession.updateDisassembledView(anything(), anything())).thenResolve();
 				if (!testWithRealEmulator) {
 					this.session.setTestContext(this.gdbProxy, this.executor, this.capstone);
 				}
 				this.session.setRunAsServer(true);
 				this.session.start(<NodeJS.ReadableStream>socket, socket);
-				this.spiedSession = spy(this.session);
+				resolve();
 			}).listen(0);
-		}
-		// make VS Code connect to debug server instead of launching debug adapter
-		dc = new DebugClient('node', DEBUG_ADAPTER, 'fs-uae');
-		let address: any = this.server.address();
-		let port = 0;
-		if (address instanceof Object) {
-			port = address.port;
-		}
-		return dc.start(port);
+			// make VS Code connect to debug server instead of launching debug adapter
+			dc = new DebugClient('node', DEBUG_ADAPTER, 'fs-uae');
+			let address: any = this.server.address();
+			let port = 0;
+			if (address instanceof Object) {
+				port = address.port;
+			}
+			await dc.start(port);
+		});
 	});
 
-	afterEach(function () {
-		reset(this.spiedSession);
-		reset(this.mockedExecutor);
-		reset(this.mockedGdbProxy);
-		return dc.stop();
-	});
-
-	after(function () {
-		this.session.shutdown();
-		this.server.close();
+	afterEach(async function () {
+		if (this.spiedSession) {
+			reset(this.spiedSession);
+		}
+		if (this.mockedExecutor) {
+			reset(this.mockedExecutor);
+		}
+		if (this.mockedGdbProxy) {
+			reset(this.mockedGdbProxy);
+		}
+		if (this.dc) {
+			await dc.stop();
+		}
+		if (this.session) {
+			this.session.shutdown();
+		}
+		if (this.server) {
+			this.server.close();
+		}
 	});
 
 	describe('basic', function () {
-		it('unknown request should produce error', function () {
-			return dc.send('illegal_request').then(function () {
-				return Promise.reject(new Error("does not report error on unknown request"));
-			}).catch(function () {
-				return Promise.resolve();
-			});
+		it('unknown request should produce error', async function () {
+			try {
+				await dc.send('illegal_request');
+				throw (new Error("does not report error on unknown request"));
+			} catch (err) {
+				//expected
+			}
 		});
 	});
 

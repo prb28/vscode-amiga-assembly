@@ -14,7 +14,7 @@ import { WinUAEDebugSession } from '../winUAEDebug';
 
 describe('Node Debug Adapter for WinUAE', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
-	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
+	const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapterWinUAE.js').replace(/\\+/g, '/');
 	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug').replace(/\\+/g, '/');
 	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae').replace(/\\+/g, '/');
 	const UAE_DRIVE = Path.join(FSUAE_ROOT, 'hd0').replace(/\\+/g, '/');
@@ -24,8 +24,8 @@ describe('Node Debug Adapter for WinUAE', () => {
 		serverName: 'localhost',
 		serverPort: 2345,
 		startEmulator: true,
-		emulator: Path.join(FSUAE_ROOT, 'fs-uae'),
-		options: [Path.join(FSUAE_ROOT, 'test.fs-uae')],
+		emulator: Path.join(FSUAE_ROOT, 'winuae'),
+		options: [Path.join(FSUAE_ROOT, 'test.uae')],
 		drive: Path.join(FSUAE_ROOT, 'hd0'),
 		sourceFileMap: {
 			"C:\\Users\\paulr\\workspace\\amiga\\projects\\vscode-amiga-wks-example": DATA_ROOT
@@ -34,11 +34,9 @@ describe('Node Debug Adapter for WinUAE', () => {
 	let dc: DebugClient;
 	let callbacks = new Map<string, any>();
 	let testWithRealEmulator = false;
-	let defaultTimeout = 5000;
 	let th = new GdbThread(0, GdbAmigaSysThreadIdWinUAE.CPU);
 
 	before(async function () {
-		this.timeout(defaultTimeout);
 		GdbThread.setSupportMultiprocess(false);
 		// activate the extension
 		let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
@@ -46,26 +44,10 @@ describe('Node Debug Adapter for WinUAE', () => {
 			await ext.activate();
 			await ExtensionState.getCurrent().getLanguage();
 		}
-		if (testWithRealEmulator) {
-			defaultTimeout = 60000;
-		}
-		// start listening on a random port
-		this.server = Net.createServer(socket => {
-			this.session = new WinUAEDebugSession();
-			if (!testWithRealEmulator) {
-				this.session.setTestContext(this.gdbProxy, this.executor, this.capstone);
-			}
-			this.session.setRunAsServer(true);
-			this.session.start(<NodeJS.ReadableStream>socket, socket);
-			this.spiedSession = spy(this.session);
-			when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
-			when(this.spiedSession.updateDisassembledView(anything(), anything())).thenReturn(Promise.resolve());
-		}).listen(0);
 	});
 
 
 	beforeEach(function () {
-		this.timeout(defaultTimeout);
 		this.mockedExecutor = mock(ExecutorHelper);
 		this.executor = instance(this.mockedExecutor);
 		this.mockedGdbProxy = mock(GdbProxy);
@@ -74,43 +56,55 @@ describe('Node Debug Adapter for WinUAE', () => {
 		when(this.mockedGdbProxy.on(anyString(), anything())).thenCall(async (event: string, callback: (() => void)) => {
 			callbacks.set(event, callback);
 		});
+		when(this.mockedGdbProxy.waitReady()).thenResolve();
 		when(this.mockedGdbProxy.getCurrentCpuThread()).thenReturn(th);
 		this.gdbProxy = instance(this.mockedGdbProxy);
 		when(this.mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
-		this.timeout(this.defaultTimeout);
 		// start port listener on launch of first debug this.session
-		if (!this.server) {
-			// start listening on a random port
+		// start listening on a random port
+		return new Promise<void>(async (resolve) => {
 			this.server = Net.createServer(socket => {
 				this.session = new WinUAEDebugSession();
 				if (!testWithRealEmulator) {
 					this.session.setTestContext(this.gdbProxy, this.executor, this.capstone);
 				}
+				this.spiedSession = spy(this.session);
+				when(this.spiedSession.checkEmulator(anything())).thenReturn(true);
+				when(this.spiedSession.updateDisassembledView(anything(), anything())).thenReturn(Promise.resolve());
 				this.session.setRunAsServer(true);
 				this.session.start(<NodeJS.ReadableStream>socket, socket);
-				this.spiedSession = spy(this.session);
+				resolve();
 			}).listen(0);
-		}
-		// make VS Code connect to debug server instead of launching debug adapter
-		dc = new DebugClient('node', DEBUG_ADAPTER, 'fs-uae');
-		let address: any = this.server.address();
-		let port = 0;
-		if (address instanceof Object) {
-			port = address.port;
-		}
-		return dc.start(port);
+			// make VS Code connect to debug server instead of launching debug adapter
+			dc = new DebugClient('node', DEBUG_ADAPTER, 'winuae');
+			let address: any = this.server.address();
+			let port = 0;
+			if (address instanceof Object) {
+				port = address.port;
+			}
+			await dc.start(port);
+		});
 	});
 
-	afterEach(function () {
-		reset(this.spiedSession);
-		reset(this.mockedExecutor);
-		reset(this.mockedGdbProxy);
-		return dc.stop();
-	});
-
-	after(function () {
-		this.session.shutdown();
-		this.server.close();
+	afterEach(async function () {
+		if (this.spiedSession) {
+			reset(this.spiedSession);
+		}
+		if (this.mockedExecutor) {
+			reset(this.mockedExecutor);
+		}
+		if (this.mockedGdbProxy) {
+			reset(this.mockedGdbProxy);
+		}
+		if (this.dc) {
+			await dc.stop();
+		}
+		if (this.session) {
+			this.session.shutdown();
+		}
+		if (this.server) {
+			this.server.close();
+		}
 	});
 
 	describe('launch', () => {
@@ -121,7 +115,6 @@ describe('Node Debug Adapter for WinUAE', () => {
 		});
 
 		it('should run program to the end', function () {
-			this.timeout(this.defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					let cb = callbacks.get('end');
@@ -138,7 +131,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 			]);
 		});
 		it('should stop on entry', function () {
-			this.timeout(defaultTimeout);
+
 			if (!testWithRealEmulator) {
 				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
@@ -192,7 +185,6 @@ describe('Node Debug Adapter for WinUAE', () => {
 			}
 		});
 		it('should step next', async function () {
-			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
@@ -276,7 +268,6 @@ describe('Node Debug Adapter for WinUAE', () => {
 			]);
 		});
 		it('should continue and stop', async function () {
-			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
@@ -334,7 +325,6 @@ describe('Node Debug Adapter for WinUAE', () => {
 			]);
 		});
 		it('should step out', async function () {
-			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
