@@ -174,6 +174,7 @@ describe("GdbProxyWinUAE Tests", function () {
             // Remove
             this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString('z0,5,0', anything())).thenResolve(RESPONSE_OK);
+            when(spiedProxy.waitReady()).thenResolve();
             let bp = createBreakpoint(0, 0, 5);
             await expect(proxy.removeBreakpoint(bp)).to.be.rejected;
             verify(spiedProxy.sendPacketString('z0,5,0', anything())).never();
