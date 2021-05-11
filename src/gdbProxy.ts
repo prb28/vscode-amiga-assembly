@@ -61,6 +61,8 @@ export class GdbProxy extends EventEmitter {
     protected receivedDataManager: GdbReceivedDataManager;
     /** Lock for sendPacketString function */
     protected sendPacketStringLock?: any;
+    /** If true the proxy is connected */
+    protected ready = false;
 
     /**
      * Constructor 
@@ -75,6 +77,26 @@ export class GdbProxy extends EventEmitter {
             this.socket = new Socket();
         }
         this.receivedDataManager = new GdbReceivedDataManager(this.defaultOnDataHandler);
+    }
+
+    /**
+     * Waits for the debugger to be ready: program loaded and debugger connected
+     */
+    public async waitReady(): Promise<void> {
+        if (!this.ready) {
+            await new Promise<void>(resolve => this.once('ready', () => {
+                this.ready = true;
+                resolve();
+            }));
+        }
+    }
+
+    /**
+     * Declares the debugger ready.
+     */
+    public setReady() {
+        this.ready = true;
+        this.sendEvent("ready");
     }
 
     /**
@@ -185,6 +207,7 @@ export class GdbProxy extends EventEmitter {
      * @param stopOnEntry If true we will stop on entry
      */
     public initProgram(stopOnEntry: boolean | undefined): Promise<void> {
+        this.setReady();
         return Promise.resolve();
     }
 
@@ -214,10 +237,11 @@ export class GdbProxy extends EventEmitter {
                             await self.getQOffsets();
                             // Call for thread dump
                             let threads = await self.getThreadIds();
+                            await self.parseStop(message);
+                            self.setReady();
                             for (let th of threads) {
                                 self.sendEvent('threadStarted', th.getId());
                             }
-                            await self.parseStop(message);
                             resolve();
                         } else {
                             throw new Error(GdbProxy.UNEXPECTED_RETURN_ERROR);

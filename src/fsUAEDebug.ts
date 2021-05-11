@@ -506,6 +506,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected async threadsRequest(response: DebugProtocol.ThreadsResponse): Promise<void> {
         try {
+            await this.gdbProxy.waitReady();
             let thIds = await this.gdbProxy.getThreadIds();
             let threads = new Array<Thread>();
             for (let t of thIds) {
@@ -522,6 +523,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): Promise<void> {
         if (this.debugInfo) {
+            await this.gdbProxy.waitReady();
             const dbgInfo = this.debugInfo;
             const thread = this.gdbProxy.getThread(args.threadId);
             if (thread) {
@@ -648,6 +650,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.sendResponse(response);
         } else {
             const id = this.variableHandles.get(args.variablesReference);
+            await this.gdbProxy.waitReady();
             if (id !== null) {
                 if (id.startsWith("registers_")) {
                     try {
@@ -760,6 +763,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): Promise<void> {
+        await this.gdbProxy.waitReady();
         let thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
@@ -777,6 +781,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): Promise<void> {
+        await this.gdbProxy.waitReady();
         let thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
@@ -791,6 +796,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments): Promise<void> {
+        await this.gdbProxy.waitReady();
         let thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
@@ -805,6 +811,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): Promise<void> {
+        await this.gdbProxy.waitReady();
         const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
@@ -825,6 +832,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     protected async evaluateRequestRegister(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
         // It's a reg value
         try {
+            await this.gdbProxy.waitReady();
             let value = await this.gdbProxy.getRegister(args.expression, args.frameId);
             response.body = {
                 result: value[0],
@@ -842,6 +850,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             address += args.offset;
         }
         try {
+            await this.gdbProxy.waitReady();
             let memory = await this.gdbProxy.getMemory(address, args.count);
             response.body = {
                 address: address.toString(),
@@ -854,6 +863,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     public async getMemory(address: number, size: number): Promise<string> {
+        await this.gdbProxy.waitReady();
         let memory = await this.gdbProxy.getMemory(address, size);
         return memory;
     }
@@ -866,6 +876,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             lSize = 4;
         }
         // call to get the value in memory for this address
+        await this.gdbProxy.waitReady();
         let memory = await this.gdbProxy.getMemory(address, lSize);
         return memory;
     }
@@ -884,6 +895,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         // Is it a register?
         let matches = /^([ad][0-7]|pc|sr)$/i.exec(variableName);
         if (matches) {
+            await this.gdbProxy.waitReady();
             let values = await this.gdbProxy.getRegister(variableName, frameIndex);
             return parseInt(values[0], 16);
         } else {
@@ -922,6 +934,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     // replace the address if it is a variable
                     let address = await this.debugExpressionHelper.getAddressFromExpression(matches[1], args.frameId, this);
                     // ask for memory dump
+                    await this.gdbProxy.waitReady();
                     let memory = await this.gdbProxy.getMemory(address, length);
                     let key = this.variableExpressionMap.get(args.expression);
                     if (!key) {
@@ -976,6 +989,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 try {
                     // replace the address if it is a variable
                     let address = await this.debugExpressionHelper.getAddressFromExpression(addrStr, args.frameId, this);
+                    await this.gdbProxy.waitReady();
                     await this.gdbProxy.setMemory(address, data);
                     args.expression = 'm' + addrStr + ',' + data.length.toString(16);
                     return this.evaluateRequestGetMemory(response, args);
@@ -1015,6 +1029,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): Promise<void> {
+        await this.gdbProxy.waitReady();
         let thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
@@ -1030,6 +1045,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected async exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments): Promise<void> {
         try {
+            await this.gdbProxy.waitReady();
             let haltStatus = await this.gdbProxy.getHaltStatus();
             let selectedHs: GdbHaltStatus = haltStatus[0];
             for (let hs of haltStatus) {

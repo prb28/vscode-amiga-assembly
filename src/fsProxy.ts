@@ -55,7 +55,7 @@ export class FileProxy {
     /**
      * Read a text file.
      */
-    public readFileText(encoding?: string): Promise<string> {
+    public readFileText(encoding?: BufferEncoding): Promise<string> {
         return new Promise(async (resolve, reject) => {
             try {
                 let buffer = await this.readFile();
@@ -289,7 +289,7 @@ export class FileProxy {
      * Deletes a file
      */
     delete() {
-        return new Promise(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
                 try {
                     if (await this.isDirectory()) {
