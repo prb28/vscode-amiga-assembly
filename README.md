@@ -12,6 +12,9 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
+## New in 0.21.2
+- Compatibility fix for vscode 1.56
+
 ## New in 0.21
 - Integration WinUAE (custom build)
 - Show CCR codes (Status register)
@@ -80,6 +83,8 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## 0.21.2
+- Compatibility fix for vscode 1.56
 ## 0.21.1
 - Bug fixes
 
