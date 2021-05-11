@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - [Issue #141](https://github.com/prb28/vscode-amiga-assembly/issues/141) If there are any compile/linker errors stop the emulation from running
 - [Issue #139](https://github.com/prb28/vscode-amiga-assembly/issues/139) Memory dump documentation is wrong
 
+### [0.21.2] - 2021-05-11
+- [Issue #156](https://github.com/prb28/vscode-amiga-assembly/issues/156) Incompatibility with vscode 1.56
+
 ### [0.21.1] - 2021-01-10
 - [Issue #135](https://github.com/prb28/vscode-amiga-assembly/issues/135) Regressions with 0.21 (default exceptions mask fix)
 
