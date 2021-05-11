@@ -119,9 +119,9 @@
             "dev": true
         },
         "@types/node": {
-            "version": "12.20.11",
-            "resolved": "https://registry.npmjs.org/@types/node/-/node-12.20.11.tgz",
-            "integrity": "sha512-gema+apZ6qLQK7k7F0dGkGCWQYsL0qqKORWOQO6tq46q+x+1C0vbOiOqOwRVlh4RAdbQwV/j/ryr3u5NOG1fPQ==",
+            "version": "15.0.2",
+            "resolved": "https://registry.npmjs.org/@types/node/-/node-15.0.2.tgz",
+            "integrity": "sha512-p68+a+KoxpoB47015IeYZYRrdqMUcpbK8re/zpFB8Ld46LHC1lPEbp3EXgkEhAYEcPvjJF6ZO+869SQ0aH1dcA==",
             "dev": true
         },
         "@types/temp": {
@@ -5514,9 +5514,9 @@
             "dev": true
         },
         "typescript": {
-            "version": "3.9.7",
-            "resolved": "https://registry.npmjs.org/typescript/-/typescript-3.9.7.tgz",
-            "integrity": "sha512-BLbiRkiBzAwsjut4x/dsibSTB6yWpwT5qWmC2OfuCg3GgVQCSgMs4vEctYPhsaGtd0AeuuHMkjZ2h2WG8MSzRw==",
+            "version": "4.2.4",
+            "resolved": "https://registry.npmjs.org/typescript/-/typescript-4.2.4.tgz",
+            "integrity": "sha512-V+evlYHZnQkaz8TRBuxTA92yZBPotr5H+WhQ7bD3hZUndx5tGOa1fuCgeSjxAzM1RiN5IzvadIXTVefuuwZCRg==",
             "dev": true
         },
         "uglify-js": {
