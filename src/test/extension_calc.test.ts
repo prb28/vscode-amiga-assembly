@@ -37,9 +37,12 @@ describe("Global Extension Tests", function () {
             // Set the editor contents
             const editor = vscode.window.activeTextEditor;
             if (editor) {
-                await editor.edit(edit => {
-                    edit.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 3)));
-                    edit.insert(new vscode.Position(0, 0), "3+2");
+                await new Promise<void>((resolve) => {
+                    editor.edit(edit => {
+                        edit.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 3)));
+                        edit.insert(new vscode.Position(0, 0), "3+2");
+                        resolve();
+                    });
                 });
                 await vscode.commands.executeCommand("cursorMove", { to: 'left', by: 'character', value: 3, select: true });
             } else {
@@ -99,10 +102,11 @@ describe("Global Extension Tests", function () {
             }
         });
         it("Should evaluate a selection and replace with the result", async () => {
+            this.timeout(60000);
             const editor = vscode.window.activeTextEditor;
             if (editor) {
                 await vscode.commands.executeCommand("amiga-assembly.evaluate-selection-replace");
-                expect(editor.document.getText()).to.be.equal("3+2");
+                expect(editor.document.getText()).to.be.equal("#5/$5/%101");
             } else {
                 expect.fail("Editor not available");
             }
@@ -123,15 +127,15 @@ describe("Global Extension Tests", function () {
                 edit.insert(newFile, new vscode.Position(0, 0), " dc.b $1, #10, #-1, $a, %1010, @1\n");
                 edit.insert(newFile, new vscode.Position(1, 0), " move.l #$80,d7\n");
                 edit.insert(newFile, new vscode.Position(2, 0), " dc.b $10,$21,$10,$41,$10,$61\n");
-                await vscode.workspace.applyEdit(edit).then(async (success) => {
-                    if (success) {
-                        await vscode.window.showTextDocument(document);
-                        await vscode.commands.executeCommand("cursorMove", { to: 'right', by: 'character', value: 12, select: true });
-                        await vscode.commands.executeCommand("cursorMove", { to: 'down', by: 'line', value: 1, select: true });
-                    } else {
-                        expect.fail("Edit not successful");
-                    }
-                });
+                let success = await vscode.workspace.applyEdit(edit);
+                if (success) {
+                    await vscode.window.showTextDocument(document);
+                    await vscode.commands.executeCommand("cursorMove", { to: 'up', by: 'line', value: 3, select: false });
+                    await vscode.commands.executeCommand("cursorMove", { to: 'right', by: 'character', value: 12, select: true });
+                    await vscode.commands.executeCommand("cursorMove", { to: 'down', by: 'line', value: 1, select: true });
+                } else {
+                    expect.fail("Edit not successful");
+                }
             });
         });
         it("Should apply a formula to a selection and replace with the result", async () => {
