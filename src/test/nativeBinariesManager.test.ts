@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { BinariesManager, TagInfo, Version } from '../nativeBinariesManager';
-import { spy, when, anything, mock } from 'ts-mockito/lib/ts-mockito';
-import { fail } from 'assert';
+import { spy, when, anything, mock, instance } from 'ts-mockito/lib/ts-mockito';
 import { CancellationToken, ExtensionContext, Uri } from 'vscode';
 import { FileDownloader } from '@microsoft/vscode-file-downloader-api';
 import * as temp from 'temp';
 import * as path from 'path';
 import * as fs from 'fs';
 import { FileDownloadSettings } from '@microsoft/vscode-file-downloader-api/out/FileDownloader';
+import { FileProxy } from '../fsProxy';
 
 describe("Native binaries manager tests", function () {
     context("Native binaries", function () {
@@ -58,7 +58,9 @@ describe("Native binaries manager tests", function () {
                 version: new Version(versionStr)
             });
             when(spyBinManager.listTagsFromGitHub()).thenResolve(tags);
-            expect(await binManager.getZipURL(new Version("0.23"))).to.be.equal(`http://local/refs/tags/0.22.1-${osName}.zip`);
+            let [vers, filename] = await binManager.getZipURL(new Version("0.22"));
+            expect(vers.toString()).to.be.equal("0.22.1");
+            expect(filename).to.be.equal(`http://local/refs/tags/0.22.1-${osName}.zip`);
         });
         it("Should retrieve the branch zip file if a tag is not found", async function () {
             let binManager = new BinariesManager("dummyDir", "0.23");
@@ -66,7 +68,9 @@ describe("Native binaries manager tests", function () {
             let tags = Array<TagInfo>();
             let branchName = binManager.getBranchName();
             when(spyBinManager.listTagsFromGitHub()).thenResolve(tags);
-            expect(await binManager.getZipURL(new Version("0.23"))).to.be.equal(`${BinariesManager.BINARIES_BRANCH_URL}/${branchName}.zip`);
+            let [vers, filename] = await binManager.getZipURL(new Version("0.23"));
+            expect(vers.toString()).to.be.equal("0.23.0");
+            expect(filename).to.be.equal(`${BinariesManager.BINARIES_BRANCH_URL}/${branchName}.zip`);
         });
         it("Should get version from path", function () {
             let binManager = new BinariesManager("dummyDir", "0.23");
@@ -77,30 +81,61 @@ describe("Native binaries manager tests", function () {
             expect(binManager.getVersionFromFilename(`/test/file/${vStr}`)).to.be.eql(v1);
         });
         it("Should get the master branch on tag retrieve exception", async function () {
-            fail("not implemented");
+            let binManager = new BinariesManager("dummyDir", "0.23");
+            let spyBinManager = spy(binManager);
+            let tags = Array<TagInfo>();
+            let branchName = binManager.getBranchName();
+            when(spyBinManager.listTagsFromGitHub()).thenReject(new Error("no tag"));
+            let [vers, filename] = await binManager.getZipURL(new Version("0.23"));
+            expect(vers.toString()).to.be.equal("0.23.0");
+            expect(filename).to.be.equal(`${BinariesManager.BINARIES_BRANCH_URL}/${branchName}.zip`);
         });
         it("Should remove the old binaries", async function () {
             let tempDir = temp.mkdirSync("tmpDirBinaries");
-            let subdir = path.join(tempDir, "subdir");
-            fs.mkdirSync(subdir);
+            let uri1 = Uri.file(path.join(tempDir, "1.2.3"));
+            fs.mkdirSync(uri1.fsPath);
+            let uri11 = Uri.file(path.join(uri1.fsPath, "subdir_1.2.3"));
+            fs.mkdirSync(uri11.fsPath);
+            let uri2 = Uri.file(path.join(tempDir, "0.2.3"));
+            fs.mkdirSync(uri2.fsPath);
 
             let binManager = new BinariesManager("dummyDir", "0.23");
             let spyBinManager = spy(binManager);
             let vStr = "1.2.3";
             let v1 = new Version(vStr);
-            let fileDownloader: FileDownloader = mock(FileDownloaderMock);
-            let downloadedFile = Uri.parse("file://local");
-            when(fileDownloader.downloadFile(anything(), anything(), anything(), anything(), anything())).thenResolve(downloadedFile);
-            when(fileDownloader.listDownloadedItems(anything())).thenResolve([Uri.file(tempDir)]);
+            let fileDownloaderMock = mock(FileDownloaderMock);
+            let downloadedFile = Uri.parse(tempDir);
+            when(fileDownloaderMock.downloadFile(anything(), anything(), anything(), anything(), anything(), anything())).thenResolve(downloadedFile);
+            when(fileDownloaderMock.listDownloadedItems(anything())).thenResolve([uri1, uri2]);
+            let fileDownloader = instance(fileDownloaderMock);
             when(spyBinManager.getFileDownloader()).thenResolve(fileDownloader);
-            when(spyBinManager.deleteDirectory(anything())).thenResolve();
             when(spyBinManager.getZipURL(anything())).thenResolve([v1, "http://mydownnload"]);
 
             let fUri = await binManager.downloadBinaries(<ExtensionContext>{}, vStr);
-            expect(fUri.fsPath).to.be.equal("fffff");
+            expect(fUri.fsPath).to.be.equal(uri11.fsPath);
+            // Check if other dir was deleted
+            let fProxy = new FileProxy(Uri.parse(tempDir));
+            let files = await fProxy.listFiles();
+            expect(files.length).to.be.equal(1);
+            expect(path.basename(files[0].getUri().fsPath)).to.be.eql(path.basename(uri1.fsPath));
         });
-        it("Should throw an exception when the binaries could not b e retrieved", async function () {
-            fail("not implemented");
+        it("Should throw an exception when the binaries could not be retrieved", async function () {
+            let tempDir = "tmp";
+            let uri1 = Uri.file(path.join(tempDir, "1.2.3"));
+            let uri2 = Uri.file(path.join(tempDir, "0.2.3"));
+
+            let binManager = new BinariesManager("dummyDir", "0.23");
+            let spyBinManager = spy(binManager);
+            let vStr = "1.2.3";
+            let v1 = new Version(vStr);
+            let fileDownloaderMock = mock(FileDownloaderMock);
+            when(fileDownloaderMock.downloadFile(anything(), anything(), anything(), anything(), anything(), anything())).thenReject(new Error("not good"));
+            when(fileDownloaderMock.listDownloadedItems(anything())).thenResolve([uri1, uri2]);
+            let fileDownloader = instance(fileDownloaderMock);
+            when(spyBinManager.getFileDownloader()).thenResolve(fileDownloader);
+            when(spyBinManager.getZipURL(anything())).thenResolve([v1, "http://mydownnload"]);
+
+            expect(binManager.downloadBinaries(<ExtensionContext>{}, vStr)).to.be.rejected;
         });
     });
     context("Version class", function () {

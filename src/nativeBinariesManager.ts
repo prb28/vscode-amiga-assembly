@@ -3,6 +3,7 @@ import * as path from 'path';
 import { getApi, FileDownloader } from "@microsoft/vscode-file-downloader-api";
 import axios from 'axios';
 import { FileProxy } from "./fsProxy";
+import winston = require("winston");
 
 /**
  * Interface to store the Github Tag informations
@@ -97,7 +98,7 @@ export class Version {
      * @returns A version or null if it not a version format
      */
     public static parse(version: string): Version | null {
-        if (version.match("[\d\.]+")) {
+        if (version.match(/^[\d\.]+$/)) {
             return new Version(version);
         }
         return null;
@@ -154,13 +155,13 @@ export class BinariesManager {
         const [downloadedVersion, url] = await this.getZipURL(new Version(version));
         const uri = Uri.parse(url);
         // List all the download files
-        let downloadedFiles = await this.listAllDownloadedFiles(context);
+        let downloadedFiles: Uri[] = await this.listAllDownloadedFiles(context);
         let fileUri: Uri | undefined;
         for (let file of downloadedFiles) {
             let vDir = this.getVersionFromFilename(file.path);
             if (vDir) {
                 if (vDir.compare(downloadedVersion) !== 0) {
-                    this.deleteDirectory(file);
+                    await this.deleteDirectory(file);
                 } else {
                     fileUri = file;
                 }
@@ -234,17 +235,22 @@ export class BinariesManager {
      */
     public async getZipURL(version: Version): Promise<[Version, string]> {
         const osName = this.getOsName();
-        let tagInfos = await this.listTagsFromGitHub();
-        let bestTagInfo: TagInfo | undefined;
-        for (let tag of tagInfos) {
-            if (tag.os === osName) {
-                if (version.isCompatible(tag.version) && (!bestTagInfo || bestTagInfo.version.compare(tag.version) > 0)) {
-                    bestTagInfo = tag;
+        try {
+            let tagInfos = await this.listTagsFromGitHub();
+            let bestTagInfo: TagInfo | undefined;
+            for (let tag of tagInfos) {
+                if (tag.os === osName) {
+                    if (version.isCompatible(tag.version) && (!bestTagInfo || bestTagInfo.version.compare(tag.version) > 0)) {
+                        bestTagInfo = tag;
+                    }
                 }
             }
-        }
-        if (bestTagInfo) {
-            return [bestTagInfo.version, `${bestTagInfo.zipball_url}`];
+            if (bestTagInfo) {
+                return [bestTagInfo.version, `${bestTagInfo.zipball_url}`];
+            }
+        } catch (error) {
+            // Use the master...
+            winston.error("Error retrieving tags from github", error);
         }
         // no tag : the master is returned
         let branchName = this.getBranchName();
@@ -287,8 +293,7 @@ export class BinariesManager {
      */
     public async listAllDownloadedFiles(context: ExtensionContext): Promise<Uri[]> {
         const fileDownloader: FileDownloader = await this.getFileDownloader();
-        let files = await fileDownloader.listDownloadedItems(context);
-        return files;
+        return await fileDownloader.listDownloadedItems(context);
     }
 
     /**
