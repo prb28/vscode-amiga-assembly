@@ -83,7 +83,6 @@ export class BreakpointManager {
 
     public async setBreakpoint(debugBp: GdbBreakpoint): Promise<GdbBreakpoint> {
         try {
-            await this.gdbProxy.waitReady();
             if (debugBp.source && debugBp.line && (debugBp.id !== undefined)) {
                 debugBp.verified = false;
                 const path = <string>debugBp.source.path;

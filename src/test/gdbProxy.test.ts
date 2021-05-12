@@ -198,7 +198,7 @@ describe("GdbProxy Tests", function () {
             verify(spiedProxy.sendPacketString('Z0,4,0', anything())).never();
         });
         it("Should get an error when removing breakpoint without connection", async function () {
-            // Remove
+            when(spiedProxy.waitConnected()).thenResolve();
             when(spiedProxy.sendPacketString('z0,5,0', anything())).thenResolve(RESPONSE_OK);
             let bp = createBreakpoint(0, 0, 5);
             await expect(proxy.removeBreakpoint(bp)).to.be.rejected;

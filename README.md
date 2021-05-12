@@ -93,6 +93,10 @@ The assembly language will be formatted with the standard shortcuts :
 - Selection of display format for variables
 - Bug fixes
 
+## 0.21.3
+- Bug fixes
+## 0.21.2
+- Compatibility fix for vscode 1.56
 ## 0.21.1
 - Bug fixes
 

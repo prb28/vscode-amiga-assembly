@@ -56,7 +56,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 		when(this.mockedGdbProxy.on(anyString(), anything())).thenCall(async (event: string, callback: (() => void)) => {
 			callbacks.set(event, callback);
 		});
-		when(this.mockedGdbProxy.waitReady()).thenResolve();
+		when(this.mockedGdbProxy.waitConnected()).thenResolve();
 		when(this.mockedGdbProxy.getCurrentCpuThread()).thenReturn(th);
 		this.gdbProxy = instance(this.mockedGdbProxy);
 		when(this.mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
