@@ -265,7 +265,7 @@ export class BinariesManager {
      */
     public async getDownloadedFile(filename: string, context: ExtensionContext): Promise<Uri> {
         const fileDownloader: FileDownloader = await this.getFileDownloader();
-        return await fileDownloader.getItem(filename, context);
+        return fileDownloader.getItem(filename, context);
     }
 
     /**
@@ -293,7 +293,7 @@ export class BinariesManager {
      */
     public async listAllDownloadedFiles(context: ExtensionContext): Promise<Uri[]> {
         const fileDownloader: FileDownloader = await this.getFileDownloader();
-        return await fileDownloader.listDownloadedItems(context);
+        return fileDownloader.listDownloadedItems(context);
     }
 
     /**
@@ -314,7 +314,7 @@ export class BinariesManager {
      * @returns Local uri of the downloaded file
      */
     public async downloadFile(name: string, uri: Uri, outPath: string, context: ExtensionContext, extract?: boolean): Promise<Uri> {
-        return await window.withProgress<Uri>({
+        return window.withProgress<Uri>({
             location: ProgressLocation.Notification,
             title: `Downloading ${name} `,
             cancellable: true
