@@ -83,7 +83,6 @@ describe("Native binaries manager tests", function () {
         it("Should get the master branch on tag retrieve exception", async function () {
             let binManager = new BinariesManager("dummyDir", "0.23");
             let spyBinManager = spy(binManager);
-            let tags = Array<TagInfo>();
             let branchName = binManager.getBranchName();
             when(spyBinManager.listTagsFromGitHub()).thenReject(new Error("no tag"));
             let [vers, filename] = await binManager.getZipURL(new Version("0.23"));
