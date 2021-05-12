@@ -90,9 +90,6 @@ describe("GdbProxyWinUAE Tests", function () {
             socket = instance(mockedSocket);
             proxy = new GdbProxyWinUAE(socket);
             spiedProxy = spy(proxy);
-            // proxy.on('output', (text: string, filePath?: string, line?: number, column?: number, level?: string) => {
-            //     console.info(text);
-            // });
         });
         afterEach(function () {
             reset(mockedSocket);
@@ -143,6 +140,7 @@ describe("GdbProxyWinUAE Tests", function () {
         });
         it("Should generate an error with on threadInfo error", async function () {
             this.timeout(defaultTimeout);
+            when(spiedProxy.waitConnected()).thenResolve();
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
@@ -174,7 +172,7 @@ describe("GdbProxyWinUAE Tests", function () {
             // Remove
             this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString('z0,5,0', anything())).thenResolve(RESPONSE_OK);
-            when(spiedProxy.waitReady()).thenResolve();
+            when(spiedProxy.waitConnected()).thenResolve();
             let bp = createBreakpoint(0, 0, 5);
             await expect(proxy.removeBreakpoint(bp)).to.be.rejected;
             verify(spiedProxy.sendPacketString('z0,5,0', anything())).never();

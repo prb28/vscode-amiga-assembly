@@ -62,7 +62,7 @@ export class GdbProxy extends EventEmitter {
     /** Lock for sendPacketString function */
     protected sendPacketStringLock?: any;
     /** If true the proxy is connected */
-    protected ready = false;
+    protected connected = false;
 
     /**
      * Constructor 
@@ -80,23 +80,22 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Waits for the debugger to be ready: program loaded and debugger connected
+     * Waits for the debugger connected
      */
-    public async waitReady(): Promise<void> {
-        if (!this.ready) {
-            await new Promise<void>(resolve => this.once('ready', () => {
-                this.ready = true;
+    public async waitConnected(): Promise<void> {
+        if (!this.connected) {
+            await new Promise<void>(resolve => this.once('gdbConnected', () => {
                 resolve();
             }));
         }
     }
 
     /**
-     * Declares the debugger ready.
+     * Declares the debugger connected.
      */
-    public setReady() {
-        this.ready = true;
-        this.sendEvent("ready");
+    public setConnected() {
+        this.connected = true;
+        this.sendEvent("gdbConnected");
     }
 
     /**
@@ -123,6 +122,7 @@ export class GdbProxy extends EventEmitter {
                     } else {
                         throw new Error("QStartNoAckMode not active in remote debug");
                     }
+                    self.setConnected();
                     resolve();
                 } catch (error) {
                     reject(error);
@@ -169,7 +169,6 @@ export class GdbProxy extends EventEmitter {
             case GdbPacketType.PLUS:
             case GdbPacketType.UNKNOWN:
             default:
-                //console.log("Packet ignored by onData : " + packet.message);
                 break;
         }
         return consumed;
@@ -206,9 +205,8 @@ export class GdbProxy extends EventEmitter {
      * Message to initialize the program
      * @param stopOnEntry If true we will stop on entry
      */
-    public initProgram(stopOnEntry: boolean | undefined): Promise<void> {
-        this.setReady();
-        return Promise.resolve();
+    public async initProgram(stopOnEntry: boolean | undefined): Promise<void> {
+        await this.waitConnected();
     }
 
     /**
@@ -238,7 +236,6 @@ export class GdbProxy extends EventEmitter {
                             // Call for thread dump
                             let threads = await self.getThreadIds();
                             await self.parseStop(message);
-                            self.setReady();
                             for (let th of threads) {
                                 self.sendEvent('threadStarted', th.getId());
                             }
@@ -396,6 +393,7 @@ export class GdbProxy extends EventEmitter {
                     }
                     message = 'Z0,' + GdbProxy.formatNumber(offset) + segStr;
                 }
+                await self.waitConnected();
                 await this.sendPacketString(message, GdbPacketType.OK);
                 breakpoint.verified = true;
                 breakpoint.message = undefined;
@@ -439,6 +437,7 @@ export class GdbProxy extends EventEmitter {
         } else {
             throw new Error("No segments are defined or segmentId is invalid, is the debugger connected?");
         }
+        await this.waitConnected();
         await this.sendPacketString(message, GdbPacketType.OK);
     }
 
@@ -1018,7 +1017,7 @@ export class GdbProxy extends EventEmitter {
             let regIdx = this.getRegisterIndex(name);
             if (regIdx !== null) {
                 let message = "P" + regIdx.toString(16) + "=" + value;
-                return await this.sendPacketString(message, null);
+                return this.sendPacketString(message, null);
             } else {
                 throw new Error("Invalid register name: " + name);
             }

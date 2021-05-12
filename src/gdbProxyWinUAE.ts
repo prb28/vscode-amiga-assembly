@@ -13,13 +13,13 @@ export class GdbProxyWinUAE extends GdbProxy {
      * @param stopOnEntry If true we will stop on entry
      */
     public async initProgram(stopOnEntry: boolean | undefined): Promise<void> {
+        await this.waitConnected();
         await this.getQOffsets();
         // Call for thread dump
         let threads = await this.getThreadIds();
         for (let th of threads) {
             this.sendEvent('threadStarted', th.getId());
         }
-        this.setReady();
     }
 
     /**
@@ -93,7 +93,7 @@ export class GdbProxyWinUAE extends GdbProxy {
         if (!this.socket.writable) {
             throw new Error("The Gdb connection is not opened");
         } else {
-            await this.waitReady();
+            await this.waitConnected();
             if (this.segments && (segmentId !== undefined) && (segmentId >= this.segments.length)) {
                 throw new Error("Invalid breakpoint segment id: " + segmentId);
             } else if ((offset >= 0) || exceptionMask) {
@@ -131,7 +131,7 @@ export class GdbProxyWinUAE extends GdbProxy {
         let offset = breakpoint.offset;
         let exceptionMask = breakpoint.exceptionMask;
         let message: string | undefined = undefined;
-        await this.waitReady();
+        await this.waitConnected();
         if (this.segments && (segmentId !== undefined) && (segmentId < this.segments.length)) {
             message = 'z0,' + GdbProxy.formatNumber(this.toAbsoluteOffset(segmentId, offset));
         } else if (offset > 0) {
@@ -310,7 +310,6 @@ export class GdbProxyWinUAE extends GdbProxy {
                 command = 'Hg' + thread.getThreadId();
             }
             let message = await this.sendPacketString(command, GdbPacketType.UNKNOWN);
-            //console.trace("register : " + data.toString());
             let registers = new Array<GdbRegister>();
             let pos = 0;
             let letter = 'd';
@@ -401,7 +400,7 @@ export class GdbProxyWinUAE extends GdbProxy {
             let regIdx = this.getRegisterIndex(name);
             if (regIdx !== null) {
                 let message = "P" + regIdx.toString(16) + "=" + value;
-                return await this.sendPacketString(message, GdbPacketType.OK);
+                return this.sendPacketString(message, GdbPacketType.OK);
             } else {
                 throw new Error("Invalid register name: " + name);
             }

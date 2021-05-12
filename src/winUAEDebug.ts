@@ -48,7 +48,6 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
     }
 
     protected async nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): Promise<void> {
-        await this.gdbProxy.waitReady();
         const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
@@ -67,7 +66,6 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
     }
 
     protected async stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): Promise<void> {
-        await this.gdbProxy.waitReady();
         const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
