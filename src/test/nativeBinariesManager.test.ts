@@ -23,6 +23,7 @@ describe("Native binaries manager tests", function () {
                     found = true;
                 }
             }
+            // tslint:disable-next-line: no-unused-expression
             expect(found).to.be.true;
         });
         it("Should the latest zip file", async function () {
@@ -76,7 +77,9 @@ describe("Native binaries manager tests", function () {
             let binManager = new BinariesManager("dummyDir", "0.23");
             let vStr = "1.2.3";
             let v1 = new Version(vStr);
+            // tslint:disable-next-line: no-unused-expression
             expect(binManager.getVersionFromFilename("foo")).to.be.null;
+            // tslint:disable-next-line: no-unused-expression
             expect(binManager.getVersionFromFilename(`/test/file/test-${vStr}`)).to.be.null;
             expect(binManager.getVersionFromFilename(`/test/file/${vStr}`)).to.be.eql(v1);
         });
@@ -93,7 +96,7 @@ describe("Native binaries manager tests", function () {
             let tempDir = temp.mkdirSync("tmpDirBinaries");
             let uri1 = Uri.file(path.join(tempDir, "1.2.3"));
             fs.mkdirSync(uri1.fsPath);
-            let uri11 = Uri.file(path.join(uri1.fsPath, "subdir_1.2.3"));
+            let uri11 = Uri.file(path.join(uri1.fsPath, "subDir_1.2.3"));
             fs.mkdirSync(uri11.fsPath);
             let uri2 = Uri.file(path.join(tempDir, "0.2.3"));
             fs.mkdirSync(uri2.fsPath);
@@ -134,6 +137,7 @@ describe("Native binaries manager tests", function () {
             when(spyBinManager.getFileDownloader()).thenResolve(fileDownloader);
             when(spyBinManager.getZipURL(anything())).thenResolve([v1, "http://mydownnload"]);
 
+            // tslint:disable-next-line: no-unused-expression
             expect(binManager.downloadBinaries(<ExtensionContext>{}, vStr)).to.be.rejected;
         });
     });
@@ -164,10 +168,15 @@ describe("Native binaries manager tests", function () {
         });
         it("Should verify if versions are compatible", function () {
             let v1 = new Version("1.2.3");
+            // tslint:disable-next-line: no-unused-expression
             expect(v1.isCompatible(new Version(""))).to.be.false;
+            // tslint:disable-next-line: no-unused-expression
             expect(v1.isCompatible(new Version("2.2.3"))).to.be.false;
+            // tslint:disable-next-line: no-unused-expression
             expect(v1.isCompatible(new Version("1.3.3"))).to.be.false;
+            // tslint:disable-next-line: no-unused-expression
             expect(v1.isCompatible(new Version("1.2.4"))).to.be.true;
+            // tslint:disable-next-line: no-unused-expression
             expect(v1.isCompatible(new Version("1.2"))).to.be.true;
         });
     });

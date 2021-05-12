@@ -38,7 +38,7 @@ export class FileProxy {
                 type: fDirectStat.isFile() ? FileType.File : FileType.Directory
             };
         } else {
-            return await workspace.fs.stat(this.uri);
+            return workspace.fs.stat(this.uri);
         }
     }
 
@@ -126,7 +126,7 @@ export class FileProxy {
             }
             return values;
         } else {
-            return await workspace.fs.readDirectory(this.uri);
+            return workspace.fs.readDirectory(this.uri);
         }
     }
 

@@ -6,7 +6,7 @@ import { FileProxy } from "./fsProxy";
 import winston = require("winston");
 
 /**
- * Interface to store the Github Tag informations
+ * Interface to store the Github Tag information
  */
 export interface TagInfo {
     /** Name of the tag */
@@ -176,7 +176,7 @@ export class BinariesManager {
     }
 
     /**
-     * List all the tags of the binaries projet.
+     * List all the tags of the binaries project.
      * @returns List of tag infos
      */
     public async listTagsFromGitHub(): Promise<Array<TagInfo>> {

@@ -298,6 +298,7 @@ describe("VASM Tests", function () {
           expect.fail("Should reject");
         })
         .catch(lError => {
+          // tslint:disable-next-line: no-unused-expression
           expect(lError.message.includes(error.message)).to.be.true;
         });
     });

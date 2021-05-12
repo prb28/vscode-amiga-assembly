@@ -6,20 +6,8 @@
     "search.exclude": {
         "out": true // set this to false to include "out" folder in search results
     },
-    //"spellright.language": "en",
-    //"spellright.documentTypes": [
-    //    "latex"
-    //],
     "typescript.tsdk": "./node_modules/typescript/lib", // we want to use the TS server from our node_modules folder to control its version
     "editor.formatOnSave": true,
-    "spellright.language": [
-        "en"
-    ],
-    "spellright.documentTypes": [
-        "markdown",
-        "latex",
-        "plaintext"
-    ],
     "python.linting.pylintEnabled": false,
     "python.linting.pycodestyleEnabled": true,
     "python.linting.enabled": false,
@@ -206,7 +194,7 @@
         "webview's",
         "webviews",
         "winuae",
-        "workdir"
-    ],
-    "C_Cpp.default.compilerPath": "c:\\Users\\paulr\\.vscode\\extensions\\bartmanabyss.amiga-debug-1.0.0\\bin\\opt\\bin\\m68k-amiga-elf-gcc.exe",
+        "workdir",
+        "zipball"
+    ]
 }

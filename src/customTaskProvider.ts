@@ -97,6 +97,7 @@ class AmigaBuildTaskTerminal implements Pseudoterminal {
 	}
 
 	close(): void {
+		// nothing to do during close
 	}
 
 	private async doBuild(): Promise<void> {

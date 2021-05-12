@@ -204,8 +204,6 @@ export class ASMLine {
                     let range = new Range(new Position(lineNumber, startPos), new Position(lineNumber, endPos));
                     if (pos === 0) {
                         if (leadingSpacesCount <= 0) {
-                            //this.label = l.substring(0, keywordIndex).trim();
-                            //this.labelRange = new Range(new Position(lineNumber, startPosValue), new Position(lineNumber, startPosInstruction + this.label.length));
                             this.label = word;
                             this.labelRange = range;
                         } else {
@@ -218,7 +216,7 @@ export class ASMLine {
                         this.spacesLabelToInstructionRange = new Range(new Position(lineNumber, endPos), new Position(lineNumber, endPos + spacesCount));
                     } else {
                         this.data = word;
-                        this.dataRange = range;//new Range(new Position(lineNumber, startPos), new Position(lineNumber, endPosData));
+                        this.dataRange = range;
                         this.spacesInstructionToDataRange = new Range(new Position(lineNumber, endPos), new Position(lineNumber, endPos + spacesCount));
                         break;
                     }
