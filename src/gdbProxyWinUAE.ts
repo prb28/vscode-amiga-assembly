@@ -13,7 +13,7 @@ export class GdbProxyWinUAE extends GdbProxy {
      * @param stopOnEntry If true we will stop on entry
      */
     public async initProgram(stopOnEntry: boolean | undefined): Promise<void> {
-        await this.waitConnected();
+        this.setConnected();
         await this.getQOffsets();
         // Call for thread dump
         let threads = await this.getThreadIds();
@@ -42,7 +42,6 @@ export class GdbProxyWinUAE extends GdbProxy {
                     let message = await self.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP);
                     await self.initProgram(stopOnEntry);
                     await self.parseStop(message);
-                    self.sendEvent("ready");
                     resolve();
                 } catch (err) {
                     reject(err);

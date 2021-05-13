@@ -122,7 +122,6 @@ export class GdbProxy extends EventEmitter {
                     } else {
                         throw new Error("QStartNoAckMode not active in remote debug");
                     }
-                    self.setConnected();
                     resolve();
                 } catch (error) {
                     reject(error);
@@ -206,7 +205,7 @@ export class GdbProxy extends EventEmitter {
      * @param stopOnEntry If true we will stop on entry
      */
     public async initProgram(stopOnEntry: boolean | undefined): Promise<void> {
-        await this.waitConnected();
+        // nothing
     }
 
     /**
@@ -235,6 +234,7 @@ export class GdbProxy extends EventEmitter {
                             await self.getQOffsets();
                             // Call for thread dump
                             let threads = await self.getThreadIds();
+                            self.setConnected();
                             await self.parseStop(message);
                             for (let th of threads) {
                                 self.sendEvent('threadStarted', th.getId());
