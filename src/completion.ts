@@ -13,74 +13,72 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         this.definitionHandler = definitionHandler;
         this.language = language;
     }
-    public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionItem[]> {
-        return new Promise(async (resolve, _reject) => {
-            let completions = new Array<vscode.CompletionItem>();
-            let range = document.getWordRangeAtPosition(position);
-            let line = document.lineAt(position.line);
-            let text = line.text;
-            let lastChar = "";
-            if (position.character > 0) {
-                lastChar = line.text.charAt(position.character - 1);
-            }
-            let asmLine = new ASMLine(text, line);
-            if (range) {
-                let word = document.getText(range);
-                let isInComment = (range.intersection(asmLine.commentRange) !== undefined);
-                let isInInstruction = (range.intersection(asmLine.instructionRange) !== undefined);
-                if ((!isInComment) && ((!isInInstruction) || ((lastChar !== ".") && (!asmLine.instruction.includes("."))))) {
-                    let labelsAdded = new Array<string>();
-                    let isInData = (range.intersection(asmLine.dataRange) !== undefined);
-                    // In the documentation
-                    let values = await this.documentationManager.findKeywordStartingWith(word);
-                    if (values) {
-                        for (const value of values) {
-                            let label = value.name;
-                            let kind = vscode.CompletionItemKind.Function;
-                            if (isInData) {
-                                if (value.type === DocumentationType.INSTRUCTION) {
-                                    continue;
-                                } else {
-                                    if (value.type === DocumentationType.REGISTER) {
-                                        kind = vscode.CompletionItemKind.Variable;
-                                    } else if (word.startsWith("_LVO")) {
-                                        label = "_LVO" + label;
-                                    }
-                                }
-                            } else if (value.type !== DocumentationType.INSTRUCTION) {
+    public async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionItem[]> {
+        const completions = new Array<vscode.CompletionItem>();
+        const range = document.getWordRangeAtPosition(position);
+        const line = document.lineAt(position.line);
+        const text = line.text;
+        let lastChar = "";
+        if (position.character > 0) {
+            lastChar = line.text.charAt(position.character - 1);
+        }
+        const asmLine = new ASMLine(text, line);
+        if (range) {
+            const word = document.getText(range);
+            const isInComment = (range.intersection(asmLine.commentRange) !== undefined);
+            const isInInstruction = (range.intersection(asmLine.instructionRange) !== undefined);
+            if ((!isInComment) && ((!isInInstruction) || ((lastChar !== ".") && (!asmLine.instruction.includes("."))))) {
+                const labelsAdded = new Array<string>();
+                const isInData = (range.intersection(asmLine.dataRange) !== undefined);
+                // In the documentation
+                const values = await this.documentationManager.findKeywordStartingWith(word);
+                if (values) {
+                    for (const value of values) {
+                        let label = value.name;
+                        let kind = vscode.CompletionItemKind.Function;
+                        if (isInData) {
+                            if (value.type === DocumentationType.INSTRUCTION) {
                                 continue;
+                            } else {
+                                if (value.type === DocumentationType.REGISTER) {
+                                    kind = vscode.CompletionItemKind.Variable;
+                                } else if (word.startsWith("_LVO")) {
+                                    label = "_LVO" + label;
+                                }
                             }
-                            let completion = new vscode.CompletionItem(label, kind);
-                            completion.documentation = new vscode.MarkdownString(value.description);
-                            completions.push(completion);
-                            labelsAdded.push(label);
+                        } else if (value.type !== DocumentationType.INSTRUCTION) {
+                            continue;
                         }
-                    }
-                    if (isInData) {
-                        // In the current symbols
-                        let variables: Map<string, string | undefined> = this.definitionHandler.findVariableStartingWith(word);
-                        for (const [variable, value] of variables.entries()) {
-                            if (!labelsAdded.includes(variable)) {
-                                let kind = vscode.CompletionItemKind.Variable;
-                                let completion = new vscode.CompletionItem(variable, kind);
-                                completion.detail = value;
-                                completions.push(completion);
-                            }
-                        }
+                        const completion = new vscode.CompletionItem(label, kind);
+                        completion.documentation = new vscode.MarkdownString(value.description);
+                        completions.push(completion);
+                        labelsAdded.push(label);
                     }
                 }
-            } else if ((lastChar === ".") && asmLine.instructionRange.contains(position.translate(undefined, -1))) {
-                let localRange = document.getWordRangeAtPosition(position.translate(undefined, -1));
-                let word = document.getText(localRange);
-                let extensions = this.language.getExtensions(word);
-                if (extensions) {
-                    for (let ext of extensions) {
-                        let completion = new vscode.CompletionItem(ext, vscode.CompletionItemKind.Unit);
-                        completions.push(completion);
+                if (isInData) {
+                    // In the current symbols
+                    const variables: Map<string, string | undefined> = this.definitionHandler.findVariableStartingWith(word);
+                    for (const [variable, value] of variables.entries()) {
+                        if (!labelsAdded.includes(variable)) {
+                            const kind = vscode.CompletionItemKind.Variable;
+                            const completion = new vscode.CompletionItem(variable, kind);
+                            completion.detail = value;
+                            completions.push(completion);
+                        }
                     }
                 }
             }
-            resolve(completions);
-        });
+        } else if ((lastChar === ".") && asmLine.instructionRange.contains(position.translate(undefined, -1))) {
+            const localRange = document.getWordRangeAtPosition(position.translate(undefined, -1));
+            const word = document.getText(localRange);
+            const extensions = this.language.getExtensions(word);
+            if (extensions) {
+                for (const ext of extensions) {
+                    const completion = new vscode.CompletionItem(ext, vscode.CompletionItemKind.Unit);
+                    completions.push(completion);
+                }
+            }
+        }
+        return completions;
     }
 }

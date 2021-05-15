@@ -375,7 +375,7 @@ export class MemoryLabelsRegistry {
         if (MemoryLabelsRegistry.customMap === undefined) {
             MemoryLabelsRegistry.customMap = new Map<string, CustomData>();
             MemoryLabelsRegistry.customMapByAddr = new Map<number, CustomData>();
-            for (let d of MemoryLabelsRegistry.customData) {
+            for (const d of MemoryLabelsRegistry.customData) {
                 MemoryLabelsRegistry.customMap.set(d.name, d);
                 MemoryLabelsRegistry.customMapByAddr.set(d.adr, d);
             }
@@ -400,7 +400,7 @@ export class MemoryLabelsRegistry {
     public static getCustomName(address: number): string | undefined {
         MemoryLabelsRegistry.prepareCustomMap();
         if (MemoryLabelsRegistry.customMapByAddr) {
-            let d = MemoryLabelsRegistry.customMapByAddr.get(address);
+            const d = MemoryLabelsRegistry.customMapByAddr.get(address);
             if (d) {
                 return d.name;
             }
@@ -413,10 +413,10 @@ export class MemoryLabelsRegistry {
         if (copperIndex !== 1) {
             registerName = "COP2LCH";
         }
-        let copperHigh = MemoryLabelsRegistry.getCustomAddress(registerName);
+        const copperHigh = MemoryLabelsRegistry.getCustomAddress(registerName);
         if (copperHigh !== undefined) {
             // Getting the value
-            let memory = await variableResolver.getMemory(copperHigh, 4);
+            const memory = await variableResolver.getMemory(copperHigh, 4);
             return parseInt(memory, 16);
         } else {
             throw new Error("Copper high address not found");

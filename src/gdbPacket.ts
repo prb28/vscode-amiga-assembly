@@ -47,7 +47,7 @@ export class GdbPacket {
      * @param data Data to parse
      */
     public static parseData(data: any): GdbPacket[] {
-        let parsedData = new Array<GdbPacket>();
+        const parsedData = new Array<GdbPacket>();
         if (data) {
             let s = data.toString();
             if (s.startsWith('+')) {
@@ -57,21 +57,22 @@ export class GdbPacket {
                 }
             }
             if (s.length > 0) {
-                let messageRegexp = /\$([^$]*)\#[\da-f]{2}/gi;
-                let match;
+                const messageRegexp = /\$([^$]*)#[\da-f]{2}/gi;
                 if (s.startsWith('+')) {
                     s = s.substring(1);
                 }
-                while (match = messageRegexp.exec(s)) {
+                let match = messageRegexp.exec(s);
+                while (match) {
                     let message = GdbPacket.extractPacket(match[1]);
                     let isNotification = false;
                     if (message.startsWith("%Stop")) {
                         isNotification = true;
                         message = message.replace("%Stop:", "");
                     }
-                    let packet = new GdbPacket(GdbPacket.parseType(message), message);
+                    const packet = new GdbPacket(GdbPacket.parseType(message), message);
                     packet.setNotification(isNotification);
                     parsedData.push(packet);
+                    match = messageRegexp.exec(s)
                 }
             }
             // TODO: check the checksum and ask to repeat the message if it is not verified
@@ -86,7 +87,7 @@ export class GdbPacket {
      */
     protected static extractPacket(message: string): string {
         if (message.startsWith('$')) {
-            let pos = message.indexOf('#');
+            const pos = message.indexOf('#');
             if (pos > 0) {
                 return message.substring(1, pos);
             }

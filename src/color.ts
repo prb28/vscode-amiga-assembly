@@ -14,7 +14,7 @@ export class M86kColorProvider implements DocumentColorProvider {
             if (token.isCancellationRequested) {
                 return null;
             }
-            let line = document.lineAt(lineNumber);
+            const line = document.lineAt(lineNumber);
             colors = colors.concat(this.searchColorsInLine(line.text, lineNumber));
         }
         return colors;
@@ -40,22 +40,22 @@ export class M86kColorProvider implements DocumentColorProvider {
      * @returns Array of color's information
      */
     public searchColorsInLine(line: string, lineNumber: number): ColorInformation[] {
-        let colors: ColorInformation[] = [];
-        let regexp = /(color[\d]{1,2}|(dff)?18[0-9a-f]|(dff)?19[0-9a-f]|(dff)?1a[0-9a-f]|(dff)?1b[0-9a-e])[\s]*[,][\s]*\$([\da-f]{3,4})/gi;
+        const colors: ColorInformation[] = [];
+        const regexp = /(color[\d]{1,2}|(dff)?18[0-9a-f]|(dff)?19[0-9a-f]|(dff)?1a[0-9a-f]|(dff)?1b[0-9a-e])[\s]*[,][\s]*\$([\da-f]{3,4})/gi;
         let match;
         while ((match = regexp.exec(line))) {
-            let value = match[match.length - 1];
-            let idxDol = match[0].indexOf('$');
-            let range = new Range(new Position(lineNumber, match.index + idxDol), new Position(lineNumber, match.index + idxDol + value.length + 1));
+            const value = match[match.length - 1];
+            const idxDol = match[0].indexOf('$');
+            const range = new Range(new Position(lineNumber, match.index + idxDol), new Position(lineNumber, match.index + idxDol + value.length + 1));
             let pos = 0;
             if (value.length > 3) {
                 pos = 1;
             }
-            let r = parseInt(value[pos++], 16) / 32;
-            let g = parseInt(value[pos++], 16) / 32;
-            let b = parseInt(value[pos], 16) / 32;
+            const r = parseInt(value[pos++], 16) / 32;
+            const g = parseInt(value[pos++], 16) / 32;
+            const b = parseInt(value[pos], 16) / 32;
 
-            let color: Color = new Color(r, g, b, 1);
+            const color: Color = new Color(r, g, b, 1);
             colors.push(new ColorInformation(range, color));
         }
         return colors;

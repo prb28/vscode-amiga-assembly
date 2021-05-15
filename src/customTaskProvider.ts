@@ -92,8 +92,8 @@ class AmigaBuildTaskTerminal implements Pseudoterminal {
 		this.adfGeneratorProperties = adfGeneratorProperties;
 	}
 
-	open(initialDimensions: TerminalDimensions | undefined): void {
-		this.doBuild();
+	open(initialDimensions: TerminalDimensions | undefined): Promise<void> {
+		return this.doBuild();
 	}
 
 	close(): void {
@@ -109,7 +109,7 @@ class AmigaBuildTaskTerminal implements Pseudoterminal {
 				this.writeEmitter.fire('\u001b[36mStarting build...\r\n\u001b[0m');
 				await this.extensionState.getCompiler().buildWorkspace(this.writeEmitter, this.vasmBuildProperties, this.vlinkBuildProperties);
 				if (this.adfGeneratorProperties) {
-					let adfTools = new ADFTools(this.adfGeneratorProperties.ADFToolsParentDir);
+					const adfTools = new ADFTools(this.adfGeneratorProperties.ADFToolsParentDir);
 					this.writeEmitter.fire('\u001b[36mCreating ADF file...\r\n\u001b[0m');
 					await adfTools.createBootableADFDisk(this.adfGeneratorProperties, this.writeEmitter, this.extensionState.getCompiler());
 					this.writeEmitter.fire('\u001b[32mADF file done\r\n\u001b[0m');
@@ -128,7 +128,7 @@ export class CompilerController {
 
 	constructor() {
 		// subscribe to selection change and editor activation events
-		let subscriptions: Disposable[] = [];
+		const subscriptions: Disposable[] = [];
 		workspace.onDidSaveTextDocument(
 			document => {
 				this.onSaveDocument(document);
@@ -146,8 +146,8 @@ export class CompilerController {
 	}
 
 	public async onSaveDocument(document: TextDocument): Promise<void> {
-		let state = ExtensionState.getCurrent();
-		let statusManager = state.getStatusManager();
+		const state = ExtensionState.getCurrent();
+		const statusManager = state.getStatusManager();
 		if (document.languageId === "m68k") {
 			statusManager.onDefault();
 			try {
@@ -158,7 +158,7 @@ export class CompilerController {
 		}
 	}
 
-	dispose() {
+	dispose(): void {
 		this.disposable.dispose();
 	}
 }

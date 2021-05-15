@@ -18,7 +18,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug').replace(/\\+/g, '/');
 	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae').replace(/\\+/g, '/');
 	const UAE_DRIVE = Path.join(FSUAE_ROOT, 'hd0').replace(/\\+/g, '/');
-	let launchArgs = <LaunchRequestArguments>{
+	const launchArgs = <LaunchRequestArguments>{
 		program: Path.join(UAE_DRIVE, 'hello'),
 		stopOnEntry: false,
 		serverName: 'localhost',
@@ -32,14 +32,14 @@ describe('Node Debug Adapter for WinUAE', () => {
 		}
 	};
 	let dc: DebugClient;
-	let callbacks = new Map<string, any>();
-	let testWithRealEmulator = false;
-	let th = new GdbThread(0, GdbAmigaSysThreadIdWinUAE.CPU);
+	const callbacks = new Map<string, any>();
+	const testWithRealEmulator = false;
+	const th = new GdbThread(0, GdbAmigaSysThreadIdWinUAE.CPU);
 
 	before(async function () {
 		GdbThread.setSupportMultiprocess(false);
 		// activate the extension
-		let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+		const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
 		if (ext) {
 			await ext.activate();
 			await ExtensionState.getCurrent().getLanguage();
@@ -62,7 +62,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 		when(this.mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
 		// start port listener on launch of first debug this.session
 		// start listening on a random port
-		return new Promise<void>(async (resolve) => {
+		return new Promise<void>((resolve) => {
 			this.server = Net.createServer(socket => {
 				this.session = new WinUAEDebugSession();
 				if (!testWithRealEmulator) {
@@ -77,12 +77,12 @@ describe('Node Debug Adapter for WinUAE', () => {
 			}).listen(0);
 			// make VS Code connect to debug server instead of launching debug adapter
 			dc = new DebugClient('node', DEBUG_ADAPTER, 'winuae');
-			let address: any = this.server.address();
+			const address: any = this.server.address();
 			let port = 0;
 			if (address instanceof Object) {
 				port = address.port;
 			}
-			await dc.start(port);
+			dc.start(port).then(() => { resolve(); });
 		});
 	});
 
@@ -96,7 +96,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 		if (this.mockedGdbProxy) {
 			reset(this.mockedGdbProxy);
 		}
-		if (this.dc) {
+		if (dc) {
 			await dc.stop();
 		}
 		if (this.session) {
@@ -117,7 +117,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 		it('should run program to the end', function () {
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
-					let cb = callbacks.get('end');
+					const cb = callbacks.get('end');
 					if (cb) {
 						cb();
 					}
@@ -147,7 +147,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 				when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
 				when(this.mockedGdbProxy.stepIn(anything())).thenCall(() => {
 					setTimeout(function () {
-						let cb = callbacks.get('stopOnEntry');
+						const cb = callbacks.get('stopOnEntry');
 						if (cb) {
 							cb(th.getId());
 						}
@@ -155,7 +155,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 					return Promise.resolve();
 				});
 			}
-			let launchArgsCopy = launchArgs;
+			const launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
 			return Promise.all([
@@ -175,7 +175,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 					setTimeout(function () {
-						let cb = callbacks.get('stopOnEntry');
+						const cb = callbacks.get('stopOnEntry');
 						if (cb) {
 							cb(th.getId());
 						}
@@ -225,7 +225,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 				}));
 				when(this.mockedGdbProxy.stepToRange(th, anything(), anything())).thenCall(() => {
 					setTimeout(function () {
-						let cb = callbacks.get('stopOnBreakpoint');
+						const cb = callbacks.get('stopOnBreakpoint');
 						if (cb) {
 							cb(th.getId());
 						}
@@ -234,7 +234,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 				});
 				when(this.mockedGdbProxy.stepIn(th)).thenCall(() => {
 					setTimeout(function () {
-						let cb = callbacks.get('stopOnEntry');
+						const cb = callbacks.get('stopOnEntry');
 						if (cb) {
 							cb(th.getId());
 						}
@@ -242,7 +242,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 					return Promise.resolve();
 				}).thenCall(() => {
 					setTimeout(function () {
-						let cb = callbacks.get('stopOnBreakpoint');
+						const cb = callbacks.get('stopOnBreakpoint');
 						if (cb) {
 							cb(th.getId());
 						}
@@ -250,7 +250,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 					return Promise.resolve();
 				});
 			}
-			let launchArgsCopy = launchArgs;
+			const launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
 			await Promise.all([
@@ -293,7 +293,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 				});
 				when(this.mockedGdbProxy.pause(th)).thenCall(() => {
 					setTimeout(function () {
-						let cb = callbacks.get('stopOnBreakpoint');
+						const cb = callbacks.get('stopOnBreakpoint');
 						if (cb) {
 							cb(th.getId());
 						}
@@ -302,7 +302,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 				});
 				when(this.mockedGdbProxy.stepIn(th)).thenCall(() => {
 					setTimeout(function () {
-						let cb = callbacks.get('stopOnEntry');
+						const cb = callbacks.get('stopOnEntry');
 						if (cb) {
 							cb(th.getId());
 						}
@@ -310,7 +310,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 					return Promise.resolve();
 				});
 			}
-			let launchArgsCopy = launchArgs;
+			const launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
 			await Promise.all([
@@ -377,7 +377,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 				}));
 				when(this.mockedGdbProxy.continueExecution(anything())).thenCall(() => {
 					setTimeout(function () {
-						let cb = callbacks.get('stopOnBreakpoint');
+						const cb = callbacks.get('stopOnBreakpoint');
 						if (cb) {
 							cb(th.getId());
 						}
@@ -386,7 +386,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 				});
 				when(this.mockedGdbProxy.stepIn(th)).thenCall(() => {
 					setTimeout(function () {
-						let cb = callbacks.get('stopOnEntry');
+						const cb = callbacks.get('stopOnEntry');
 						if (cb) {
 							cb(th.getId());
 						}
@@ -394,7 +394,7 @@ describe('Node Debug Adapter for WinUAE', () => {
 					return Promise.resolve();
 				});
 			}
-			let launchArgsCopy = launchArgs;
+			const launchArgsCopy = launchArgs;
 			launchArgsCopy.program = Path.join(UAE_DRIVE, 'gencop');
 			launchArgsCopy.stopOnEntry = true;
 			await Promise.all([

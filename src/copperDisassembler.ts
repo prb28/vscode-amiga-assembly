@@ -22,10 +22,10 @@ export class CopperInstruction {
     }
     static parse(instructionString: string): CopperInstruction {
         // Split in two parts
-        let firstStr = instructionString.substring(0, 4);
-        let secondStr = instructionString.substring(4);
-        let first = parseInt(firstStr, 16);
-        let second = parseInt(secondStr, 16);
+        const firstStr = instructionString.substring(0, 4);
+        const secondStr = instructionString.substring(4);
+        const first = parseInt(firstStr, 16);
+        const second = parseInt(secondStr, 16);
         if (first & 0x0001) {
             // This is a wait or skip
             if (second & 0x0001) {
@@ -38,11 +38,11 @@ export class CopperInstruction {
         }
     }
     public getAsmInstruction(): string {
-        return `dc.w \$${this.format(this.first)},\$${this.format(this.second)}`;
+        return `dc.w $${this.format(this.first)},$${this.format(this.second)}`;
     }
     protected getPaddedAsmInstruction(): string {
-        let inst = this.getAsmInstruction();
-        let pad = " ".repeat(20 - inst.length);
+        const inst = this.getAsmInstruction();
+        const pad = " ".repeat(20 - inst.length);
         return inst + pad;
     }
     protected format(value: number): string {
@@ -61,7 +61,7 @@ export class CopperMove extends CopperInstruction {
         super(CopperInstructionType.MOVE, first, second);
         this.DA = first & 0x01fe;
         this.RD = second;
-        let register = 0xdff000 + this.DA;
+        const register = 0xdff000 + this.DA;
         this.label = MemoryLabelsRegistry.getCustomName(register);
     }
     public toString(): string {
@@ -69,10 +69,10 @@ export class CopperMove extends CopperInstruction {
         if (this.label) {
             l = this.label;
         } else {
-            l = `\$${this.format(this.DA)}`;
+            l = `$${this.format(this.DA)}`;
         }
-        let inst = this.getPaddedAsmInstruction();
-        let value = `\$${this.format(this.RD)}`;
+        const inst = this.getPaddedAsmInstruction();
+        const value = `$${this.format(this.RD)}`;
         return `${inst}; ${l} := ${value}`;
     }
 }
@@ -107,7 +107,7 @@ export class CopperWait extends CopperCondition {
         super(CopperInstructionType.WAIT, first, second);
     }
     public toString(): string {
-        let inst = this.getPaddedAsmInstruction();
+        const inst = this.getPaddedAsmInstruction();
         if (this.isEnd()) {
             return `${inst}; End of CopperList`;
         } else {
@@ -134,7 +134,7 @@ export class CopperSkip extends CopperCondition {
         super(CopperInstructionType.SKIP, first, second);
     }
     public toString(): string {
-        let inst = this.getPaddedAsmInstruction();
+        const inst = this.getPaddedAsmInstruction();
         return `${inst}; Skip if vpos >= 0x${this.vertical.toString(16)} and hpos >= 0x${this.horizontal.toString(16)}`;
     }
 }
@@ -152,7 +152,7 @@ export class CopperDisassembler {
         if (memory.length >= 8) {
             // Split the string in blocs of 8 characters
             for (let i = 8; i <= memory.length; i += 8) {
-                let instruction = CopperInstruction.parse(memory.substring(i - 8, i));
+                const instruction = CopperInstruction.parse(memory.substring(i - 8, i));
                 this.copperList.push(instruction);
                 if ((instruction instanceof CopperWait) && (instruction.isEnd())) {
                     break;

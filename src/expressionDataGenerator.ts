@@ -38,13 +38,13 @@ export class ExpressionDataGenerator {
         this.variable = variable;
     }
     public eval(): Array<number> {
-        let values = new Array<number>();
-        let expr = this.calc.parse(this.expression);
+        const values = new Array<number>();
+        const expr = this.calc.parse(this.expression);
         if (expr.error) {
             throw new Error('Parsing error at ' + expr.error.pos + ': ' + expr.error.text);
         } else {
             for (let x = this.variable.startValue; x <= this.variable.endValue; x += this.variable.step) {
-                let value = expr.eval({ x: x });
+                const value = expr.eval({ x: x });
                 if (expr.scope.runtimeError) {
                     throw new Error('Error: ' + expr.error.text);
                 }
@@ -66,7 +66,7 @@ export class ExpressionDataGenerator {
         } else if (this.outputDataType === OutputDataType.LONG) {
             type = 'l';
         }
-        for (let v of this.eval()) {
+        for (const v of this.eval()) {
             if (v > max) {
                 max = v;
             }
@@ -115,7 +115,7 @@ export class ExpressionDataGenerator {
         }
         return value;
     }
-    public decimalToHexString(n: number) {
+    public decimalToHexString(n: number): string {
         let padSize = 0;
         if (n < 0) {
             if (this.outputDataType === OutputDataType.BYTE) {
@@ -144,13 +144,13 @@ export class ExpressionDataGenerator {
         }
         return StringUtils.padStart(n.toString(16), padSize, "0");
     }
-    public setOutputInHex(outputInHex: boolean) {
+    public setOutputInHex(outputInHex: boolean): void {
         this.outputInHex = outputInHex;
     }
-    public setOutputDataType(outputDataType: OutputDataType) {
+    public setOutputDataType(outputDataType: OutputDataType): void {
         this.outputDataType = outputDataType;
     }
-    public setValuesPerLine(valuesPerLine: number) {
+    public setValuesPerLine(valuesPerLine: number): void {
         this.valuesPerLine = valuesPerLine;
     }
 }
@@ -174,14 +174,14 @@ export class ExpressionDataGeneratorSerializer {
         let startValue = 0;
         let endValue = 0;
         let step = 1;
-        let lines = comment.split('\n');
+        const lines = comment.split('\n');
         let parsing = false;
         let parsingVariable = false;
-        let variables = new Array<ExpressionDataVariable>();
+        const variables = new Array<ExpressionDataVariable>();
         let outputDataType: OutputDataType | null = null;
         let outputInHex = false;
         let valuesPerLine = -1;
-        for (let line of lines) {
+        for (const line of lines) {
             if (line.includes(ExpressionDataGeneratorSerializer.START_KEYWORD)) {
                 parsing = true;
             }
@@ -206,7 +206,7 @@ export class ExpressionDataGeneratorSerializer {
                 } else if (line.includes(ExpressionDataGeneratorSerializer.VARIABLE_STEP_KEYWORD)) {
                     step = this.retrieveNumber(line);
                 } else if (line.includes(ExpressionDataGeneratorSerializer.OUTPUTTYPE_KEYWORD)) {
-                    let outTypeStr = this.retrieveString(line).toLocaleLowerCase();
+                    const outTypeStr = this.retrieveString(line).toLocaleLowerCase();
                     if (outTypeStr === 'b') {
                         outputDataType = OutputDataType.BYTE;
                     } else if (outTypeStr === 'w') {
@@ -225,7 +225,7 @@ export class ExpressionDataGeneratorSerializer {
             // For the last variable definition
             variables.push(new ExpressionDataVariable(name, startValue, endValue, step));
         }
-        let expDataGen = new ExpressionDataGenerator(expression, variables[0]);
+        const expDataGen = new ExpressionDataGenerator(expression, variables[0]);
         if (outputDataType) {
             expDataGen.setOutputDataType(outputDataType);
         }
@@ -236,7 +236,7 @@ export class ExpressionDataGeneratorSerializer {
         return expDataGen;
     }
     public retrieveValue(line: string): string {
-        let idx = line.indexOf(":");
+        const idx = line.indexOf(":");
         if (idx >= 0) {
             return line.substring(idx + 1).trim();
         }
@@ -246,14 +246,14 @@ export class ExpressionDataGeneratorSerializer {
         return this.retrieveValue(line);
     }
     public retrieveBoolean(line: string): boolean {
-        let value = this.retrieveValue(line).toLocaleLowerCase();
+        const value = this.retrieveValue(line).toLocaleLowerCase();
         if (value === 'true') {
             return true;
         }
         return false;
     }
     public retrieveNumber(line: string): number {
-        let value = this.retrieveValue(line);
+        const value = this.retrieveValue(line);
         if (value.includes(".")) {
             return Number.parseFloat(value);
         } else {
@@ -261,7 +261,7 @@ export class ExpressionDataGeneratorSerializer {
         }
     }
     public print(expDataGen: ExpressionDataGenerator): string {
-        let variable = expDataGen.variable;
+        const variable = expDataGen.variable;
         let output = `;${ExpressionDataGeneratorSerializer.START_KEYWORD}----------------\n`;
         output += "; This code was generated by Amiga Assembly extension\n";
         output += ";\n";
@@ -283,7 +283,7 @@ export class ExpressionDataGeneratorSerializer {
         output += `;${ExpressionDataGeneratorSerializer.VALUES_PER_LINE_KEYWORD}: ${expDataGen.valuesPerLine}\n`;
         output += ";--------------------------------\n";
         output += ";- DO NOT MODIFY following lines -\n";
-        for (let line of expDataGen.evalString().split('\n')) {
+        for (const line of expDataGen.evalString().split('\n')) {
             output += ` ${line}\n`; // keep the fist space
         }
         output += `;${ExpressionDataGeneratorSerializer.END_KEYWORD}----------------\n`;
@@ -295,8 +295,8 @@ export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
     public provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken):
         vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
         // Search for start keyword
-        let codeLensArray = new Array<vscode.CodeLens>();
-        for (let range of this.provideCodeLensesRanges(document)) {
+        const codeLensArray = new Array<vscode.CodeLens>();
+        for (const range of this.provideCodeLensesRanges(document)) {
             codeLensArray.push(new vscode.CodeLens(range));
         }
         return codeLensArray;
@@ -304,15 +304,15 @@ export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
 
     private provideCodeLensesRanges(document: vscode.TextDocument): Array<vscode.Range> {
         // Search for start keyword
-        let rangesArray = new Array<vscode.Range>();
-        let text = document.getText();
+        const rangesArray = new Array<vscode.Range>();
+        const text = document.getText();
         let linePos = 0;
         let startPos: vscode.Position | null = null;
-        for (let line of text.split('\n')) {
+        for (const line of text.split('\n')) {
             if (line.includes(ExpressionDataGeneratorSerializer.START_KEYWORD)) {
                 startPos = new vscode.Position(linePos, 0);
             } else if (line.includes(ExpressionDataGeneratorSerializer.END_KEYWORD) && startPos) {
-                let range = new vscode.Range(startPos, new vscode.Position(linePos, line.length));
+                const range = new vscode.Range(startPos, new vscode.Position(linePos, line.length));
                 rangesArray.push(range);
             }
             linePos++;
@@ -331,38 +331,29 @@ export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
         return codeLens;
     }
 
-    public onGenerateData(range: vscode.Range): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            const editor = vscode.window.activeTextEditor;
-            if (editor) {
-                await editor.edit(async (edit) => {
-                    let rangesArray = new Array<vscode.Range>();
-                    if (range) {
-                        rangesArray.push(range);
-                    } else {
-                        rangesArray = this.provideCodeLensesRanges(editor.document);
-                    }
-                    for (let rg of rangesArray) {
-                        try {
-                            let serializer = new ExpressionDataGeneratorSerializer();
-                            let oldText = editor.document.getText(rg);
-                            let generator = serializer.parse(oldText);
-                            let newText = serializer.print(generator);
-                            edit.replace(rg, newText);
-                        } catch (error) {
-                            reject(error);
-                        }
-                    }
-                }).then(edited => {
-                    if (edited) {
-                        resolve();
-                    } else {
-                        reject(new Error("Error during edit"));
-                    }
-                });
-            } else {
-                reject(new Error("Please select an editing document"));
+    public async onGenerateData(range: vscode.Range): Promise<void> {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const edited = await editor.edit(async (edit) => {
+                let rangesArray = new Array<vscode.Range>();
+                if (range) {
+                    rangesArray.push(range);
+                } else {
+                    rangesArray = this.provideCodeLensesRanges(editor.document);
+                }
+                for (const rg of rangesArray) {
+                    const serializer = new ExpressionDataGeneratorSerializer();
+                    const oldText = editor.document.getText(rg);
+                    const generator = serializer.parse(oldText);
+                    const newText = serializer.print(generator);
+                    edit.replace(rg, newText);
+                }
+            });
+            if (!edited) {
+                throw new Error("Error during edit");
             }
-        });
+        } else {
+            throw new Error("Please select an editing document");
+        }
     }
 }

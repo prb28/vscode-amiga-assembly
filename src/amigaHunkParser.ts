@@ -2,7 +2,7 @@ import winston = require('winston');
 import { FileProxy } from './fsProxy';
 import { Uri } from 'vscode';
 
-const DEBUG_LINE: number = 0x4c494e45;
+const DEBUG_LINE = 0x4c494e45;
 
 export enum HunkType {
     HEADER = 1011, // 0x3f3
@@ -48,6 +48,7 @@ export interface Hunk {
     dataOffset: number;
     codeData?: Uint32Array;
     reloc32?: Array<RelocInfo32>;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     symbols?: Array<Symbol>;
     lineDebugInfo?: Array<SourceFile>;
     segmentsId?: number;
@@ -67,13 +68,13 @@ export interface SizesTypes {
 
 export class HunkParser {
     private skip_hunk(fileData: DataView, fileOffset: number): number {
-        let [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
+        const [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
         return fileOffset + size + 4;
     }
 
     public get_size_type(t: number): [number, MemoryType] {
-        let size = (t & 0x0fffffff) * 4;
-        let mem_t = t & 0xf0000000;
+        const size = (t & 0x0fffffff) * 4;
+        const mem_t = t & 0xf0000000;
         let memType: MemoryType;
         switch (mem_t) {
             case MemoryType.CHIP:
@@ -90,8 +91,8 @@ export class HunkParser {
     }
 
     private toArrayBuffer(buf: Buffer): ArrayBuffer {
-        let ab = new ArrayBuffer(buf.length);
-        let view = new Uint8Array(ab);
+        const ab = new ArrayBuffer(buf.length);
+        const view = new Uint8Array(ab);
         for (let i = 0; i < buf.length; ++i) {
             view[i] = buf[i];
         }
@@ -99,7 +100,7 @@ export class HunkParser {
     }
 
     public parse_bss(hunk: Hunk, fileData: DataView, fileOffset: number): number {
-        let size = fileData.getUint32(fileOffset, false);
+        const size = fileData.getUint32(fileOffset, false);
         // BSS contains the The number of long words of zeroed memory to allocate
         hunk.hunkType = HunkType.BSS;
         hunk.dataSize = size;
@@ -107,8 +108,8 @@ export class HunkParser {
     }
 
     public parse_code_or_data(hunkType: HunkType, hunk: Hunk, fileData: DataView, fileOffset: number): number {
-        let [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
-        let codeData = new Uint32Array(size / 4);
+        const [size,] = this.get_size_type(fileData.getUint32(fileOffset, false));
+        const codeData = new Uint32Array(size / 4);
         let pos = fileOffset + 4;
 
         hunk.dataSize = size;
@@ -134,8 +135,8 @@ export class HunkParser {
         return pos - fileOffset;
     }
     protected read_name_size(fileData: DataView, fileOffset: number, num_ui32: number): string {
-        let lenBytes = num_ui32 * 4;
-        let temp_buffer = new Array<number>(512);
+        const lenBytes = num_ui32 * 4;
+        const temp_buffer = new Array<number>(512);
         let pos = fileOffset;
         let idx = 0;
         let v = fileData.getUint8(pos);
@@ -144,7 +145,7 @@ export class HunkParser {
             temp_buffer[idx++] = v;
             v = fileData.getUint8(pos++);
         }
-        return String.fromCharCode.apply(String, temp_buffer.slice(0, idx));
+        return String.fromCharCode(...temp_buffer.slice(0, idx));
     }
 
     /*
@@ -154,12 +155,14 @@ export class HunkParser {
     */
 
     protected parse_symbols(hunk: Hunk, fileData: DataView, fileOffset: number): number {
-        let symbols = new Array<Symbol>();
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const symbols = new Array<Symbol>();
         let pos = fileOffset;
         let num_longs = fileData.getUint32(pos, false);
         pos += 4;
         while (num_longs > 0) {
-            let symbol = <Symbol>{
+            // eslint-disable-next-line @typescript-eslint/ban-types
+            const symbol = <Symbol>{
                 name: this.read_name_size(fileData, pos, num_longs),
                 offset: fileData.getUint32(pos + (num_longs * 4), false),
             };
@@ -177,17 +180,17 @@ export class HunkParser {
     }
     protected fill_debug_info(baseOffset: number, num_longs: number, fileData: DataView, fileOffset: number): SourceFile {
         let pos = fileOffset;
-        let num_name_longs = fileData.getUint32(pos, false);
+        const num_name_longs = fileData.getUint32(pos, false);
         pos += 4;
-        let name = this.read_name_size(fileData, pos, num_name_longs);
+        const name = this.read_name_size(fileData, pos, num_name_longs);
         pos += num_name_longs * 4;
-        let num_lines = (num_longs - num_name_longs - 1) / 2;
-        let lines = new Array<SourceLine>();
+        const num_lines = (num_longs - num_name_longs - 1) / 2;
+        const lines = new Array<SourceLine>();
 
         for (let i = 0; i < num_lines; i++) {
-            let line_no = fileData.getUint32(pos, false) & 0xffffff; // mask for SAS/C extra info
+            const line_no = fileData.getUint32(pos, false) & 0xffffff; // mask for SAS/C extra info
             pos += 4;
-            let offset = fileData.getUint32(pos, false);
+            const offset = fileData.getUint32(pos, false);
             pos += 4;
             lines.push(<SourceLine>{
                 line: line_no,
@@ -204,11 +207,11 @@ export class HunkParser {
 
     protected parse_debug(hunk: Hunk, fileData: DataView, fileOffset: number): number {
         let pos = fileOffset;
-        let num_longs = fileData.getUint32(pos, false) - 2; // skip base offset and tag
+        const num_longs = fileData.getUint32(pos, false) - 2; // skip base offset and tag
         pos += 4;
-        let baseOffset = fileData.getUint32(pos, false);
+        const baseOffset = fileData.getUint32(pos, false);
         pos += 4;
-        let debug_tag = fileData.getUint32(pos, false);
+        const debug_tag = fileData.getUint32(pos, false);
         pos += 4;
 
         // We only support debug line as debug format currently so skip if not found
@@ -218,7 +221,7 @@ export class HunkParser {
                 debug_info = new Array<SourceFile>();
                 hunk.lineDebugInfo = debug_info;
             }
-            let source_file = this.fill_debug_info(baseOffset, num_longs, fileData, pos);
+            const source_file = this.fill_debug_info(baseOffset, num_longs, fileData, pos);
             debug_info.push(source_file);
         }
         return pos + num_longs * 4;
@@ -226,14 +229,14 @@ export class HunkParser {
 
 
     protected parse_reloc32(hunk: Hunk, fileData: DataView, fileOffset: number): number {
-        let relocs = new Array<RelocInfo32>();
+        const relocs = new Array<RelocInfo32>();
         let pos = fileOffset;
         let count = fileData.getUint32(pos, false);
         pos += 4;
         while (count > 0) {
-            let target = fileData.getUint32(pos, false);
+            const target = fileData.getUint32(pos, false);
             pos += 4;
-            let reloc = <RelocInfo32>{
+            const reloc = <RelocInfo32>{
                 target: target,
                 offsets: Array<number>(),
             };
@@ -303,32 +306,32 @@ export class HunkParser {
         return pos;
     }
 
-    public logHunk(hunk: Hunk) {
-        winston.debug(`Hunk #${hunk.index} offset \$${hunk.fileOffset.toString(16)}`);
+    public logHunk(hunk: Hunk): void {
+        winston.debug(`Hunk #${hunk.index} offset $${hunk.fileOffset.toString(16)}`);
         winston.debug(`    > hunkType   : ${HunkType[hunk.hunkType]}`);
         winston.debug(`    > memType    : ${MemoryType[hunk.memType]}`);
         winston.debug(`    > dataSize   : ${hunk.dataSize}`);
         if (hunk.dataOffset) {
-            winston.debug(`    > dataOffset : \$${hunk.dataOffset.toString(16)}`);
+            winston.debug(`    > dataOffset : $${hunk.dataOffset.toString(16)}`);
         }
         winston.debug(`    > allocSize  : ${hunk.allocSize}`);
         if (hunk.reloc32) {
-            for (let reloc of hunk.reloc32) {
-                let offsets = Array<string>();
-                for (let relocOffset of reloc.offsets) {
-                    offsets.push(`\$${relocOffset.toString(16)}`);
+            for (const reloc of hunk.reloc32) {
+                const offsets = Array<string>();
+                for (const relocOffset of reloc.offsets) {
+                    offsets.push(`$${relocOffset.toString(16)}`);
                 }
-                let s = offsets.join(',');
+                const s = offsets.join(',');
                 winston.debug(`    > reloc[${reloc.target}] : ${s}`);
             }
         }
         if (hunk.symbols) {
-            for (let symbol of hunk.symbols) {
+            for (const symbol of hunk.symbols) {
                 winston.debug(`    > symbol[${symbol.name}] : ${symbol.offset}`);
             }
         }
         if (hunk.lineDebugInfo) {
-            for (let sourceFile of hunk.lineDebugInfo) {
+            for (const sourceFile of hunk.lineDebugInfo) {
                 winston.debug(`    > lineDebugInfo : ${sourceFile.name}`);
             }
         }
@@ -336,9 +339,9 @@ export class HunkParser {
 
     public parse_file(contents: Buffer): Array<Hunk> {
         let fileOffset = 0;
-        let fileData = new DataView(this.toArrayBuffer(contents)); // Reading in Big Endian
+        const fileData = new DataView(this.toArrayBuffer(contents)); // Reading in Big Endian
 
-        let hunk_header = fileData.getUint32(fileOffset, false);
+        const hunk_header = fileData.getUint32(fileOffset, false);
         fileOffset += 4;
         if (hunk_header !== HunkType.HEADER) {
             throw new Error("Not a valid hunk file : Unable to find correct HUNK_HEADER");
@@ -346,23 +349,23 @@ export class HunkParser {
             // Skip header/string section
             fileOffset += 4;
 
-            let table_size = fileData.getUint32(fileOffset, false);
+            const table_size = fileData.getUint32(fileOffset, false);
             fileOffset += 4;
-            let first_hunk = fileData.getUint32(fileOffset, false);
+            const first_hunk = fileData.getUint32(fileOffset, false);
             fileOffset += 4;
-            let last_hunk = fileData.getUint32(fileOffset, false);
+            const last_hunk = fileData.getUint32(fileOffset, false);
             fileOffset += 4;
 
             if (table_size < 0 || first_hunk < 0 || last_hunk < 0) {
                 throw new Error("Not a valid hunk file : Invalid sizes for hunks");
             }
 
-            let hunk_count = last_hunk - first_hunk + 1;
+            const hunk_count = last_hunk - first_hunk + 1;
 
-            let hunk_table = new Array<SizesTypes>();
+            const hunk_table = new Array<SizesTypes>();
 
             for (let i = 0; i < hunk_count; i++) {
-                let [size, memType] = this.get_size_type(fileData.getUint32(fileOffset, false));
+                const [size, memType] = this.get_size_type(fileData.getUint32(fileOffset, false));
                 winston.debug(`Hunk found [${MemoryType[memType]}] size = ${size}`);
                 fileOffset += 4;
                 hunk_table.push(<SizesTypes>{
@@ -371,10 +374,10 @@ export class HunkParser {
                 });
             }
 
-            let hunks = new Array<Hunk>();
+            const hunks = new Array<Hunk>();
 
             for (let i = 0; i < hunk_count; i++) {
-                let hunk = <Hunk>{
+                const hunk = <Hunk>{
                     index: i,
                     fileOffset: fileOffset,
                     memType: hunk_table[i].memType,
@@ -388,16 +391,10 @@ export class HunkParser {
         }
     }
 
-    public readFile(fileUri: Uri): Promise<Array<Hunk>> {
-        return new Promise(async (resolve, reject) => {
-            winston.debug(`Parsing file "${fileUri.fsPath}"`);
-            const fileProxy = new FileProxy(fileUri);
-            try {
-                let buffer = await fileProxy.readFile();
-                resolve(this.parse_file(buffer));
-            } catch (err) {
-                reject(err);
-            }
-        });
+    public async readFile(fileUri: Uri): Promise<Array<Hunk>> {
+        winston.debug(`Parsing file "${fileUri.fsPath}"`);
+        const fileProxy = new FileProxy(fileUri);
+        const buffer = await fileProxy.readFile();
+        return this.parse_file(buffer);
     }
 }

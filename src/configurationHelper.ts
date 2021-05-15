@@ -21,7 +21,7 @@ export class ConfigurationHelper {
      */
     public static retrieveNumberProperty(configuration: vscode.WorkspaceConfiguration, key: string, defaultValue: number): number {
         let value = defaultValue;
-        let confValue = configuration.get(key);
+        const confValue = configuration.get(key);
         if (confValue) {
             value = Number(confValue);
             if (value < 1) {
@@ -39,7 +39,7 @@ export class ConfigurationHelper {
      * @return New value
      */
     public static retrieveStringProperty(configuration: vscode.WorkspaceConfiguration, key: string, defaultValue: string): string {
-        let confValue = configuration.get(key);
+        const confValue = configuration.get(key);
         if (confValue) {
             return `${confValue}`;
         }
@@ -55,7 +55,7 @@ export class ConfigurationHelper {
      */
     public static retrieveBooleanProperty(configuration: vscode.WorkspaceConfiguration, key: string, defaultValue: boolean): boolean {
         let value = defaultValue;
-        let confValue = configuration.get(key);
+        const confValue = configuration.get(key);
         if (confValue) {
             value = Boolean(confValue);
         }
@@ -86,8 +86,8 @@ export class ConfigurationHelper {
      * @return Value or undefined
      */
     public static retrieveStringPropertyInDefaultConf(key: string): string | undefined {
-        let configuration = ConfigurationHelper.getDefaultConfiguration(null);
-        let confValue = configuration.get<string>(key);
+        const configuration = ConfigurationHelper.getDefaultConfiguration(null);
+        const confValue = configuration.get<string>(key);
         if (confValue) {
             return ConfigurationHelper.replaceBinDirVariable(confValue);
         }
@@ -100,8 +100,8 @@ export class ConfigurationHelper {
      * @returns Replaced value or undefined
      */
     public static replaceBinDirVariable(value: string): string {
-        let configuration = ConfigurationHelper.getDefaultConfiguration(null);
-        let binariesPath = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
+        const configuration = ConfigurationHelper.getDefaultConfiguration(null);
+        const binariesPath = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
         if (binariesPath) {
             return value.replace("${config:amiga-assembly.binDir}", binariesPath);
         }

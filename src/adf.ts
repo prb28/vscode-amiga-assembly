@@ -35,10 +35,10 @@ export class ADFTools {
     };
 
     /** Path to the adftools executable */
-    private adfCreateFilePath: string = "";
-    private adfCopyFilePath: string = "";
-    private adfInstallFilePath: string = "";
-    private adfMkDirFilePath: string = "";
+    private adfCreateFilePath = "";
+    private adfCopyFilePath = "";
+    private adfInstallFilePath = "";
+    private adfMkDirFilePath = "";
     /** Executor to run the tools */
     private executor: ExecutorHelper;
 
@@ -71,16 +71,16 @@ export class ADFTools {
      */
     public async createBootableADFDisk(conf: AdfGeneratorProperties, logEmitter?: EventEmitter<string>, compiler?: VASMCompiler, cancellationToken?: CancellationToken): Promise<void> {
         this.setToolsRootPath(ConfigurationHelper.replaceBinDirVariable(conf.ADFToolsParentDir));
-        let filename = conf.outputADFFile;
+        const filename = conf.outputADFFile;
         let rootSourceDir = "";
         if (conf.sourceRootDir) {
             rootSourceDir = conf.sourceRootDir;
         } else {
             throw new Error("Please configure de sourceRootDir of the ADF file generator");
         }
-        let includes = conf.includes;
-        let excludes = conf.excludes;
-        let adfCreateOptions = conf.adfCreateOptions;
+        const includes = conf.includes;
+        const excludes = conf.excludes;
+        const adfCreateOptions = conf.adfCreateOptions;
         let bootBlockSourceFileName;
         if (conf.bootBlockSourceFile) {
             bootBlockSourceFileName = conf.bootBlockSourceFile;
@@ -106,7 +106,7 @@ export class ADFTools {
             // Build the source file
             // Find the source file in the workspace
             let sourceFullPath: Uri | null = null;
-            let bUri = Uri.file(bootBlockSourceFilename);
+            const bUri = Uri.file(bootBlockSourceFilename);
             let pFile = new FileProxy(bUri);
             if (pFile.exists()) {
                 sourceFullPath = bUri;
@@ -123,15 +123,15 @@ export class ADFTools {
             if (sourceFullPath) {
                 // Call the build command
                 logEmitter?.fire(`Compiling bootblock from source ${sourceFullPath}\r\n`);
-                let results = await compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, sourceFullPath, true, true);
+                const results = await compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, sourceFullPath, true, true);
                 if (results && results[0]) {
-                    let bootBlockDataFilename = results[0];
+                    const bootBlockDataFilename = results[0];
                     bootBlockFilename = bootBlockDataFilename.replace(".o", ".bb");
-                    let bootBlockDataFilenameUri = Uri.file(bootBlockDataFilename);
-                    let bootBlockFile = new FileProxy(bootBlockDataFilenameUri);
+                    const bootBlockDataFilenameUri = Uri.file(bootBlockDataFilename);
+                    const bootBlockFile = new FileProxy(bootBlockDataFilenameUri);
                     // create the bootblock
                     try {
-                        let bootBlock = await bootBlockFile.readFile();
+                        const bootBlock = await bootBlockFile.readFile();
                         logEmitter?.fire(`Adding bootblock to ADF\r\n`);
                         await this.writeBootBlockFile(Buffer.from(bootBlock), Uri.file(bootBlockFilename));
                     } catch (err) {
@@ -155,26 +155,26 @@ export class ADFTools {
                 rootSourceDirUri = Uri.file(path.join(workspace.workspaceFolders[0].uri.fsPath, rootSourceDir));
             } else {
                 if (workspace.workspaceFolders) {
-                    let relativePath = path.relative(workspace.workspaceFolders[0].uri.fsPath, rootSourceDir);
+                    const relativePath = path.relative(workspace.workspaceFolders[0].uri.fsPath, rootSourceDir);
                     rootSourceDirUri = Uri.file(path.join(workspace.workspaceFolders[0].uri.fsPath, relativePath));
                 } else {
                     rootSourceDirUri = Uri.file(rootSourceDir);
                 }
             }
-            let sourceRootFileProxy = new FileProxy(rootSourceDirUri, true);
+            const sourceRootFileProxy = new FileProxy(rootSourceDirUri, true);
             files = await sourceRootFileProxy.findFiles(includes, excludes);
             if (files.length > 0) {
-                let createdDirs = new Array<string>();
+                const createdDirs = new Array<string>();
                 createdDirs.push("/");
-                for (let file of files) {
-                    let relativePath = path.relative(rootSourceDirUri.fsPath, file.getUri().fsPath);
-                    let stat = await file.stat();
+                for (const file of files) {
+                    const relativePath = path.relative(rootSourceDirUri.fsPath, file.getUri().fsPath);
+                    const stat = await file.stat();
                     if (stat.type & FileType.Directory) {
                         // For each file copy to disk
                         await this.mkdirs(filename, relativePath, createdDirs, logEmitter, cancellationToken);
                     } else {
                         // For each file copy to disk
-                        let fileParentDir = path.parse(file.getUri().path).dir;
+                        const fileParentDir = path.parse(file.getUri().path).dir;
                         let parentRelativePath = path.relative(rootSourceDirUri.path, fileParentDir);
                         if (parentRelativePath === "") {
                             parentRelativePath = "/";
@@ -199,9 +199,9 @@ export class ADFTools {
     public async mkdirs(filename: string, dirPath: string, createdDirs: Array<string>, logEmitter?: EventEmitter<string>, cancellationToken?: CancellationToken): Promise<void> {
         if (!(createdDirs.includes(dirPath))) {
             // split the path
-            let normPath = dirPath.replace(/\\/g, '/');
+            const normPath = dirPath.replace(/\\/g, '/');
             let concatPath = "";
-            for (let pathElement of normPath.split('/')) {
+            for (const pathElement of normPath.split('/')) {
                 concatPath += pathElement;
                 if (!(createdDirs.includes(concatPath))) {
                     logEmitter?.fire(`Creating ADF directory ${concatPath}\r\n`);
@@ -272,7 +272,7 @@ export class ADFTools {
         if (workspaceRootDir) {
             rootPath = workspaceRootDir.fsPath;
         }
-        let stdout = await this.executor.runToolRetrieveStdout(args, rootPath, commandFilename, null, cancellationToken);
+        const stdout = await this.executor.runToolRetrieveStdout(args, rootPath, commandFilename, null, cancellationToken);
         if (stdout.indexOf("Done.") < 0) {
             throw new Error(stdout);
         }
@@ -282,7 +282,7 @@ export class ADFTools {
      * Setting the context to run the tests.
      * @param executor mocked executor
      */
-    public setTestContext(executor: ExecutorHelper) {
+    public setTestContext(executor: ExecutorHelper): void {
         this.executor = executor;
     }
 
@@ -316,9 +316,9 @@ export class ADFTools {
      * @param bootblockData Boot block binary data
      */
     public createBootBlock(bootblockData: Buffer): Buffer {
-        let bootblock = Buffer.alloc(1024);
+        const bootblock = Buffer.alloc(1024);
         bootblockData.copy(bootblock);
-        let checksum = this.calculateChecksum(bootblock);
+        const checksum = this.calculateChecksum(bootblock);
         bootblock.writeUInt32BE(checksum, 4);
         return bootblock;
     }
@@ -328,8 +328,8 @@ export class ADFTools {
      * @param bootblockData Boot block binary data
      */
     public async writeBootBlockFile(bootblockData: Buffer, filename: Uri): Promise<void> {
-        let bootblock = this.createBootBlock(bootblockData);
-        let fileProxy = new FileProxy(filename);
+        const bootblock = this.createBootBlock(bootblockData);
+        const fileProxy = new FileProxy(filename);
         await fileProxy.writeFile(bootblock);
     }
 

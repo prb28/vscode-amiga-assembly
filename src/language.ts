@@ -21,18 +21,13 @@ export class M68kLanguage {
     /**
      * Loads the language definition.
      */
-    public load(): Promise<void> {
-        if (this.isLoaded) {
-            return Promise.resolve();
-        } else {
-            return new Promise(async (resolve, _) => {
-                const syntaxFilePath = path.join(this.extensionPath, "syntaxes", "M68k-Assembly.tmLanguage.json");
-                let fileProxy = new FileProxy(Uri.file(syntaxFilePath));
-                let data = await fileProxy.readFileText('utf8');
-                this.languageMap = JSON.parse(data);
-                this.createExtensionMap();
-                resolve();
-            });
+    public async load(): Promise<void> {
+        if (!this.isLoaded) {
+            const syntaxFilePath = path.join(this.extensionPath, "syntaxes", "M68k-Assembly.tmLanguage.json");
+            const fileProxy = new FileProxy(Uri.file(syntaxFilePath));
+            const data = await fileProxy.readFileText('utf8');
+            this.languageMap = JSON.parse(data);
+            this.createExtensionMap();
         }
     }
 
@@ -40,24 +35,24 @@ export class M68kLanguage {
      * Create a map from instruction to extension
      */
     private createExtensionMap() {
-        let syntaxes = ["keyword.other.opcode.cpu.bl.m68k", "keyword.other.opcode.cpu.bwl.m68k", "keyword.other.opcode.cpu.bwlsdxp.m68k",
+        const syntaxes = ["keyword.other.opcode.cpu.bl.m68k", "keyword.other.opcode.cpu.bwl.m68k", "keyword.other.opcode.cpu.bwlsdxp.m68k",
             "keyword.other.opcode.cpu.wl.m68k", "keyword.other.opcode.cpu.bwls.m68k", "keyword.other.opcode.cpu.ld.m68k",
             "keyword.other.opcode.cpu.l.m68k", "keyword.other.opcode.cpu.w.m68k", "keyword.other.opcode.cpu.b.m68k",
             "keyword.other.opcode.cpu.bw.m68k", "keyword.other.opcode.cpu.bwld.m68k", "keyword.other.opcode.cpu.ldx.m68k",
             "keyword.other.opcode.fpu.x.m68k", "keyword.other.opcode.fpu.bwlsdxp.m68k", "keyword.other.opcode.mem.m68k",
             "keyword.other.opcode.pc.m68k"];
-        for (let s of syntaxes) {
+        for (const s of syntaxes) {
             let p: string = this.getPattern(s);
             p = p.substring(6, p.length - 3);
-            let elms = p.split("(");
+            const elms = p.split("(");
             if (elms.length === 3) {
-                let inst = elms[1].replace(")", "").split("|");
-                let extensionsStr = elms[2].replace(/[\[\]\)\\\.]/g, "");
-                let extensions = new Array<string>();
+                const inst = elms[1].replace(")", "").split("|");
+                const extensionsStr = elms[2].replace(/[[\])\\.]/g, "");
+                const extensions = new Array<string>();
                 for (let j = 0; j < extensionsStr.length; j++) {
                     extensions.push(extensionsStr.charAt(j));
                 }
-                for (let i of inst) {
+                for (const i of inst) {
                     this.extensionsMap.set(i, extensions);
                 }
             }
@@ -69,7 +64,7 @@ export class M68kLanguage {
      * @return the pattern match field or null
      */
     getPattern(name: string): any {
-        for (let p of this.languageMap.patterns) {
+        for (const p of this.languageMap.patterns) {
             if (p.name === name) {
                 return p.match;
             }
@@ -82,7 +77,7 @@ export class M68kLanguage {
      * @return the regexp or null
      */
     getRegExp(name: string): RegExp | null {
-        let matchField = this.getPattern(name);
+        const matchField = this.getPattern(name);
         if (matchField) {
             return this.createRegExpFromMatchField(matchField);
         }
@@ -94,8 +89,8 @@ export class M68kLanguage {
      * @return the list of patterns match fields or empty list
      */
     getAllPatterns(nameRegExp: RegExp): Array<string> {
-        let list = new Array<string>();
-        for (let p of this.languageMap.patterns) {
+        const list = new Array<string>();
+        for (const p of this.languageMap.patterns) {
             if (p.name.match(nameRegExp)) {
                 list.push(p.match);
             }
@@ -124,9 +119,9 @@ export class M68kLanguage {
      * @return the list of the regexp from the match fields or empty list
      */
     getAllRegExps(nameRegExp: RegExp): Array<RegExp> {
-        let list = new Array<RegExp>();
-        let patterns = this.getAllPatterns(nameRegExp);
-        for (let p of patterns) {
+        const list = new Array<RegExp>();
+        const patterns = this.getAllPatterns(nameRegExp);
+        for (const p of patterns) {
             list.push(this.createRegExpFromMatchField(p));
         }
         return list;
@@ -139,4 +134,4 @@ export class M68kLanguage {
     getExtensions(instruction: string): string[] | undefined {
         return this.extensionsMap.get(instruction);
     }
-} 
+}

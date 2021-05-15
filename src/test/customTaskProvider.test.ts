@@ -13,7 +13,7 @@ import { expect } from "chai";
 describe("Task Provider tests", function () {
     before(async () => {
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
@@ -25,11 +25,11 @@ describe("Task Provider tests", function () {
     });
     context("CompileController", function () {
         it("Should build the current document on save", async () => {
-            let state = ExtensionState.getCurrent();
+            const state = ExtensionState.getCurrent();
             const spiedStatus = spy(state.getStatusManager());
             const controller = new CompilerController();
             const spiedController = spy(controller);
-            let document = new DummyTextDocument();
+            const document = new DummyTextDocument();
 
             when(spiedController.compile()).thenResolve();
             await controller.onSaveDocument(document);

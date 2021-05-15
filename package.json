@@ -40,6 +40,8 @@
         "onCommand:amiga-assembly.disassemble-memory",
         "onCommand:amiga-assembly.list-used-registers",
         "onCommand:amiga-assembly.view-iff",
+        "onCommand:amiga-assembly.download-binaries",
+        "onCommand:amiga-assembly.create-example-workspace",
         "onWebviewPanel:iffView"
     ],
     "main": "./out/extension",
@@ -281,6 +283,10 @@
             {
                 "command": "amiga-assembly.clean-downloaded-binaries",
                 "title": "Amiga Assembly: Clean downloaded binaries"
+            },
+            {
+                "command": "amiga-assembly.create-example-workspace",
+                "title": "Amiga Assembly: Create example workspace"
             }
         ],
         "breakpoints": [
@@ -874,6 +880,7 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p .",
         "watch": "tsc -watch -p .",
+        "lint": "eslint src --ext ts",
         "test": "npm run coverage:disable && node ./out/test/runTest.js",
         "testonly": "node ./out/test/runTest.js",
         "buildtest": "node node_modules/gulp/bin/gulp.js cover:disable && npm run compile && node ./out/test/runTest.js",
@@ -886,19 +893,22 @@
         "tslint": "tslint -t json -o tslint-report.json --project . --force"
     },
     "devDependencies": {
+        "@types/axios": "^0.14.0",
         "@types/chai": "^4.2.18",
         "@types/chai-as-promised": "^7.1.4",
         "@types/glob": "^7.1.3",
         "@types/mocha": "^8.2.2",
-        "@types/node": "^15.0.2",
+        "@types/node": "^14",
         "@types/temp": "^0.9.0",
         "@types/vscode": "^1.56.0",
-        "@types/axios": "^0.14.0",
+        "@typescript-eslint/eslint-plugin": "^4.23.0",
+        "@typescript-eslint/parser": "^4.23.0",
         "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1",
         "coveralls": "^3.1.0",
         "decache": "^4.6.0",
         "del": "^6.0.0",
+        "eslint": "^7.23.0",
         "gulp": "^4.0.2",
         "gulp-json-editor": "^2.5.5",
         "istanbul": "^0.4.5",

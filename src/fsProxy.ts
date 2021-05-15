@@ -1,5 +1,4 @@
 import { Uri, workspace, FileStat, FileType, FileSystemError } from "vscode";
-//import * as path from 'path';
 import * as fs from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
@@ -30,7 +29,7 @@ export class FileProxy {
      */
     public async stat(): Promise<FileStat> {
         if (this.useDirectAccess) {
-            let fDirectStat = fs.statSync(this.uri.fsPath);
+            const fDirectStat = fs.statSync(this.uri.fsPath);
             return <FileStat>{
                 ctime: fDirectStat.ctime.valueOf(),
                 size: fDirectStat.size,
@@ -45,15 +44,9 @@ export class FileProxy {
     /**
      * Read a text file.
      */
-    public readFileText(encoding?: BufferEncoding): Promise<string> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let buffer = await this.readFile();
-                resolve(buffer.toString(encoding));
-            } catch (err) {
-                reject(err);
-            }
-        });
+    public async readFileText(encoding?: BufferEncoding): Promise<string> {
+        const buffer = await this.readFile();
+        return buffer.toString(encoding);
     }
 
 
@@ -63,14 +56,14 @@ export class FileProxy {
      */
     public async readFile(): Promise<Buffer> {
         if (this.useDirectAccess) {
-            let contents = fs.readFileSync(this.uri.fsPath);
+            const contents = fs.readFileSync(this.uri.fsPath);
             if (contents) {
                 return contents;
             } else {
                 throw FileSystemError.FileNotFound(this.uri);
             }
         } else {
-            let contents = await workspace.fs.readFile(this.uri);
+            const contents = await workspace.fs.readFile(this.uri);
             if (contents) {
                 return Buffer.from(contents);
             } else {
@@ -118,10 +111,10 @@ export class FileProxy {
      */
     public async readDirectory(): Promise<Array<[string, FileType]>> {
         if (this.useDirectAccess) {
-            let results = fs.readdirSync(this.uri.fsPath, { withFileTypes: true });
-            let values = new Array<[string, FileType]>();
-            for (let dir of results) {
-                let fType = dir.isFile() ? FileType.File : FileType.Directory;
+            const results = fs.readdirSync(this.uri.fsPath, { withFileTypes: true });
+            const values = new Array<[string, FileType]>();
+            for (const dir of results) {
+                const fType = dir.isFile() ? FileType.File : FileType.Directory;
                 values.push([dir.name, fType]);
             }
             return values;
@@ -143,20 +136,20 @@ export class FileProxy {
      */
     public async findFiles(includes: string, excludes: string): Promise<Array<FileProxy>> {
         if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
-            let values = new Array<FileProxy>();
+            const values = new Array<FileProxy>();
             // List the source dir
-            let files = glob.sync(includes, {
+            const files = glob.sync(includes, {
                 cwd: this.uri.fsPath,
                 ignore: excludes
             });
-            for (let f of files) {
+            for (const f of files) {
                 values.push(this.getRelativeFile(f));
             }
             return values;
         } else {
-            let values = new Array<FileProxy>();
-            let files = await workspace.findFiles(includes, excludes);
-            for (let f of files) {
+            const values = new Array<FileProxy>();
+            const files = await workspace.findFiles(includes, excludes);
+            for (const f of files) {
                 values.push(new FileProxy(f));
             }
             return values;
@@ -188,7 +181,7 @@ export class FileProxy {
         let newDName = inputPath.replace(/\\+/g, '/');
         // Testing Windows derive letter -> to uppercase
         if ((newDName.length > 0) && (newDName.charAt(1) === ":")) {
-            let fChar = newDName.charAt(0).toUpperCase();
+            const fChar = newDName.charAt(0).toUpperCase();
             newDName = fChar + ":" + newDName.substring(2);
         }
         return newDName;
@@ -200,8 +193,8 @@ export class FileProxy {
      * @return A new file to the relative path
      */
     public getRelativeFile(relativePath: string): FileProxy {
-        let normalizedRelativePath = FileProxy.normalize(relativePath);
-        let currentUriPath = FileProxy.normalize(this.uri.fsPath);
+        const normalizedRelativePath = FileProxy.normalize(relativePath);
+        const currentUriPath = FileProxy.normalize(this.uri.fsPath);
         // Does the current uri contains child path ?
         if (normalizedRelativePath.indexOf(currentUriPath) === 0) {
             return new FileProxy(Uri.file(normalizedRelativePath), this.useDirectAccess);
@@ -214,7 +207,7 @@ export class FileProxy {
      * Check if the file is a directory
      */
     public async isDirectory(): Promise<boolean> {
-        let stat = await this.stat();
+        const stat = await this.stat();
         return (stat.type & FileType.Directory) > 0;
     }
 
@@ -222,7 +215,7 @@ export class FileProxy {
      * Check if the file is a file
      */
     public async isFile(): Promise<boolean> {
-        let stat = await this.stat();
+        const stat = await this.stat();
         return (stat.type & FileType.File) > 0;
     }
 
@@ -263,5 +256,23 @@ export class FileProxy {
      */
     public getPath(): string {
         return this.uri.fsPath;
+    }
+
+    /**
+     * Copy fil or directory recursively
+     * @param destination Destination file
+     */
+    public async copy(destination: FileProxy): Promise<void> {
+        if (await this.isFile()) {
+            await destination.writeFile(await this.readFile());
+        } else {
+            const files = await this.listFiles();
+            await destination.mkdir();
+            for (const f of files) {
+                const name = path.basename(f.getUri().fsPath);
+                const destUri = destination.getUri().with({ path: `${destination.getUri().path}/${name}` });
+                await f.copy(new FileProxy(destUri));
+            }
+        }
     }
 }

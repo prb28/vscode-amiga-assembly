@@ -28,25 +28,25 @@ describe("VLINK Tests", function () {
             reset(executor);
         });
         it("Should call the link command", async function () {
-            let spiedLinker = spy(linker);
-            let spiedFs = spy(fs);
+            const spiedLinker = spy(linker);
+            const spiedFs = spy(fs);
             when(spiedFs.existsSync(anyString())).thenReturn(true);
             when(spiedLinker.mayLink(anything())).thenReturn(true);
-            let filesUri = [vscode.Uri.parse("file:///file1.s"), vscode.Uri.parse("file:///file2")];
+            const filesUri = [vscode.Uri.parse("file:///file1.s"), vscode.Uri.parse("file:///file2")];
             await linker.linkFiles(VLINKLinker.DEFAULT_BUILD_CONFIGURATION, filesUri, "myprog", undefined, vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build"));
             verify(executor.runTool(anything(), anyString(), anyString(), anything(), anyString(), anything(), anything(), anything(), anything(), anything())).once();
-            let args = capture(executor.runTool).last();
-            let buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
+            const args = capture(executor.runTool).last();
+            const buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
             expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", buildPath + "myprog", buildPath + "file1.o", buildPath + "file2.o"]);
             reset(spiedFs);
             reset(spiedLinker);
         });
         it('Should sort objects according to the entrypoint', async function () {
-            let spiedLinker = spy(linker);
-            let spiedFs = spy(fs);
+            const spiedLinker = spy(linker);
+            const spiedFs = spy(fs);
             when(spiedFs.existsSync(anyString())).thenReturn(true);
             when(spiedLinker.mayLink(anything())).thenReturn(true);
-            let filesUri = [
+            const filesUri = [
                 vscode.Uri.parse('file:///file1.s'),
                 vscode.Uri.parse('file:///file2.s'),
                 vscode.Uri.parse('file:///file3.s'),
@@ -79,11 +79,11 @@ describe("VLINK Tests", function () {
         let parser: VLINKParser;
         before(function () { parser = new VLINKParser(); });
         it("Should parse an empty string to no errors", async function () {
-            let errors = parser.parse("");
+            const errors = parser.parse("");
             expect(errors.length).to.be.equal(0);
         });
         it("Should parse a error", async function () {
-            let errors = parser.parse("error 3 : This is not good\n\nnothing\nerror 5 : This is not good too\nwarning 5 in line 2 of \"myfile\": oh no");
+            const errors = parser.parse("error 3 : This is not good\n\nnothing\nerror 5 : This is not good too\nwarning 5 in line 2 of \"myfile\": oh no");
             expect(errors.length).to.be.equal(3);
             let i = 0;
             let error = errors[i++];

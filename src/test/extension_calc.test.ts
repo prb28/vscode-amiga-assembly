@@ -15,7 +15,7 @@ describe("Global Extension Tests", function () {
     context("Simple calc commands", function () {
         before(async () => {
             // activate the extension
-            let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+            const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
             if (ext) {
                 await ext.activate();
             }
@@ -56,11 +56,11 @@ describe("Global Extension Tests", function () {
         it("Should evaluate the selection in the status bar", async () => {
             this.timeout(60000);
             if (state) {
-                let calc = state.getCalc();
+                const calc = state.getCalc();
                 // Get the status value
                 // tslint:disable-next-line:no-unused-expression
                 expect(calc).to.not.be.undefined;
-                let sb = calc.getStatusBar();
+                const sb = calc.getStatusBar();
                 // tslint:disable-next-line:no-unused-expression
                 expect(sb).to.not.be.undefined;
                 if (sb) {
@@ -69,12 +69,12 @@ describe("Global Extension Tests", function () {
             }
         });
         it("Should hide the status bar if it it not valuable", async () => {
-            let calc = ExtensionState.getCurrent().getCalc();
-            let sb = calc.getStatusBar();
+            const calc = ExtensionState.getCurrent().getCalc();
+            const sb = calc.getStatusBar();
             // tslint:disable-next-line:no-unused-expression
             expect(sb).to.not.be.undefined;
             if (sb) {
-                let spiedStatus = spy(sb);
+                const spiedStatus = spy(sb);
                 // Deselected -- not hidden
                 await vscode.commands.executeCommand("cursorMove", { to: 'left', by: 'character', value: 1, select: false });
                 verify(spiedStatus.hide()).never();
@@ -116,7 +116,7 @@ describe("Global Extension Tests", function () {
         });
         it("Should open an inputBox as calc", async () => {
             const spiedWindow = spy(vscode.window);
-            let promise = new Promise<string>((resolve, reject) => { resolve("3 + 2"); });
+            const promise = new Promise<string>((resolve) => { resolve("3 + 2"); });
             when(spiedWindow.showInputBox(anything())).thenReturn(promise);
             await vscode.commands.executeCommand("amiga-assembly.calculator");
             verify(spiedWindow.showInputBox(anything())).once();
@@ -130,7 +130,7 @@ describe("Global Extension Tests", function () {
                 edit.insert(newFile, new vscode.Position(0, 0), " dc.b $1, #10, #-1, $a, %1010, @1\n");
                 edit.insert(newFile, new vscode.Position(1, 0), " move.l #$80,d7\n");
                 edit.insert(newFile, new vscode.Position(2, 0), " dc.b $10,$21,$10,$41,$10,$61\n");
-                let success = await vscode.workspace.applyEdit(edit);
+                const success = await vscode.workspace.applyEdit(edit);
                 if (success) {
                     await vscode.window.showTextDocument(document);
                     await vscode.commands.executeCommand("cursorMove", { to: 'up', by: 'line', value: 3, select: false });

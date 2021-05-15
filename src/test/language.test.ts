@@ -13,7 +13,7 @@ describe("Language Tests", function () {
     let l: M68kLanguage;
     before(async function () {
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
             l = new M68kLanguage(ext.extensionPath);
@@ -28,7 +28,7 @@ describe("Language Tests", function () {
             expect(l.getPattern("string.quoted.double.m68k")).to.be.equal("\"[^\"]*\"");
         });
         it("Should get a correct regex from it's name", function () {
-            let r: RegExp | null = l.getRegExp("keyword.other.opcode.cpu.bwl.m68k");
+            const r: RegExp | null = l.getRegExp("keyword.other.opcode.cpu.bwl.m68k");
             if (r !== null) {
                 expect(r.test("move")).to.be.true;
                 // must ignore the case for this keyword
@@ -38,12 +38,12 @@ describe("Language Tests", function () {
             }
         });
         it("Should get a pattern from a regex on it's name", function () {
-            let list: Array<string> = l.getAllPatterns(/.*quoted.*/);
+            const list: Array<string> = l.getAllPatterns(/.*quoted.*/);
             expect(list.length).to.be.equal(2);
             expect(list[0]).to.be.equal("\"[^\"]*\"");
         });
         it("Should get a correct list of regex from a regex on it's name", function () {
-            let list: Array<RegExp> = l.getAllRegExps(/.*opcode.cpu.*/);
+            const list: Array<RegExp> = l.getAllRegExps(/.*opcode.cpu.*/);
             expect(list.length).to.be.equal(13);
             expect(list[0].test("bchg.l")).to.be.true;
         });

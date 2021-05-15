@@ -28,7 +28,7 @@ describe("Hover Tests", function () {
     before(async function () {
         this.timeout(defaultTimeout);
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
@@ -40,25 +40,25 @@ describe("Hover Tests", function () {
     describe("HoverProvider api", function () {
         it("Should return no hover on a empty document", function () {
             this.timeout(defaultTimeout);
-            let hp = new M68kHoverProvider(documentationManager);
+            const hp = new M68kHoverProvider(documentationManager);
             const document = new DummyTextDocument();
-            let position: Position = new Position(0, 1);
-            let tokenEmitter = new CancellationTokenSource();
-            let results = hp.provideHover(document, position, tokenEmitter.token);
+            const position: Position = new Position(0, 1);
+            const tokenEmitter = new CancellationTokenSource();
+            const results = hp.provideHover(document, position, tokenEmitter.token);
             return expect(results).to.be.fulfilled;
         });
         it("Should return a hover on an instruction", async function () {
             this.timeout(defaultTimeout);
-            let hp = new M68kHoverProvider(documentationManager);
+            const hp = new M68kHoverProvider(documentationManager);
             const document = new DummyTextDocument();
-            let position: Position = new Position(0, 15);
-            let tokenEmitter = new CancellationTokenSource();
+            const position: Position = new Position(0, 15);
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine(".mylabel\t   move.l #mempos,d1        ; mycomment   ");
-            let result = await hp.provideHover(document, position, tokenEmitter.token);
+            const result = await hp.provideHover(document, position, tokenEmitter.token);
             expect(result).to.not.be.undefined;
             expect(result instanceof Hover).to.be.true;
             if (result instanceof Hover) {
-                let elm = result.contents[0];
+                const elm = result.contents[0];
                 expect(elm instanceof MarkdownString).to.be.true;
                 if (elm instanceof MarkdownString) {
                     expect(elm.value).to.contains("# MOVE - Copy data from source to destination");
@@ -67,16 +67,16 @@ describe("Hover Tests", function () {
         });
         it("Should return a hover on a data with a number", async function () {
             this.timeout(defaultTimeout);
-            let hp = new M68kHoverProvider(documentationManager);
+            const hp = new M68kHoverProvider(documentationManager);
             const document = new DummyTextDocument();
-            let position: Position = new Position(0, 23);
-            let tokenEmitter = new CancellationTokenSource();
+            const position: Position = new Position(0, 23);
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine(".mylabel\t   move.l #$20,d1        ; mycomment   ");
-            let result = await hp.provideHover(document, position, tokenEmitter.token);
+            const result = await hp.provideHover(document, position, tokenEmitter.token);
             expect(result).to.not.be.undefined;
             expect(result instanceof Hover).to.be.true;
             if (result instanceof Hover) {
-                let elm = result.contents[0];
+                const elm = result.contents[0];
                 expect(elm instanceof MarkdownString).to.be.true;
                 if (elm instanceof MarkdownString) {
                     expect(elm.value).to.be.equal("#`32` - $`20` - %`100000` ... ");
@@ -86,16 +86,16 @@ describe("Hover Tests", function () {
     });
     it("Should return a hover on a data with a number and a register", async function () {
         this.timeout(defaultTimeout);
-        let hp = new M68kHoverProvider(documentationManager);
+        const hp = new M68kHoverProvider(documentationManager);
         const document = new DummyTextDocument();
-        let position: Position = new Position(0, 30);
-        let tokenEmitter = new CancellationTokenSource();
+        const position: Position = new Position(0, 30);
+        const tokenEmitter = new CancellationTokenSource();
         document.addLine(".mylabel\t   move.l #$ff5,$dff180        ; mycomment   ");
-        let result = await hp.provideHover(document, position, tokenEmitter.token);
+        const result = await hp.provideHover(document, position, tokenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
-            let elm = result.contents[0];
+            const elm = result.contents[0];
             expect(elm instanceof MarkdownString).to.be.true;
             if (elm instanceof MarkdownString) {
                 expect(elm.value.indexOf("Bits") > 0).to.be.true;
@@ -104,16 +104,16 @@ describe("Hover Tests", function () {
     });
     it("Should return a hover on a data with a library name", async function () {
         this.timeout(defaultTimeout);
-        let hp = new M68kHoverProvider(documentationManager);
+        const hp = new M68kHoverProvider(documentationManager);
         const document = new DummyTextDocument();
-        let position: Position = new Position(0, 25);
-        let tokenEmitter = new CancellationTokenSource();
+        const position: Position = new Position(0, 25);
+        const tokenEmitter = new CancellationTokenSource();
         document.addLine(".mylabel\t   jsr AllocMem(a6)        ; mycomment   ");
         let result = await hp.provideHover(document, position, tokenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
-            let elm = result.contents[0];
+            const elm = result.contents[0];
             expect(elm instanceof MarkdownString).to.be.true;
             if (elm instanceof MarkdownString) {
                 expect(elm.value.includes("allocator")).to.be.true;
@@ -125,7 +125,7 @@ describe("Hover Tests", function () {
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
-            let elm = result.contents[0];
+            const elm = result.contents[0];
             expect(elm instanceof MarkdownString).to.be.true;
             if (elm instanceof MarkdownString) {
                 expect(elm.value.includes("allocator")).to.be.true;
@@ -134,16 +134,16 @@ describe("Hover Tests", function () {
     });
     it("Should return a hover on a data with a formula and a register", async function () {
         this.timeout(defaultTimeout);
-        let hp = new M68kHoverProvider(documentationManager);
+        const hp = new M68kHoverProvider(documentationManager);
         const document = new DummyTextDocument();
-        let position: Position = new Position(0, 51);
-        let tokenEmitter = new CancellationTokenSource();
+        const position: Position = new Position(0, 51);
+        const tokenEmitter = new CancellationTokenSource();
         document.addLine(".mylabel\t   move.l #(BPLSIZE+COPPER_WAIT)/2,$dff180        ; mycomment   ");
-        let result = await hp.provideHover(document, position, tokenEmitter.token);
+        const result = await hp.provideHover(document, position, tokenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
-            let elm = result.contents[0];
+            const elm = result.contents[0];
             expect(elm instanceof MarkdownString).to.be.true;
             if (elm instanceof MarkdownString) {
                 expect(elm.value.indexOf("|  | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1|") > 0).to.be.true;
@@ -152,16 +152,16 @@ describe("Hover Tests", function () {
     });
     it("Should return a hover on variable", async function () {
         this.timeout(defaultTimeout);
-        let hp = new M68kHoverProvider(documentationManager);
+        const hp = new M68kHoverProvider(documentationManager);
         const document = new DummyTextDocument();
-        let position: Position = new Position(0, 4);
-        let tokenEmitter = new CancellationTokenSource();
+        const position: Position = new Position(0, 4);
+        const tokenEmitter = new CancellationTokenSource();
         document.addLine("MY_H_VAR = xxx");
-        let result = await hp.provideHover(document, position, tokenEmitter.token);
+        const result = await hp.provideHover(document, position, tokenEmitter.token);
         expect(result).to.not.be.undefined;
         expect(result instanceof Hover).to.be.true;
         if (result instanceof Hover) {
-            let elm = result.contents[0];
+            const elm = result.contents[0];
             expect(elm instanceof MarkdownString).to.be.true;
             if (elm instanceof MarkdownString) {
                 expect(elm.value).to.be.equal("#`4096000` - $`3e.8000` - %`111110.10000000.00000000` .>..");
@@ -170,8 +170,8 @@ describe("Hover Tests", function () {
     });
     it("Should render a command", function () {
         this.timeout(defaultTimeout);
-        let hp = new M68kHoverProvider(documentationManager);
-        let hoverInstruction = new DocumentationInstruction("ADD", "parent", "add.md");
+        const hp = new M68kHoverProvider(documentationManager);
+        const hoverInstruction = new DocumentationInstruction("ADD", "parent", "add.md");
         hoverInstruction.name = "ADD";
         hoverInstruction.parentDir = "parent";
         hoverInstruction.description = "ADD binary";
@@ -179,7 +179,7 @@ describe("Hover Tests", function () {
     });
     it("Should render a register hover", async function () {
         this.timeout(defaultTimeout);
-        let hp = new M68kHoverProvider(documentationManager);
+        const hp = new M68kHoverProvider(documentationManager);
         let mdStr = await hp.renderWordHover("DFF180");
         expect(mdStr).to.not.be.null;
         if (mdStr) {
@@ -193,8 +193,8 @@ describe("Hover Tests", function () {
     });
     it("Should render a number", function () {
         this.timeout(defaultTimeout);
-        let hp = new M68kHoverProvider(documentationManager);
-        let format = "#`@dec@` - $`@hex@` - %`@bin@` - @`@oct@` @ascii@";
+        const hp = new M68kHoverProvider(documentationManager);
+        const format = "#`@dec@` - $`@hex@` - %`@bin@` - @`@oct@` @ascii@";
         let mdStr = hp.renderNumberForWord("#10", format);
         expect(mdStr).to.not.be.null;
         if (mdStr) {
@@ -223,8 +223,8 @@ describe("Hover Tests", function () {
     });
     it("Should render a register value", function () {
         this.timeout(defaultTimeout);
-        let hp = new M68kHoverProvider(documentationManager);
-        let expected = "|Bits | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0|\n|---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ----|\n|  | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0|\n\n";
+        const hp = new M68kHoverProvider(documentationManager);
+        const expected = "|Bits | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0|\n|---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ----|\n|  | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0|\n\n";
         let mdStr = hp.renderRegisterValue("$1010");
         expect(mdStr).to.not.be.null;
         if (mdStr) {

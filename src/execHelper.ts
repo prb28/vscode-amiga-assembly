@@ -6,14 +6,14 @@ import { workspace, Uri } from 'vscode';
 import * as winston from 'winston';
 
 export class ICheckResult {
-    file: string = "";
-    parentFile: string = "";
-    line: number = -1;
-    col: number = 0;
-    msg: string = "";
-    msgData: string = "";
-    severity: string = "error";
-    parentFileLine: number = -1;
+    file = "";
+    parentFile = "";
+    line = -1;
+    col = 0;
+    msg = "";
+    msgData = "";
+    severity = "error";
+    parentFileLine = -1;
 }
 
 export interface ExecutorParser {
@@ -34,16 +34,16 @@ export class ExecutorHelper {
      */
     runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken, logEmitter?: vscode.EventEmitter<string>): Promise<ICheckResult[]> {
         return new Promise((resolve, reject) => {
-            let options: any = {
+            const options: any = {
                 env: env
             };
             if (cwd) {
                 options.cwd = cwd;
             }
-            let p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
+            const p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
                     if (err && (<any>err).code === 'ENOENT') {
-                        let errorMessage = `Cannot find ${cmd} : ${err.message}`;
+                        const errorMessage = `Cannot find ${cmd} : ${err.message}`;
                         if (logEmitter) {
                             logEmitter.fire(errorMessage + '\r\n');
                         }
@@ -58,15 +58,15 @@ export class ExecutorHelper {
                     }
                     console.log(stderr);
                     if (err && stderr && !useStdErr) {
-                        let errorMessage = ['Error while running tool:', cmd, ...args].join(' ');
+                        const errorMessage = ['Error while running tool:', cmd, ...args].join(' ');
                         winston.info(errorMessage);
                         if (logEmitter) {
                             logEmitter.fire(errorMessage + '\r\n');
                         }
                         throw new Error(errorMessage);
                     }
-                    let text = (useStdErr ? stderr : stdout).toString();
-                    let message = [cwd + '>Finished running tool:', cmd, ...args].join(' ');
+                    const text = (useStdErr ? stderr : stdout).toString();
+                    const message = [cwd + '>Finished running tool:', cmd, ...args].join(' ');
                     winston.info(message);
                     if (logEmitter) {
                         logEmitter.fire([cmd, ...args].join(' ') + '\r\n');
@@ -112,13 +112,13 @@ export class ExecutorHelper {
      */
     runToolRetrieveStdout(args: string[], cwd: string | null, cmd: string, env: any, token?: vscode.CancellationToken): Promise<string> {
         return new Promise((resolve, reject) => {
-            let options: any = {
+            const options: any = {
                 env: env
             };
             if (cwd) {
                 options.cwd = cwd;
             }
-            let p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
+            const p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
                     let bufferOut = "";
                     if (err) {
@@ -141,8 +141,8 @@ export class ExecutorHelper {
     }
 
     async handleDiagnosticErrors(document: vscode.TextDocument | undefined, errors: ICheckResult[], diagnosticSeverity?: vscode.DiagnosticSeverity): Promise<void> {
-        let diagnosticMap: Map<string, Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>> = new Map();
-        for (let error of errors) {
+        const diagnosticMap: Map<string, Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>> = new Map();
+        for (const error of errors) {
             if (error.line <= 0) {
                 vscode.window.showErrorMessage(error.msg);
             } else {
@@ -160,22 +160,22 @@ export class ExecutorHelper {
                     // Processing path of included files
                     if (error.parentFile) {
                         parentCanonicalFile = vscode.Uri.file(error.parentFile).toString();
-                        let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
-                        let includedFiles = await definitionHandler.getIncludedFiles(document.uri);
-                        let fileParentDir = path.parse(parentCanonicalFile).dir;
-                        let errorFilename = path.parse(error.file).base;
-                        for (let filename of includedFiles) {
+                        const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                        const includedFiles = await definitionHandler.getIncludedFiles(document.uri);
+                        const fileParentDir = path.parse(parentCanonicalFile).dir;
+                        const errorFilename = path.parse(error.file).base;
+                        for (const filename of includedFiles) {
                             if (filename.endsWith(errorFilename)) {
                                 canonicalFile = fileParentDir + '/' + filename;
                                 break;
                             }
                         }
                         // Open the document to get the text
-                        let sourceDocument = await workspace.openTextDocument(Uri.parse(canonicalFile));
+                        const sourceDocument = await workspace.openTextDocument(Uri.parse(canonicalFile));
                         if (sourceDocument) {
-                            let sErrorLine = error.line - 1;
+                            const sErrorLine = error.line - 1;
                             if (sourceDocument.lineCount > sErrorLine) {
-                                let newRange = new vscode.Range(sErrorLine, 0, sErrorLine, sourceDocument.lineAt(sErrorLine).range.end.character + 1);
+                                const newRange = new vscode.Range(sErrorLine, 0, sErrorLine, sourceDocument.lineAt(sErrorLine).range.end.character + 1);
                                 text = sourceDocument.getText(newRange);
                             } else {
                                 winston.error(`Invalid error message: '${error.msg}'`);
@@ -183,18 +183,18 @@ export class ExecutorHelper {
                         }
 
                     } else {
-                        let sErrorLine = error.line - 1;
+                        const sErrorLine = error.line - 1;
                         if (document.lineCount > sErrorLine) {
-                            let newRange = new vscode.Range(sErrorLine, 0, sErrorLine, document.lineAt(sErrorLine).range.end.character + 1);
+                            const newRange = new vscode.Range(sErrorLine, 0, sErrorLine, document.lineAt(sErrorLine).range.end.character + 1);
                             text = document.getText(newRange);
                         } else {
                             winston.error(`Invalid error message: '${error.msg}'`);
                         }
                     }
-                    let match = /^(\s*).*(\s*)$/.exec(text);
+                    const match = /^(\s*).*(\s*)$/.exec(text);
                     if (match) {
-                        let leading = match[1];
-                        let trailing = match[2];
+                        const leading = match[1];
+                        const trailing = match[2];
                         if (!error.col) {
                             startColumn = leading.length;
                         } else {
@@ -204,9 +204,9 @@ export class ExecutorHelper {
                     }
 
                 }
-                let errorRange = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
-                let severity = this.mapSeverityToVSCodeSeverity(error.severity);
-                let diagnostic = new vscode.Diagnostic(errorRange, error.msg, severity);
+                const errorRange = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
+                const severity = this.mapSeverityToVSCodeSeverity(error.severity);
+                const diagnostic = new vscode.Diagnostic(errorRange, error.msg, severity);
                 let diagnostics = diagnosticMap.get(canonicalFile);
                 if (!diagnostics) {
                     diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
@@ -223,8 +223,8 @@ export class ExecutorHelper {
 
         for (const [file, diagMap] of diagnosticMap) {
             const fileUri = vscode.Uri.parse(file);
-            let warningDiagnosticCollection = ExtensionState.getCurrent().getWarningDiagnosticCollection();
-            let errorDiagnosticCollection = ExtensionState.getCurrent().getErrorDiagnosticCollection();
+            const warningDiagnosticCollection = ExtensionState.getCurrent().getWarningDiagnosticCollection();
+            const errorDiagnosticCollection = ExtensionState.getCurrent().getErrorDiagnosticCollection();
             if (diagnosticSeverity === undefined || diagnosticSeverity === vscode.DiagnosticSeverity.Error) {
                 const newErrors = diagMap.get(vscode.DiagnosticSeverity.Error);
                 let existingWarnings = warningDiagnosticCollection.get(fileUri);
@@ -265,20 +265,20 @@ export class ExecutorHelper {
 
     getWorkspaceFolderPath(fileUri: vscode.Uri): string {
         if (fileUri) {
-            let wFolder = vscode.workspace.getWorkspaceFolder(fileUri);
+            const wFolder = vscode.workspace.getWorkspaceFolder(fileUri);
             if (wFolder) {
                 return wFolder.uri.fsPath;
             }
         }
         // fall back to the first workspace
-        let folders = vscode.workspace.workspaceFolders;
+        const folders = vscode.workspace.workspaceFolders;
         if (folders && folders.length) {
             return folders[0].uri.fsPath;
         }
         return ".";
     }
 
-    killProcess(p: cp.ChildProcess) {
+    killProcess(p: cp.ChildProcess): void {
         if (p) {
             try {
                 p.kill();

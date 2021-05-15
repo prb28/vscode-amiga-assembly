@@ -23,7 +23,7 @@ describe("Capstone test", function () {
     });
     it("Should disassemble a buffer", function () {
         when(mockedExecutor.runToolRetrieveStdout(anything(), anything(), anything(), anything(), anything())).thenResolve(" 0  90 91  sub.l\t(a1), d0\n");
-        let capstone = new Capstone('cstool');
+        const capstone = new Capstone('cstool');
         capstone.setTestContext(executor);
         return expect(capstone.disassemble('9091')).to.be.eventually.equal(" 0  90 91  sub.l\t(a1), d0\n");
     });
@@ -31,7 +31,7 @@ describe("Capstone test", function () {
         when(mockedExecutor.runToolRetrieveStdout(anything(), anything(), anything(), anything(), anything())).thenResolve(" 0  90 91  sub.l\t(a1), d0\n");
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
-        let capstone = new Capstone('cstool');
+        const capstone = new Capstone('cstool');
         capstone.setTestContext(executor);
 
         return capstone.disassembleFile(Uri.file(programFilename)).then((data) => {

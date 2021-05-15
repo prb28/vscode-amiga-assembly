@@ -60,7 +60,7 @@ export class VASMCompiler {
   public async buildCurrentEditorFile(vasmConf?: VasmBuildProperties, logEmitter?: EventEmitter<string>): Promise<void> {
     const editor = window.activeTextEditor;
     if (editor) {
-      let conf = this.getConfiguration("vasm", vasmConf);
+      const conf = this.getConfiguration("vasm", vasmConf);
       if (this.mayCompile(conf)) {
         await this.buildDocument(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, editor.document, true, logEmitter);
       } else {
@@ -79,7 +79,7 @@ export class VASMCompiler {
    * @param logEmitter Emitter listening to the logs
    */
   public async buildDocument(conf: VasmBuildProperties, document: TextDocument, temporaryBuild: boolean, logEmitter?: EventEmitter<string>): Promise<ICheckResult[]> {
-    let [, errors] = await this.buildFile(conf, document.uri, temporaryBuild, undefined, logEmitter);
+    const [, errors] = await this.buildFile(conf, document.uri, temporaryBuild, undefined, logEmitter);
     this.processGlobalErrors(document, errors);
     this.executor.handleDiagnosticErrors(document, errors, DiagnosticSeverity.Error);
     if (errors) {
@@ -94,20 +94,20 @@ export class VASMCompiler {
    * @param document Test document
    * @param errors Errors
    */
-  public processGlobalErrors(document: TextDocument, errors: ICheckResult[]) {
+  public processGlobalErrors(document: TextDocument, errors: ICheckResult[]): void {
     for (let i = 0; i < errors.length; i += 1) {
-      let error = errors[i];
+      const error = errors[i];
       if (error.line <= 0) {
         // match include errors
-        let match = /.*[<](.*)+[>]/.exec(error.msg);
+        const match = /.*[<](.*)+[>]/.exec(error.msg);
         if (match) {
-          let regexp = new RegExp(
+          const regexp = new RegExp(
             '^[\\s]+include[\\s]+"' +
-            match[1].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"),
+            match[1].replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&"),
             "i"
           );
           for (let k = 0; k < document.lineCount; k += 1) {
-            let line = document.lineAt(k).text;
+            const line = document.lineAt(k).text;
             if (line.match(regexp)) {
               error.line = k + 1;
               break;
@@ -133,18 +133,18 @@ export class VASMCompiler {
   }
 
   public async buildWorkspace(logEmitter?: EventEmitter<string>, vasmBuildProperties?: VasmBuildProperties, vlinkBuildProperties?: VlinkBuildProperties): Promise<void> {
-    let state = ExtensionState.getCurrent();
-    let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
-    let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
+    const state = ExtensionState.getCurrent();
+    const warningDiagnosticCollection = state.getWarningDiagnosticCollection();
+    const errorDiagnosticCollection = state.getErrorDiagnosticCollection();
     errorDiagnosticCollection.clear();
     warningDiagnosticCollection.clear();
-    let conf: any = this.getConfiguration("vasm", vasmBuildProperties);
+    const conf: any = this.getConfiguration("vasm", vasmBuildProperties);
     if (this.mayCompile(conf)) {
-      let confVLINK: any = this.getConfiguration("vlink", vlinkBuildProperties);
+      const confVLINK: any = this.getConfiguration("vlink", vlinkBuildProperties);
       if (confVLINK) {
         await this.buildWorkspaceInner(conf, confVLINK, logEmitter);
       } else {
-        let message = "Please configure VLINK compiler files selection";
+        const message = "Please configure VLINK compiler files selection";
         if (logEmitter) {
           logEmitter.fire(message);
         }
@@ -159,14 +159,14 @@ export class VASMCompiler {
    * Clean the workspace
    */
   public async cleanWorkspace(): Promise<void> {
-    let state = ExtensionState.getCurrent();
-    let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
-    let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
+    const state = ExtensionState.getCurrent();
+    const warningDiagnosticCollection = state.getWarningDiagnosticCollection();
+    const errorDiagnosticCollection = state.getErrorDiagnosticCollection();
     winston.info("Cleaning workspace");
     errorDiagnosticCollection.clear();
     warningDiagnosticCollection.clear();
     const buildDir = this.getBuildDir();
-    let filesProxies = await buildDir.findFiles("**/*.o", "");
+    const filesProxies = await buildDir.findFiles("**/*.o", "");
     for (let i = 0; i < filesProxies.length; i++) {
       const fileUri = filesProxies[i];
       winston.info(
@@ -206,8 +206,8 @@ export class VASMCompiler {
     const ASMOneEnabled = this.isASMOneEnabled();
     try {
       if (workspaceRootDir && buildDir) {
-        let filesURI = await workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
-        let promises: Thenable<ICheckResult[]>[] = [];
+        const filesURI = await workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
+        const promises: Thenable<ICheckResult[]>[] = [];
         for (let i = 0; i < filesURI.length; i++) {
           const fileUri = filesURI[i];
           promises.push(
@@ -219,7 +219,7 @@ export class VASMCompiler {
         if (logEmitter) {
           logEmitter.fire("Compiling_________________________________________\r\n");
         }
-        let errorsArray = await Promise.all(promises);
+        const errorsArray = await Promise.all(promises);
         for (let i = 0; i < errorsArray.length; i += 1) {
           let errors: ICheckResult[] = errorsArray[i];
           if (ASMOneEnabled) {
@@ -234,7 +234,7 @@ export class VASMCompiler {
           if (logEmitter) {
             logEmitter.fire("Linking_________________________________________\r\n");
           }
-          let errors = await this.linker.linkFiles(vlinkConf, filesURI, vlinkConf.exefilename, vlinkConf.entrypoint, workspaceRootDir, buildDir.getUri(), logEmitter);
+          const errors = await this.linker.linkFiles(vlinkConf, filesURI, vlinkConf.exefilename, vlinkConf.entrypoint, workspaceRootDir, buildDir.getUri(), logEmitter);
           if (errors && errors.length > 0) {
             throw new Error(`Linker error: ${errors[0].msg}`);
           } else if (ASMOneEnabled) {
@@ -243,7 +243,7 @@ export class VASMCompiler {
         } else {
           // The linker is not mandatory
           // show a warning in the output
-          let message = "Warning : the linker vlink is not configured";
+          const message = "Warning : the linker vlink is not configured";
           if (logEmitter) {
             logEmitter.fire(`\u001b[33m${message}\u001b[0m`);
           }
@@ -279,7 +279,7 @@ export class VASMCompiler {
       buildDir = this.getBuildDir();
     }
     if (workspaceRootDir && buildDir) {
-      let filename = path.basename(fileUri.fsPath);
+      const filename = path.basename(fileUri.fsPath);
       if (this.mayCompile(conf)) {
         if (!await buildDir.exists()) {
           try {
@@ -288,18 +288,18 @@ export class VASMCompiler {
             }
             await buildDir.mkdir();
           } catch (err) {
-            let message = `Error creating the build dir "${buildDir.getName()}": ${err.toString()}`;
+            const message = `Error creating the build dir "${buildDir.getName()}": ${err.toString()}`;
             if (logEmitter) {
               logEmitter.fire(message);
             }
             throw new Error(message);
           }
         }
-        let state = ExtensionState.getCurrent();
-        let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
-        let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
-        let vasmExecutableName: string = ConfigurationHelper.replaceBinDirVariable(conf.command);
-        let extSep = filename.indexOf(".");
+        const state = ExtensionState.getCurrent();
+        const warningDiagnosticCollection = state.getWarningDiagnosticCollection();
+        const errorDiagnosticCollection = state.getErrorDiagnosticCollection();
+        const vasmExecutableName: string = ConfigurationHelper.replaceBinDirVariable(conf.command);
+        const extSep = filename.indexOf(".");
         let objFilename: string;
         if (extSep > 0) {
           objFilename = path.join(
@@ -321,13 +321,13 @@ export class VASMCompiler {
         } else {
           confArgs = conf.args;
         }
-        let args: Array<string> = confArgs.concat(["-o", objFilename, fileUri.fsPath]);
+        const args: Array<string> = confArgs.concat(["-o", objFilename, fileUri.fsPath]);
         errorDiagnosticCollection.delete(fileUri);
         warningDiagnosticCollection.delete(fileUri);
         if (logEmitter) {
           logEmitter.fire(`building ${objFilename}\r\n`);
         }
-        let results = await this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vasmExecutableName, null, true, this.parser, undefined, logEmitter);
+        const results = await this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vasmExecutableName, null, true, this.parser, undefined, logEmitter);
         return [objFilename, results];
       } else if (!this.disabledInConf(conf)) {
         throw VASMCompiler.CONFIGURE_VASM_ERROR;
@@ -344,7 +344,7 @@ export class VASMCompiler {
    * Useful for mocking
    * @param conf Configuration
    */
-  mayCompile(conf: any) {
+  mayCompile(conf: any): boolean {
     return conf && conf.enabled;
   }
 
@@ -352,7 +352,7 @@ export class VASMCompiler {
    * Function to check if it is explicitly disabled
    * @param conf Configuration
    */
-  disabledInConf(conf: any) {
+  disabledInConf(conf: any): boolean {
     return conf && !conf.enabled;
   }
 
@@ -360,7 +360,7 @@ export class VASMCompiler {
    * Checks if ASMOne compatibility is enabled.
    */
   isASMOneEnabled(): boolean {
-    let conf = ConfigurationHelper.getDefaultConfiguration(null);
+    const conf = ConfigurationHelper.getDefaultConfiguration(null);
     if (conf) {
       return conf.ASMOneCompatibilityEnabled === true;
     }
@@ -370,15 +370,15 @@ export class VASMCompiler {
 
 export class VASMParser implements ExecutorParser {
   parse(text: string): ICheckResult[] {
-    let errors: ICheckResult[] = [];
-    let lines = text.split(/\r\n|\r|\n/g);
+    const errors: ICheckResult[] = [];
+    const lines = text.split(/\r\n|\r|\n/g);
     let error: ICheckResult | undefined = undefined;
     let lastHeaderLine = "";
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
-      let line = lines[lineIndex];
+      const line = lines[lineIndex];
       if (line.length > 1) {
         if (!line.startsWith(">")) {
-          let match = /(error|warning|message)\s([\d]+)\sin\sline\s([\d]+)\sof\s[\"](.+)[\"]:\s*(.*)/.exec(
+          let match = /(error|warning|message)\s([\d]+)\sin\sline\s([\d]+)\sof\s["](.+)["]:\s*(.*)/.exec(
             line
           );
           if (match) {
@@ -404,7 +404,7 @@ export class VASMParser implements ExecutorParser {
               error.msg = line;
             } else if (error !== undefined) {
               // Errors details parse
-              match = /\s*called from line\s([\d]+)\sof\s[\"](.+)[\"]/.exec(
+              match = /\s*called from line\s([\d]+)\sof\s["](.+)["]/.exec(
                 line
               );
               if (match) {
@@ -412,7 +412,7 @@ export class VASMParser implements ExecutorParser {
                 error.line = parseInt(match[1]);
                 error.msg = lastHeaderLine;
               } else {
-                match = /\s*included from line\s([\d]+)\sof\s[\"](.+)[\"]/.exec(
+                match = /\s*included from line\s([\d]+)\sof\s["](.+)["]/.exec(
                   line
                 );
                 if (match) {

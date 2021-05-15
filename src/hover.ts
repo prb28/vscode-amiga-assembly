@@ -20,28 +20,28 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @return Hover results
      */
     public async provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | null> {
-        let configuration = ConfigurationHelper.getDefaultConfiguration(document.uri);
-        let numberDisplayFormat = ConfigurationHelper.retrieveStringProperty(configuration, 'hover.numberDisplayFormat', M68kHoverProvider.DEFAULT_NUMBER_DISPLAY_FORMAT);
+        const configuration = ConfigurationHelper.getDefaultConfiguration(document.uri);
+        const numberDisplayFormat = ConfigurationHelper.retrieveStringProperty(configuration, 'hover.numberDisplayFormat', M68kHoverProvider.DEFAULT_NUMBER_DISPLAY_FORMAT);
         // Parse the line
-        let line = document.lineAt(position.line);
-        let asmLine = new ASMLine(line.text, line);
+        const line = document.lineAt(position.line);
+        const asmLine = new ASMLine(line.text, line);
         // Detect where is the cursor
         if (asmLine.instructionRange && asmLine.instructionRange.contains(position) && (asmLine.instruction.length > 0)) {
             let keyInstruction = asmLine.instruction;
-            let idx = keyInstruction.indexOf('.');
+            const idx = keyInstruction.indexOf('.');
             if (idx > 0) {
                 keyInstruction = keyInstruction.substr(0, idx);
             }
             if (!token.isCancellationRequested) {
-                let hoverInstruction = await this.documentationManager.getInstruction(keyInstruction.toUpperCase());
+                const hoverInstruction = await this.documentationManager.getInstruction(keyInstruction.toUpperCase());
                 if (hoverInstruction) {
-                    let hoverRendered = this.renderHover(hoverInstruction);
+                    const hoverRendered = this.renderHover(hoverInstruction);
                     return new vscode.Hover(hoverRendered, asmLine.instructionRange);
                 }
             }
         } else if (asmLine.dataRange && asmLine.dataRange.contains(position)) {
             // get the word
-            let word = document.getWordRangeAtPosition(position);
+            const word = document.getWordRangeAtPosition(position);
             if (word) {
                 // Text to search in
                 let text = document.getText(word);
@@ -53,8 +53,8 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     rendered = this.renderNumberForWord(text, numberDisplayFormat);
                 } else {
                     // Is there a value next to the register ?
-                    let elms = asmLine.data.split(",");
-                    for (let elm of elms) {
+                    const elms = asmLine.data.split(",");
+                    for (const elm of elms) {
                         if (elm.match(/[$#%@]([\dA-F]+)/i)) {
                             renderedLine2 = this.renderRegisterValue(elm);
                             if (renderedLine2) {
@@ -63,9 +63,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                         } else if (elm.match(/[$#%@+-/*]([\dA-Z_]+)/i)) {
                             // Try to evaluate a formula
                             // Evaluate the formula value
-                            let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                            const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                             try {
-                                let value = await definitionHandler.evaluateFormula(elm);
+                                const value = await definitionHandler.evaluateFormula(elm);
                                 if (value || value === 0) {
                                     renderedLine2 = this.renderRegisterValueNumber(value);
                                     if (renderedLine2) {
@@ -86,13 +86,13 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     }
                 } else {
                     // try to evaluate a formula
-                    let match = /\w+/.exec(text);
+                    const match = /\w+/.exec(text);
                     if (match) {
-                        let variable = match[0];
-                        let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                        const variable = match[0];
+                        const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                         try {
-                            let value = await definitionHandler.evaluateVariable(variable);
-                            let renderedNumber = this.renderNumber(value, numberDisplayFormat);
+                            const value = await definitionHandler.evaluateVariable(variable);
+                            const renderedNumber = this.renderNumber(value, numberDisplayFormat);
                             if (renderedNumber) {
                                 return new vscode.Hover(renderedNumber);
                             }
@@ -105,16 +105,16 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         } else if ((asmLine.variable && asmLine.variableRange.contains(position)) ||
             (asmLine.value && asmLine.valueRange.contains(position))) {
             // Evaluate the variable value
-            let word = document.getWordRangeAtPosition(position);
+            const word = document.getWordRangeAtPosition(position);
             if (word) {
-                let text = document.getText(word);
-                let match = /\w+/.exec(text);
+                const text = document.getText(word);
+                const match = /\w+/.exec(text);
                 if (match) {
-                    let variable = match[0];
-                    let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                    const variable = match[0];
+                    const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                     try {
-                        let value = await definitionHandler.evaluateVariable(variable);
-                        let rendered = this.renderNumber(value, numberDisplayFormat);
+                        const value = await definitionHandler.evaluateVariable(variable);
+                        const rendered = this.renderNumber(value, numberDisplayFormat);
                         if (rendered) {
                             return new vscode.Hover(rendered);
                         }
@@ -132,7 +132,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @param text Text of the register
      */
     public renderRegisterValue(text: string): vscode.MarkdownString | null {
-        let value = this.numberParser.parse(text);
+        const value = this.numberParser.parse(text);
         if (value) {
             return this.renderRegisterValueNumber(value);
         }
@@ -153,7 +153,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         let head = "|Bits";
         let sep = "|----";
         let row = "| ";
-        let strBit = bin.toString();
+        const strBit = bin.toString();
         for (let i = 0; i < strBit.length; i++) {
             head += " | ";
             sep += " | ";
@@ -175,7 +175,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @return Rendered string
      */
     public renderNumberForWord(text: string, format: string): vscode.MarkdownString | null {
-        let value = this.numberParser.parse(text);
+        const value = this.numberParser.parse(text);
         if (value) {
             return this.renderNumber(value, format);
         }
@@ -190,16 +190,16 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      */
     public renderNumber(value: number, format: string): vscode.MarkdownString | null {
         // Transform to hex
-        let dec = value.toString(10);
+        const dec = value.toString(10);
         // Transform to hex
-        let hex = this.numberParser.hexToString(value, true);
+        const hex = this.numberParser.hexToString(value, true);
         // Transform to bin
-        let bin = this.numberParser.binaryToString(value, true);
+        const bin = this.numberParser.binaryToString(value, true);
         // Transform to octal
-        let oct = this.numberParser.octalToString(value, true);
+        const oct = this.numberParser.octalToString(value, true);
         // transform to ascii
-        let ascii = this.numberParser.asciiToString(value, false);
-        let str = format.replace("@dec@", dec).replace("@hex@", hex).replace("@bin@", bin).replace("@oct@", oct).replace("@ascii@", ascii);
+        const ascii = this.numberParser.asciiToString(value, false);
+        const str = format.replace("@dec@", dec).replace("@hex@", hex).replace("@bin@", bin).replace("@oct@", oct).replace("@ascii@", ascii);
         return new vscode.MarkdownString(str);
     }
 
@@ -209,9 +209,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @return Markdown string
      */
     public async renderWordHover(word: string): Promise<vscode.MarkdownString | null> {
-        let value = await this.documentationManager.get(word);
+        const value = await this.documentationManager.get(word);
         if (value) {
-            let mdStr = new vscode.MarkdownString(value);
+            const mdStr = new vscode.MarkdownString(value);
             mdStr.isTrusted = true;
             return mdStr;
         } else {

@@ -33,7 +33,7 @@ export class Version {
      * @param version String containing a version
      */
     constructor(version: string) {
-        let elms = version.split(".");
+        const elms = version.split(".");
         this.major = 0;
         this.minor = 0;
         this.increment = 0;
@@ -98,6 +98,7 @@ export class Version {
      * @returns A version or null if it not a version format
      */
     public static parse(version: string): Version | null {
+        // eslint-disable-next-line no-useless-escape
         if (version.match(/^[\d\.]+$/)) {
             return new Version(version);
         }
@@ -106,23 +107,22 @@ export class Version {
 }
 
 /**
- * Manager for the extension binaries
+ * Manager for the extension downloads
  */
-export class BinariesManager {
-    /** URL of the github binaries project branches */
-    static readonly BINARIES_BRANCH_URL = "https://github.com/prb28/vscode-amiga-assembly-binaries/archive/refs/heads";
-    /** URL of the github binaries project tags */
-    static readonly BINARIES_TAGS_URL = "https://api.github.com/repos/prb28/vscode-amiga-assembly-binaries/tags";
-    /** Local path of the downloaded binaries */
-    protected binariesPath: Uri;
+export class DownloadManager {
+    /** URL of the github project tags */
+    protected tagsURL: string;
+    /** URL of the github project branches */
+    protected branchURL: string;
 
     /**
      * Constructor
-     * @param extensionPath Path of the extension
-     * @param binariesDirName Name of the binaries directory
+     * @param branchURL  URL of the github project branches
+     * @param tagsURL URL of the github project tags
      */
-    constructor(extensionPath: string, binariesDirName: string) {
-        this.binariesPath = Uri.file(path.join(extensionPath, binariesDirName));
+    constructor(branchURL: string, tagsURL: string) {
+        this.branchURL = branchURL;
+        this.tagsURL = tagsURL;
     }
 
     /**
@@ -131,7 +131,7 @@ export class BinariesManager {
      * @returns Version or null
      */
     public getVersionFromFilename(filePath: string): Version | null {
-        let filename = path.basename(filePath);
+        const filename = path.basename(filePath);
         return Version.parse(filename);
     }
 
@@ -141,24 +141,24 @@ export class BinariesManager {
      * @returns 
      */
     public deleteDirectory(directoryUri: Uri): Promise<void> {
-        let dProxy = new FileProxy(directoryUri);
+        const dProxy = new FileProxy(directoryUri);
         return dProxy.delete();
     }
 
     /**
-     * Downloads the binaries.
+     * Downloads the project.
      * @param context Extension context
      * @param version Version of te extension
-     * @returns Uri of the downloaded binaries
+     * @returns Uri of the downloaded project
      */
-    public async downloadBinaries(context: ExtensionContext, version: string): Promise<Uri> {
+    public async downloadProject(context: ExtensionContext, version: string): Promise<Uri> {
         const [downloadedVersion, url] = await this.getZipURL(new Version(version));
         const uri = Uri.parse(url);
         // List all the download files
-        let downloadedFiles: Uri[] = await this.listAllDownloadedFiles(context);
+        const downloadedFiles: Uri[] = await this.listAllDownloadedFiles(context);
         let fileUri: Uri | undefined;
-        for (let file of downloadedFiles) {
-            let vDir = this.getVersionFromFilename(file.path);
+        for (const file of downloadedFiles) {
+            const vDir = this.getVersionFromFilename(file.path);
             if (vDir) {
                 if (vDir.compare(downloadedVersion) !== 0) {
                     await this.deleteDirectory(file);
@@ -168,25 +168,25 @@ export class BinariesManager {
             }
         }
         if (!fileUri) {
-            fileUri = await this.downloadFile("binaries", uri, downloadedVersion.toString(), context, true);
+            fileUri = await this.downloadFile("downloads", uri, downloadedVersion.toString(), context, true);
         }
-        let fProxy = new FileProxy(fileUri);
-        let files = await fProxy.listFiles();
+        const fProxy = new FileProxy(fileUri);
+        const files = await fProxy.listFiles();
         return files[0].getUri();
     }
 
     /**
-     * List all the tags of the binaries project.
+     * List all the tags of the project.
      * @returns List of tag infos
      */
     public async listTagsFromGitHub(): Promise<Array<TagInfo>> {
-        let tagList = new Array<TagInfo>();
-        const response = await axios.get(BinariesManager.BINARIES_TAGS_URL);
-        for (let d of response.data) {
-            let elms = d.name.split("-");
+        const tagList = new Array<TagInfo>();
+        const response = await axios.get(this.tagsURL);
+        for (const d of response.data) {
+            const elms = d.name.split("-");
             if (elms.length > 1) {
-                let version = new Version(elms[0]);
-                let os = elms[1];
+                const version = new Version(elms[0]);
+                const os = elms[1];
                 tagList.push(<TagInfo>{
                     name: d.name,
                     zipball_url: d.zipball_url,
@@ -236,9 +236,9 @@ export class BinariesManager {
     public async getZipURL(version: Version): Promise<[Version, string]> {
         const osName = this.getOsName();
         try {
-            let tagInfos = await this.listTagsFromGitHub();
+            const tagInfos = await this.listTagsFromGitHub();
             let bestTagInfo: TagInfo | undefined;
-            for (let tag of tagInfos) {
+            for (const tag of tagInfos) {
                 if (tag.os === osName) {
                     if (version.isCompatible(tag.version) && (!bestTagInfo || bestTagInfo.version.compare(tag.version) > 0)) {
                         bestTagInfo = tag;
@@ -253,8 +253,8 @@ export class BinariesManager {
             winston.error("Error retrieving tags from github", error);
         }
         // no tag : the master is returned
-        let branchName = this.getBranchName();
-        return [version, `${BinariesManager.BINARIES_BRANCH_URL}/${branchName}.zip`];
+        const branchName = this.getBranchName();
+        return [version, `${this.branchURL}/${branchName}.zip`];
     }
 
     /**
@@ -318,28 +318,58 @@ export class BinariesManager {
             location: ProgressLocation.Notification,
             title: `Downloading ${name} `,
             cancellable: true
-        }, (progress, token) => {
-            return new Promise(async (resolve, reject) => {
-                // Get downloader API and begin to download the requested file
-                let fileDownloader = await this.getFileDownloader();
-                let lastProgress = 0;
-                try {
-                    let file: Uri = await fileDownloader.downloadFile(uri, outPath, context, token, (downloaded, total) => {
-                        // Just return if we don't know how large the file is
-                        if (!total) {
-                            progress.report({ message: 'Please wait...' });
-                        } else {
-                            // Otherwise, update the progress
-                            progress.report({ message: `Please wait...`, increment: downloaded - lastProgress });
-                            lastProgress = downloaded;
-                        }
-                    }, { shouldUnzip: extract });
-                    // Return the final path of the downloaded file
-                    resolve(file);
-                } catch (error) {
-                    reject(error);
+        }, async (progress, token) => {
+            // Get downloader API and begin to download the requested file
+            const fileDownloader = await this.getFileDownloader();
+            let lastProgress = 0;
+            const file: Uri = await fileDownloader.downloadFile(uri, outPath, context, token, (downloaded, total) => {
+                // Just return if we don't know how large the file is
+                if (!total) {
+                    progress.report({ message: 'Please wait...' });
+                } else {
+                    // Otherwise, update the progress
+                    progress.report({ message: `Please wait...`, increment: downloaded - lastProgress });
+                    lastProgress = downloaded;
                 }
-            });
+            }, { shouldUnzip: extract });
+            // Return the final path of the downloaded file
+            return file;
         });
+    }
+}
+
+
+/**
+ * Manager for the extension binaries
+ */
+export class BinariesManager extends DownloadManager {
+    /** URL of the github binaries project branches */
+    static readonly BINARIES_BRANCH_URL = "https://github.com/prb28/vscode-amiga-assembly-binaries/archive/refs/heads";
+    /** URL of the github binaries project tags */
+    static readonly BINARIES_TAGS_URL = "https://api.github.com/repos/prb28/vscode-amiga-assembly-binaries/tags";
+
+    /**
+     * Constructor
+     */
+    constructor() {
+        super(BinariesManager.BINARIES_BRANCH_URL, BinariesManager.BINARIES_TAGS_URL);
+    }
+}
+
+
+/**
+ * Manager for the extension example project
+ */
+export class ExampleProjectManager extends DownloadManager {
+    /** URL of the github example project branches */
+    static readonly BRANCH_URL = "https://github.com/prb28/vscode-amiga-wks-example/archive/refs/heads";
+    /** URL of the github example project tags */
+    static readonly TAGS_URL = "https://github.com/prb28/vscode-amiga-wks-example/archive/refs/tags";
+
+    /**
+     * Constructor
+     */
+    constructor() {
+        super(ExampleProjectManager.BRANCH_URL, ExampleProjectManager.TAGS_URL);
     }
 }

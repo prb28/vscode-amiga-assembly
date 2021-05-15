@@ -6,7 +6,7 @@ import { Range, Position, TextDocument, TextLine, Uri, EndOfLine, FormattingOpti
  */
 export class DummyTextDocument implements TextDocument {
     uri: Uri = Uri.parse('file:///file.s');
-    fileName: string = "myfile";
+    fileName = "myfile";
     readonly isUntitled: boolean = true;
     readonly languageId: string = "m68k";
     readonly version: number = 1;
@@ -14,15 +14,16 @@ export class DummyTextDocument implements TextDocument {
     readonly isClosed: boolean = false;
     readonly eol: EndOfLine = EndOfLine.LF;
     static readonly SEPARATORS = [',', '.', ';', ' ', '$', '#'];
-    lineCount: number = 0;
+    lineCount = 0;
     lines = new Array<TextLine>();
     public addLine(line: string) {
-        let newLine = new DummyTextLine(line);
+        const newLine = new DummyTextLine(line);
         newLine.lineNumber = this.lineCount;
         this.lines.push(newLine);
         this.lineCount += 1;
     }
     public save(): Thenable<boolean> {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         return new Promise((resolve, reject) => { });
     }
     public lineAt(positionOrNumberParameter: number | Position): TextLine {
@@ -51,7 +52,7 @@ export class DummyTextDocument implements TextDocument {
         let endChar = -1;
         if (range) {
             if (range.start.line === range.end.line) {
-                let line = this.lineAt(range.start.line);
+                const line = this.lineAt(range.start.line);
                 return line.text.substring(range.start.character, range.end.character);
             } else {
                 startLine = range.start.line;
@@ -80,8 +81,8 @@ export class DummyTextDocument implements TextDocument {
         str = String(str);
         pos = Number(pos) >>> 0;
         // Search for the word's beginning and end.
-        let left = str.slice(0, pos + 1).search(/\S+$/);
-        let right = str.slice(pos).search(/\s/);
+        const left = str.slice(0, pos + 1).search(/\S+$/);
+        const right = str.slice(pos).search(/\s/);
         // The last word in the string is a special case.
         if (right < 0) {
             return str.slice(left);
@@ -97,14 +98,14 @@ export class DummyTextDocument implements TextDocument {
         // Search for the word's beginning and end.
         let left = 0;
         for (let i = pos - 1; i >= 0; i--) {
-            let c = str.charAt(i);
+            const c = str.charAt(i);
             if (DummyTextDocument.SEPARATORS.includes(c)) {
                 left = i + 1;
                 break;
             }
         }
-        str.slice(0, pos + 1).search(/[^\s,\.;:\$#]+$/);
-        let right = str.slice(pos).search(/[\s,\.;:\$#]/);
+        str.slice(0, pos + 1).search(/[^\s,.;:$#]+$/);
+        const right = str.slice(pos).search(/[\s,.;:$#]/);
         if (left < 0) {
             left = 0;
         }
@@ -121,7 +122,7 @@ export class DummyTextDocument implements TextDocument {
         }
     }
     getWordRangeAtPosition(position: Position, regex?: RegExp): Range | undefined {
-        let line = this.lineAt(position.line);
+        const line = this.lineAt(position.line);
         return this.getWordRangeAt(line, position.character);
     }
     validateRange(range: Range): Range {
@@ -138,12 +139,12 @@ export class DummyTextDocument implements TextDocument {
  * Represents a fake line of text for tests
  */
 export class DummyTextLine implements TextLine {
-    lineNumber: number = 0;
-    text: string = "";
+    lineNumber = 0;
+    text = "";
     range: Range = new Range(new Position(0, 0), new Position(0, 1));
     rangeIncludingLineBreak: Range = new Range(new Position(0, 0), new Position(0, 1));
-    firstNonWhitespaceCharacterIndex: number = 1;
-    isEmptyOrWhitespace: boolean = false;
+    firstNonWhitespaceCharacterIndex = 1;
+    isEmptyOrWhitespace = false;
     constructor(text: string) {
         this.text = text;
         this.range = new Range(new Position(0, 0), new Position(0, text.length));
@@ -155,8 +156,8 @@ export class DummyTextLine implements TextLine {
  * Value-object describing what options formatting should use.
  */
 export class DummyFormattingOptions implements FormattingOptions {
-    tabSize: number = 4;
-    insertSpaces: boolean = true;
+    tabSize = 4;
+    insertSpaces = true;
     [key: string]: boolean | number | string;
 }
 
@@ -176,6 +177,7 @@ export class DummyWorkspaceConfiguration implements WorkspaceConfiguration {
     }
     update(section: string, value: any): Thenable<void> {
         this.map.set(section, value);
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         return new Promise((resolve, reject) => { });
     }
 

@@ -3,7 +3,7 @@ import { ConfigurationHelper } from "../configurationHelper";
 
 describe("ConfigurationHelper Tests", function () {
     it("Should retrieve a string configuration", function () {
-        let conf = ConfigurationHelper.getDefaultConfiguration(null);
+        const conf = ConfigurationHelper.getDefaultConfiguration(null);
         // tslint:disable-next-line: no-unused-expression
         expect(conf).to.be.not.undefined;
         let value = ConfigurationHelper.retrieveStringPropertyInDefaultConf(ConfigurationHelper.BINARIES_PATH_KEY);
@@ -12,7 +12,7 @@ describe("ConfigurationHelper Tests", function () {
         expect(value).to.be.equal("default");
     });
     it("Should retrieve a boolean configuration", function () {
-        let conf = ConfigurationHelper.getDefaultConfiguration(null);
+        const conf = ConfigurationHelper.getDefaultConfiguration(null);
         // tslint:disable-next-line: no-unused-expression
         expect(conf).to.be.not.undefined;
         let value = ConfigurationHelper.retrieveBooleanProperty(conf, "downloadBinaries", false);
@@ -21,7 +21,7 @@ describe("ConfigurationHelper Tests", function () {
         expect(value).to.be.equal(false);
     });
     it("Should retrieve a number configuration", function () {
-        let conf = ConfigurationHelper.getDefaultConfiguration(null);
+        const conf = ConfigurationHelper.getDefaultConfiguration(null);
         // tslint:disable-next-line: no-unused-expression
         expect(conf).to.be.not.undefined;
         let value = ConfigurationHelper.retrieveNumberProperty(conf, "format.labelToInstructionDistance", 70);

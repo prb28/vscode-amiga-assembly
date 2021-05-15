@@ -22,21 +22,21 @@ describe("debug expression helper Tests", function () {
         const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
         const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
-        let state = ExtensionState.getCurrent();
-        let dHnd = state.getDefinitionHandler();
+        const state = ExtensionState.getCurrent();
+        const dHnd = state.getDefinitionHandler();
         await dHnd.scanFile(vscode.Uri.file(MAIN_SOURCE));
     });
     it("Should evaluate the memory expression", function () {
-        let helper = new DebugExpressionHelper();
-        let mockedVariableResolver = mock(DummyVariableResolver);
+        const helper = new DebugExpressionHelper();
+        const mockedVariableResolver = mock(DummyVariableResolver);
         when(mockedVariableResolver.getVariableValue("pc", 1)).thenResolve("f");
         when(mockedVariableResolver.getVariableValue("copper", 1)).thenResolve("2");
         when(mockedVariableResolver.getVariableValue("testfail", 1)).thenReject(Error("No"));
-        let variableResolver = instance(mockedVariableResolver);
+        const variableResolver = instance(mockedVariableResolver);
         return Promise.all([
             expect(helper.getAddressFromExpression("#10", 1, variableResolver)).to.eventually.be.equal(10),
             expect(helper.getAddressFromExpression("$a", 1, variableResolver)).to.eventually.be.equal(10),
@@ -49,12 +49,12 @@ describe("debug expression helper Tests", function () {
         ]);
     });
     it("Should process a memory dump", function () {
-        let helper = new DebugExpressionHelper();
+        const helper = new DebugExpressionHelper();
         let memory = "aa0000";
         let mode = "ab";
         let wordLength = 1;
         let rowLength = 1;
-        let startAddress = 2;
+        const startAddress = 2;
         let variables = [<DebugProtocol.Variable>{
             "name": "00000002",
             "value": "aa | ª",
@@ -114,9 +114,9 @@ describe("debug expression helper Tests", function () {
         expect(helper.processOutputFromMemoryDump(memory, startAddress, mode, wordLength, rowLength)).to.be.eql(["aa000000 00c00b00 00f8", variables]);
     });
     it("Should process a disassembled code", function () {
-        let helper = new DebugExpressionHelper();
+        const helper = new DebugExpressionHelper();
         let code = " 0  90 91  sub.l\t(a1), d0";
-        let startAddress = 1;
+        const startAddress = 1;
         let variables = [<DebugProtocol.Variable>{
             "name": DisassembledInstructionAdapter.getAddressString(1),
             "value": "90 91                     sub.l     (a1), d0",

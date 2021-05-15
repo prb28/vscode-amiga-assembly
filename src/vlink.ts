@@ -51,13 +51,13 @@ export class VLINKLinker {
      * @param logEmitter Log emitter
      */
     public async linkFiles(conf: VlinkBuildProperties, filesURI: Uri[], exeFilepathname: string, entrypoint: string | undefined, workspaceRootDir: Uri, buildDir: Uri, logEmitter?: EventEmitter<string>): Promise<ICheckResult[]> {
-        let vlinkExecutableName: string = ConfigurationHelper.replaceBinDirVariable(conf.command);
-        let confArgs = conf.args;
-        let objectPathNames: string[] = [];
+        const vlinkExecutableName: string = ConfigurationHelper.replaceBinDirVariable(conf.command);
+        const confArgs = conf.args;
+        const objectPathNames: string[] = [];
         for (let i = 0; i < filesURI.length; i += 1) {
-            let filename = path.basename(filesURI[i].fsPath);
+            const filename = path.basename(filesURI[i].fsPath);
             let objFilename;
-            let extSep = filename.indexOf(".");
+            const extSep = filename.indexOf(".");
             if (extSep > 0) {
                 objFilename = path.join(buildDir.fsPath, filename.substr(0, filename.lastIndexOf(".")) + ".o");
             } else {
@@ -71,13 +71,13 @@ export class VLINKLinker {
             // byte of the first section. So, in order to "set" the entrypoint, we
             // put the object containing the code to be executed first at the
             // beginning of the objects list.
-            let entrypointNoExt = entrypoint.replace(/\.[^/.]+$/, "");
+            const entrypointNoExt = entrypoint.replace(/\.[^/.]+$/, "");
             objectPathNames.sort(function (a, b) {
                 if (a === b) {
                     return 0;
                 }
-                let filename_a = path.basename(a).replace(/\.[^/.]+$/, "");
-                let filename_b = path.basename(b).replace(/\.[^/.]+$/, "");
+                const filename_a = path.basename(a).replace(/\.[^/.]+$/, "");
+                const filename_b = path.basename(b).replace(/\.[^/.]+$/, "");
                 if (filename_a === entrypointNoExt) {
                     return -1;
                 }
@@ -90,7 +90,7 @@ export class VLINKLinker {
                 return 1;
             });
         }
-        let args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathNames);
+        const args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathNames);
         return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, null, true, this.parser, undefined, logEmitter);
     }
 
@@ -98,7 +98,7 @@ export class VLINKLinker {
      * Function to check if it is possible to link
      * @param conf Configuration
      */
-    mayLink(conf: any) {
+    mayLink(conf: any): boolean {
         return (conf && conf.enabled);
     }
 
@@ -109,14 +109,14 @@ export class VLINKLinker {
  */
 export class VLINKParser implements ExecutorParser {
     parse(text: string): ICheckResult[] {
-        let errors: ICheckResult[] = [];
-        let lines = text.split(/\r\n|\r|\n/g);
+        const errors: ICheckResult[] = [];
+        const lines = text.split(/\r\n|\r|\n/g);
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
-            let line = lines[lineIndex];
+            const line = lines[lineIndex];
             if ((line.length > 1) && !line.startsWith('>')) {
-                let match = /(error|warning|message)\s([\d]+)\sin\sline\s([\d]+)\sof\s[\"](.+)[\"]:\s*(.*)/i.exec(line);
+                let match = /(error|warning|message)\s([\d]+)\sin\sline\s([\d]+)\sof\s["](.+)["]:\s*(.*)/i.exec(line);
                 if (match) {
-                    let error: ICheckResult = new ICheckResult();
+                    const error: ICheckResult = new ICheckResult();
                     error.file = match[4];
                     error.line = parseInt(match[3]);
                     error.msg = match[1] + " " + match[2] + ": " + match[5];
@@ -125,7 +125,7 @@ export class VLINKParser implements ExecutorParser {
                 } else {
                     match = /.*error\s([\d]+)\s*:\s*(.*)/i.exec(line);
                     if (match) {
-                        let error: ICheckResult = new ICheckResult();
+                        const error: ICheckResult = new ICheckResult();
                         error.severity = 'error';
                         error.msg = line;
                         errors.push(error);

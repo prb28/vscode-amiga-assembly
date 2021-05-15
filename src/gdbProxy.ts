@@ -93,7 +93,7 @@ export class GdbProxy extends EventEmitter {
     /**
      * Declares the debugger connected.
      */
-    public setConnected() {
+    public setConnected(): void {
         this.connected = true;
         this.sendEvent("gdbConnected");
     }
@@ -104,12 +104,13 @@ export class GdbProxy extends EventEmitter {
      * @param port Server socket port
      */
     public connect(host: string, port: number): Promise<void> {
-        let self = this;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
         return new Promise((resolve, reject) => {
             self.socket.connect(port, host);
             self.socket.once('connect', async () => {
                 try {
-                    let data = await self.sendPacketString(GdbProxy.SUPPORT_STRING, GdbPacketType.UNKNOWN);
+                    const data = await self.sendPacketString(GdbProxy.SUPPORT_STRING, GdbPacketType.UNKNOWN);
                     const returnedData = data;
                     if (returnedData.indexOf("multiprocess+") >= 0) {
                         GdbThread.setSupportMultiprocess(true);
@@ -149,7 +150,7 @@ export class GdbProxy extends EventEmitter {
     /** Default handler for the on data event*/
     protected defaultOnDataHandler = (packet: GdbPacket): boolean => {
         this.sendEvent("output", `defaultOnDataHandler (type : ${GdbPacketType[packet.getType()]}, notification : ${packet.isNotification()}) : --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
-        let consumed = false;
+        const consumed = false;
         switch (packet.getType()) {
             case GdbPacketType.STOP:
                 this.parseStop(packet.getMessage());
@@ -179,8 +180,8 @@ export class GdbProxy extends EventEmitter {
      * @param data Data to parse
      */
     protected onData(proxy: GdbProxy, data: any): void {
-        let packets = GdbPacket.parseData(data);
-        for (let packet of packets) {
+        const packets = GdbPacket.parseData(data);
+        for (const packet of packets) {
             // plus packet are acknowledge - to be ignored
             if (packet.getType() === GdbPacketType.OUTPUT) {
                 try {
@@ -217,26 +218,27 @@ export class GdbProxy extends EventEmitter {
         return new Promise((resolve, reject) => {
             if (this.programFilename !== programFilename) {
                 this.programFilename = programFilename;
-                let elms = this.programFilename.replace(/\\/g, '/').split('/');
+                const elms = this.programFilename.replace(/\\/g, '/').split('/');
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
                 const self = this;
                 // Let fs-uae terminate before sending the run command
                 // TODO : check if this is necessary
                 setTimeout(async function () {
                     self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
-                    let encodedProgramName = StringUtils.convertStringToHex("dh0:" + elms[elms.length - 1]);
+                    const encodedProgramName = StringUtils.convertStringToHex("dh0:" + elms[elms.length - 1]);
                     try {
-                        let message = await self.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP);
-                        let type = GdbPacket.parseType(message);
+                        const message = await self.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP);
+                        const type = GdbPacket.parseType(message);
                         if (type === GdbPacketType.SEGMENT) {
                             throw new Error(GdbProxy.BINARIES_ERROR);
                         } else if (type === GdbPacketType.STOP) {
                             // Call for segments
                             await self.getQOffsets();
                             // Call for thread dump
-                            let threads = await self.getThreadIds();
+                            const threads = await self.getThreadIds();
                             self.setConnected();
                             await self.parseStop(message);
-                            for (let th of threads) {
+                            for (const th of threads) {
                                 self.sendEvent('threadStarted', th.getId());
                             }
                             resolve();
@@ -254,16 +256,16 @@ export class GdbProxy extends EventEmitter {
     }
 
     public async getQOffsets(): Promise<void> {
-        let segmentReply = await this.sendPacketString('qOffsets', GdbPacketType.UNKNOWN);
+        const segmentReply = await this.sendPacketString('qOffsets', GdbPacketType.UNKNOWN);
         // expected return message : TextSeg=00c03350;DataSeg=00c03350
-        let segs = segmentReply.split(";");
+        const segs = segmentReply.split(";");
         this.segments = new Array<Segment>();
         // The segments message begins with the keyword AS
-        for (let seg of segs) {
-            let segElms = seg.split("=");
+        for (const seg of segs) {
+            const segElms = seg.split("=");
             if (segElms.length > 1) {
-                let name = segElms[0];
-                let address = segElms[1];
+                const name = segElms[0];
+                const address = segElms[1];
                 this.segments.push(<Segment>{
                     name: name,
                     address: parseInt(address, 16),
@@ -280,12 +282,12 @@ export class GdbProxy extends EventEmitter {
      */
     public static calculateChecksum(text: string): string {
         let cs = 0;
-        let buffer = Buffer.alloc(text.length, text);
+        const buffer = Buffer.alloc(text.length, text);
         for (let i = 0; i < buffer.length; ++i) {
             cs += buffer[i];
         }
         cs = cs % 256;
-        let s = GdbProxy.formatNumber(cs);
+        const s = GdbProxy.formatNumber(cs);
         if (s.length < 2) {
             return "0" + s;
         } else {
@@ -298,7 +300,7 @@ export class GdbProxy extends EventEmitter {
      * @param text Text to be sent
      */
     public formatString(text: string): Buffer {
-        let data = Buffer.alloc(text.length + 5);
+        const data = Buffer.alloc(text.length + 5);
         let offset = 0;
         data.write('$', offset++);
         data.write(text, offset);
@@ -318,9 +320,9 @@ export class GdbProxy extends EventEmitter {
      * @param answerExpected if true not waiting response
      * @return a Promise with the response contents - or a rejection
      */
-    public async sendPacketString(text: string, expectedType: GdbPacketType | null, answerExpected: boolean = true): Promise<string> {
+    public async sendPacketString(text: string, expectedType: GdbPacketType | null, answerExpected = true): Promise<string> {
         let returnedMessage = "";
-        let dataToSend = this.formatString(text);
+        const dataToSend = this.formatString(text);
         if (this.socket.writable) {
             this.sendPacketStringLock = await this.mutex.capture('sendPacketString');
             try {
@@ -341,7 +343,7 @@ export class GdbProxy extends EventEmitter {
                 }
                 this.socket.write(dataToSend);
                 if (answerExpected) {
-                    let packet = await p;
+                    const packet = await p;
                     if (packet) {
                         this.sendEvent("output", `${dataToSend} --> ${packet.getMessage()}`, undefined, undefined, undefined, 'debug');
                         if (packet.getType() === GdbPacketType.ERROR) {
@@ -371,10 +373,11 @@ export class GdbProxy extends EventEmitter {
      * @return Promise with a breakpoint
      */
     public async setBreakpoint(breakpoint: GdbBreakpoint): Promise<void> {
-        let segmentId = breakpoint.segmentId;
-        let offset = breakpoint.offset;
-        let exceptionMask = breakpoint.exceptionMask;
-        let self = this;
+        const segmentId = breakpoint.segmentId;
+        const offset = breakpoint.offset;
+        const exceptionMask = breakpoint.exceptionMask;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
         if (!this.socket.writable) {
             throw new Error("The Gdb connection is not opened");
         } else {
@@ -383,8 +386,8 @@ export class GdbProxy extends EventEmitter {
             } else if ((offset >= 0) || exceptionMask) {
                 let message: string;
                 if (exceptionMask) {
-                    let expMskHex = GdbProxy.formatNumber(exceptionMask);
-                    let expMskHexSz = GdbProxy.formatNumber(expMskHex.length);
+                    const expMskHex = GdbProxy.formatNumber(exceptionMask);
+                    const expMskHexSz = GdbProxy.formatNumber(expMskHex.length);
                     message = "Z1,0,0;X" + expMskHexSz + "," + expMskHex;
                 } else {
                     let segStr = "";
@@ -424,9 +427,9 @@ export class GdbProxy extends EventEmitter {
      * @param breakpoint breakpoint to remove
      */
     public async removeBreakpoint(breakpoint: GdbBreakpoint): Promise<void> {
-        let segmentId = breakpoint.segmentId;
-        let offset = breakpoint.offset;
-        let exceptionMask = breakpoint.exceptionMask;
+        const segmentId = breakpoint.segmentId;
+        const offset = breakpoint.offset;
+        const exceptionMask = breakpoint.exceptionMask;
         let message: string | undefined = undefined;
         if (this.segments && (segmentId !== undefined) && (segmentId < this.segments.length)) {
             message = 'z0,' + GdbProxy.formatNumber(offset) + ',' + GdbProxy.formatNumber(segmentId);
@@ -453,7 +456,7 @@ export class GdbProxy extends EventEmitter {
         } else {
             throw new Error("No arguments to select a frame");
         }
-        let data = await this.sendPacketString(message, GdbPacketType.FRAME);
+        const data = await this.sendPacketString(message, GdbPacketType.FRAME);
         if (data === "-1") {
             return GdbProxy.DEFAULT_FRAME_INDEX;
         } else {
@@ -480,9 +483,9 @@ export class GdbProxy extends EventEmitter {
     protected async getStackPosition(thread: GdbThread, frameIndex: number): Promise<GdbStackPosition> {
         if (thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.CPU) {
             // Get the current frame
-            let values = await this.getRegisterNumerical('pc', frameIndex);
-            let pc = values[0];
-            let [segmentId, offset] = this.toRelativeOffset(pc);
+            const values = await this.getRegisterNumerical('pc', frameIndex);
+            const pc = values[0];
+            const [segmentId, offset] = this.toRelativeOffset(pc);
             return <GdbStackPosition>{
                 index: frameIndex,
                 stackFrameIndex: values[1],
@@ -492,10 +495,10 @@ export class GdbProxy extends EventEmitter {
             };
         } else if (thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.COP) {
             // Retrieve the stack position from the copper
-            let haltStatus = await this.getHaltStatus();
-            for (let hs of haltStatus) {
+            const haltStatus = await this.getHaltStatus();
+            for (const hs of haltStatus) {
                 if ((hs.thread) && (hs.thread.getThreadId() === thread.getThreadId())) {
-                    let copperValues = await this.getRegisterNumerical('copper', frameIndex);
+                    const copperValues = await this.getRegisterNumerical('copper', frameIndex);
                     return <GdbStackPosition>{
                         index: frameIndex * 1000,
                         stackFrameIndex: 0,
@@ -515,12 +518,12 @@ export class GdbProxy extends EventEmitter {
      * @param thread Thread identifier
      */
     public async stack(thread: GdbThread): Promise<GdbStackFrame> {
-        let frames = new Array<GdbStackPosition>();
+        const frames = new Array<GdbStackPosition>();
         // Retrieve the current frame id
         let stackPosition = await this.getStackPosition(thread, GdbProxy.DEFAULT_FRAME_INDEX);
         frames.push(stackPosition);
         if (thread.getThreadId() === GdbAmigaSysThreadIdFsUAE.CPU) {
-            let current_frame_index = stackPosition.stackFrameIndex;
+            const current_frame_index = stackPosition.stackFrameIndex;
             for (let i = current_frame_index; i > 0; i--) {
                 stackPosition = await this.getStackPosition(thread, i);
                 frames.push(stackPosition);
@@ -537,7 +540,7 @@ export class GdbProxy extends EventEmitter {
      * @param thread selected thread
      */
     private sendStopOnStepEvent(thread: GdbThread) {
-        for (let thId of this.threads.keys()) {
+        for (const thId of this.threads.keys()) {
             if (thId !== thread.getId()) {
                 this.sendEvent('stopOnStep', thId, true);
             }
@@ -586,14 +589,14 @@ export class GdbProxy extends EventEmitter {
      * @param srValue Status Register value
      */
     public static getSRDetailedValues(srValue: number): Array<GdbRegister> {
-        let registers = new Array<GdbRegister>();
+        const registers = new Array<GdbRegister>();
         let intMask = 0;
         let intPos = 2;
         for (let i = 0; i < GdbProxy.SR_LABELS.length; i++) {
-            let label = GdbProxy.SR_LABELS[i];
+            const label = GdbProxy.SR_LABELS[i];
             if (label !== null) {
-                let mask = 1 << (15 - i);
-                let b = srValue & mask;
+                const mask = 1 << (15 - i);
+                const b = srValue & mask;
                 let vb = 0;
                 if (b) {
                     vb = 1;
@@ -628,14 +631,14 @@ export class GdbProxy extends EventEmitter {
                 // sets the current frameId
                 await this.selectFrame(frameId, null);
             }
-            let message = await this.sendPacketString('g', GdbPacketType.UNKNOWN);
+            const message = await this.sendPacketString('g', GdbPacketType.UNKNOWN);
             let registers = new Array<GdbRegister>();
             let pos = 0;
             let letter = 'd';
             let v = "";
             for (let j = 0; j < 2; j++) {
                 for (let i = 0; i < 8; i++) {
-                    let name = letter + i;
+                    const name = letter + i;
                     v = message.slice(pos, pos + 8);
                     registers.push({
                         name: name,
@@ -647,14 +650,14 @@ export class GdbProxy extends EventEmitter {
             }
             v = message.slice(pos, pos + 8);
             pos += 8;
-            let sr = parseInt(v, 16);
+            const sr = parseInt(v, 16);
             registers.push({
                 name: "sr",
                 value: sr
             });
             registers = registers.concat(GdbProxy.getSRDetailedValues(sr));
             v = message.slice(pos, pos + 8);
-            let pc = parseInt(v, 16);
+            const pc = parseInt(v, 16);
             registers.unshift({
                 name: "pc",
                 value: pc
@@ -674,7 +677,7 @@ export class GdbProxy extends EventEmitter {
         if (this.segments) {
             if (segmentId < this.segments.length) {
                 const segment = this.segments[segmentId];
-                let memory = await this.getMemory(segment.address, segment.size);
+                const memory = await this.getMemory(segment.address, segment.size);
                 return memory;
             } else {
                 throw new Error(`Segment Id #${segmentId} not found`);
@@ -691,7 +694,7 @@ export class GdbProxy extends EventEmitter {
      * @return String returned by the server = bytes in hexa
      */
     public async getMemory(address: number, length: number): Promise<string> {
-        let memory = await this.sendPacketString("m" + GdbProxy.formatNumber(address) + ',' + GdbProxy.formatNumber(length), GdbPacketType.UNKNOWN);
+        const memory = await this.sendPacketString("m" + GdbProxy.formatNumber(address) + ',' + GdbProxy.formatNumber(length), GdbPacketType.UNKNOWN);
         return memory;
     }
 
@@ -701,7 +704,7 @@ export class GdbProxy extends EventEmitter {
      * @param dataToSend Data to send
      */
     public async setMemory(address: number, dataToSend: string): Promise<void> {
-        let size = dataToSend.length / 2;
+        const size = dataToSend.length / 2;
         await this.sendPacketString("M" + GdbProxy.formatNumber(address) + ',' + size + ':' + dataToSend, GdbPacketType.OK);
     }
 
@@ -715,7 +718,7 @@ export class GdbProxy extends EventEmitter {
         try {
             // the current frame
             if (frameIndex !== undefined) {
-                let sReturnedFrameIndex = await this.selectFrame(frameIndex, null);
+                const sReturnedFrameIndex = await this.selectFrame(frameIndex, null);
                 if (sReturnedFrameIndex !== undefined) {
                     returnedFrameIndex = sReturnedFrameIndex;
                 }
@@ -723,9 +726,9 @@ export class GdbProxy extends EventEmitter {
                     throw new Error(`Error during frame selection asking ${frameIndex} returned ${sReturnedFrameIndex}`);
                 }
             }
-            let regIdx = this.getRegisterIndex(name);
+            const regIdx = this.getRegisterIndex(name);
             if (regIdx !== null) {
-                let data = await this.sendPacketString("p" + GdbProxy.formatNumber(regIdx), GdbPacketType.UNKNOWN);
+                const data = await this.sendPacketString("p" + GdbProxy.formatNumber(regIdx), GdbPacketType.UNKNOWN);
                 return [data, returnedFrameIndex];
             } else {
                 throw new Error("No index found for register: " + name);
@@ -741,7 +744,7 @@ export class GdbProxy extends EventEmitter {
      * @param register Name of the register a1, a2, etc..
      */
     public async getRegisterNumerical(name: string, frameIndex: number): Promise<[number, number]> {
-        let values = await this.getRegister(name, frameIndex);
+        const values = await this.getRegister(name, frameIndex);
         return [parseInt(values[0], 16), values[1]];
     }
 
@@ -750,7 +753,7 @@ export class GdbProxy extends EventEmitter {
      */
     public async getThreadIds(): Promise<Array<GdbThread>> {
         if (this.threads.size <= 0) {
-            let data = await this.sendPacketString("qfThreadInfo", GdbPacketType.UNKNOWN);
+            const data = await this.sendPacketString("qfThreadInfo", GdbPacketType.UNKNOWN);
             let pData = data;
             if (pData.startsWith("m")) {
                 pData = pData.substring(1).trim();
@@ -761,9 +764,9 @@ export class GdbProxy extends EventEmitter {
             if (pData.endsWith(",")) {
                 pData = pData.substring(0, pData.length - 1);
             }
-            let returnedThreads = new Array<GdbThread>();
-            for (let elm of pData.split(',')) {
-                let th = GdbThread.parse(elm);
+            const returnedThreads = new Array<GdbThread>();
+            for (const elm of pData.split(',')) {
+                const th = GdbThread.parse(elm);
                 returnedThreads.push(th);
                 this.threads.set(th.getId(), th);
                 this.threadsNative.set(elm, th);
@@ -779,7 +782,7 @@ export class GdbProxy extends EventEmitter {
      * @param event Event to send
      * @param args Arguments
      */
-    public sendEvent(event: string, ...args: any[]) {
+    public sendEvent(event: string, ...args: any[]): void {
         setImmediate(_ => {
             this.emit(event, ...args);
         });
@@ -791,13 +794,13 @@ export class GdbProxy extends EventEmitter {
      *  or      AS addr;size;add2;size
      * @param segmentReply The message containing the segments
      */
-    protected parseSegments(segmentReply: string) {
-        let segs = segmentReply.substring(2).split(";"); // removing "AS"
+    protected parseSegments(segmentReply: string): void {
+        const segs = segmentReply.substring(2).split(";"); // removing "AS"
         this.segments = new Array<Segment>();
         // The segments message begins with the keyword AS
         for (let i = 1; i < segs.length - 1; i += 2) {
-            let address = segs[i];
-            let size = segs[i + 1];
+            const address = segs[i];
+            const size = segs[i + 1];
             this.segments.push(<Segment>{
                 address: parseInt(address, 16),
                 size: parseInt(size, 16),
@@ -807,8 +810,8 @@ export class GdbProxy extends EventEmitter {
     }
 
     protected async parseStop(message: string): Promise<void> {
-        let haltStatus = this.parseHaltStatus(message);
-        let currentCpuThread = this.getCurrentCpuThread();
+        const haltStatus = this.parseHaltStatus(message);
+        const currentCpuThread = this.getCurrentCpuThread();
         let currentThreadId = -1;
         if (haltStatus.thread) {
             currentThreadId = haltStatus.thread.getId();
@@ -818,11 +821,10 @@ export class GdbProxy extends EventEmitter {
         switch (haltStatus.code) {
             case GdbSignal.GDB_SIGNAL_TRAP: // Trace/breakpoint trap
                 // A breakpoint has been reached
-                const continueDebugging = !this.stopOnEntryRequested;
                 if (this.firstStop === true) {
                     this.firstStop = false;
                     await this.sendAllPendingBreakpoints();
-                    if (continueDebugging && currentCpuThread) {
+                    if (!this.stopOnEntryRequested && currentCpuThread) {
                         // Send continue command
                         await this.continueExecution(currentCpuThread);
                         break;
@@ -831,7 +833,7 @@ export class GdbProxy extends EventEmitter {
                 if (this.stopOnEntryRequested) {
                     this.stopOnEntryRequested = false;
                     this.sendEvent('stopOnEntry', currentThreadId);
-                } else if ((!continueDebugging || !this.firstStop)) {
+                } else if ((this.stopOnEntryRequested || !this.firstStop)) {
                     this.sendEvent('stopOnBreakpoint', currentThreadId);
                 }
                 break;
@@ -847,11 +849,11 @@ export class GdbProxy extends EventEmitter {
     }
 
     private parseHaltParameters(parameters: string): [GdbThread | undefined, Map<number, number>] {
-        let map = new Map<number, number>();
+        const map = new Map<number, number>();
         let thread;
-        let elms = parameters.trim().split(';');
-        for (let elm of elms) {
-            let kv = elm.split(':');
+        const elms = parameters.trim().split(';');
+        for (const elm of elms) {
+            const kv = elm.split(':');
             if (kv.length > 1) {
                 if ("thread" === kv[0]) {
                     thread = this.threadsNative.get(kv[1]);
@@ -870,7 +872,7 @@ export class GdbProxy extends EventEmitter {
      */
     protected parseHaltStatus(message: string): GdbHaltStatus {
         // Retrieve the cause
-        let sig = parseInt(message.substring(1, 3), 16);
+        const sig = parseInt(message.substring(1, 3), 16);
         let parameters: string | null = null;
         if (message.length > 3) {
             parameters = message.substring(3);
@@ -908,7 +910,7 @@ export class GdbProxy extends EventEmitter {
         let thread;
         if (parameters) {
             [thread, registersMap] = this.parseHaltParameters(parameters);
-            let pc = registersMap.get(GdbProxy.REGISTER_PC_INDEX);
+            const pc = registersMap.get(GdbProxy.REGISTER_PC_INDEX);
             if (pc) {
                 posString = " in $" + GdbProxy.formatNumber(pc);
             }
@@ -930,14 +932,14 @@ export class GdbProxy extends EventEmitter {
      * Ask for the status of the current stop
      */
     public async getHaltStatus(): Promise<GdbHaltStatus[]> {
-        let returnedHaltStatus = new Array<GdbHaltStatus>();
-        let response = await this.sendPacketString('?', GdbPacketType.STOP);
+        const returnedHaltStatus = new Array<GdbHaltStatus>();
+        const response = await this.sendPacketString('?', GdbPacketType.STOP);
         if (response) {
             if (response.indexOf("OK") < 0) {
                 returnedHaltStatus.push(this.parseHaltStatus(response));
                 let finished = false;
                 while (!finished) {
-                    let vStoppedResponse = await this.sendPacketString('vStopped', null);
+                    const vStoppedResponse = await this.sendPacketString('vStopped', null);
                     if (vStoppedResponse.indexOf("OK") < 0) {
                         returnedHaltStatus.push(this.parseHaltStatus(vStoppedResponse));
                     } else {
@@ -988,8 +990,8 @@ export class GdbProxy extends EventEmitter {
      */
     public getRegisterIndex(name: string): number | null {
         if (name.length > 1) {
-            let type = name.charAt(0);
-            let idx = parseInt(name.charAt(1));
+            const type = name.charAt(0);
+            const idx = parseInt(name.charAt(1));
             if (type === 'd') {
                 return idx + GdbProxy.REGISTER_D0_INDEX;
             } else if (type === 'a') {
@@ -1012,11 +1014,11 @@ export class GdbProxy extends EventEmitter {
      */
     public async setRegister(name: string, value: string): Promise<string> {
         // Verify that the value is an hex
-        let valueRegExp = /[a-z\d]{1,8}/i;
+        const valueRegExp = /[a-z\d]{1,8}/i;
         if (valueRegExp.test(value)) {
-            let regIdx = this.getRegisterIndex(name);
+            const regIdx = this.getRegisterIndex(name);
             if (regIdx !== null) {
-                let message = "P" + regIdx.toString(16) + "=" + value;
+                const message = "P" + regIdx.toString(16) + "=" + value;
                 return this.sendPacketString(message, null);
             } else {
                 throw new Error("Invalid register name: " + name);
@@ -1037,7 +1039,7 @@ export class GdbProxy extends EventEmitter {
      * Returns the thread with an amiga sys type
      */
     public getThreadFromSysThreadId(sysThreadId: GdbAmigaSysThreadIdFsUAE | GdbAmigaSysThreadIdWinUAE): GdbThread | undefined {
-        for (let t of this.threads.values()) {
+        for (const t of this.threads.values()) {
             if (t.getThreadId() === sysThreadId) {
                 return t;
             }
@@ -1085,7 +1087,7 @@ export class GdbProxy extends EventEmitter {
      */
     public addSegment(segment: Segment): number {
         if (this.segments) {
-            let lastSegment = this.segments[this.segments.length - 1];
+            const lastSegment = this.segments[this.segments.length - 1];
             segment.address = lastSegment.address + lastSegment.size;
             this.segments.push(segment);
             return segment.size;
@@ -1098,7 +1100,7 @@ export class GdbProxy extends EventEmitter {
      * @param message Error message
      */
     protected parseError(message: string): GdbError {
-        let error = new GdbError(message);
+        const error = new GdbError(message);
         this.sendEvent('error', error);
         return error;
     }
@@ -1111,7 +1113,7 @@ export class GdbProxy extends EventEmitter {
     public toRelativeOffset(offset: number): [number, number] {
         if (this.segments) {
             let segmentId = 0;
-            for (let segment of this.segments) {
+            for (const segment of this.segments) {
                 if ((offset >= (segment.address)) && (offset <= segment.address + segment.size)) {
                     return [segmentId, offset - segment.address];
                 }

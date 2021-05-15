@@ -15,13 +15,13 @@ describe("gdbEvents Tests", function () {
     it("Should manage and consume an event", function () {
         let triggered1 = false;
         let triggered2 = false;
-        let packet = new GdbPacket(GdbPacketType.OK, "OK");
-        let manager = new GdbReceivedDataManager();
-        manager.OnData.on((data): boolean => {
+        const packet = new GdbPacket(GdbPacketType.OK, "OK");
+        const manager = new GdbReceivedDataManager();
+        manager.OnData.on((): boolean => {
             triggered1 = true;
             return true;
         });
-        manager.OnData.on((data): boolean => {
+        manager.OnData.on((): boolean => {
             triggered2 = true;
             return true;
         });
@@ -41,12 +41,12 @@ describe("gdbEvents Tests", function () {
     it("Should use the default handler", function () {
         let triggered1 = false;
         let triggered2 = false;
-        let packet = <GdbPacket>{};
-        let manager = new GdbReceivedDataManager((data): boolean => {
+        const packet = <GdbPacket>{};
+        const manager = new GdbReceivedDataManager((): boolean => {
             triggered2 = true;
             return true;
         });
-        manager.OnData.on((data): boolean => {
+        manager.OnData.on((): boolean => {
             triggered1 = true;
             return true;
         });
@@ -61,22 +61,22 @@ describe("gdbEvents Tests", function () {
     it("Should work with promises", async function () {
         let triggered1 = false;
         let triggered2 = false;
-        let packet = new GdbPacket(GdbPacketType.OK, "OK");
-        let manager = new GdbReceivedDataManager();
-        let handler1 = <GdbPacketHandler>{
+        const packet = new GdbPacket(GdbPacketType.OK, "OK");
+        const manager = new GdbReceivedDataManager();
+        const handler1 = <GdbPacketHandler>{
             handle: (packet: GdbPacket): boolean => {
                 triggered1 = true;
                 return true;
             }
         };
-        let handler2 = <GdbPacketHandler>{
+        const handler2 = <GdbPacketHandler>{
             handle: (packet: GdbPacket): boolean => {
                 triggered2 = true;
                 return true;
             }
         };
-        let p1 = manager.waitData(handler1);
-        let p2 = manager.waitData(handler2);
+        const p1 = manager.waitData(handler1);
+        const p2 = manager.waitData(handler2);
         manager.trigger(packet);
         await expect(p1).to.be.fulfilled;
         expect(triggered1).to.be.true;

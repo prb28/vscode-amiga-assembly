@@ -26,13 +26,13 @@ export class Capstone {
      * @param cancellationToken Token to cancel the process
      */
     public async disassemble(buffer: string, cancellationToken?: CancellationToken): Promise<string> {
-        let args = ["m68k", buffer];
+        const args = ["m68k", buffer];
         const workspaceRootDir = this.getWorkspaceRootDir();
         let rootPath: string | null = null;
         if (workspaceRootDir) {
             rootPath = workspaceRootDir.fsPath;
         }
-        let code = await this.executor.runToolRetrieveStdout(args, rootPath, this.cstoolPath, null, cancellationToken);
+        const code = await this.executor.runToolRetrieveStdout(args, rootPath, this.cstoolPath, null, cancellationToken);
         if (code.indexOf("ERROR") >= 0) {
             throw new Error(code);
         }
@@ -45,16 +45,16 @@ export class Capstone {
      * @param cancellationToken Token to cancel the process
      */
     public async disassembleFile(filename: Uri, cancellationToken?: CancellationToken): Promise<string> {
-        let di = new DebugInfo(filename);
+        const di = new DebugInfo(filename);
         if (await di.load()) {
-            let codeDataArray = di.getCodeData();
+            const codeDataArray = di.getCodeData();
             let allCode = "";
-            for (let codeData of codeDataArray) {
+            for (const codeData of codeDataArray) {
                 let s = "";
-                for (let b of codeData) {
+                for (const b of codeData) {
                     s += this.padStartWith0(b.toString(16), 8);
                 }
-                let data = await this.disassemble(s, cancellationToken);
+                const data = await this.disassemble(s, cancellationToken);
                 allCode += data + "\n";
             }
             return allCode;
@@ -67,7 +67,7 @@ export class Capstone {
      * Setting the context to run the tests.
      * @param executor mocked executor
      */
-    public setTestContext(executor: ExecutorHelper) {
+    public setTestContext(executor: ExecutorHelper): void {
         this.executor = executor;
     }
 

@@ -55,18 +55,16 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @param position in case of on type format
      * @return edits
      */
-    format(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken, range?: vscode.Range, position?: vscode.Position): vscode.ProviderResult<vscode.TextEdit[]> {
-        return new Promise((resolve, reject) => {
-            let configuration = DocumentFormatterConfiguration.create(document.uri, options.tabSize);
-            let asmDocument = new ASMDocument();
-            asmDocument.parse(document, configuration, token, range, position);
-            // Compute the edits
-            if (asmDocument.onTypeAsmLine && position) {
-                resolve(this.computeEditsForLineOnType(asmDocument, asmDocument.onTypeAsmLine, configuration, position));
-            } else {
-                resolve(this.computeEdits(asmDocument, configuration, token));
-            }
-        });
+    public async format(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken, range?: vscode.Range, position?: vscode.Position): Promise<vscode.TextEdit[]> {
+        const configuration = DocumentFormatterConfiguration.create(document.uri, options.tabSize);
+        const asmDocument = new ASMDocument();
+        asmDocument.parse(document, configuration, token, range, position);
+        // Compute the edits
+        if (asmDocument.onTypeAsmLine && position) {
+            return this.computeEditsForLineOnType(asmDocument, asmDocument.onTypeAsmLine, configuration, position);
+        } else {
+            return this.computeEdits(asmDocument, configuration, token);
+        }
     }
 
     /**
@@ -78,7 +76,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      */
     public computeEdits(asmDocument: ASMDocument, configuration: DocumentFormatterConfiguration, token: vscode.CancellationToken): vscode.TextEdit[] {
         let edits = new Array<vscode.TextEdit>();
-        for (let asmLine of asmDocument.asmLinesArray) {
+        for (const asmLine of asmDocument.asmLinesArray) {
             if (token.isCancellationRequested) {
                 return [];
             }
@@ -95,7 +93,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @return List of edits
      */
     public computeEditsForLine(asmDocument: ASMDocument, asmLine: ASMLine, configuration: DocumentFormatterConfiguration): vscode.TextEdit[] {
-        let edits = new Array<vscode.TextEdit>();
+        const edits = new Array<vscode.TextEdit>();
         if (!asmDocument.isOversized(asmLine)) {
             let range: vscode.Range;
             let s: string;
@@ -132,7 +130,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                     range = new vscode.Range(asmLine.valueRange.end, asmLine.commentRange.start);
                     edits.push(vscode.TextEdit.replace(range, s));
                 }
-                let operatorLeftPadSize = asmDocument.maxOperatorSize - asmLine.operator.length;
+                const operatorLeftPadSize = asmDocument.maxOperatorSize - asmLine.operator.length;
                 s = this.getEndPad(asmLine.operator, asmDocument.operatorColumn, asmDocument.valueColumn, asmDocument.useTabs, asmDocument.tabSize);
                 if (!asmDocument.useTabs && operatorLeftPadSize > 0 && s.length > operatorLeftPadSize) {
                     s = s.substring(operatorLeftPadSize);
@@ -159,9 +157,9 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
     public getEndPad(stringToPad: string, startColumn: number, endColumn: number, useTabs: boolean, tabSize: number): string {
         let result;
         if (useTabs) {
-            let padStartColumnTabIndex = Math.floor((startColumn + stringToPad.length) / tabSize);
-            let padEndColumnTabIndex = Math.ceil(endColumn / tabSize);
-            let tabsCount = padEndColumnTabIndex - padStartColumnTabIndex;
+            const padStartColumnTabIndex = Math.floor((startColumn + stringToPad.length) / tabSize);
+            const padEndColumnTabIndex = Math.ceil(endColumn / tabSize);
+            const tabsCount = padEndColumnTabIndex - padStartColumnTabIndex;
             if (tabsCount > 0) {
                 result = "\t".repeat(tabsCount);
             } else {

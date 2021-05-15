@@ -9,8 +9,8 @@ import { Color, Position, Range } from 'vscode';
 // tslint:disable:no-unused-expression
 describe("Color Tests", function () {
     it("Should find all the colors of a line", function () {
-        let cp = new M86kColorProvider();
-        let colors = cp.searchColorsInLine("    dc.w COLOR00,$0667,COLOR01,$abc ;toto", 1);
+        const cp = new M86kColorProvider();
+        const colors = cp.searchColorsInLine("    dc.w COLOR00,$0667,COLOR01,$abc ;toto", 1);
         expect(colors.length).to.be.equal(2);
         let c = colors[0];
         expect(c.color).to.be.eql(new Color(6 / 32, 6 / 32, 7 / 32, 1));
@@ -20,7 +20,7 @@ describe("Color Tests", function () {
         expect(c.range).to.be.eql(new Range(new Position(1, 31), new Position(1, 35)));
     });
     it("Should format a color", function () {
-        let cp = new M86kColorProvider();
+        const cp = new M86kColorProvider();
         let c = new Color(6 / 32, 6 / 32, 7 / 32, 1);
         expect(cp.formatColor(c, "$1000")).to.be.equal("$1667");
         c = new Color(10 / 32, 11 / 32, 12 / 32, 1);

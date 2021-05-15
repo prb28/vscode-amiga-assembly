@@ -12,9 +12,9 @@ chai.use(chaiAsPromised);
 class DummyDebugSession implements vscode.DebugSession {
     workspaceFolder: vscode.WorkspaceFolder | undefined;
     configuration = <vscode.DebugConfiguration>{};
-    id: string = "1";
-    type: string = "debug";
-    name: string = "mydebug";
+    id = "1";
+    type = "debug";
+    name = "mydebug";
     customRequest(command: string, args?: any): Thenable<any> {
         throw new Error("Method not implemented.");
     }
@@ -25,11 +25,11 @@ class DummyDebugSession implements vscode.DebugSession {
 describe("debug disassembly content provider", function () {
     // tslint:disable:no-unused-expression
     it("Should provide content to disassembly file", async function () {
-        let dcp = new DisassemblyContentProvider();
-        let mockedDebugSession = mock(DummyDebugSession);
-        let debugSession = instance(mockedDebugSession);
-        let instructions = [DisassembledInstructionAdapter.createNumerical(0, "move.l a0,a1"), DisassembledInstructionAdapter.createNumerical(2, "move.l a5,a6")];
-        let response = {
+        const dcp = new DisassemblyContentProvider();
+        const mockedDebugSession = mock(DummyDebugSession);
+        const debugSession = instance(mockedDebugSession);
+        const instructions = [DisassembledInstructionAdapter.createNumerical(0, "move.l a0,a1"), DisassembledInstructionAdapter.createNumerical(2, "move.l a5,a6")];
+        const response = {
             instructions: instructions
         };
         when(mockedDebugSession.customRequest('disassembleInner', anything())).thenReturn(Promise.resolve(response));
@@ -46,18 +46,18 @@ describe("debug disassembly content provider", function () {
         await expect(dcp.provideTextDocumentContent(uri, tokenEmitter.token)).to.be.rejected;
 
         // Segment file
-        let dAsmFileSeg = new DebugDisassembledFile();
+        const dAsmFileSeg = new DebugDisassembledFile();
         dAsmFileSeg.setSegmentId(0);
         uri = Uri.file(dAsmFileSeg.toString());
         tokenEmitter = new CancellationTokenSource();
-        let zero = DisassembledInstructionAdapter.getAddressString(0);
-        let two = DisassembledInstructionAdapter.getAddressString(2);
+        const zero = DisassembledInstructionAdapter.getAddressString(0);
+        const two = DisassembledInstructionAdapter.getAddressString(2);
         await expect(dcp.provideTextDocumentContent(uri, tokenEmitter.token)).to.eventually.be.equal(`${zero}: move.l a0,a1\n${two}: move.l a5,a6\n`);
         const [, args] = capture(mockedDebugSession.customRequest).last();
         expect(args.segmentId).to.be.equal(dAsmFileSeg.getSegmentId());
 
         // address file
-        let dAsmFileAddress = new DebugDisassembledFile();
+        const dAsmFileAddress = new DebugDisassembledFile();
         dAsmFileAddress.setStackFrameIndex(0).setAddressExpression("$a").setLength(500);
         uri = Uri.file(dAsmFileAddress.toString());
         tokenEmitter = new CancellationTokenSource();

@@ -17,7 +17,7 @@ export class DebugDisassembledFile {
     private stackFrameIndex: number | undefined;
     private addressExpression: string | undefined;
     private length: number | undefined;
-    private copper: boolean = false;
+    private copper = false;
     private path = "";
 
     public setSegmentId(segmentId: number): DebugDisassembledFile {
@@ -81,13 +81,13 @@ export class DebugDisassembledFile {
 
     public static fromPath(path: string): DebugDisassembledFile {
         let localPath = path;
-        let dAsmFile = new DebugDisassembledFile();
-        let lastSepPos = localPath.lastIndexOf('/');
+        const dAsmFile = new DebugDisassembledFile();
+        const lastSepPos = localPath.lastIndexOf('/');
         if (lastSepPos >= 0) {
             localPath = localPath.substring(lastSepPos + 1);
             dAsmFile.path = path.substring(0, lastSepPos + 1);
         }
-        let indexOfExt = localPath.lastIndexOf(DebugDisassembledFile.DGBFILE_EXTENSION);
+        const indexOfExt = localPath.lastIndexOf(DebugDisassembledFile.DGBFILE_EXTENSION);
         if (indexOfExt > 0) {
             localPath = localPath.substring(0, indexOfExt - 1);
         }
@@ -99,16 +99,16 @@ export class DebugDisassembledFile {
         } else if (copperLabelPos >= 0) {
             const pathParts = localPath.substring(DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR.length).split('__');
             if (pathParts.length > 1) {
-                let address = pathParts[0];
-                let length = parseInt(pathParts[1]);
+                const address = pathParts[0];
+                const length = parseInt(pathParts[1]);
                 dAsmFile.setAddressExpression(address).setLength(length).setCopper(true);
             }
         } else {
             const pathParts = localPath.split('__');
             if (pathParts.length > 1) {
-                let stackFrameIndex = parseInt(pathParts[0]);
-                let address = pathParts[1];
-                let length = parseInt(pathParts[2]);
+                const stackFrameIndex = parseInt(pathParts[0]);
+                const address = pathParts[1];
+                const length = parseInt(pathParts[2]);
                 dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(address).setLength(length);
             }
         }
@@ -155,8 +155,8 @@ export class DisassembleAddressArguments implements DebugProtocol.DisassembleArg
         }
     }
 
-    public static copy(args: DebugProtocol.DisassembleArguments, isCopper: boolean) {
-        let newArgs = new DisassembleAddressArguments(args.memoryReference, args.instructionCount, isCopper);
+    public static copy(args: DebugProtocol.DisassembleArguments, isCopper: boolean): DisassembleAddressArguments {
+        const newArgs = new DisassembleAddressArguments(args.memoryReference, args.instructionCount, isCopper);
         newArgs.offset = args.offset;
         newArgs.instructionOffset = args.instructionOffset;
         return newArgs;
@@ -183,13 +183,12 @@ export class DebugDisassembledManager {
     }
 
     public async getStackFrame(stackFrameIndex: number, address: number, stackFrameLabel: string, isCopper: boolean): Promise<StackFrame> {
-        let dAsmFile = new DebugDisassembledFile();
-        let url: string;
-        let length = 500;
+        const dAsmFile = new DebugDisassembledFile();
+        const length = 500;
         let lineNumber = 1;
         dAsmFile.setCopper(isCopper);
         // is the pc on a opened segment ?
-        let [segmentId, offset] = this.gdbProxy.toRelativeOffset(address);
+        const [segmentId, offset] = this.gdbProxy.toRelativeOffset(address);
         if ((segmentId >= 0) && !isCopper) {
             // We have a segment
             dAsmFile.setSegmentId(segmentId);
@@ -210,11 +209,11 @@ export class DebugDisassembledManager {
                 // Read 
                 let lineInCop1 = -1;
                 let lineInCop2 = -1;
-                let cop1Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver);
+                const cop1Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver);
                 if (cop1Addr) {
                     lineInCop1 = Math.floor((address - cop1Addr + 4) / 4);
                 }
-                let cop2Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver);
+                const cop2Addr = await MemoryLabelsRegistry.getCopperAddress(1, this.variableResolver);
                 if (cop2Addr) {
                     lineInCop2 = Math.floor((address - cop2Addr + 4) / 4);
                 }
@@ -236,9 +235,9 @@ export class DebugDisassembledManager {
                     lineNumber = lineInCop2;
                 }
             }
-            dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(`\$${newAddress.toString(16)}`).setLength(length);
+            dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(`$${newAddress.toString(16)}`).setLength(length);
         }
-        url = `disassembly:///${dAsmFile}`;
+        const url = `disassembly:///${dAsmFile}`;
         if (lineNumber >= 0) {
             return new StackFrame(stackFrameIndex, stackFrameLabel, new Source(dAsmFile.toString(), url), lineNumber, 1);
         } else {
@@ -248,12 +247,12 @@ export class DebugDisassembledManager {
 
     public async getLineNumberInDisassembledSegment(segmentId: number, offset: number): Promise<number> {
         if (this.capstone) {
-            let memory = await this.gdbProxy.getSegmentMemory(segmentId);
+            const memory = await this.gdbProxy.getSegmentMemory(segmentId);
             // disassemble the code 
-            let code = await this.capstone.disassemble(memory);
-            let [, instructions] = this.debugExpressionHelper.processOutputFromDisassembler(code, 0);
+            const code = await this.capstone.disassemble(memory);
+            const [, instructions] = this.debugExpressionHelper.processOutputFromDisassembler(code, 0);
             let line = 1;
-            for (let instr of instructions) {
+            for (const instr of instructions) {
                 if (instr.getNumericalAddress() === offset) {
                     return line;
                 }
@@ -268,11 +267,11 @@ export class DebugDisassembledManager {
         if (this.capstone) {
             const localCapstone = this.capstone;
             // ask for memory dump
-            let memory = await this.gdbProxy.getSegmentMemory(segmentId);
-            let startAddress = this.gdbProxy.toAbsoluteOffset(segmentId, 0);
+            const memory = await this.gdbProxy.getSegmentMemory(segmentId);
+            const startAddress = this.gdbProxy.toAbsoluteOffset(segmentId, 0);
             // disassemble the code 
-            let code = await localCapstone.disassemble(memory);
-            let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+            const code = await localCapstone.disassemble(memory);
+            const [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
             return variables;
         } else {
             throw new Error("Capstone has not been defined");
@@ -297,14 +296,14 @@ export class DebugDisassembledManager {
     public async disassembleNumericalAddress(searchedAddress: number, length: number, isCopper: boolean): Promise<DebugProtocol.DisassembledInstruction[]> {
         const address = searchedAddress;
         if (isCopper) {
-            let memory = await this.gdbProxy.getMemory(address, length);
-            let startAddress = address;
-            let copDis = new CopperDisassembler(memory);
-            let instructions = copDis.disassemble();
-            let variables = new Array<DebugProtocol.DisassembledInstruction>();
+            const memory = await this.gdbProxy.getMemory(address, length);
+            const startAddress = address;
+            const copDis = new CopperDisassembler(memory);
+            const instructions = copDis.disassemble();
+            const variables = new Array<DebugProtocol.DisassembledInstruction>();
             let offset = 0;
-            for (let i of instructions) {
-                let addOffset = startAddress + offset;
+            for (const i of instructions) {
+                const addOffset = startAddress + offset;
                 variables.push({
                     address: addOffset.toString(16),
                     instruction: i.toString()
@@ -316,11 +315,11 @@ export class DebugDisassembledManager {
         } else if (this.capstone) {
             const localCapstone = this.capstone;
             // ask for memory dump
-            let memory = await this.gdbProxy.getMemory(address, length);
-            let startAddress = address;
+            const memory = await this.gdbProxy.getMemory(address, length);
+            const startAddress = address;
             // disassemble the code 
-            let code = await localCapstone.disassemble(memory);
-            let [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+            const code = await localCapstone.disassemble(memory);
+            const [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
             return variables;
         } else {
             throw new Error("Capstone has not been defined");
@@ -332,11 +331,11 @@ export class DebugDisassembledManager {
         if (this.capstone) {
             const localCapstone = this.capstone;
             // ask for memory dump
-            let memory = await this.gdbProxy.getMemory(address, length);
-            let startAddress = address;
+            const memory = await this.gdbProxy.getMemory(address, length);
+            const startAddress = address;
             // disassemble the code 
-            let code = await localCapstone.disassemble(memory);
-            let [, lines] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+            const code = await localCapstone.disassemble(memory);
+            const [, lines] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
             return lines;
         } else {
             throw new Error("Capstone has not been defined");
@@ -366,9 +365,9 @@ export class DebugDisassembledManager {
     public async getAddressForFileEditorLine(filePath: string, lineNumber: number): Promise<number> {
         let instructions: void | DebugProtocol.DisassembledInstruction[];
         if (lineNumber > 0) {
-            let dAsmFile = DebugDisassembledFile.fromPath(filePath);
+            const dAsmFile = DebugDisassembledFile.fromPath(filePath);
             if (dAsmFile.isSegment()) {
-                let segmentId = dAsmFile.getSegmentId();
+                const segmentId = dAsmFile.getSegmentId();
                 if (segmentId !== undefined) {
                     instructions = await this.disassembleSegment(segmentId);
                 } else {
@@ -376,14 +375,14 @@ export class DebugDisassembledManager {
                 }
             } else {
                 // Path from outside segments
-                let address = dAsmFile.getAddressExpression();
-                let length = dAsmFile.getLength();
+                const address = dAsmFile.getAddressExpression();
+                const length = dAsmFile.getLength();
                 if ((address !== undefined) && (length !== undefined)) {
                     instructions = await this.disassembleAddress(address, length, dAsmFile.isCopper());
                 }
             }
             if (instructions) {
-                let searchedLN = lineNumber - 1;
+                const searchedLN = lineNumber - 1;
                 if (searchedLN < instructions.length) {
                     return parseInt(instructions[searchedLN].address, 16);
                 } else {
