@@ -541,7 +541,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
                 const workspaceManager = new WorkspaceManager();
                 const version = state.getExtensionVersion();
                 try {
-                    await workspaceManager.createExampleWorkspace(ctx, version, destinationDirectory);
+                    const workspaceURI = await workspaceManager.createExampleWorkspace(ctx, version, destinationDirectory);
+                    await vscode.commands.executeCommand("vscode.openFolder", workspaceURI);
                 } catch (error) {
                     vscode.window.showErrorMessage(error.message);
                 }

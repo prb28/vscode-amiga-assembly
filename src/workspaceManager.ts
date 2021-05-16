@@ -1,7 +1,7 @@
-import { ExtensionContext, OpenDialogOptions, Uri, window } from "vscode";
+import { ExtensionContext, InputBoxOptions, OpenDialogOptions, Uri, window } from "vscode";
 import { ExampleProjectManager } from "./downloadManager";
 import { FileProxy } from "./fsProxy";
-
+import * as path from 'path';
 export class WorkspaceManager {
     /**
      * Downloads the project.
@@ -9,7 +9,7 @@ export class WorkspaceManager {
      * @param version Version of te extension
      * @param destinationURI URI destination of the downloaded files
      */
-    public async createExampleWorkspace(context: ExtensionContext, version: string, destinationURI?: Uri): Promise<void> {
+    public async createExampleWorkspace(context: ExtensionContext, version: string, destinationURI?: Uri): Promise<Uri> {
         let destURI = destinationURI;
         if (!destURI) {
             destURI = await this.showInputPanel();
@@ -18,7 +18,15 @@ export class WorkspaceManager {
         const exampleProjectManager = new ExampleProjectManager();
         const downloadedFile = new FileProxy(await exampleProjectManager.downloadProject(context, version));
         // copy files
-        downloadedFile.copy(new FileProxy(destURI));
+        const destDir = new FileProxy(destURI);
+        await downloadedFile.copy(destDir);
+        const files = await destDir.listFiles();
+        for (const f of files) {
+            if (path.basename(f.getPath()).endsWith("code-workspace")) {
+                return f.getUri();
+            }
+        }
+        return destDir.getUri();
     }
 
     /**
@@ -26,19 +34,27 @@ export class WorkspaceManager {
      * @return selected folder Uri
      */
     public async showInputPanel(): Promise<Uri> {
-        const selectedFiles = await window.showOpenDialog(<OpenDialogOptions>{
+        const selectedFolders = await window.showOpenDialog(<OpenDialogOptions>{
             prompt: "Select a file to disassemble",
             canSelectMany: false,
             canSelectFiles: false,
             canSelectFolders: true,
         });
-        if (selectedFiles && (selectedFiles.length > 0)) {
-            return selectedFiles[0];
-        } else {
-            const message = "No selected Folder";
-            window.showErrorMessage(message);
-            throw new Error(message);
+        if (selectedFolders && (selectedFolders.length > 0)) {
+            const selectedFolder = selectedFolders[0];
+            // check if there is files in the folder
+            const fProxy = new FileProxy(selectedFolder);
+            const subFiles = await fProxy.listFiles();
+            if (subFiles.length > 0) {
+                const answer = await window.showWarningMessage("The folder is not empty. Do you really want to use it ?", "Yes", "Cancel");
+                if (answer === "Yes") {
+                    return selectedFolder;
+                }
+            }
         }
+        const message = "Example project creation canceled";
+        window.showErrorMessage(message);
+        throw new Error(message);
     }
 
 }

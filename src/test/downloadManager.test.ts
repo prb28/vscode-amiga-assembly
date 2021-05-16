@@ -96,14 +96,25 @@ describe("Download manager tests", function () {
             expect(vers.toString()).to.be.equal("0.23.0");
             expect(filename).to.be.equal(`${BinariesManager.BINARIES_BRANCH_URL}/${branchName}.zip`);
         });
-        it("Should remove the old binaries", async function () {
+        it.only("Should remove the old binaries according to the project", async function () {
             const tempDir = temp.mkdirSync("tmpDirBinaries");
             const uri1 = Uri.file(path.join(tempDir, "1.2.3"));
             fs.mkdirSync(uri1.fsPath);
-            const uri11 = Uri.file(path.join(uri1.fsPath, "subDir_1.2.3"));
+            const uri11 = Uri.file(path.join(uri1.fsPath, "prb28-vscode-amiga-assembly-binaries-123"));
             fs.mkdirSync(uri11.fsPath);
             const uri2 = Uri.file(path.join(tempDir, "0.2.3"));
             fs.mkdirSync(uri2.fsPath);
+            const uri21 = Uri.file(path.join(uri2.fsPath, "prb28-vscode-amiga-assembly-binaries-438605e"));
+            fs.mkdirSync(uri21.fsPath);
+            const uri3 = Uri.file(path.join(tempDir, "0.2.0"));
+            fs.mkdirSync(uri3.fsPath);
+            fs.mkdirSync(Uri.file(path.join(uri3.fsPath, "prb28-vscode-amiga-assembly-binaries-xxxxx")).fsPath);
+            const uri32 = Uri.file(path.join(uri3.fsPath, "prb28-another_project-xxxx"));
+            fs.mkdirSync(uri32.fsPath);
+            const uri4 = Uri.file(path.join(tempDir, "2.2.3"));
+            fs.mkdirSync(uri4.fsPath);
+            const uri41 = Uri.file(path.join(uri4.fsPath, "prb28-another-project-123"));
+            fs.mkdirSync(uri41.fsPath);
 
             const binManager = new BinariesManager();
             const spyBinManager = spy(binManager);
@@ -112,7 +123,7 @@ describe("Download manager tests", function () {
             const fileDownloaderMock = mock(FileDownloaderMock);
             const downloadedFile = Uri.parse(tempDir);
             when(fileDownloaderMock.downloadFile(anything(), anything(), anything(), anything(), anything(), anything())).thenResolve(downloadedFile);
-            when(fileDownloaderMock.listDownloadedItems(anything())).thenResolve([uri1, uri2]);
+            when(fileDownloaderMock.listDownloadedItems(anything())).thenResolve([uri1, uri2, uri3]);
             const fileDownloader = instance(fileDownloaderMock);
             when(spyBinManager.getFileDownloader()).thenResolve(fileDownloader);
             when(spyBinManager.getZipURL(anything())).thenResolve([v1, "http://mydownnload"]);
@@ -122,8 +133,30 @@ describe("Download manager tests", function () {
             // Check if other dir was deleted
             const fProxy = new FileProxy(Uri.parse(tempDir));
             const files = await fProxy.listFiles();
-            expect(files.length).to.be.equal(1);
-            expect(path.basename(files[0].getUri().fsPath)).to.be.eql(path.basename(uri1.fsPath));
+            expect(files.length).to.be.equal(3);
+            let count = 0;
+            for (const f of files) {
+                if (f.getPath().includes("1.2.3")) {
+                    expect(path.basename(f.getUri().fsPath)).to.be.eql(path.basename(uri1.fsPath));
+                    const subFiles = await f.listFiles();
+                    expect(subFiles.length).to.be.equal(1);
+                    expect(path.basename(subFiles[0].getUri().fsPath)).to.be.eql(path.basename(uri11.fsPath));
+                    count++;
+                } else if (f.getPath().includes("0.2.0")) {
+                    expect(path.basename(f.getUri().fsPath)).to.be.eql(path.basename(uri3.fsPath));
+                    const subFiles = await f.listFiles();
+                    expect(subFiles.length).to.be.equal(1);
+                    expect(path.basename(subFiles[0].getUri().fsPath)).to.be.eql(path.basename(uri32.fsPath));
+                    count++;
+                } else {
+                    expect(path.basename(f.getUri().fsPath)).to.be.eql(path.basename(uri4.fsPath));
+                    const subFiles = await f.listFiles();
+                    expect(subFiles.length).to.be.equal(1);
+                    expect(path.basename(subFiles[0].getUri().fsPath)).to.be.eql(path.basename(uri41.fsPath));
+                    count++;
+                }
+            }
+            expect(count).to.be.equal(3);
         });
         it("Should throw an exception when the binaries could not be retrieved", async function () {
             const tempDir = "tmp";
@@ -232,23 +265,24 @@ describe("Download manager tests", function () {
             expect(vers.toString()).to.be.equal("0.22.1");
             expect(filename).to.be.equal(`http://local/refs/tags/0.22.1.zip`);
         });
-        it("Should retrieve the branch zip file if a tag is not found", async function () {
+        it.only("Should retrieve the branch zip file if a tag is not found", async function () {
             const binManager = new ExampleProjectManager();
             const spyBinManager = spy(binManager);
             const tags = Array<TagInfo>();
             const branchName = binManager.getBranchName();
             when(spyBinManager.listTagsFromGitHub()).thenResolve(tags);
-            const [vers, filename] = await binManager.getZipURL(new Version("0.23"));
-            expect(vers.toString()).to.be.equal("0.23.0");
+            const [vers, filename] = await binManager.getZipURL(new Version("0.99121"));
+            expect(vers.toString()).to.be.equal("0.99121.0");
             expect(filename).to.be.equal(`${ExampleProjectManager.BRANCH_URL}/${branchName}.zip`);
         });
-        it("Should get the master branch on tag retrieve exception", async function () {
+        it.only("Should get the master branch on tag retrieve exception", async function () {
             const binManager = new ExampleProjectManager();
             const spyBinManager = spy(binManager);
             const branchName = binManager.getBranchName();
             when(spyBinManager.listTagsFromGitHub()).thenReject(new Error("no tag"));
-            const [vers, filename] = await binManager.getZipURL(new Version("0.23"));
-            expect(vers.toString()).to.be.equal("0.23.0");
+            const [vers, filename] = await binManager.getZipURL(new Version("0.99121"));
+            expect(vers.toString()).to.be.equal("0.99121.0");
+            expect(branchName).to.be.equal("master");
             expect(filename).to.be.equal(`${ExampleProjectManager.BRANCH_URL}/${branchName}.zip`);
         });
     });

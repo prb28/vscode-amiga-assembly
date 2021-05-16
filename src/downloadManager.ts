@@ -114,15 +114,23 @@ export class DownloadManager {
     protected tagsURL: string;
     /** URL of the github project branches */
     protected branchURL: string;
+    /** Name of the project to dow download */
+    protected projectName: string;
+    /** Name of the download to display */
+    protected downloadName: string;
 
     /**
      * Constructor
      * @param branchURL  URL of the github project branches
      * @param tagsURL URL of the github project tags
+     * @param downloadName Name of the download to display
+     * @param projectName Name of the project to download
      */
-    constructor(branchURL: string, tagsURL: string) {
+    constructor(branchURL: string, tagsURL: string, downloadName: string, projectName: string) {
         this.branchURL = branchURL;
         this.tagsURL = tagsURL;
+        this.downloadName = downloadName;
+        this.projectName = projectName;
     }
 
     /**
@@ -136,13 +144,40 @@ export class DownloadManager {
     }
 
     /**
-     * Delete a directory (useful for the tests)
+     * Removes all the project files from the directory
      * @param directoryUri Uri of the directory
      * @returns 
      */
-    public deleteDirectory(directoryUri: Uri): Promise<void> {
+    public async cleanDirectory(directoryUri: Uri): Promise<void> {
         const dProxy = new FileProxy(directoryUri);
-        return dProxy.delete();
+        const files = await dProxy.listFiles();
+        const initialCount = files.length;
+        let count = 0;
+        for (const f of files) {
+            if (path.basename(f.getPath()).includes(this.projectName)) {
+                await f.delete();
+                count++;
+            }
+        }
+        if (initialCount === count) {
+            await dProxy.delete();
+        }
+    }
+
+    /**
+     * Returns a project folder downloaded in a version dir
+     * @param versionDirUri Version directory
+     * @returns Project Uri or null
+     */
+    protected async getProjectFolder(versionDirUri: Uri): Promise<Uri | undefined> {
+        const fProxy = new FileProxy(versionDirUri);
+        const files = await fProxy.listFiles();
+        for (const f of files) {
+            if (f.getName().includes(this.projectName)) {
+                return f.getUri();
+            }
+        }
+        return undefined;
     }
 
     /**
@@ -161,18 +196,26 @@ export class DownloadManager {
             const vDir = this.getVersionFromFilename(file.path);
             if (vDir) {
                 if (vDir.compare(downloadedVersion) !== 0) {
-                    await this.deleteDirectory(file);
+                    await this.cleanDirectory(file);
                 } else {
                     fileUri = file;
                 }
             }
         }
-        if (!fileUri) {
-            fileUri = await this.downloadFile("downloads", uri, downloadedVersion.toString(), context, true);
+        if (fileUri) {
+            if (!await this.getProjectFolder(fileUri)) {
+                fileUri = undefined;
+            }
         }
-        const fProxy = new FileProxy(fileUri);
-        const files = await fProxy.listFiles();
-        return files[0].getUri();
+        if (!fileUri) {
+            fileUri = await this.downloadFile(this.downloadName, uri, downloadedVersion.toString(), context, true);
+        }
+        const projectUri = await this.getProjectFolder(fileUri);
+        if (projectUri) {
+            return projectUri;
+        } else {
+            throw new Error("File download failed");
+        }
     }
 
     /**
@@ -219,14 +262,7 @@ export class DownloadManager {
      * @returns The current branch name
      */
     public getBranchName(): string {
-        switch (process.platform) {
-            case "win32":
-                return "windows_x64";
-            case "darwin":
-                return "osx";
-            default:
-                return "debian_x64";
-        }
+        return "master";
     }
 
     /**
@@ -353,8 +389,24 @@ export class BinariesManager extends DownloadManager {
      * Constructor
      */
     constructor() {
-        super(BinariesManager.BINARIES_BRANCH_URL, BinariesManager.BINARIES_TAGS_URL);
+        super(BinariesManager.BINARIES_BRANCH_URL, BinariesManager.BINARIES_TAGS_URL, "binaries", "vscode-amiga-assembly-binaries");
     }
+
+    /**
+     * Get the current branch name for the os
+     * @returns The current branch name
+     */
+    public getBranchName(): string {
+        switch (process.platform) {
+            case "win32":
+                return "windows_x64";
+            case "darwin":
+                return "osx";
+            default:
+                return "debian_x64";
+        }
+    }
+
 }
 
 
@@ -371,6 +423,6 @@ export class ExampleProjectManager extends DownloadManager {
      * Constructor
      */
     constructor() {
-        super(ExampleProjectManager.BRANCH_URL, ExampleProjectManager.TAGS_URL);
+        super(ExampleProjectManager.BRANCH_URL, ExampleProjectManager.TAGS_URL, "example project", "vscode-amiga-wks-example");
     }
 }
