@@ -24,9 +24,7 @@ describe("Hover Tests", function () {
     let dHnd: M68kDefinitionHandler;
     let state: ExtensionState;
     let documentationManager: DocumentationManager;
-    const defaultTimeout = 10000;
     before(async function () {
-        this.timeout(defaultTimeout);
         // activate the extension
         const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
@@ -39,7 +37,6 @@ describe("Hover Tests", function () {
     });
     describe("HoverProvider api", function () {
         it("Should return no hover on a empty document", function () {
-            this.timeout(defaultTimeout);
             const hp = new M68kHoverProvider(documentationManager);
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 1);
@@ -48,7 +45,6 @@ describe("Hover Tests", function () {
             return expect(results).to.be.fulfilled;
         });
         it("Should return a hover on an instruction", async function () {
-            this.timeout(defaultTimeout);
             const hp = new M68kHoverProvider(documentationManager);
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 15);
@@ -66,7 +62,6 @@ describe("Hover Tests", function () {
             }
         });
         it("Should return a hover on a data with a number", async function () {
-            this.timeout(defaultTimeout);
             const hp = new M68kHoverProvider(documentationManager);
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 23);
@@ -85,7 +80,6 @@ describe("Hover Tests", function () {
         });
     });
     it("Should return a hover on a data with a number and a register", async function () {
-        this.timeout(defaultTimeout);
         const hp = new M68kHoverProvider(documentationManager);
         const document = new DummyTextDocument();
         const position: Position = new Position(0, 30);
@@ -103,7 +97,6 @@ describe("Hover Tests", function () {
         }
     });
     it("Should return a hover on a data with a library name", async function () {
-        this.timeout(defaultTimeout);
         const hp = new M68kHoverProvider(documentationManager);
         const document = new DummyTextDocument();
         const position: Position = new Position(0, 25);
@@ -133,7 +126,6 @@ describe("Hover Tests", function () {
         }
     });
     it("Should return a hover on a data with a formula and a register", async function () {
-        this.timeout(defaultTimeout);
         const hp = new M68kHoverProvider(documentationManager);
         const document = new DummyTextDocument();
         const position: Position = new Position(0, 51);
@@ -151,7 +143,6 @@ describe("Hover Tests", function () {
         }
     });
     it("Should return a hover on variable", async function () {
-        this.timeout(defaultTimeout);
         const hp = new M68kHoverProvider(documentationManager);
         const document = new DummyTextDocument();
         const position: Position = new Position(0, 4);
@@ -169,7 +160,6 @@ describe("Hover Tests", function () {
         }
     });
     it("Should render a command", function () {
-        this.timeout(defaultTimeout);
         const hp = new M68kHoverProvider(documentationManager);
         const hoverInstruction = new DocumentationInstruction("ADD", "parent", "add.md");
         hoverInstruction.name = "ADD";
@@ -178,7 +168,6 @@ describe("Hover Tests", function () {
         expect(hp.renderHover(hoverInstruction).value).to.be.equal("ADD binary");
     });
     it("Should render a register hover", async function () {
-        this.timeout(defaultTimeout);
         const hp = new M68kHoverProvider(documentationManager);
         let mdStr = await hp.renderWordHover("DFF180");
         expect(mdStr).to.not.be.null;
@@ -192,7 +181,6 @@ describe("Hover Tests", function () {
         }
     });
     it("Should render a number", function () {
-        this.timeout(defaultTimeout);
         const hp = new M68kHoverProvider(documentationManager);
         const format = "#`@dec@` - $`@hex@` - %`@bin@` - @`@oct@` @ascii@";
         let mdStr = hp.renderNumberForWord("#10", format);
@@ -222,7 +210,6 @@ describe("Hover Tests", function () {
         }
     });
     it("Should render a register value", function () {
-        this.timeout(defaultTimeout);
         const hp = new M68kHoverProvider(documentationManager);
         const expected = "|Bits | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0|\n|---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ----|\n|  | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0|\n\n";
         let mdStr = hp.renderRegisterValue("$1010");

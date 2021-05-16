@@ -36,7 +36,8 @@ export function run(_testsRoot: string, clb: any): Promise<void> {
                 mochaFile: paths.join(_testsRoot, "..", "..", "test-results.xml")
             }
         },
-        color: true
+        color: true,
+        timeout: 60000
     });
 
     const testsRoot = path.resolve(__dirname, '..');

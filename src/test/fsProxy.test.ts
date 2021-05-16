@@ -206,7 +206,6 @@ describe("FsProxy test", function () {
     });
 
     it("Should copy a directory recursively", async function () {
-        this.timeout(5000);
         // create a temp dir
         const tempDir = temp.mkdirSync("copyDir");
         const filePath = path.join(__dirname, "..", "..", "test_files", "debug", "fs-uae", "hd0");

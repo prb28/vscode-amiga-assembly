@@ -170,7 +170,6 @@ describe("VASM Tests", function () {
       expect(error.line).to.be.equal(2);
     });
     it("Should build all the workspace", async function () {
-      this.timeout(3000);
       const spiedWorkspace = spy(vscode.workspace);
       const file1 = vscode.Uri.parse("file:///file1.s");
       const file2 = vscode.Uri.parse("file:///file2");
@@ -329,7 +328,6 @@ describe("VASM Tests", function () {
       await expect(compiler.buildWorkspace()).to.be.fulfilled;
     });
     it("Should build even if the linker is disable", function () {
-      this.timeout(3000);
       const spiedWorkspace = spy(vscode.workspace);
       const file1 = vscode.Uri.file("/file1.s");
       const file2 = vscode.Uri.file("/file2");

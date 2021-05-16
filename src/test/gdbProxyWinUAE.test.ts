@@ -52,7 +52,6 @@ function createBreakpoint(breakpointId: number, segmentId: number | undefined, o
 }
 
 describe("GdbProxyWinUAE Tests", function () {
-    const defaultTimeout = 5000;
     const supportRequest = GdbProxyWinUAE.SUPPORT_STRING;
     const supportedReply = "vContSupported+;QStartNoAckMode+;QNonStop+";
     const vRunRequest = 'vRun;' + StringUtils.convertStringToHex("dh0:myprog") + ';';
@@ -95,7 +94,6 @@ describe("GdbProxyWinUAE Tests", function () {
             reset(mockedSocket);
         });
         it("Should load a program and stop on entry", async function () {
-            this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString(vRunRequest, anything())).thenResolve(dummyStopResponse);
@@ -117,7 +115,6 @@ describe("GdbProxyWinUAE Tests", function () {
             verify(spiedProxy.stepIn(anything())).never();
         });
         it("Should load a program and continue if not stop on entry", async function () {
-            this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
@@ -139,7 +136,6 @@ describe("GdbProxyWinUAE Tests", function () {
             verify(spiedProxy.stepIn(anything())).never();
         });
         it("Should generate an error with on threadInfo error", async function () {
-            this.timeout(defaultTimeout);
             when(spiedProxy.waitConnected()).thenResolve();
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
@@ -150,7 +146,6 @@ describe("GdbProxyWinUAE Tests", function () {
             verify(spiedProxy.sendPacketString(vRunRequest, anything())).once();
         });
         it("Should load a program and reject if there is an error during run command", async function () {
-            this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
@@ -159,7 +154,6 @@ describe("GdbProxyWinUAE Tests", function () {
             verify(spiedProxy.sendPacketString(vRunRequest, anything())).once();
         });
         it("Should reject breakpoint when not connected", async function () {
-            this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
@@ -170,7 +164,6 @@ describe("GdbProxyWinUAE Tests", function () {
         });
         it("Should get an error when removing breakpoint without connection", async function () {
             // Remove
-            this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString('z0,5,0', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.waitConnected()).thenResolve();
             const bp = createBreakpoint(0, 0, 5);
@@ -196,7 +189,6 @@ describe("GdbProxyWinUAE Tests", function () {
                 mockedOnData(proxy.formatString("S05;0"));
             });
             it("Should accept a breakpoint", async function () {
-                this.timeout(defaultTimeout);
                 when(spiedProxy.sendPacketString('Z0,af3', anything())).thenResolve(RESPONSE_OK);
                 when(spiedProxy.sendPacketString('Z0,4', anything())).thenResolve(RESPONSE_OK);
                 let bp = createBreakpoint(0, undefined, 4);
@@ -221,14 +213,12 @@ describe("GdbProxyWinUAE Tests", function () {
                 await expect(proxy.setBreakpoint(bp)).to.be.rejected;
             });
             it("Should return an error when setting a breakpoint", async function () {
-                this.timeout(defaultTimeout);
                 when(spiedProxy.sendPacketString('Z0,af3', anything())).thenReject(error);
                 const bp = createBreakpoint(0, 0, 4);
                 await expect(proxy.setBreakpoint(bp)).to.be.rejectedWith(error);
                 verify(spiedProxy.sendPacketString('Z0,af3', anything())).once();
             });
             it("Should return an error on invalid breakpoint", async function () {
-                this.timeout(defaultTimeout);
                 // segment 1 is invalid
                 when(spiedProxy.sendPacketString('Z0,af3', anything())).thenResolve(RESPONSE_OK);
                 const bp = createBreakpoint(0, 1, 4);
@@ -312,7 +302,6 @@ describe("GdbProxyWinUAE Tests", function () {
                 });
             });
             it("Should get the stack frames", async function () {
-                this.timeout(defaultTimeout);
                 when(spiedProxy.sendPacketString("QTFrame:ffffffff", anything())).thenResolve(RESPONSE_OK);
                 when(spiedProxy.sendPacketString("qTStatus", anything())).thenResolve(qtStatusResponse);
                 const rIdx = proxy.getRegisterIndex("pc");
@@ -347,7 +336,6 @@ describe("GdbProxyWinUAE Tests", function () {
                 }
             });
             it("Should get the copper stack frame", async function () {
-                this.timeout(defaultTimeout);
                 const rIdx = proxy.getRegisterIndex("copper");
                 expect(rIdx).not.to.be.equal(null);
                 if (rIdx !== null) {

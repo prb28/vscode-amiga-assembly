@@ -54,7 +54,6 @@ describe("Global Extension Tests", function () {
             state = ExtensionState.getCurrent();
         });
         it("Should evaluate the selection in the status bar", async () => {
-            this.timeout(60000);
             if (state) {
                 const calc = state.getCalc();
                 // Get the status value
@@ -105,7 +104,6 @@ describe("Global Extension Tests", function () {
             }
         });
         it("Should evaluate a selection and replace with the result", async () => {
-            this.timeout(60000);
             const editor = vscode.window.activeTextEditor;
             if (editor) {
                 await vscode.commands.executeCommand("amiga-assembly.evaluate-selection-replace");

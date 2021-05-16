@@ -185,7 +185,6 @@ describe("Download manager tests", function () {
         });
     });
     context("Example project binaries", function () {
-        this.timeout(180000);
         it("Should retrieve the tags list from github", async function () {
             const binManager = new ExampleProjectManager();
             const tags = await binManager.listTagsFromGitHub();

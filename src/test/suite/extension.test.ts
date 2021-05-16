@@ -17,7 +17,6 @@ import { ConfigurationHelper } from '../../configurationHelper';
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
-    const defaultTimeout = 10000;
     // Creating the relative path to find the test file
     let testFilesPath = "";
     before(async () => {
@@ -48,7 +47,7 @@ describe("Global Extension Tests", function () {
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-        }).timeout(defaultTimeout);
+        });
         it("Should format another simple file with sprite", async () => {
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw2-toform.s"));
@@ -66,7 +65,7 @@ describe("Global Extension Tests", function () {
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-        }).timeout(defaultTimeout);
+        });
         it("Should format a file with tabs", async () => {
             // Simple test file
             const uri = vscode.Uri.file(path.join(testFilesPath, "hw-tabs-toform.s"));
@@ -86,7 +85,7 @@ describe("Global Extension Tests", function () {
                 expect(editor.document.getText()).to.be.equal(expectedFileContents);
             }
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-        }).timeout(defaultTimeout);
+        });
     });
     context("Build commands", function () {
         it("Should clean the current workspace on command", async () => {
@@ -147,6 +146,6 @@ describe("Global Extension Tests", function () {
                 expect(panel.title).to.be.equal(imageName);
                 expect(panel.webview.html).to.contain("iff.min.js");
             }
-        }).timeout(defaultTimeout);
+        });
     });
 });

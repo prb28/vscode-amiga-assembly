@@ -38,12 +38,10 @@ describe('Node Debug Adapter', () => {
 	let dc: DebugClient;
 	const callbacks = new Map<string, any>();
 	const testWithRealEmulator = false;
-	let defaultTimeout = 10000;
 	const th = new GdbThread(0, GdbAmigaSysThreadIdFsUAE.CPU);
 	const thCop = new GdbThread(1, GdbAmigaSysThreadIdFsUAE.COP);
 
 	before(async function () {
-		//this.timeout(defaultTimeout);
 		GdbThread.setSupportMultiprocess(false);
 		// activate the extension
 		const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
@@ -51,14 +49,10 @@ describe('Node Debug Adapter', () => {
 			await ext.activate();
 			await ExtensionState.getCurrent().getLanguage();
 		}
-		if (testWithRealEmulator) {
-			defaultTimeout = 60000;
-		}
 	});
 
 
 	beforeEach(async function () {
-		//this.timeout(defaultTimeout);
 		this.mockedExecutor = mock(ExecutorHelper);
 		this.executor = instance(this.mockedExecutor);
 		this.mockedGdbProxy = mock(GdbProxy);
@@ -70,7 +64,6 @@ describe('Node Debug Adapter', () => {
 		when(this.mockedGdbProxy.waitConnected()).thenResolve();
 		this.gdbProxy = instance(this.mockedGdbProxy);
 		when(this.mockedExecutor.runTool(anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything(), anything())).thenReturn(Promise.resolve([]));
-		//this.timeout(this.defaultTimeout);
 		// start port listener on launch of first debug this.session
 		// start listening on a random port
 		return new Promise<void>((resolve) => {
@@ -174,7 +167,6 @@ describe('Node Debug Adapter', () => {
 					return Promise.resolve();
 				});
 			}
-			this.timeout(defaultTimeout);
 			return Promise.all([
 				dc.configurationSequence(),
 				dc.launch(launchArgs),
@@ -182,7 +174,6 @@ describe('Node Debug Adapter', () => {
 			]);
 		});
 		it('should stop on entry', function () {
-			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 				when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
@@ -226,7 +217,6 @@ describe('Node Debug Adapter', () => {
 			}
 		});
 		it('should stop on a breakpoint', async function () {
-			this.timeout(defaultTimeout);
 			when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
 			when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));
 			when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
@@ -272,7 +262,6 @@ describe('Node Debug Adapter', () => {
 		});
 
 		it('hitting a lazy breakpoint should send a breakpoint event', async function () {
-			this.timeout(defaultTimeout);
 			when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
 			when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));
 			when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
@@ -349,7 +338,6 @@ describe('Node Debug Adapter', () => {
 			}
 		});
 		it('should step', async function () {
-			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
@@ -416,7 +404,6 @@ describe('Node Debug Adapter', () => {
 			]);
 		});
 		it('should continue and stop', async function () {
-			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
@@ -500,7 +487,6 @@ describe('Node Debug Adapter', () => {
 			}
 		});
 		it('should retrieve a complex stack', async function () {
-			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.stack(th)).thenReturn(Promise.resolve(<GdbStackFrame>{
 					frames: [<GdbStackPosition>{
@@ -603,7 +589,6 @@ describe('Node Debug Adapter', () => {
 		it('should retrieve a copper stack', async function () {
 			when(this.mockedGdbProxy.getMemory(22624, 10)).thenReturn(Promise.resolve("0180056c2c07fffe0180"));
 			when(this.mockedGdbProxy.getMemory(14676096, 4)).thenReturn(Promise.resolve("5850"));
-			this.timeout(defaultTimeout);
 			when(this.mockedGdbProxy.getThread(thCop.getId())).thenReturn(thCop);
 			when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th, thCop]));
 			when(this.mockedGdbProxy.isCopperThread(anything())).thenReturn(true);
@@ -658,7 +643,6 @@ describe('Node Debug Adapter', () => {
 	});
 	describe('evaluateExpression', function () {
 		beforeEach(async function () {
-			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
 				when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));
@@ -723,7 +707,6 @@ describe('Node Debug Adapter', () => {
 			]);
 		});
 		it('should evaluate a memory location', async function () {
-			this.timeout(defaultTimeout);
 			let evaluateResponse = await dc.evaluateRequest({
 				expression: "m0,10"
 			});
@@ -757,7 +740,6 @@ describe('Node Debug Adapter', () => {
 			expect(readMemoryResponse.body.data).to.be.equal("AAAAAADACwAA+A==");
 		});
 		it('should evaluate a set memory command', async function () {
-			this.timeout(defaultTimeout);
 			let evaluateResponse = await dc.evaluateRequest({
 				expression: "M0=10"
 			});
@@ -780,7 +762,6 @@ describe('Node Debug Adapter', () => {
 			expect(evaluateResponse.body.result).to.equal('bb000000 00c00b00 00f8          | »....À...ø');
 		});
 		it('should evaluate a memory disassemble', async function () {
-			this.timeout(defaultTimeout);
 			let evaluateResponse = await dc.evaluateRequest({
 				expression: "m0,10,d"
 			});
@@ -798,7 +779,6 @@ describe('Node Debug Adapter', () => {
 		});
 		context('Extension actions', function () {
 			it('should disassemble memory in a view', async function () {
-				this.timeout(defaultTimeout);
 				const spiedWindow = spy(vscode.window);
 				const promise = new Promise<string>((resolve, reject) => { resolve("${pc}"); });
 				when(spiedWindow.showInputBox(anything())).thenReturn(promise);
@@ -813,7 +793,6 @@ describe('Node Debug Adapter', () => {
 				expect(uri.path).to.be.eql(dFile.toURI().path);
 			});
 			it('should disassemble copper in a view', async function () {
-				this.timeout(defaultTimeout);
 				const spiedWindow = spy(vscode.window);
 				const promise = new Promise<string>((resolve, reject) => { resolve("${copper}"); });
 				when(spiedWindow.showInputBox(anything())).thenReturn(promise);
@@ -831,7 +810,6 @@ describe('Node Debug Adapter', () => {
 	});
 	describe('Set variables', function () {
 		beforeEach(async function () {
-			this.timeout(defaultTimeout);
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.getThread(th.getId())).thenReturn(th);
 				when(this.mockedGdbProxy.getThreadIds()).thenReturn(Promise.resolve([th]));
@@ -879,7 +857,6 @@ describe('Node Debug Adapter', () => {
 			]);
 		});
 		it('should set a variable value', async function () {
-			this.timeout(defaultTimeout);
 			const responseScopes: DebugProtocol.ScopesResponse = await dc.scopesRequest(<DebugProtocol.ScopesArguments>{ frameId: 0 });
 			when(this.mockedGdbProxy.setRegister(anything(), anything())).thenReturn(Promise.resolve("af"));
 			const response = await dc.setVariableRequest(<DebugProtocol.SetVariableArguments>{
@@ -898,7 +875,6 @@ describe('Node Debug Adapter', () => {
 			}
 		});
 		it('should stop on an exception', async function () {
-			this.timeout(defaultTimeout);
 			when(this.mockedGdbProxy.load(anything(), anything())).thenCall(() => {
 				setTimeout(function () {
 					const cb = callbacks.get('stopOnException');
