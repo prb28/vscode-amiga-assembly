@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { BinariesManager, TagInfo, Version } from '../downloadManager';
+import { BinariesManager, TagInfo, Version, ExampleProjectManager } from '../downloadManager';
 import { spy, when, anything, mock, instance } from 'ts-mockito/lib/ts-mockito';
 import { CancellationToken, ExtensionContext, Uri } from 'vscode';
 import { FileDownloader } from '@microsoft/vscode-file-downloader-api';
@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import { FileDownloadSettings } from '@microsoft/vscode-file-downloader-api/out/FileDownloader';
 import { FileProxy } from '../fsProxy';
 
-describe("Native binaries manager tests", function () {
+describe("Download manager tests", function () {
     before(function () {
         // Automatically track and cleanup files at exit
         temp.track();
@@ -22,7 +22,7 @@ describe("Native binaries manager tests", function () {
             for (const t of tags) {
                 if (t.name === "0.22.0-windows") {
                     expect(t.zipball_url).to.be.equal("https://api.github.com/repos/prb28/vscode-amiga-assembly-binaries/zipball/refs/tags/0.22.0-windows");
-                    expect(t.os).to.be.equal("windows");
+                    expect(t.extension).to.be.equal("windows");
                     expect(t.version).to.be.eql(new Version("0.22.0"));
                     found = true;
                 }
@@ -39,27 +39,27 @@ describe("Native binaries manager tests", function () {
             tags.push(<TagInfo>{
                 name: `${versionStr}-${osName}`,
                 zipball_url: `http://local/refs/tags/${versionStr}-${osName}.zip`,
-                os: osName,
+                extension: osName,
                 version: new Version(versionStr)
             });
             versionStr = "0.22.0";
             tags.push(<TagInfo>{
                 name: `${versionStr}-${osName}`,
                 zipball_url: `http://local/refs/tags/${versionStr}-${osName}.zip`,
-                os: osName,
+                extension: osName,
                 version: new Version(versionStr)
             });
             versionStr = "0.22.1";
             tags.push(<TagInfo>{
                 name: `${versionStr}-${osName}`,
                 zipball_url: `http://local/refs/tags/${versionStr}-${osName}.zip`,
-                os: osName,
+                extension: osName,
                 version: new Version(versionStr)
             });
             tags.push(<TagInfo>{
                 name: `${versionStr}-debian`,
                 zipball_url: `http://local/refs/tags/${versionStr}-debian.zip`,
-                os: osName,
+                extension: osName,
                 version: new Version(versionStr)
             });
             when(spyBinManager.listTagsFromGitHub()).thenResolve(tags);
@@ -182,6 +182,75 @@ describe("Native binaries manager tests", function () {
             expect(v1.isCompatible(new Version("1.2.4"))).to.be.true;
             // tslint:disable-next-line: no-unused-expression
             expect(v1.isCompatible(new Version("1.2"))).to.be.true;
+        });
+    });
+    context("Example project binaries", function () {
+        this.timeout(180000);
+        it("Should retrieve the tags list from github", async function () {
+            const binManager = new ExampleProjectManager();
+            const tags = await binManager.listTagsFromGitHub();
+            let found = false;
+            for (const t of tags) {
+                if (t.name === "0.21") {
+                    expect(t.zipball_url).to.be.equal("https://api.github.com/repos/prb28/vscode-amiga-wks-example/zipball/refs/tags/0.21");
+                    expect(t.extension).to.be.undefined;
+                    expect(t.version).to.be.eql(new Version("0.21.0"));
+                    found = true;
+                }
+            }
+            // tslint:disable-next-line: no-unused-expression
+            expect(found).to.be.true;
+        });
+        it("Should the latest zip file", async function () {
+            const binManager = new ExampleProjectManager();
+            const spyBinManager = spy(binManager);
+            const tags = Array<TagInfo>();
+            let versionStr = "0.19.0";
+            tags.push(<TagInfo>{
+                name: `${versionStr}`,
+                zipball_url: `http://local/refs/tags/${versionStr}.zip`,
+                version: new Version(versionStr)
+            });
+            versionStr = "0.22.0";
+            tags.push(<TagInfo>{
+                name: `${versionStr}`,
+                zipball_url: `http://local/refs/tags/${versionStr}.zip`,
+                version: new Version(versionStr)
+            });
+            versionStr = "0.22.1";
+            tags.push(<TagInfo>{
+                name: `${versionStr}`,
+                zipball_url: `http://local/refs/tags/${versionStr}.zip`,
+                version: new Version(versionStr)
+            });
+            tags.push(<TagInfo>{
+                name: `${versionStr}`,
+                zipball_url: `http://local/refs/tags/${versionStr}.zip`,
+                version: new Version(versionStr)
+            });
+            when(spyBinManager.listTagsFromGitHub()).thenResolve(tags);
+            const [vers, filename] = await binManager.getZipURL(new Version("0.22"));
+            expect(vers.toString()).to.be.equal("0.22.1");
+            expect(filename).to.be.equal(`http://local/refs/tags/0.22.1.zip`);
+        });
+        it("Should retrieve the branch zip file if a tag is not found", async function () {
+            const binManager = new ExampleProjectManager();
+            const spyBinManager = spy(binManager);
+            const tags = Array<TagInfo>();
+            const branchName = binManager.getBranchName();
+            when(spyBinManager.listTagsFromGitHub()).thenResolve(tags);
+            const [vers, filename] = await binManager.getZipURL(new Version("0.23"));
+            expect(vers.toString()).to.be.equal("0.23.0");
+            expect(filename).to.be.equal(`${ExampleProjectManager.BRANCH_URL}/${branchName}.zip`);
+        });
+        it("Should get the master branch on tag retrieve exception", async function () {
+            const binManager = new ExampleProjectManager();
+            const spyBinManager = spy(binManager);
+            const branchName = binManager.getBranchName();
+            when(spyBinManager.listTagsFromGitHub()).thenReject(new Error("no tag"));
+            const [vers, filename] = await binManager.getZipURL(new Version("0.23"));
+            expect(vers.toString()).to.be.equal("0.23.0");
+            expect(filename).to.be.equal(`${ExampleProjectManager.BRANCH_URL}/${branchName}.zip`);
         });
     });
 });

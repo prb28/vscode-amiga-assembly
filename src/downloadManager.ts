@@ -13,8 +13,8 @@ export interface TagInfo {
     name: string;
     /** url of the zip */
     zipball_url: string;
-    /** Os of the tag */
-    os: string;
+    /** extension of the tag */
+    extension?: string;
     /** Version of the tag */
     version: Version;
 }
@@ -184,16 +184,17 @@ export class DownloadManager {
         const response = await axios.get(this.tagsURL);
         for (const d of response.data) {
             const elms = d.name.split("-");
+            const version = new Version(elms[0]);
+            let os: string | undefined;
             if (elms.length > 1) {
-                const version = new Version(elms[0]);
-                const os = elms[1];
-                tagList.push(<TagInfo>{
-                    name: d.name,
-                    zipball_url: d.zipball_url,
-                    version: version,
-                    os: os
-                });
+                os = elms[1];
             }
+            tagList.push(<TagInfo>{
+                name: d.name,
+                zipball_url: d.zipball_url,
+                version: version,
+                extension: os
+            });
         }
         return tagList;
     }
@@ -239,7 +240,7 @@ export class DownloadManager {
             const tagInfos = await this.listTagsFromGitHub();
             let bestTagInfo: TagInfo | undefined;
             for (const tag of tagInfos) {
-                if (tag.os === osName) {
+                if (!tag.extension || tag.extension === osName) {
                     if (version.isCompatible(tag.version) && (!bestTagInfo || bestTagInfo.version.compare(tag.version) > 0)) {
                         bestTagInfo = tag;
                     }
@@ -364,7 +365,7 @@ export class ExampleProjectManager extends DownloadManager {
     /** URL of the github example project branches */
     static readonly BRANCH_URL = "https://github.com/prb28/vscode-amiga-wks-example/archive/refs/heads";
     /** URL of the github example project tags */
-    static readonly TAGS_URL = "https://github.com/prb28/vscode-amiga-wks-example/archive/refs/tags";
+    static readonly TAGS_URL = "https://api.github.com/repos/prb28/vscode-amiga-wks-example/tags";
 
     /**
      * Constructor
