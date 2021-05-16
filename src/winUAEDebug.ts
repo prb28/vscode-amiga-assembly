@@ -14,10 +14,6 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
 
     protected async connect(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
         return new Promise((resolve) => {
-            // temp to use in timeout
-            // eslint-disable-next-line @typescript-eslint/no-this-alias
-            const debAdapter = this;
-
             let timeoutValue = 3000;
             if (this.testMode) {
                 timeoutValue = 1;
@@ -25,22 +21,22 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
             setTimeout(async () => {
                 // connects to WinUAE
                 try {
-                    await debAdapter.gdbProxy.connect(args.serverName, args.serverPort);
+                    await this.gdbProxy.connect(args.serverName, args.serverPort);
                     // Loads the program
-                    debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
-                    await debAdapter.gdbProxy.initProgram(args.stopOnEntry);
-                    await debAdapter.gdbProxy.sendAllPendingBreakpoints();
+                    this.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
+                    await this.gdbProxy.initProgram(args.stopOnEntry);
+                    await this.gdbProxy.sendAllPendingBreakpoints();
                     const thread = this.gdbProxy.getCurrentCpuThread();
                     if (thread) {
                         if (args.stopOnEntry) {
-                            await debAdapter.gdbProxy.stepIn(thread);
+                            await this.gdbProxy.stepIn(thread);
                         } else {
-                            await debAdapter.gdbProxy.continueExecution(thread);
+                            await this.gdbProxy.continueExecution(thread);
                         }
-                        debAdapter.sendResponse(response);
+                        this.sendResponse(response);
                     }
                 } catch (err) {
-                    debAdapter.sendStringErrorResponse(response, err.message);
+                    this.sendStringErrorResponse(response, err.message);
                 } finally {
                     resolve();
                 }

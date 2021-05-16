@@ -1,4 +1,4 @@
-import { ExtensionContext, InputBoxOptions, OpenDialogOptions, Uri, window } from "vscode";
+import { ExtensionContext, OpenDialogOptions, Uri, window } from "vscode";
 import { ExampleProjectManager } from "./downloadManager";
 import { FileProxy } from "./fsProxy";
 import * as path from 'path';

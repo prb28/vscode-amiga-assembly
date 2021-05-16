@@ -100,15 +100,13 @@ class CoverageRunner {
 
     public setupCoverage(): void {
         // Set up Code Coverage, hooking require so that instrumented code is returned
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-        self.instrumenter = new istanbul.Instrumenter({ coverageVariable: self.coverageVar });
-        const sourceRoot = paths.join(self.testsRoot, self.options.relativeSourcePath);
+        this.instrumenter = new istanbul.Instrumenter({ coverageVariable: this.coverageVar });
+        const sourceRoot = paths.join(this.testsRoot, this.options.relativeSourcePath);
 
         // Glob source files
         const srcFiles = glob.sync("**/**.js", {
             cwd: sourceRoot,
-            ignore: self.options.ignorePatterns,
+            ignore: this.options.ignorePatterns,
         });
 
         // Create a match function - taken from the run-with-cover.js in istanbul.
@@ -128,24 +126,24 @@ class CoverageRunner {
             decache(fullPath);
         });
 
-        self.matchFn = (file: string): boolean | undefined => { return fileMap.get(file); };
-        self.matchFn.files = Object.keys(fileMap);
+        this.matchFn = (file: string): boolean | undefined => { return fileMap.get(file); };
+        this.matchFn.files = Object.keys(fileMap);
 
         // Hook up to the Require function so that when this is called, if any of our source files
         // are required, the instrumented version is pulled in instead. These instrumented versions
         // write to a global coverage variable with hit counts whenever they are accessed
-        self.transformer = self.instrumenter.instrumentSync.bind(self.instrumenter);
+        this.transformer = this.instrumenter.instrumentSync.bind(this.instrumenter);
         const hookOpts = { verbose: false, extensions: [".js"] };
-        istanbul.hook.hookRequire(self.matchFn, self.transformer, hookOpts);
+        istanbul.hook.hookRequire(this.matchFn, this.transformer, hookOpts);
 
         // initialize the global variable to stop mocha from complaining about leaks
         const lGlobal: any = global;
-        lGlobal[self.coverageVar] = {};
+        lGlobal[this.coverageVar] = {};
 
         // Hook the process exit event to handle reporting
         // Only report coverage if the process is exiting successfully
-        process.on("exit", (code: any) => {
-            self.reportCoverage();
+        process.on("exit", () => {
+            this.reportCoverage();
         });
     }
 
@@ -157,39 +155,37 @@ class CoverageRunner {
      * @memberOf CoverageRunner
      */
     public reportCoverage(): void {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
         istanbul.hook.unhookRequire();
         let cov: any;
         const lGlobal: any = global;
-        if (typeof lGlobal[self.coverageVar] === "undefined" || Object.keys(lGlobal[self.coverageVar]).length === 0) {
+        if (typeof lGlobal[this.coverageVar] === "undefined" || Object.keys(lGlobal[this.coverageVar]).length === 0) {
             console.error("No coverage information was collected, exit without writing coverage information");
             return;
         } else {
-            cov = lGlobal[self.coverageVar];
+            cov = lGlobal[this.coverageVar];
         }
 
         // TODO consider putting this under a conditional flag
         // Files that are not touched by code ran by the test runner is manually instrumented, to
         // illustrate the missing coverage.
-        self.matchFn.files.forEach((file: string) => {
+        this.matchFn.files.forEach((file: string) => {
             if (!cov[file]) {
-                self.transformer(fs.readFileSync(file, "utf-8"), file);
+                this.transformer(fs.readFileSync(file, "utf-8"), file);
 
                 // When instrumenting the code, istanbul will give each FunctionDeclaration a value of 1 in coverState.s,
                 // presumably to compensate for function hoisting. We need to reset this, as the function was not hoisted,
                 // as it was never loaded.
-                Object.keys(self.instrumenter.coverState.s).forEach((key) => {
-                    self.instrumenter.coverState.s[key] = 0;
+                Object.keys(this.instrumenter.coverState.s).forEach((key) => {
+                    this.instrumenter.coverState.s[key] = 0;
                 });
 
-                cov[file] = self.instrumenter.coverState;
+                cov[file] = this.instrumenter.coverState;
             }
         });
 
         // TODO Allow config of reporting directory with
-        const reportingDir = paths.join(self.testsRoot, self.options.relativeCoverageDir);
-        const includePid = self.options.includePid;
+        const reportingDir = paths.join(this.testsRoot, this.options.relativeCoverageDir);
+        const includePid = this.options.includePid;
         const pidExt = includePid ? ("-" + process.pid) : "";
         const coverageFile = paths.resolve(reportingDir, "coverage" + pidExt + ".json");
 
@@ -201,14 +197,14 @@ class CoverageRunner {
             warn: (warning: any) => {
                 // We expect some warnings as any JS file without a typescript mapping will cause this.
                 // By default, we"ll skip printing these to the console as it clutters it up
-                if (self.options.verbose) {
+                if (this.options.verbose) {
                     console.warn(warning);
                 }
             }
         });
 
         const reporter = new istanbul.Reporter(undefined, reportingDir);
-        const reportTypes = (self.options.reports instanceof Array) ? self.options.reports : ["lcov", "cobertura"];
+        const reportTypes = (this.options.reports instanceof Array) ? this.options.reports : ["lcov", "cobertura"];
         reporter.addAll(reportTypes);
         reporter.write(remappedCollector, true, () => {
             console.log(`reports written to ${reportingDir}`);

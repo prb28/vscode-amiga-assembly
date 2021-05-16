@@ -31,18 +31,16 @@ export class GdbProxyWinUAE extends GdbProxy {
         if (this.programFilename !== programFilename) {
             this.programFilename = programFilename;
             const elms = this.programFilename.replace(/\\/g, '/').split('/');
-            // eslint-disable-next-line @typescript-eslint/no-this-alias
-            const self = this;
             // Let fs-uae terminate before sending the run command
             // TODO : check if this is necessary
-            await new Promise<void>((resolve, reject) => setTimeout(async function () {
-                self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
+            await new Promise<void>((resolve, reject) => setTimeout(async () => {
+                this.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
                 const encodedProgramName = StringUtils.convertStringToHex("dh0:" + elms[elms.length - 1]);
                 // Call for segments
                 try {
-                    const message = await self.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP);
-                    await self.initProgram(stopOnEntry);
-                    await self.parseStop(message);
+                    const message = await this.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP);
+                    await this.initProgram(stopOnEntry);
+                    await this.parseStop(message);
                     resolve();
                 } catch (err) {
                     reject(err);
@@ -89,8 +87,6 @@ export class GdbProxyWinUAE extends GdbProxy {
         const segmentId = breakpoint.segmentId;
         const offset = breakpoint.offset;
         const exceptionMask = breakpoint.exceptionMask;
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
         if (!this.socket.writable) {
             throw new Error("The Gdb connection is not opened");
         } else {
@@ -115,7 +111,7 @@ export class GdbProxyWinUAE extends GdbProxy {
                 await this.sendPacketString(message, GdbPacketType.OK);
                 breakpoint.verified = true;
                 breakpoint.message = undefined;
-                self.sendEvent("breakpointValidated", breakpoint);
+                this.sendEvent("breakpointValidated", breakpoint);
             } else {
                 throw new Error("Invalid breakpoint offset");
             }

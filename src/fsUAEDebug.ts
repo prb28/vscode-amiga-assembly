@@ -395,10 +395,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected connect(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
         return new Promise((resolve) => {
-            // temp to use in timeout
-            // eslint-disable-next-line @typescript-eslint/no-this-alias
-            const debAdapter = this;
-
             let timeoutValue = 3000;
             if (this.testMode) {
                 timeoutValue = 1;
@@ -406,13 +402,13 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             setTimeout(async () => {
                 // connects to FS-UAE
                 try {
-                    await debAdapter.gdbProxy.connect(args.serverName, args.serverPort);
+                    await this.gdbProxy.connect(args.serverName, args.serverPort);
                     // Loads the program
-                    debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
-                    await debAdapter.gdbProxy.load(args.program, args.stopOnEntry);
-                    debAdapter.sendResponse(response);
+                    this.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
+                    await this.gdbProxy.load(args.program, args.stopOnEntry);
+                    this.sendResponse(response);
                 } catch (err) {
-                    debAdapter.sendStringErrorResponse(response, err.message);
+                    this.sendStringErrorResponse(response, err.message);
                 }
                 resolve();
             }, timeoutValue);

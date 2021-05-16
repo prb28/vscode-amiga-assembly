@@ -96,7 +96,7 @@ describe("Download manager tests", function () {
             expect(vers.toString()).to.be.equal("0.23.0");
             expect(filename).to.be.equal(`${BinariesManager.BINARIES_BRANCH_URL}/${branchName}.zip`);
         });
-        it.only("Should remove the old binaries according to the project", async function () {
+        it("Should remove the old binaries according to the project", async function () {
             const tempDir = temp.mkdirSync("tmpDirBinaries");
             const uri1 = Uri.file(path.join(tempDir, "1.2.3"));
             fs.mkdirSync(uri1.fsPath);
@@ -265,7 +265,7 @@ describe("Download manager tests", function () {
             expect(vers.toString()).to.be.equal("0.22.1");
             expect(filename).to.be.equal(`http://local/refs/tags/0.22.1.zip`);
         });
-        it.only("Should retrieve the branch zip file if a tag is not found", async function () {
+        it("Should retrieve the branch zip file if a tag is not found", async function () {
             const binManager = new ExampleProjectManager();
             const spyBinManager = spy(binManager);
             const tags = Array<TagInfo>();
@@ -275,7 +275,7 @@ describe("Download manager tests", function () {
             expect(vers.toString()).to.be.equal("0.99121.0");
             expect(filename).to.be.equal(`${ExampleProjectManager.BRANCH_URL}/${branchName}.zip`);
         });
-        it.only("Should get the master branch on tag retrieve exception", async function () {
+        it("Should get the master branch on tag retrieve exception", async function () {
             const binManager = new ExampleProjectManager();
             const spyBinManager = spy(binManager);
             const branchName = binManager.getBranchName();

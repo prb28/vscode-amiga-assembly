@@ -103,14 +103,12 @@ export class GdbProxy extends EventEmitter {
      * @param host Server host
      * @param port Server socket port
      */
-    public connect(host: string, port: number): Promise<void> {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
+    public async connect(host: string, port: number): Promise<void> {
         return new Promise((resolve, reject) => {
-            self.socket.connect(port, host);
-            self.socket.once('connect', async () => {
+            this.socket.connect(port, host);
+            this.socket.once('connect', async () => {
                 try {
-                    const data = await self.sendPacketString(GdbProxy.SUPPORT_STRING, GdbPacketType.UNKNOWN);
+                    const data = await this.sendPacketString(GdbProxy.SUPPORT_STRING, GdbPacketType.UNKNOWN);
                     const returnedData = data;
                     if (returnedData.indexOf("multiprocess+") >= 0) {
                         GdbThread.setSupportMultiprocess(true);
@@ -119,7 +117,7 @@ export class GdbProxy extends EventEmitter {
                         this.supportVCont = true;
                     }
                     if (returnedData.indexOf("QStartNoAckMode+") >= 0) {
-                        await self.sendPacketString('QStartNoAckMode', GdbPacketType.OK);
+                        await this.sendPacketString('QStartNoAckMode', GdbPacketType.OK);
                     } else {
                         throw new Error("QStartNoAckMode not active in remote debug");
                     }
@@ -128,15 +126,15 @@ export class GdbProxy extends EventEmitter {
                     reject(error);
                 }
             });
-            self.socket.on('error', (err) => {
+            this.socket.on('error', (err) => {
                 if (this.sendPacketStringLock) {
                     this.sendPacketStringLock();
                     this.sendPacketStringLock = undefined;
                 }
-                self.sendEvent("error", err);
+                this.sendEvent("error", err);
                 reject(err);
             });
-            self.socket.on("data", (data) => { this.onData(this, data); });
+            this.socket.on("data", (data) => { this.onData(this, data); });
         });
     }
 
@@ -219,27 +217,25 @@ export class GdbProxy extends EventEmitter {
             if (this.programFilename !== programFilename) {
                 this.programFilename = programFilename;
                 const elms = this.programFilename.replace(/\\/g, '/').split('/');
-                // eslint-disable-next-line @typescript-eslint/no-this-alias
-                const self = this;
                 // Let fs-uae terminate before sending the run command
                 // TODO : check if this is necessary
-                setTimeout(async function () {
-                    self.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
+                setTimeout(async () => {
+                    this.stopOnEntryRequested = (stopOnEntry !== undefined) && stopOnEntry;
                     const encodedProgramName = StringUtils.convertStringToHex("dh0:" + elms[elms.length - 1]);
                     try {
-                        const message = await self.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP);
+                        const message = await this.sendPacketString("vRun;" + encodedProgramName + ";", GdbPacketType.STOP);
                         const type = GdbPacket.parseType(message);
                         if (type === GdbPacketType.SEGMENT) {
                             throw new Error(GdbProxy.BINARIES_ERROR);
                         } else if (type === GdbPacketType.STOP) {
                             // Call for segments
-                            await self.getQOffsets();
+                            await this.getQOffsets();
                             // Call for thread dump
-                            const threads = await self.getThreadIds();
-                            self.setConnected();
-                            await self.parseStop(message);
+                            const threads = await this.getThreadIds();
+                            this.setConnected();
+                            await this.parseStop(message);
                             for (const th of threads) {
-                                self.sendEvent('threadStarted', th.getId());
+                                this.sendEvent('threadStarted', th.getId());
                             }
                             resolve();
                         } else {
@@ -376,8 +372,6 @@ export class GdbProxy extends EventEmitter {
         const segmentId = breakpoint.segmentId;
         const offset = breakpoint.offset;
         const exceptionMask = breakpoint.exceptionMask;
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
         if (!this.socket.writable) {
             throw new Error("The Gdb connection is not opened");
         } else {
@@ -396,11 +390,11 @@ export class GdbProxy extends EventEmitter {
                     }
                     message = 'Z0,' + GdbProxy.formatNumber(offset) + segStr;
                 }
-                await self.waitConnected();
+                await this.waitConnected();
                 await this.sendPacketString(message, GdbPacketType.OK);
                 breakpoint.verified = true;
                 breakpoint.message = undefined;
-                self.sendEvent("breakpointValidated", breakpoint);
+                this.sendEvent("breakpointValidated", breakpoint);
             } else {
                 throw new Error("Invalid breakpoint offset");
             }
