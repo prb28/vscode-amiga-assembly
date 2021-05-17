@@ -67,6 +67,7 @@ export class ExtensionState {
     private tmpDir: FileProxy | undefined;
     private context: vscode.ExtensionContext | undefined;
     private version: string;
+    private workspaceRootDir: vscode.Uri | null = null;
 
     private extensionPath: string = path.join(__dirname, "..");
 
@@ -241,10 +242,20 @@ export class ExtensionState {
      * Reads the workspace folder dir
      */
     getWorkspaceRootDir(): vscode.Uri | null {
-        if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+        if (this.workspaceRootDir) {
+            return this.workspaceRootDir;
+        } else if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
             return vscode.workspace.workspaceFolders[0].uri;
         }
         return null;
+    }
+
+    /**
+     * Select a workspace root directory
+     * @param workspaceRootDir Workspace root directory
+     */
+    setWorkspaceRootDir(workspaceRootDir: vscode.Uri): void {
+        this.workspaceRootDir = workspaceRootDir;
     }
 
     /**

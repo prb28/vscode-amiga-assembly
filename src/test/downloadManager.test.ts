@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { BinariesManager, TagInfo, Version, ExampleProjectManager } from '../downloadManager';
+import { BinariesManager, TagInfo, Version, ExampleProjectManager, DownloadManager } from '../downloadManager';
 import { spy, when, anything, mock, instance } from 'ts-mockito/lib/ts-mockito';
 import { CancellationToken, ExtensionContext, Uri } from 'vscode';
 import { FileDownloader } from '@microsoft/vscode-file-downloader-api';
@@ -84,7 +84,7 @@ describe("Download manager tests", function () {
             // tslint:disable-next-line: no-unused-expression
             expect(binManager.getVersionFromFilename("foo")).to.be.null;
             // tslint:disable-next-line: no-unused-expression
-            expect(binManager.getVersionFromFilename(`/test/file/test-${vStr}`)).to.be.null;
+            expect(binManager.getVersionFromFilename(`/test/file/test${DownloadManager.VERSION_SEPARATOR}${vStr}`)).to.be.eql(v1);
             expect(binManager.getVersionFromFilename(`/test/file/${vStr}`)).to.be.eql(v1);
         });
         it("Should get the master branch on tag retrieve exception", async function () {
@@ -98,7 +98,7 @@ describe("Download manager tests", function () {
         });
         it("Should remove the old binaries according to the project", async function () {
             const tempDir = temp.mkdirSync("tmpDirBinaries");
-            const uri1 = Uri.file(path.join(tempDir, "1.2.3"));
+            const uri1 = Uri.file(path.join(tempDir, `vscode-amiga-assembly-binaries${DownloadManager.VERSION_SEPARATOR}1.2.3`));
             fs.mkdirSync(uri1.fsPath);
             const uri11 = Uri.file(path.join(uri1.fsPath, "prb28-vscode-amiga-assembly-binaries-123"));
             fs.mkdirSync(uri11.fsPath);

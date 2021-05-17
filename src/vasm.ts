@@ -206,10 +206,14 @@ export class VASMCompiler {
     const ASMOneEnabled = this.isASMOneEnabled();
     try {
       if (workspaceRootDir && buildDir) {
-        const filesURI = await workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
+        //const filesURI = await workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
+        const fp = new FileProxy(workspaceRootDir);
+        const files = await fp.findFiles(vlinkConf.includes, vlinkConf.excludes);
+        const filesURI = new Array<Uri>();
         const promises: Thenable<ICheckResult[]>[] = [];
-        for (let i = 0; i < filesURI.length; i++) {
-          const fileUri = filesURI[i];
+        for (const f of files) {
+          const fileUri = f.getUri();
+          filesURI.push(fileUri);
           promises.push(
             workspace.openTextDocument(fileUri).then(document => {
               return this.buildDocument(conf, document, false, logEmitter);

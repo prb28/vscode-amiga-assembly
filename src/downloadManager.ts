@@ -110,6 +110,8 @@ export class Version {
  * Manager for the extension downloads
  */
 export class DownloadManager {
+    /** version name separator */
+    public static readonly VERSION_SEPARATOR = "-@-";
     /** URL of the github project tags */
     protected tagsURL: string;
     /** URL of the github project branches */
@@ -140,7 +142,12 @@ export class DownloadManager {
      */
     public getVersionFromFilename(filePath: string): Version | null {
         const filename = path.basename(filePath);
-        return Version.parse(filename);
+        if (filename.includes(DownloadManager.VERSION_SEPARATOR)) {
+            const elms = filename.split(DownloadManager.VERSION_SEPARATOR);
+            return Version.parse(elms[1]);
+        } else {
+            return Version.parse(filename);
+        }
     }
 
     /**
@@ -193,12 +200,14 @@ export class DownloadManager {
         const downloadedFiles: Uri[] = await this.listAllDownloadedFiles(context);
         let fileUri: Uri | undefined;
         for (const file of downloadedFiles) {
-            const vDir = this.getVersionFromFilename(file.path);
-            if (vDir) {
-                if (vDir.compare(downloadedVersion) !== 0) {
-                    await this.cleanDirectory(file);
-                } else {
-                    fileUri = file;
+            if (file.fsPath.includes(this.projectName)) {
+                const vDir = this.getVersionFromFilename(file.path);
+                if (vDir) {
+                    if (vDir.compare(downloadedVersion) !== 0) {
+                        await this.cleanDirectory(file);
+                    } else {
+                        fileUri = file;
+                    }
                 }
             }
         }
@@ -208,7 +217,7 @@ export class DownloadManager {
             }
         }
         if (!fileUri) {
-            fileUri = await this.downloadFile(this.downloadName, uri, downloadedVersion.toString(), context, true);
+            fileUri = await this.downloadFile(this.downloadName, uri, `${this.projectName}${DownloadManager.VERSION_SEPARATOR}${downloadedVersion.toString()}`, context, true);
         }
         const projectUri = await this.getProjectFolder(fileUri);
         if (projectUri) {

@@ -3,12 +3,14 @@ import * as vscode from 'vscode';
 export class ConfigurationHelper {
     public static readonly CONFIGURATION_NAME = 'amiga-assembly';
     public static readonly BINARIES_PATH_KEY = 'binDir';
+    public static BINARY_PATH?: string;
 
     /**
      * Set the current binaries path
      * @param path Path of the downloaded binaries
      */
     public static setBinariesPath(path: string): Thenable<void> {
+        ConfigurationHelper.BINARY_PATH = path;
         return ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, path);
     }
 
@@ -101,7 +103,10 @@ export class ConfigurationHelper {
      */
     public static replaceBinDirVariable(value: string): string {
         const configuration = ConfigurationHelper.getDefaultConfiguration(null);
-        const binariesPath = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
+        const binariesPath = ConfigurationHelper.BINARY_PATH;
+        if (!ConfigurationHelper.BINARY_PATH) {
+            configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
+        }
         if (binariesPath) {
             return value.replace("${config:amiga-assembly.binDir}", binariesPath);
         }
