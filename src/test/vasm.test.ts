@@ -85,6 +85,8 @@ describe("VASM Tests", function () {
       when(buildDirMock.mkdir()).thenReturn(Promise.resolve());
       when(buildDirMock.getPath()).thenReturn("/workdir/build");
       when(buildDirMock.getUri()).thenReturn(vscode.Uri.file("/workdir/build"));
+      const spiedExtensionState = spy(ExtensionState.getCurrent());
+      when(spiedExtensionState.getBuildDir()).thenReturn(instance(buildDirMock));
       tmpDirMock = mock(FileProxy);
       when(tmpDirMock.mkdir()).thenReturn(Promise.resolve());
       when(tmpDirMock.getPath()).thenReturn("/workdir/tmp");
@@ -170,14 +172,12 @@ describe("VASM Tests", function () {
       expect(error.line).to.be.equal(2);
     });
     it("Should build all the workspace", async function () {
+      ExtensionState.getCurrent().setWorkspaceRootDir(vscode.Uri.parse("file:///workdir"))
       const spiedWorkspace = spy(vscode.workspace);
       const file1 = vscode.Uri.parse("file:///file1.s");
       const file2 = vscode.Uri.parse("file:///file2");
-      when(spiedWorkspace.findFiles(anything(), anything())).thenReturn(
-        new Promise((resolve) => {
-          resolve([file1, file2]);
-        })
-      );
+      spiedCompiler = spy(compiler);
+      when(spiedCompiler.listFilesToBuild(anything(), anything())).thenResolve([file1, file2]);
       when(spiedWorkspace.openTextDocument(file1)).thenReturn(
         new Promise((resolve) => {
           const document = new DummyTextDocument();
@@ -384,6 +384,7 @@ describe("VASM Tests", function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);
       when(spiedCompiler.disabledInConf(anything())).thenReturn(true);
       when(buildDirMock.delete()).thenResolve();
+      when(buildDirMock.findFiles(anything(), anything())).thenResolve([]);
       await expect(compiler.cleanWorkspace()).to.be.fulfilled;
     });
   });

@@ -14,6 +14,7 @@ import path = require('path');
 import { VASMCompiler } from '../vasm';
 import { VLINKLinker } from '../vlink';
 import { ConfigurationHelper } from '../configurationHelper';
+import { spy, when } from 'ts-mockito';
 
 describe('Integration test', () => {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
@@ -29,6 +30,7 @@ describe('Integration test', () => {
         emulator: "${config:amiga-assembly.binDir}/winuae.exe",
         emulatorWorkingDir: "${config:amiga-assembly.binDir}",
         program: "./uae/dh0/gencop",
+        emulatorStartDelay: 3000,
         options: [
         ]
     };
@@ -61,10 +63,12 @@ describe('Integration test', () => {
             //build the workspace
             const vasm = ExtensionState.getCurrent().getCompiler();
             ConfigurationHelper.updateProperty("buildDir", path.join(tempDir, "build"));
+            const spiedExtensionState = spy(ExtensionState.getCurrent());
+            when(spiedExtensionState.getBuildDir()).thenReturn(new FileProxy(Uri.file(path.join(tempDir, "build"))));
             ExtensionState.getCurrent().getBinariesManager();
             ExtensionState.getCurrent().setWorkspaceRootDir(workspaceRootDir);
-            const vasmBuildProperties = VASMCompiler.DEFAULT_BUILD_CONFIGURATION;
-            const vlinkBuildProperties = VLINKLinker.DEFAULT_BUILD_CONFIGURATION;
+            const vasmBuildProperties = { ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION };
+            const vlinkBuildProperties = { ...VLINKLinker.DEFAULT_BUILD_CONFIGURATION };
             vlinkBuildProperties.exefilename = path.join("..", "uae", "dh0", "gencop");
             await vasm.buildWorkspace(undefined, vasmBuildProperties, vlinkBuildProperties);
             launchArgs.program = path.join(tempDir, "uae", "dh0", "gencop");

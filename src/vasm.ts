@@ -200,22 +200,44 @@ export class VASMCompiler {
     return ExtensionState.getCurrent().getWorkspaceRootDir();
   }
 
+  /**
+   * List all the files to build
+   * @param workspaceRootDir Workspace root dir
+   * @param vlinkConf Vlink configuration
+   * @returns List of Uri to build
+   */
+  public async listFilesToBuild(workspaceRootDir: Uri | null, vlinkConf: VlinkBuildProperties): Promise<Uri[]> {
+    if (workspaceRootDir) {
+      const fp = new FileProxy(workspaceRootDir);
+      const files = await fp.findFiles(vlinkConf.includes, vlinkConf.excludes);
+      const filesURI = new Array<Uri>();
+      for (const f of files) {
+        const fileUri = f.getUri();
+        filesURI.push(fileUri);
+      }
+      return filesURI;
+    } else {
+      return await workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
+    }
+  }
+
+  /**
+   * Build the workspace
+   * @param conf  Vasm configuration
+   * @param vlinkConf Vlink configuration
+   * @param logEmitter Log emitter
+   */
   private async buildWorkspaceInner(conf: VasmBuildProperties, vlinkConf: VlinkBuildProperties, logEmitter?: EventEmitter<string>): Promise<void> {
     const workspaceRootDir = this.getWorkspaceRootDir();
     const buildDir = this.getBuildDir();
     const ASMOneEnabled = this.isASMOneEnabled();
     try {
       if (workspaceRootDir && buildDir) {
-        //const filesURI = await workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
-        const fp = new FileProxy(workspaceRootDir);
-        const files = await fp.findFiles(vlinkConf.includes, vlinkConf.excludes);
-        const filesURI = new Array<Uri>();
+        const filesURI = await this.listFilesToBuild(workspaceRootDir, vlinkConf);
         const promises: Thenable<ICheckResult[]>[] = [];
-        for (const f of files) {
-          const fileUri = f.getUri();
-          filesURI.push(fileUri);
+        for (const f of filesURI) {
           promises.push(
-            workspace.openTextDocument(fileUri).then(document => {
+            workspace.openTextDocument(f).then(document => {
               return this.buildDocument(conf, document, false, logEmitter);
             })
           );

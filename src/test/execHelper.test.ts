@@ -29,7 +29,7 @@ describe("Executor Tests", function () {
         resetCalls(spiedOutputChannel);
         const stdoutText = 'My Stdout\ntext';
         const spiedCp = spy(cp);
-        when(spiedCp.execFile(anything(), anything(), anything(), anything())).thenCall((cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)) => {
+        when(spiedCp.execFile('ls', anything(), anything(), anything())).thenCall((cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)) => {
             callback(new Error('notgood'), stdoutText, null);
         });
         const ex = new ExecutorHelper();
@@ -54,7 +54,7 @@ describe("Executor Tests", function () {
         const stdoutText = 'My Stdout\ntext';
         const stderrText = 'My Strerr\ntext';
         const spiedCp = spy(cp);
-        when(spiedCp.execFile(anything(), anything(), anything(), anything())).thenCall((cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string) => void)) => {
+        when(spiedCp.execFile('ls', anything(), anything(), anything())).thenCall((cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string) => void)) => {
             callback(new Error('notgood'), stdoutText, stderrText);
         });
         const ex = new ExecutorHelper();
