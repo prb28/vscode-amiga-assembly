@@ -168,7 +168,7 @@
                 "amiga-assembly.cstool": {
                     "type": "string",
                     "scope": "window",
-                    "default": "cstool",
+                    "default": "${config:amiga-assembly.binDir}/cstool",
                     "description": "Specifies the path to the Capstone cstool binary."
                 },
                 "amiga-assembly.buildDir": {

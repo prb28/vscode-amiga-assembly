@@ -606,7 +606,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                             }
                                             line += selectedLine.trim().replace(/\s\s+/g, ' ');
                                         } catch (err) {
-                                            console.error("Error ignored: " + err.getMessage());
+                                            console.error("Error ignored: " + err.message);
                                         }
                                     }
                                     this.disassembledCache.set(f.pc, line);
@@ -624,7 +624,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                         line = line + cDis.disassemble()[0].toString().split("    ")[0];
                                         this.disassembledCopperCache.set(f.pc, line);
                                     } catch (err) {
-                                        console.error("Error ignored: " + err.getMessage());
+                                        console.error("Error ignored: " + err.message);
                                     }
                                 }
                             }
@@ -787,7 +787,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 };
                 this.sendResponse(response);
             } catch (err) {
-                this.sendStringErrorResponse(response, err.getMessage());
+                this.sendStringErrorResponse(response, err.message);
             }
         } else {
             this.sendStringErrorResponse(response, "Illegal variable request");
