@@ -44,6 +44,8 @@ describe('Integration test', () => {
         const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
+            // install download extension
+            await vscode.commands.executeCommand('workbench.extensions.installExtension', 'mindaro-dev.file-downloader');
         }
         // Prepare the workspace
         // create a temp dir
