@@ -14,7 +14,7 @@ import { VASMCompiler } from '../vasm';
 import { VLINKLinker } from '../vlink';
 import { ConfigurationHelper } from '../configurationHelper';
 
-describe.only('FS-UAE Integration test', () => {
+describe('FS-UAE Integration test', () => {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
     const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
     const launchArgs = <LaunchRequestArguments>{
