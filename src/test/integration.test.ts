@@ -14,9 +14,8 @@ import path = require('path');
 import { VASMCompiler } from '../vasm';
 import { VLINKLinker } from '../vlink';
 import { ConfigurationHelper } from '../configurationHelper';
-import { spy, when } from 'ts-mockito';
 
-describe('Integration test', () => {
+describe.only('WinUAE Integration test', () => {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
     const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
     const launchArgs = <LaunchRequestArguments>{
@@ -65,8 +64,7 @@ describe('Integration test', () => {
             //build the workspace
             const vasm = ExtensionState.getCurrent().getCompiler();
             ConfigurationHelper.updateProperty("buildDir", path.join(tempDir, "build"));
-            const spiedExtensionState = spy(ExtensionState.getCurrent());
-            when(spiedExtensionState.getBuildDir()).thenReturn(new FileProxy(Uri.file(path.join(tempDir, "build"))));
+            ExtensionState.getCurrent().forceBuildDir(new FileProxy(Uri.file(path.join(tempDir, "build"))));
             ExtensionState.getCurrent().getBinariesManager();
             ExtensionState.getCurrent().setWorkspaceRootDir(workspaceRootDir);
             const vasmBuildProperties = { ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION };

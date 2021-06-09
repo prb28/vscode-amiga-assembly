@@ -135,25 +135,16 @@ export class FileProxy {
      * Find the files matching patterns in the directory
      */
     public async findFiles(includes: string, excludes: string): Promise<Array<FileProxy>> {
-        if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
-            const values = new Array<FileProxy>();
-            // List the source dir
-            const files = glob.sync(includes, {
-                cwd: this.uri.fsPath,
-                ignore: excludes
-            });
-            for (const f of files) {
-                values.push(this.getRelativeFile(f));
-            }
-            return values;
-        } else {
-            const values = new Array<FileProxy>();
-            const files = await workspace.findFiles(includes, excludes);
-            for (const f of files) {
-                values.push(new FileProxy(f));
-            }
-            return values;
+        const values = new Array<FileProxy>();
+        // List the source dir
+        const files = glob.sync(includes, {
+            cwd: this.uri.fsPath,
+            ignore: excludes
+        });
+        for (const f of files) {
+            values.push(this.getRelativeFile(f));
         }
+        return values;
     }
 
     /**

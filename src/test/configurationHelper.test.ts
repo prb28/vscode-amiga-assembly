@@ -6,8 +6,8 @@ describe("ConfigurationHelper Tests", function () {
         const conf = ConfigurationHelper.getDefaultConfiguration(null);
         // tslint:disable-next-line: no-unused-expression
         expect(conf).to.be.not.undefined;
-        let value = ConfigurationHelper.retrieveStringPropertyInDefaultConf(ConfigurationHelper.BINARIES_PATH_KEY);
-        expect(value).to.be.equal("${workspaceFolder}/bin");
+        let value = ConfigurationHelper.retrieveStringPropertyInDefaultConf("logLevel");
+        expect(value).to.be.equal("info");
         value = ConfigurationHelper.retrieveStringProperty(conf, "xxxxx", "default");
         expect(value).to.be.equal("default");
     });

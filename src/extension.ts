@@ -68,6 +68,7 @@ export class ExtensionState {
     private context: vscode.ExtensionContext | undefined;
     private version: string;
     private workspaceRootDir: vscode.Uri | null = null;
+    private forcedBuildDir?: FileProxy;
 
     private extensionPath: string = path.join(__dirname, "..");
 
@@ -225,10 +226,22 @@ export class ExtensionState {
         return this.tmpDir;
     }
 
+
+    /**
+     * Forces build dir for the tests
+     * @param buildDir Forced build dir
+     */
+    public forceBuildDir(buildDir: FileProxy): void {
+        this.forcedBuildDir = buildDir;
+    }
+
     /**
      * Returns the build directory
      */
     public getBuildDir(): FileProxy {
+        if (this.forcedBuildDir) {
+            return this.forcedBuildDir;
+        }
         const buildDirPath: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('buildDir');
         if (buildDirPath) {
             this.buildDir = this.getPathOrRelative(buildDirPath);
