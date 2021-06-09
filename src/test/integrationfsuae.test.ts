@@ -27,7 +27,7 @@ describe('Integration test', () => {
         serverPort: 6860,
         startEmulator: true,
         trace: true,
-        emulator: "${config:amiga-assembly.binDir}/fs-uae.exe",
+        emulator: "${config:amiga-assembly.binDir}/fs-uae",
         emulatorWorkingDir: "${config:amiga-assembly.binDir}",
         program: "./uae/dh0/gencop",
         emulatorStartDelay: 3000,
@@ -40,6 +40,9 @@ describe('Integration test', () => {
     before(async function () {
         // Automatically track and cleanup files at exit
         temp.track();
+        if (process.platform === "win32") {
+            launchArgs.emulator = launchArgs.emulator + ".exe";
+        }
         // activate the extension
         const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
