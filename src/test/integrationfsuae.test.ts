@@ -12,7 +12,6 @@ import { FileProxy } from '../fsProxy';
 import path = require('path');
 import { VASMCompiler } from '../vasm';
 import { VLINKLinker } from '../vlink';
-import { ConfigurationHelper } from '../configurationHelper';
 
 describe('FS-UAE Integration test', () => {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
@@ -65,7 +64,6 @@ describe('FS-UAE Integration test', () => {
         expect(await expFile.exists()).to.be.true;
         //build the workspace
         const vasm = ExtensionState.getCurrent().getCompiler();
-        ConfigurationHelper.updateProperty("buildDir", path.join(tempDir, "build"));
         ExtensionState.getCurrent().forceBuildDir(new FileProxy(Uri.file(path.join(tempDir, "build"))));
         ExtensionState.getCurrent().getBinariesManager();
         ExtensionState.getCurrent().setWorkspaceRootDir(workspaceRootDir);
