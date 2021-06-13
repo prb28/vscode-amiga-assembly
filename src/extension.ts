@@ -538,7 +538,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
             const version = state.getExtensionVersion();
             if (ctx) {
                 try {
+                    console.log("executing command");
                     ConfigurationHelper.setBinariesPath((await binariesManager.downloadProject(ctx, version)).fsPath);
+                    console.log("executing command END");
                 } catch (error) {
                     vscode.window.showErrorMessage(error.message);
                 }
