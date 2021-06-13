@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import { FileDownloadSettings } from '@microsoft/vscode-file-downloader-api/out/FileDownloader';
 import { FileProxy } from '../fsProxy';
 
-describe("Download manager tests", function () {
+describe.only("Download manager tests", function () {
     before(function () {
         // Automatically track and cleanup files at exit
         temp.track();
@@ -136,6 +136,7 @@ describe("Download manager tests", function () {
             expect(files.length).to.be.equal(3);
             let count = 0;
             for (const f of files) {
+                console.log("file : " + f.getPath());
                 if (f.getPath().includes("1.2.3")) {
                     expect(path.basename(f.getUri().fsPath)).to.be.eql(path.basename(uri1.fsPath));
                     const subFiles = await f.listFiles();
