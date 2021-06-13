@@ -37,7 +37,7 @@ export function run(_testsRoot: string, clb: any): Promise<void> {
             }
         },
         color: true,
-        timeout: 60000
+        timeout: 180000
     });
 
     const testsRoot = path.resolve(__dirname, '..');
