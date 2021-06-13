@@ -48,6 +48,8 @@ describe.only('FS-UAE Integration test', () => {
             // install download extension
             await vscode.commands.executeCommand('workbench.extensions.installExtension', 'mindaro-dev.file-downloader');
         }
+        // Wait for downloads
+        await ExtensionState.getCurrent().getBinariesManager().waitDownloadEnd();
         // Prepare the workspace
         // create a temp dir
         tempDir = temp.mkdirSync("exampleProject");

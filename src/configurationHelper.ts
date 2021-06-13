@@ -103,9 +103,12 @@ export class ConfigurationHelper {
      */
     public static replaceBinDirVariable(value: string): string {
         const configuration = ConfigurationHelper.getDefaultConfiguration(null);
-        const binariesPath = ConfigurationHelper.BINARY_PATH;
-        if (!ConfigurationHelper.BINARY_PATH) {
-            configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
+        let binariesPath = ConfigurationHelper.BINARY_PATH;
+        if (!binariesPath) {
+            binariesPath = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
+            if (binariesPath) {
+                ConfigurationHelper.BINARY_PATH = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
+            }
         }
         if (binariesPath) {
             return value.replace("${config:amiga-assembly.binDir}", binariesPath);

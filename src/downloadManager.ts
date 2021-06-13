@@ -4,6 +4,7 @@ import { getApi, FileDownloader } from "@microsoft/vscode-file-downloader-api";
 import axios from 'axios';
 import { FileProxy } from "./fsProxy";
 import winston = require("winston");
+import { EventEmitter } from "stream";
 
 /**
  * Interface to store the Github Tag information
@@ -109,7 +110,7 @@ export class Version {
 /**
  * Manager for the extension downloads
  */
-export class DownloadManager {
+export class DownloadManager extends EventEmitter {
     /** version name separator */
     public static readonly VERSION_SEPARATOR = "-@-";
     /** URL of the github project tags */
@@ -120,6 +121,8 @@ export class DownloadManager {
     protected projectName: string;
     /** Name of the download to display */
     protected downloadName: string;
+    /** Flag for downloading */
+    private isDownloading = false;
 
     /**
      * Constructor
@@ -129,10 +132,22 @@ export class DownloadManager {
      * @param projectName Name of the project to download
      */
     constructor(branchURL: string, tagsURL: string, downloadName: string, projectName: string) {
+        super();
         this.branchURL = branchURL;
         this.tagsURL = tagsURL;
         this.downloadName = downloadName;
         this.projectName = projectName;
+    }
+
+    /**
+     * Waits for the download to be done connected
+     */
+    public async waitDownloadEnd(): Promise<void> {
+        if (this.isDownloading) {
+            await new Promise<void>(resolve => this.once('downloadFinished', () => {
+                resolve();
+            }));
+        }
     }
 
     /**
@@ -360,6 +375,7 @@ export class DownloadManager {
      * @returns Local uri of the downloaded file
      */
     public async downloadFile(name: string, uri: Uri, outPath: string, context: ExtensionContext, extract?: boolean): Promise<Uri> {
+        this.isDownloading = true;
         return window.withProgress<Uri>({
             location: ProgressLocation.Notification,
             title: `Downloading ${name} `,
@@ -378,6 +394,9 @@ export class DownloadManager {
                     lastProgress = downloaded;
                 }
             }, { shouldUnzip: extract });
+            // Emit event
+            this.isDownloading = false;
+            this.emit("downloadFinished");
             // Return the final path of the downloaded file
             return file;
         });
