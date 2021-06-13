@@ -376,6 +376,7 @@ export class DownloadManager extends EventEmitter {
      */
     public async downloadFile(name: string, uri: Uri, outPath: string, context: ExtensionContext, extract?: boolean): Promise<Uri> {
         this.isDownloading = true;
+        console.log("Downloading : " + name + " - " + outPath);
         return window.withProgress<Uri>({
             location: ProgressLocation.Notification,
             title: `Downloading ${name} `,
@@ -395,6 +396,7 @@ export class DownloadManager extends EventEmitter {
                 }
             }, { shouldUnzip: extract });
             // Emit event
+            console.log("End download : " + name + " - " + outPath);
             this.isDownloading = false;
             this.emit("downloadFinished");
             // Return the final path of the downloaded file
