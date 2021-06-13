@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import { FileDownloadSettings } from '@microsoft/vscode-file-downloader-api/out/FileDownloader';
 import { FileProxy } from '../fsProxy';
 
-describe.only("Download manager tests", function () {
+describe("Download manager tests", function () {
     before(function () {
         // Automatically track and cleanup files at exit
         temp.track();
