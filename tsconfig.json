@@ -1,11 +1,11 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es6",
-        "outDir": "out",
+        "target": "es2019",
         "lib": [
-            "es6"
+            "ES2019"
         ],
+        "outDir": "out",
         "sourceMap": true,
         "rootDir": "src",
         "removeComments": true,
@@ -20,7 +20,9 @@
     },
     "include": [
         "src/**/*.ts",
-        "./node_modules/vscode/vscode.d.ts"
     ],
-    "exclude": []
+    "exclude": [
+        "node_modules",
+        ".vscode-test"
+    ]
 }
