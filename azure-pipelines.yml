@@ -34,6 +34,7 @@ steps:
       sudo service xvfb start
       sleep 10 # give xvfb some time to start
       export DISPLAY=:10
+      xhost local:
       metacity --sm-disable --replace &
       sleep 10 # give metacity some time to start
     displayName: Setup Xvfb and Metacity
@@ -68,7 +69,7 @@ steps:
     displayName: Run Tests
     condition: and(succeeded(), ne(variables['Agent.JobName'], 'Job linux-package'))
     env:
-      DISPLAY: ":99.0"
+      DISPLAY: ":10"
 
   - task: PublishTestResults@2
     inputs:
