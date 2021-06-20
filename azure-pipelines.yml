@@ -25,9 +25,18 @@ steps:
     displayName: "Install Node.js"
 
   - bash: |
-      /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-      echo ">>> Started xvfb"
-    displayName: Start xvfb
+      set -e
+      sudo apt-get update
+      sudo apt-get install -y xvfb metacity
+      sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+      sudo chmod +x /etc/init.d/xvfb
+      sudo update-rc.d xvfb defaults
+      sudo service xvfb start
+      sleep 10 # give xvfb some time to start
+      export DISPLAY=:10
+      metacity --sm-disable --replace &
+      sleep 10 # give metacity some time to start
+    displayName: Setup Xvfb and Metacity
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   - task: SonarCloudPrepare@1
@@ -57,17 +66,7 @@ steps:
       npm run test:coverage
       npm run tslint
     displayName: Run Tests
-    condition: and(succeeded(), and(ne(variables['Agent.JobName'], 'Job linux-package'), ne(variables['Agent.JobName'], 'Job linux')))
-    env:
-      DISPLAY: ":99.0"
-
-  - bash: |
-      echo ">>> Compile vscode-test"
-      npm run vscode:prepublish
-      xvfb-run --auto-servernum --server-args='-screen 0, 1024x768x24' npm run test:coverage
-      npm run tslint
-    displayName: Run Tests
-    condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
+    condition: and(succeeded(), and(ne(variables['Agent.JobName'], 'Job linux-package')))
     env:
       DISPLAY: ":99.0"
 
