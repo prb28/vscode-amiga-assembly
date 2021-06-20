@@ -32,7 +32,6 @@ steps:
       sudo chmod +x /etc/init.d/xvfb
       sudo update-rc.d xvfb defaults
       sudo service xvfb start
-      xhost +
     displayName: Setup Xvfb
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
