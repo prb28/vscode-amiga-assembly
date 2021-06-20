@@ -24,19 +24,14 @@ steps:
       versionSpec: "12.x"
     displayName: "Install Node.js"
 
-  - bash: |
+  - script: |
       set -e
       sudo apt-get update
-      sudo apt-get install -y xvfb metacity
-      sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+      sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0
+      sudo cp build/azure-pipelines/linux/xvfb.init /etc/init.d/xvfb
       sudo chmod +x /etc/init.d/xvfb
       sudo update-rc.d xvfb defaults
       sudo service xvfb start
-      sleep 10 # give xvfb some time to start
-      export DISPLAY=:10
-      xhost local:
-      metacity --sm-disable --replace &
-      sleep 10 # give metacity some time to start
     displayName: Setup Xvfb and Metacity
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
@@ -71,14 +66,11 @@ steps:
 
   - bash: |
       echo ">>> Compile vscode-test"
-      export DISPLAY=:10
       npm run vscode:prepublish
       xvfb-run --auto-servernum --server-args='-screen 0, 1024x768x24' npm run test:coverage
       npm run tslint
     displayName: Run Tests
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
-    env:
-      DISPLAY: ":10"
 
   - task: PublishTestResults@2
     inputs:
