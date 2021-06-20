@@ -66,7 +66,7 @@ steps:
       npm run test:coverage
       npm run tslint
     displayName: Run Tests
-    condition: and(succeeded(), and(ne(variables['Agent.JobName'], 'Job linux-package')))
+    condition: and(succeeded(), ne(variables['Agent.JobName'], 'Job linux-package'))
     env:
       DISPLAY: ":99.0"
 
