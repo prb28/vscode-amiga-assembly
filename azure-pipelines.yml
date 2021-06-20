@@ -32,7 +32,8 @@ steps:
       sudo chmod +x /etc/init.d/xvfb
       sudo update-rc.d xvfb defaults
       sudo service xvfb start
-    displayName: Setup Xvfb and Metacity
+      xhost +
+    displayName: Setup Xvfb
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   - task: SonarCloudPrepare@1
@@ -67,7 +68,7 @@ steps:
   - bash: |
       echo ">>> Compile vscode-test"
       npm run vscode:prepublish
-      xvfb-run --auto-servernum --server-args='-screen 0, 1024x768x24' npm run test:coverage
+      xvfb-run --auto-servernum --server-args='-screen 0, 1280x960x24' npm run test:coverage
       npm run tslint
     displayName: Run Tests
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
