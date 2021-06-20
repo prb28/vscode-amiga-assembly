@@ -13,7 +13,7 @@ import path = require('path');
 import { VASMCompiler } from '../vasm';
 import { VLINKLinker } from '../vlink';
 
-describe.only('FS-UAE Integration test', () => {
+describe('FS-UAE Integration test', () => {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
     const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
     const launchArgs = <LaunchRequestArguments>{
@@ -45,8 +45,6 @@ describe.only('FS-UAE Integration test', () => {
         const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
-            // install download extension
-            await vscode.commands.executeCommand('workbench.extensions.installExtension', 'mindaro-dev.file-downloader');
         }
         // Wait for downloads
         await vscode.commands.executeCommand('amiga-assembly.download-binaries');
