@@ -6,7 +6,7 @@ tsconfig.json
 .vscode*/**
 test*/**
 .gitignore
-tsconfig.json
+tsconfig.base.json
 vsc-extension-quickstart.md
 coverage
 template
