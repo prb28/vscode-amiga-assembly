@@ -67,7 +67,16 @@ steps:
       npm run test:coverage
       npm run tslint
     displayName: Run Tests
-    condition: and(succeeded(), ne(variables['Agent.JobName'], 'Job linux-package'))
+    condition: and(succeeded(), and(ne(variables['Agent.JobName'], 'Job linux-package'), ne(variables['Agent.JobName'], 'Job linux')))
+
+  - bash: |
+      echo ">>> Compile vscode-test"
+      export DISPLAY=:10
+      npm run vscode:prepublish
+      xvfb-run --auto-servernum --server-args='-screen 0, 1024x768x24' npm run test:coverage
+      npm run tslint
+    displayName: Run Tests
+    condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
     env:
       DISPLAY: ":10"
 
