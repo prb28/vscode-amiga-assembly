@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
-import { when, mock, anything, instance, spy, verify, resetCalls } from 'ts-mockito/lib/ts-mockito';
+import { when, mock, anything, instance, spy, verify, resetCalls, reset } from 'ts-mockito/lib/ts-mockito';
 import { GdbProxy } from '../gdbProxy';
 import { DebugDisassembledManager } from '../debugDisassembled';
 import { DebugInfo } from '../debugInfo';
@@ -24,6 +24,11 @@ describe('Breakpoint Manager', () => {
         mockedDebugDisassembledManager = mock(DebugDisassembledManager);
         mockedDebugInfo = mock(DebugInfo);
         bpManager = new BreakpointManager(instance(mockedGdbProxy), instance(mockedDebugDisassembledManager));
+    });
+    afterEach(function () {
+        reset(mockedGdbProxy);
+        reset(mockedDebugInfo);
+        reset(mockedDebugDisassembledManager);
     });
     context('Spied bpManager', () => {
         beforeEach(function () {

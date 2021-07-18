@@ -49,7 +49,7 @@ describe('Node Debug Adapter Run', () => {
 		}
 		// make VS Code connect to debug server instead of launching debug adapter
 		dc = new DebugClient('node', DEBUG_ADAPTER, 'fs-uae');
-		const address: any = this.server.address();
+		const address = this.server.address();
 		let port = 0;
 		if (address instanceof Object) {
 			port = address.port;
