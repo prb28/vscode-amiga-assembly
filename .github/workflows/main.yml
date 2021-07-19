@@ -20,11 +20,9 @@ jobs:
     # The type of runner that the job will run on
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [macos-latest]
         # [macos-latest, ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-    #env:
-    #  DISPLAY: :0
     
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -39,11 +37,12 @@ jobs:
         node-version: 12.x
     - run: npm install
     - run: npm run vscode:prepublish
-    - name: gabrielbb/xvfb-action
+    - name: xvfb test
       uses: GabrielBB/xvfb-action@v1.5
       with:
         run: npm run test:coverage
         options: -screen 0 1600x1200x24
       if: runner.os == 'Linux'
-    - run: npm run test:coverage
+    - name: test
+      run: npm run test:coverage
       if: runner.os != 'Linux'
