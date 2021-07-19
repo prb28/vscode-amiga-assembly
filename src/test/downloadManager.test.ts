@@ -133,6 +133,7 @@ describe.only("Download manager tests", function () {
             // Check if other dir was deleted
             const fProxy = new FileProxy(Uri.parse(tempDir));
             const files = await fProxy.listFiles();
+            console.log("listing files");
             expect(files.length).to.be.equal(3);
             let count = 0;
             for (const f of files) {
