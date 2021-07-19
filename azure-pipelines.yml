@@ -60,7 +60,7 @@ steps:
       echo ">>> Compile vscode-test"
       npm run vscode:prepublish
       npm run test:coverage
-      npm run tslint
+      npm run lint
     displayName: Run Tests
     condition: and(succeeded(), and(ne(variables['Agent.JobName'], 'Job linux-package'), ne(variables['Agent.JobName'], 'Job linux')))
 
@@ -68,7 +68,7 @@ steps:
       echo ">>> Compile vscode-test"
       npm run vscode:prepublish
       xvfb-run --auto-servernum --server-args='-screen 0, 1280x960x24' npm run test:coverage
-      npm run tslint
+      npm run lint
     displayName: Run Tests
     condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux'))
 
