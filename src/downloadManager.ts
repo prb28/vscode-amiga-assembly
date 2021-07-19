@@ -248,6 +248,7 @@ export class DownloadManager extends EventEmitter {
      */
     public async listTagsFromGitHub(): Promise<Array<TagInfo>> {
         const tagList = new Array<TagInfo>();
+        console.log(`url : ${this.tagsURL}`);
         const response = await axios.get(this.tagsURL);
         for (const d of response.data) {
             const elms = d.name.split("-");
