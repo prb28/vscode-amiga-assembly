@@ -7,7 +7,6 @@ import * as temp from 'temp';
 import * as path from 'path';
 import * as fs from 'fs';
 import { FileDownloadSettings } from '@microsoft/vscode-file-downloader-api/out/FileDownloader';
-import { FileProxy } from '../fsProxy';
 
 describe.only("Download manager tests", function () {
     before(function () {
