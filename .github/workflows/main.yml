@@ -6,9 +6,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ dev_0.22 ]
+    branches: [ master, dev_0.22 ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, dev_0.22 ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -33,7 +33,7 @@ jobs:
         node-version: 12.x
     - run: npm install
     - run: npm run vscode:prepublish
-    - run: xvfb-run -a npm test:coverage
+    - run: xvfb-run -a npm run test:coverage
       if: runner.os == 'Linux'
-    - run: npm test
+    - run: npm run test:coverage
       if: runner.os != 'Linux'
