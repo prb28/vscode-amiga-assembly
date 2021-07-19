@@ -206,7 +206,7 @@
 
 	if (compatibility.NodeBuffer) {
 		jDataView.createBuffer = function () {
-			var buffer = new Buffer(arguments.length);
+			var buffer = Buffer.alloc(arguments.length);
 			for (var i = 0; i < arguments.length; ++i) {
 				buffer[i] = arguments[i];
 			}
