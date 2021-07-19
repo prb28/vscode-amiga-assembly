@@ -86,6 +86,7 @@ describe.only("Download manager tests", function () {
             // tslint:disable-next-line: no-unused-expression
             expect(binManager.getVersionFromFilename(`/test/file/test${DownloadManager.VERSION_SEPARATOR}${vStr}`)).to.be.eql(v1);
             expect(binManager.getVersionFromFilename(`/test/file/${vStr}`)).to.be.eql(v1);
+            expect(binManager.getVersionFromFilename(`C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\tmpDirBinaries2021619-5832-ojrvnq.5fdpl\\test${DownloadManager.VERSION_SEPARATOR}${vStr}`)).to.be.eql(v1);
         });
         it("Should get the master branch on tag retrieve exception", async function () {
             const binManager = new BinariesManager();
@@ -115,6 +116,11 @@ describe.only("Download manager tests", function () {
             fs.mkdirSync(uri4.fsPath);
             const uri41 = Uri.file(path.join(uri4.fsPath, "prb28-another-project-123"));
             fs.mkdirSync(uri41.fsPath);
+            const fProxy = new FileProxy(Uri.parse(tempDir));
+            let files = await fProxy.listFiles();
+            for (const f of files) {
+                console.log("before file : " + f.getPath());
+            }
 
             const binManager = new BinariesManager();
             const spyBinManager = spy(binManager);
@@ -126,16 +132,15 @@ describe.only("Download manager tests", function () {
             when(fileDownloaderMock.listDownloadedItems(anything())).thenResolve([uri1, uri2, uri3]);
             const fileDownloader = instance(fileDownloaderMock);
             when(spyBinManager.getFileDownloader()).thenResolve(fileDownloader);
-            when(spyBinManager.getZipURL(anything())).thenResolve([v1, "http://mydownnload"]);
+            when(spyBinManager.getZipURL(anything())).thenResolve([v1, "http://mydownload"]);
 
             const fUri = await binManager.downloadProject(<ExtensionContext>{}, vStr);
             expect(fUri.fsPath).to.be.equal(uri11.fsPath);
             // Check if other dir was deleted
-            const fProxy = new FileProxy(Uri.parse(tempDir));
-            const files = await fProxy.listFiles();
             console.log(`listing files of ${tempDir}`);
             //expect(files.length).to.be.equal(3);
             let count = 0;
+            files = await fProxy.listFiles();
             for (const f of files) {
                 console.log("file : " + f.getPath());
                 if (f.getPath().includes("1.2.3")) {
