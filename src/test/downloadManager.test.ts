@@ -8,7 +8,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { FileDownloadSettings } from '@microsoft/vscode-file-downloader-api/out/FileDownloader';
 
-describe.only("Download manager tests", function () {
+describe("Download manager tests", function () {
     before(function () {
         // Automatically track and cleanup files at exit
         temp.track();
