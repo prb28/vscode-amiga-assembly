@@ -130,29 +130,25 @@ describe.only("Download manager tests", function () {
             const fUri = await binManager.downloadProject(<ExtensionContext>{}, vStr);
             expect(fUri.fsPath).to.be.equal(uri11.fsPath);
             // Check if other dir was deleted
-            console.log(`listing files of ${tempDir}`);
             let count = 0;
             const files = fs.readdirSync(tempDir);
             expect(files.length).to.be.equal(3);
             for (const f of files) {
-                console.log("file : " + f);
+                const subFiles = fs.readdirSync(path.join(tempDir, f));
                 if (f.includes("1.2.3")) {
-                    // expect(path.basename(f.getUri().fsPath)).to.be.eql(path.basename(uri1.fsPath));
-                    // const subFiles = await f.listFiles();
-                    // expect(subFiles.length).to.be.equal(1);
-                    // expect(path.basename(subFiles[0].getUri().fsPath)).to.be.eql(path.basename(uri11.fsPath));
+                    expect(path.basename(f)).to.be.eql(path.basename(uri1.fsPath));
+                    expect(subFiles.length).to.be.equal(1);
+                    expect(path.basename(subFiles[0])).to.be.eql(path.basename(uri11.fsPath));
                     count++;
                 } else if (f.includes("0.2.0")) {
-                    // expect(path.basename(f.getUri().fsPath)).to.be.eql(path.basename(uri3.fsPath));
-                    // const subFiles = await f.listFiles();
-                    // expect(subFiles.length).to.be.equal(1);
-                    // expect(path.basename(subFiles[0].getUri().fsPath)).to.be.eql(path.basename(uri32.fsPath));
+                    expect(path.basename(f)).to.be.eql(path.basename(uri3.fsPath));
+                    expect(subFiles.length).to.be.equal(1);
+                    expect(path.basename(subFiles[0])).to.be.eql(path.basename(uri32.fsPath));
                     count++;
                 } else {
-                    // expect(path.basename(f.getUri().fsPath)).to.be.eql(path.basename(uri4.fsPath));
-                    // const subFiles = await f.listFiles();
-                    // expect(subFiles.length).to.be.equal(1);
-                    // expect(path.basename(subFiles[0].getUri().fsPath)).to.be.eql(path.basename(uri41.fsPath));
+                    expect(path.basename(f)).to.be.eql(path.basename(uri4.fsPath));
+                    expect(subFiles.length).to.be.equal(1);
+                    expect(path.basename(subFiles[0])).to.be.eql(path.basename(uri41.fsPath));
                     count++;
                 }
             }
