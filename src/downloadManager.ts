@@ -446,9 +446,9 @@ export class BinariesManager extends DownloadManager {
  */
 export class ExampleProjectManager extends DownloadManager {
     /** URL of the github example project branches */
-    static readonly BRANCH_URL = "https://github.com/prb28/vscode-amiga-wks-example/archive/refs/heads";
+    static readonly BRANCH_URL = "https://github.com/prb28/vscode-amiga-wks-example/archive/refs/heads/";
     /** URL of the github example project tags */
-    static readonly TAGS_URL = "https://api.github.com/repos/prb28/vscode-amiga-wks-example/tags";
+    static readonly TAGS_URL = "https://api.github.com/repos/prb28/vscode-amiga-wks-example/tags/";
 
     /**
      * Constructor
