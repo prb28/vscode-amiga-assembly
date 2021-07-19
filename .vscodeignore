@@ -31,3 +31,4 @@ npm-shrinkwrap.json
 coverconfig.json
 azure-pipelines.yml
 .azure-pipelines
+.nyc_output

@@ -4,7 +4,7 @@
 
 import { expect } from 'chai';
 import { DebugExpressionHelper, DisassembledInstructionAdapter } from '../debugExpressionHelper';
-import { mock, instance, when } from 'ts-mockito';
+import { mock, instance, when } from '@johanblumenberg/ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
 
 import * as chai from 'chai';

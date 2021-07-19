@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
-import { reset, capture, spy, verify, anyString, instance, when, anything, mock, resetCalls } from 'ts-mockito/lib/ts-mockito';
+import { reset, capture, spy, verify, anyString, instance, when, anything, mock, resetCalls, imock } from '@johanblumenberg/ts-mockito';
 import { ExecutorHelper, ExecutorParser, ICheckResult } from '../execHelper';
 import { ExtensionState } from '../extension';
 import { DummyTextDocument } from './dummy';
@@ -29,9 +29,13 @@ describe("Executor Tests", function () {
         resetCalls(spiedOutputChannel);
         const stdoutText = 'My Stdout\ntext';
         const spiedCp = spy(cp);
-        when(spiedCp.execFile('ls', anything(), anything(), anything())).thenCall((cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)) => {
+        const cpMock: cp.ChildProcess = imock();
+        const cpMockInstance: cp.ChildProcess = instance(cpMock);
+        const f = (cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
             callback(new Error('notgood'), stdoutText, null);
-        });
+            return cpMockInstance;
+        };
+        when(spiedCp.execFile('ls', anything(), anything(), anything())).thenCall(f);
         const ex = new ExecutorHelper();
         const mockedDummy = mock(DummyParser);
         const error: ICheckResult = new ICheckResult();
@@ -49,14 +53,17 @@ describe("Executor Tests", function () {
         verify(spiedOutputChannel.appendLine(anyString())).atLeast(1);
         reset(spiedCp);
     });
-    it("Should execute a command and parse stdr", async () => {
+    it("Should execute a command and parse stderr", async () => {
         resetCalls(spiedOutputChannel);
-        const stdoutText = 'My Stdout\ntext';
         const stderrText = 'My Strerr\ntext';
         const spiedCp = spy(cp);
-        when(spiedCp.execFile('ls', anything(), anything(), anything())).thenCall((cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string) => void)) => {
-            callback(new Error('notgood'), stdoutText, stderrText);
-        });
+        const cpMock: cp.ChildProcess = imock();
+        const cpMockInstance: cp.ChildProcess = instance(cpMock);
+        const f = (cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
+            callback(new Error('notgood'), "", stderrText);
+            return cpMockInstance;
+        };
+        when(spiedCp.execFile('ls', anything(), anything(), anything())).thenCall(f);
         const ex = new ExecutorHelper();
         const mockedDummy = mock(DummyParser);
         const error: ICheckResult = new ICheckResult();

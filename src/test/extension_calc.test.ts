@@ -6,7 +6,7 @@
 // The module 'chai' provides assertion methods from node
 import { expect } from 'chai';
 import * as vscode from 'vscode';
-import { spy, verify, anyString, capture, when, anything } from 'ts-mockito/lib/ts-mockito';
+import { spy, verify, anyString, capture, when, anything } from '@johanblumenberg/ts-mockito';
 import { ExtensionState } from '../extension';
 
 // Defines a Mocha test suite to group tests of similar kind together

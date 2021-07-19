@@ -4,7 +4,7 @@ import {
     verify,
     when,
     resetCalls,
-} from "ts-mockito/lib/ts-mockito";
+} from "@johanblumenberg/ts-mockito";
 import { CompilerController } from "../customTaskProvider";
 import { ExtensionState } from "../extension";
 import { DummyTextDocument } from "./dummy";

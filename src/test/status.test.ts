@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { ExtensionState } from '../extension';
-import { spy, verify, anyString, when } from 'ts-mockito/lib/ts-mockito';
+import { spy, verify, anyString, when } from '@johanblumenberg/ts-mockito';
 import * as vscode from 'vscode';
 
 // tslint:disable:no-unused-expression

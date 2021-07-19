@@ -4,7 +4,7 @@ import { DebugClient } from 'vscode-debugadapter-testsupport/lib/main';
 import { LaunchRequestArguments, RunFsUAENoDebugSession } from '../runFsUAENoDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
-import { spy, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
+import { spy, instance, when, anything, mock, reset } from '@johanblumenberg/ts-mockito';
 import { ExecutorHelper } from '../execHelper';
 import { fail } from 'assert';
 

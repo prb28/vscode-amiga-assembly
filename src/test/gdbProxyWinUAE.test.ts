@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import * as chai from 'chai';
 import { GdbRegister, GdbStackPosition, GdbStackFrame, GdbError, GdbAmigaSysThreadIdWinUAE, GdbThread } from '../gdbProxyCore';
 import { Socket } from 'net';
-import { spy, verify, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
+import { spy, verify, instance, when, anything, mock, reset } from '@johanblumenberg/ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
 import { fail } from 'assert';
 import { GdbBreakpoint } from '../breakpointManager';
@@ -79,13 +79,17 @@ describe("GdbProxyWinUAE Tests", function () {
         });
         beforeEach(function () {
             mockedSocket = mock(Socket);
-            when(mockedSocket.once('connect', anything())).thenCall(async (event: string, callback: (() => void)) => {
+            const fConnect = function (event: string, callback: (() => Socket)): Socket {
                 when(mockedSocket.writable).thenReturn(true);
                 callback();
-            });
-            when(mockedSocket.on('data', anything())).thenCall(async (event: string, callback: ((data: Buffer) => void)) => {
+                return socket;
+            };
+            when(mockedSocket.once('connect', anything())).thenCall(fConnect);
+            const fData = function (event: string, callback: ((data: Buffer) => void)): Socket {
                 mockedOnData = callback;
-            });
+                return socket;
+            };
+            when(mockedSocket.on('data', anything())).thenCall(fData);
             socket = instance(mockedSocket);
             proxy = new GdbProxyWinUAE(socket);
             spiedProxy = spy(proxy);

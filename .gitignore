@@ -11,3 +11,4 @@ test-report*
 .scannerwork
 tslint-report.json
 dist
+.nyc_output

@@ -12,7 +12,7 @@ import {
   reset,
   mock,
   instance
-} from "ts-mockito/lib/ts-mockito";
+} from "@johanblumenberg/ts-mockito";
 import { VASMCompiler, VASMParser } from "../vasm";
 import { ExecutorHelper, ICheckResult } from "../execHelper";
 import { DummyTextDocument } from "./dummy";
@@ -359,21 +359,14 @@ describe("VASM Tests", function () {
       const state = ExtensionState.getCurrent();
       const spiedOutputChannel = spy(state.getOutputChannel());
       when(buildDirMock.delete()).thenResolve();
-      const file1 = spy(new FileProxy(vscode.Uri.file("/workspace/build/file1.o")));
-      const file2 = spy(new FileProxy(vscode.Uri.file("/workspace/build/file2.o")));
-      const spyFile1 = spy(file1);
-      const spyFile2 = spy(file2);
-      when(spyFile1.delete()).thenResolve();
-      when(spyFile2.delete()).thenResolve();
-      when(buildDirMock.findFiles(anything(), anything())).thenReturn(
-        Promise.resolve([file1, file2])
-      );
-      return compiler.cleanWorkspace().then(() => {
-        verify(spyFile1.delete()).once();
-        verify(spyFile2.delete()).once();
-        verify(spiedOutputChannel.appendLine(anyString())).thrice();
-        return Promise.resolve();
-      });
+      const fileProxyMock = mock(FileProxy);
+      when(fileProxyMock.delete()).thenResolve();
+      const file1 = instance(fileProxyMock);
+      const file2 = instance(fileProxyMock);
+      when(buildDirMock.findFiles(anything(), anything())).thenResolve([file1, file2]);
+      await compiler.cleanWorkspace();
+      verify(fileProxyMock.delete()).twice();
+      verify(spiedOutputChannel.appendLine(anyString())).thrice();
     });
     it("Should not get an error when cleaning the workspace and vasm disabled", async function () {
       spiedCompiler = spy(compiler);

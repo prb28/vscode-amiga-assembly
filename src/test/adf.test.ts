@@ -8,7 +8,7 @@ import { ADFTools } from '../adf';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as path from 'path';
 import { ExecutorHelper } from '../execHelper';
-import { instance, when, anything, mock, capture, reset } from 'ts-mockito/lib/ts-mockito';
+import { instance, when, anything, mock, capture, reset } from '@johanblumenberg/ts-mockito';
 import * as fs from 'fs';
 import * as temp from 'temp';
 import { Uri } from 'vscode';

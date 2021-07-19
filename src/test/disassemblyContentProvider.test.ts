@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import * as chai from 'chai';
-import { mock, instance, when, anything, capture } from 'ts-mockito';
+import { mock, instance, when, anything, capture } from '@johanblumenberg/ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
 import { DisassemblyContentProvider } from '../disassemblyContentProvider';
 import { CancellationTokenSource, Uri } from 'vscode';

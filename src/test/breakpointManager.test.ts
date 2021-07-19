@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
-import { when, mock, anything, instance, spy, verify, resetCalls, reset } from 'ts-mockito/lib/ts-mockito';
+import { when, mock, anything, instance, spy, verify, resetCalls, reset } from '@johanblumenberg/ts-mockito';
 import { GdbProxy } from '../gdbProxy';
 import { DebugDisassembledManager } from '../debugDisassembled';
 import { DebugInfo } from '../debugInfo';

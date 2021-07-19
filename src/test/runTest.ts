@@ -6,6 +6,7 @@ import {
     resolveCliPathFromVSCodeExecutablePath,
     runTests
 } from 'vscode-test';
+import { TestOptions } from 'vscode-test/out/runTest';
 
 async function main() {
     try {
@@ -26,11 +27,12 @@ async function main() {
             stdio: 'inherit'
         });
         // Download VS Code, unzip it and run the integration test
-        await runTests({
+        await runTests(<TestOptions>{
             // Use the specified `code` executable
             vscodeExecutablePath,
             extensionDevelopmentPath,
-            extensionTestsPath
+            extensionTestsPath,
+            launchArgs: ["--disable-workspace-trust", "--trace-deprecation"]
         });
     } catch (err) {
         console.error('Failed to run tests');

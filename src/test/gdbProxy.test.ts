@@ -7,7 +7,7 @@ import * as chai from 'chai';
 import { GdbProxy } from '../gdbProxy';
 import { GdbRegister, GdbStackPosition, GdbStackFrame, GdbError, GdbHaltStatus, GdbAmigaSysThreadIdFsUAE, GdbThread } from '../gdbProxyCore';
 import { Socket } from 'net';
-import { spy, verify, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
+import { spy, verify, instance, when, anything, mock, reset } from '@johanblumenberg/ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
 import { fail } from 'assert';
 import { GdbBreakpoint } from '../breakpointManager';
@@ -76,19 +76,24 @@ describe("GdbProxy Tests", function () {
         });
         beforeEach(function () {
             mockedSocket = mock(Socket);
-            when(mockedSocket.once('connect', anything())).thenCall(async (event: string, callback: (() => void)) => {
+            socket = instance(mockedSocket);
+            const fConnect = function (event: string, callback: (() => Socket)): Socket {
                 when(mockedSocket.writable).thenReturn(true);
                 callback();
-            });
-            when(mockedSocket.on('data', anything())).thenCall(async (event: string, callback: ((data: Buffer) => void)) => {
+                return socket;
+            };
+            when(mockedSocket.once('connect', anything())).thenCall(fConnect);
+            const fData = function (event: string, callback: ((data: Buffer) => void)): Socket {
                 mockedOnData = callback;
-            });
-            socket = instance(mockedSocket);
+                return socket;
+            };
+            when(mockedSocket.on('data', anything())).thenCall(fData);
             proxy = new GdbProxy(socket);
             spiedProxy = spy(proxy);
         });
         afterEach(function () {
             reset(mockedSocket);
+            reset(spiedProxy);
         });
         it("Should connect to fs-UAE", async function () {
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
@@ -346,7 +351,8 @@ describe("GdbProxy Tests", function () {
                     when(spiedProxy.sendPacketString("QTFrame:1", anything())).thenResolve("00000001");
                     const thread = proxy.getCurrentCpuThread();
                     if (thread) {
-                        return expect(proxy.stack(thread)).to.eventually.eql(<GdbStackFrame>{
+                        const stack = await proxy.stack(thread);
+                        expect(stack).to.be.eql(<GdbStackFrame>{
                             frames: [<GdbStackPosition>{
                                 index: -1,
                                 segmentId: -1,

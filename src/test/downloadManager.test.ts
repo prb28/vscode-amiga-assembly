@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { BinariesManager, TagInfo, Version, ExampleProjectManager, DownloadManager } from '../downloadManager';
-import { spy, when, anything, mock, instance } from 'ts-mockito/lib/ts-mockito';
+import { spy, when, anything, mock, instance } from '@johanblumenberg/ts-mockito';
 import { CancellationToken, ExtensionContext, Uri } from 'vscode';
 import { FileDownloader } from '@microsoft/vscode-file-downloader-api';
 import * as temp from 'temp';

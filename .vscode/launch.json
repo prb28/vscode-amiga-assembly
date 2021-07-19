@@ -18,6 +18,9 @@
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
+            "env": {
+                "DISABLE_COVERAGE": "true"
+            },
             "args": [
                 //                "--disable-extensions",
                 "--extensionDevelopmentPath=${workspaceFolder}"
@@ -32,6 +35,9 @@
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
+            "env": {
+                "DISABLE_COVERAGE": "true"
+            },
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/out/test/suite/index"

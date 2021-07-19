@@ -6,7 +6,7 @@ import * as Net from 'net';
 import * as vscode from 'vscode';
 import { GdbProxy } from '../gdbProxy';
 import { GdbStackFrame, GdbStackPosition, GdbThread, GdbAmigaSysThreadIdWinUAE } from '../gdbProxyCore';
-import { spy, anyString, instance, when, anything, mock, anyNumber, reset, } from 'ts-mockito/lib/ts-mockito';
+import { spy, anyString, instance, when, anything, mock, anyNumber, reset, } from '@johanblumenberg/ts-mockito';
 import { ExecutorHelper } from '../execHelper';
 import { Capstone } from '../capstone';
 import { ExtensionState } from '../extension';

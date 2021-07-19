@@ -50,6 +50,8 @@ export class WorkspaceManager {
                 if (answer === "Yes") {
                     return selectedFolder;
                 }
+            } else {
+                return selectedFolder;
             }
         }
         const message = "Example project creation canceled";

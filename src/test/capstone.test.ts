@@ -7,7 +7,7 @@ import { Capstone } from '../capstone';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as Path from 'path';
 import { ExecutorHelper } from '../execHelper';
-import { instance, when, anything, mock, capture, reset } from 'ts-mockito/lib/ts-mockito';
+import { instance, when, anything, mock, capture, reset } from '@johanblumenberg/ts-mockito';
 import { Uri } from 'vscode';
 
 chai.use(chaiAsPromised);

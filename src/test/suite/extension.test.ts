@@ -8,7 +8,7 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { spy, verify, when, anything, resetCalls, mock, instance } from 'ts-mockito/lib/ts-mockito';
+import { spy, verify, when, anything, resetCalls, mock, instance } from '@johanblumenberg/ts-mockito';
 import { ExtensionState } from '../../extension';
 import { Capstone } from '../../capstone';
 import { IFFViewerPanel } from '../../iffImageViewer';

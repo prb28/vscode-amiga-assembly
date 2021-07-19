@@ -52,9 +52,9 @@ export class GdbProxy extends EventEmitter {
     /** vCont commands are supported */
     protected supportVCont = false;
     /** Created threads */
-    protected threads = new Map<number, GdbThread>();
+    protected threads: Map<number, GdbThread>;
     /** Created threads indexed by native ids */
-    protected threadsNative = new Map<string, GdbThread>();
+    protected threadsNative: Map<string, GdbThread>;
     /** function from parent to send all pending breakpoints */
     protected sendPendingBreakpointsCallback: (() => Promise<void>) | undefined = undefined;
     /** Manager for the received socket data */
@@ -77,6 +77,8 @@ export class GdbProxy extends EventEmitter {
             this.socket = new Socket();
         }
         this.receivedDataManager = new GdbReceivedDataManager(this.defaultOnDataHandler);
+        this.threads = new Map<number, GdbThread>();
+        this.threadsNative = new Map<string, GdbThread>();
     }
 
     /**
@@ -743,29 +745,38 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
+     * Parses a threads response
+     * @param threadsMessage Message containing the threads 
+     * @returns array of threads
+     */
+    public parseThreadsMessage(threadsMessage: string): Array<GdbThread> {
+        let pData = threadsMessage;
+        if (pData.startsWith("m")) {
+            pData = pData.substring(1).trim();
+        }
+        if (pData.endsWith("l")) {
+            pData = pData.substring(0, pData.length - 1);
+        }
+        if (pData.endsWith(",")) {
+            pData = pData.substring(0, pData.length - 1);
+        }
+        const returnedThreads = new Array<GdbThread>();
+        for (const elm of pData.split(',')) {
+            const th = GdbThread.parse(elm);
+            returnedThreads.push(th);
+            this.threads.set(th.getId(), th);
+            this.threadsNative.set(elm, th);
+        }
+        return returnedThreads;
+    }
+
+    /**
      * Reads the thread id's
      */
     public async getThreadIds(): Promise<Array<GdbThread>> {
         if (this.threads.size <= 0) {
             const data = await this.sendPacketString("qfThreadInfo", GdbPacketType.UNKNOWN);
-            let pData = data;
-            if (pData.startsWith("m")) {
-                pData = pData.substring(1).trim();
-            }
-            if (pData.endsWith("l")) {
-                pData = pData.substring(0, pData.length - 1);
-            }
-            if (pData.endsWith(",")) {
-                pData = pData.substring(0, pData.length - 1);
-            }
-            const returnedThreads = new Array<GdbThread>();
-            for (const elm of pData.split(',')) {
-                const th = GdbThread.parse(elm);
-                returnedThreads.push(th);
-                this.threads.set(th.getId(), th);
-                this.threadsNative.set(elm, th);
-            }
-            return returnedThreads;
+            return this.parseThreadsMessage(data);
         } else {
             return Array.from(this.threads.values());
         }

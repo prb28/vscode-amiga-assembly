@@ -65,17 +65,21 @@ export class ExecutorHelper {
                         }
                         throw new Error(errorMessage);
                     }
-                    const text = (useStdErr ? stderr : stdout).toString();
                     const message = [cwd + '>Finished running tool:', cmd, ...args].join(' ');
                     winston.info(message);
                     if (logEmitter) {
                         logEmitter.fire([cmd, ...args].join(' ') + '\r\n');
-                        logEmitter.fire(text + '\r\n');
                     }
 
                     let ret: ICheckResult[] = [];
-                    if (parser) {
-                        ret = parser.parse(text);
+                    if (stdout || (useStdErr && stderr)) {
+                        const text = ((useStdErr && stderr) ? stderr : stdout).toString();
+                        if (logEmitter) {
+                            logEmitter.fire(text + '\r\n');
+                        }
+                        if (parser) {
+                            ret = parser.parse(text);
+                        }
                     }
                     winston.info('');
                     resolve(ret);

@@ -4,7 +4,7 @@
 
 import { expect } from 'chai';
 import * as chai from 'chai';
-import { mock, instance, when, anyNumber, reset, anyString } from 'ts-mockito';
+import { mock, instance, when, anyNumber, reset, anyString } from '@johanblumenberg/ts-mockito';
 //import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebugDisassembledFile, DebugDisassembledManager, DisassembleAddressArguments } from '../debugDisassembled';
 import * as chaiAsPromised from 'chai-as-promised';
