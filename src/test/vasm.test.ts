@@ -98,6 +98,8 @@ describe("VASM Tests", function () {
       when(spiedCompiler.getWorkspaceRootDir()).thenReturn(vscode.Uri.file("/workdir"));
     });
     after(function () {
+      reset(buildDirMock);
+      reset(tmpDirMock);
       reset(executorCompiler);
       reset(executorLinker);
       reset(spiedLinker);
@@ -367,6 +369,7 @@ describe("VASM Tests", function () {
       await compiler.cleanWorkspace();
       verify(fileProxyMock.delete()).twice();
       verify(spiedOutputChannel.appendLine(anyString())).thrice();
+      reset(fileProxyMock);
     });
     it("Should not get an error when cleaning the workspace and vasm disabled", async function () {
       spiedCompiler = spy(compiler);

@@ -150,13 +150,8 @@ export class FileProxy {
     /**
      * List the files in the directory
      */
-    public async listFiles(): Promise<Array<FileProxy>> {
-        const values = new Array<FileProxy>();
-        const files = fs.readdirSync(this.uri.fsPath);
-        for (const f of files) {
-            values.push(this.getRelativeFile(f));
-        }
-        return values;
+    public listFiles(): Promise<Array<FileProxy>> {
+        return this.findFiles("*", "");
     }
 
     /**
