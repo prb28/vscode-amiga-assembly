@@ -880,7 +880,7 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p .",
         "watch": "tsc -watch -p .",
-        "lint": "eslint src --ext ts",
+        "lint": "eslint -f json src --ext ts > lint-report.json",
         "test": "node ./out/test/runTest.js",
         "test:coverage": "npm run test",
         "build": "npm run compile --loglevel silent",

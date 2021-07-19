@@ -26,7 +26,7 @@ out/test/
 src/
 package-json.lock
 webpack.config.js
-tslint-report.json
+lint-report.json
 npm-shrinkwrap.json
 coverconfig.json
 azure-pipelines.yml
