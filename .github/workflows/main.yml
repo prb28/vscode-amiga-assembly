@@ -20,8 +20,8 @@ jobs:
     # The type of runner that the job will run on
     strategy:
       matrix:
-        os: [macos-latest]
-        #, ubuntu-latest, windows-latest]
+        os: [windows-latest]
+        # [macos-latest, ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     #env:
     #  DISPLAY: :0
