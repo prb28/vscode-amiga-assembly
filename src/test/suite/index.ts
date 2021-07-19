@@ -7,7 +7,7 @@ const NYC = require('nyc');
 import * as glob from 'glob';
 import * as paths from "path";
 
-const enableCoverage = false;//process.env.DISABLE_COVERAGE !== "true";
+const enableCoverage = process.env.DISABLE_COVERAGE !== "true";
 
 // Simulates the recommended config option
 // extends: "@istanbuljs/nyc-config-typescript",
