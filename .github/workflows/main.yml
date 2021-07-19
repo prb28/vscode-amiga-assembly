@@ -38,7 +38,10 @@ jobs:
         node-version: 12.x
     - run: npm install
     - run: npm run vscode:prepublish
-    - run: xvfb-run -a npm run test:coverage
+    - name: gabrielbb/xvfb-action
+      uses: GabrielBB/xvfb-action@v1.5
+      with:
+        run: npm run test:coverage
       if: runner.os == 'Linux'
     - run: npm run test:coverage
       if: runner.os != 'Linux'
