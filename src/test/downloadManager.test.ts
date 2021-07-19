@@ -100,6 +100,7 @@ describe.only("Download manager tests", function () {
         it("Should remove the old binaries according to the project", async function () {
             const tempDir = temp.mkdirSync("tmpDirBinaries");
             const uri1 = Uri.file(path.join(tempDir, `vscode-amiga-assembly-binaries${DownloadManager.VERSION_SEPARATOR}1.2.3`));
+            console.log("making dir : " + uri1.fsPath);
             fs.mkdirSync(uri1.fsPath);
             const uri11 = Uri.file(path.join(uri1.fsPath, "prb28-vscode-amiga-assembly-binaries-123"));
             fs.mkdirSync(uri11.fsPath);
