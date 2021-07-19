@@ -119,6 +119,15 @@ describe.only("Download manager tests", function () {
             fs.mkdirSync(uri4.fsPath);
             const uri41 = Uri.file(path.join(uri4.fsPath, "prb28-another-project-123"));
             fs.mkdirSync(uri41.fsPath);
+            const filesD = fs.readdirSync(tempDir);
+
+            // files object contains all files names
+            // log them on console
+            filesD.forEach(file => {
+                console.log(file);
+            });
+
+
             const fProxy = new FileProxy(Uri.parse(tempDir));
             let files = await fProxy.listFiles();
             for (const f of files) {
