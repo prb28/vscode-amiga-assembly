@@ -22,9 +22,14 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      DISPLAY: :0
     
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - name: Setup xvfb (Linux)
+    - run: sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 && sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
+      if: runner.os == 'Linux'
     - name: Checkout
       uses: actions/checkout@v2
     - name: Install Node.js
