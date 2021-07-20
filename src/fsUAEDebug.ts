@@ -905,8 +905,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     public async getMemory(address: number, size: number): Promise<string> {
         await this.gdbProxy.waitConnected();
-        const memory = this.gdbProxy.getMemory(address, size);
-        return memory;
+        return this.gdbProxy.getMemory(address, size);
     }
 
     public async getVariablePointedMemory(variableName: string, frameIndex?: number, size?: number): Promise<string> {

@@ -205,7 +205,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             for (let i = 0; i < filesURI.length; i++) {
                 promises.push(this.scanFile(filesURI[i]));
             }
-            return await Promise.all(promises);
+            return Promise.all(promises);
         });
     }
 

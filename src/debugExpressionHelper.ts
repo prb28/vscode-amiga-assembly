@@ -26,7 +26,7 @@ export class DebugExpressionHelper {
             }
             // call the function to calculate the expression
             const dHnd = ExtensionState.getCurrent().getDefinitionHandler();
-            return await dHnd.evaluateFormula(newExpression);
+            return dHnd.evaluateFormula(newExpression);
         } else {
             throw new Error("Invalid address");
         }

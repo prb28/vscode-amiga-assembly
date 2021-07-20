@@ -217,7 +217,7 @@ export class VASMCompiler {
       }
       return filesURI;
     } else {
-      return await workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
+      return workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
     }
   }
 
