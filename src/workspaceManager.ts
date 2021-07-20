@@ -2,6 +2,8 @@ import { ExtensionContext, OpenDialogOptions, Uri, window } from "vscode";
 import { ExampleProjectManager } from "./downloadManager";
 import { FileProxy } from "./fsProxy";
 import * as path from 'path';
+import winston = require('winston');
+
 export class WorkspaceManager {
     /**
      * Downloads the project.
@@ -14,6 +16,7 @@ export class WorkspaceManager {
         if (!destURI) {
             destURI = await this.showInputPanel();
         }
+        winston.info(`Downloading workspace version ${version} to folder ${destURI}`);
         // Download example workspace
         const exampleProjectManager = new ExampleProjectManager();
         const downloadedFile = new FileProxy(await exampleProjectManager.downloadProject(context, version));
@@ -34,6 +37,7 @@ export class WorkspaceManager {
      * @return selected folder Uri
      */
     public async showInputPanel(): Promise<Uri> {
+        winston.debug(`Opening Dialog`);
         const selectedFolders = await window.showOpenDialog(<OpenDialogOptions>{
             prompt: "Select a file to disassemble",
             canSelectMany: false,
@@ -48,9 +52,11 @@ export class WorkspaceManager {
             if (subFiles.length > 0) {
                 const answer = await window.showWarningMessage("The folder is not empty. Do you really want to use it ?", "Yes", "Cancel");
                 if (answer === "Yes") {
+                    winston.info(`Selected folder: ${selectedFolder}`);
                     return selectedFolder;
                 }
             } else {
+                winston.info(`Selected folder: ${selectedFolder}`);
                 return selectedFolder;
             }
         }

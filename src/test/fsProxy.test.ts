@@ -146,8 +146,8 @@ describe("FsProxy test", function () {
         expect(f.exists()).to.eventually.be.false;
     });
     it("Should list the files in a directory", async function () {
-        const filePath = path.join(__dirname, "..", "..", "test_files");
-        const f = new FileProxy(Uri.file(filePath));
+        let filePath = path.join(__dirname, "..", "..", "test_files");
+        let f = new FileProxy(Uri.file(filePath));
         const files = await f.readDirectory();
         expect(files.length).to.be.equal(11);
         let foundFile = false;
@@ -165,6 +165,9 @@ describe("FsProxy test", function () {
         expect(foundFile).to.be.true;
         // tslint:disable-next-line:no-unused-expression
         expect(foundDir).to.be.true;
+        filePath = path.join(__dirname, "..", "..", "test_files", "debug", "fs-uae", "hd0");
+        f = new FileProxy(Uri.file(filePath));
+        expect((await f.listFiles()).length).to.be.equal(6);
     });
 
     it("Should find the files in a directory", async function () {
@@ -215,6 +218,9 @@ describe("FsProxy test", function () {
         // tslint:disable-next-line: no-unused-expression
         expect(await expFile.exists()).to.be.true;
         expFile = new FileProxy(Uri.file(path.join(tempDir, "copy", "hello")));
+        // tslint:disable-next-line: no-unused-expression
+        expect(await expFile.exists()).to.be.true;
+        expFile = new FileProxy(Uri.file(path.join(tempDir, "copy", ".test", "test.txt")));
         // tslint:disable-next-line: no-unused-expression
         expect(await expFile.exists()).to.be.true;
     });
