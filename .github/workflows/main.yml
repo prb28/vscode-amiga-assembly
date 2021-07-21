@@ -48,6 +48,11 @@ jobs:
         if: runner.os != 'Linux'
         env:
           DISABLE_COVERAGE: true
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: test-results.xml
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
@@ -62,7 +67,6 @@ jobs:
   package:
     # The type of runner that the job will run on
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
@@ -84,4 +88,5 @@ jobs:
         if: ${{ success() }}
         with:
           name: extension
-          path: *.vsix
+          path: ./*.vsix
+      
