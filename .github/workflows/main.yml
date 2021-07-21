@@ -49,6 +49,7 @@ jobs:
         env:
           DISABLE_COVERAGE: true
       - name: Rename Unit Test Results
+        if: always()
         run: mv test-results.xml test-results-${{ matrix.os }}.xml
       - name: Upload Unit Test Results
         if: always()
