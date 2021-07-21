@@ -59,3 +59,29 @@ jobs:
         with:
           github-token: ${{ secrets.github_token }}
         if: runner.os == 'Linux'
+  package:
+    # The type of runner that the job will run on
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: npm install
+      - name: Install vsce
+        run: npm install -g vsce
+      - run: npm run vscode:prepublish
+      - run: vsce package
+      - uses: actions/upload-artifact@v2
+        if: ${{ success() }}
+        with:
+          name: extension
+          path: *.vsix
