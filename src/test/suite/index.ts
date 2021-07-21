@@ -69,7 +69,7 @@ export async function run(_testsRoot: string): Promise<void> {
         reporterOptions: {
             reporterEnabled: "spec, mocha-junit-reporter",
             mochaJunitReporterReporterOptions: {
-                mochaFile: paths.join(_testsRoot, "..", "..", "test-results.xml")
+                mochaFile: paths.join(__dirname, "..", "..", "..", "test-results.xml")
             }
         },
         color: true,

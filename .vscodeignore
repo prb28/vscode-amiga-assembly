@@ -32,3 +32,4 @@ coverconfig.json
 azure-pipelines.yml
 .azure-pipelines
 .nyc_output
+test-result*

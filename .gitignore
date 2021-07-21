@@ -12,3 +12,4 @@ test-report*
 lint-report.json
 dist
 .nyc_output
+test-result*
