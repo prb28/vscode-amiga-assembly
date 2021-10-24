@@ -108,7 +108,7 @@ export class ADFTools {
             let sourceFullPath: Uri | null = null;
             const bUri = Uri.file(bootBlockSourceFilename);
             let pFile = new FileProxy(bUri);
-            if (pFile.exists()) {
+            if (await pFile.exists()) {
                 sourceFullPath = bUri;
             } else {
                 // file not exists

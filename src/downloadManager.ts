@@ -250,7 +250,8 @@ export class DownloadManager extends EventEmitter {
         const tagList = new Array<TagInfo>();
         console.log(`url : ${this.tagsURL}`);
         const response = await axios.get(this.tagsURL);
-        for (const d of response.data) {
+        const data: unknown | any = response.data
+        for (const d of data) {
             const elms = d.name.split("-");
             const version = new Version(elms[0]);
             let os: string | undefined;

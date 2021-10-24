@@ -422,13 +422,13 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         return fileProxy.exists();
     }
 
-    public startEmulator(args: LaunchRequestArguments): void {
+    public async startEmulator(args: LaunchRequestArguments): Promise<void> {
         if (args.startEmulator) {
             this.sendEvent(new OutputEvent(`Starting emulator: ${args.emulator}`));
             if (args.emulator) {
                 const emulatorExe = ConfigurationHelper.replaceBinDirVariable(args.emulator);
                 // Is the emulator exe present in the filesystem ?
-                if (this.checkEmulator(emulatorExe)) {
+                if (await this.checkEmulator(emulatorExe)) {
                     this.cancellationTokenSource = new CancellationTokenSource();
                     let emulatorWorkingDir = args.emulatorWorkingDir || null;
                     if (emulatorWorkingDir) {

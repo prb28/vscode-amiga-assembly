@@ -16,7 +16,8 @@
         "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
         "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
         // "noUnusedParameters": true,  /* Report errors on unused parameters. */
-        "allowJs": true
+        "allowJs": true,
+        "useUnknownInCatchVariables": false
     },
     "include": [
         "src/**/*.ts",

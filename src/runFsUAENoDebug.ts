@@ -111,7 +111,7 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		const emulatorWorkingDir = args.emulatorWorkingDir || null;
 		if (emulatorExe) {
 			// Is the emulator exe present in the filesystem ?
-			if (this.checkEmulator(emulatorExe)) {
+			if (await this.checkEmulator(emulatorExe)) {
 				this.cancellationTokenSource = new CancellationTokenSource();
 				try {
 					await this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token);
