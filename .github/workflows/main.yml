@@ -36,7 +36,7 @@ jobs:
         with:
           node-version: 12.x
       - run: npm install
-      - run: npm run vscode:prepublish
+      - run: npm run build
       - name: xvfb test
         uses: GabrielBB/xvfb-action@v1.5
         with:
@@ -48,11 +48,15 @@ jobs:
         if: runner.os != 'Linux'
         env:
           DISABLE_COVERAGE: true
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+      - name: Rename Unit Test Results
         if: always()
+        run: mv test-results.xml test-results-${{ matrix.os }}.xml
+      - name: Upload Unit Test Results
+        if: always()
+        uses: actions/upload-artifact@v2
         with:
-          files: test-results.xml
+          name: Unit Test Results
+          path: test-results*.xml
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
@@ -65,6 +69,7 @@ jobs:
           github-token: ${{ secrets.github_token }}
         if: runner.os == 'Linux'
   package:
+    needs: build
     # The type of runner that the job will run on
     strategy:
       matrix:
@@ -87,6 +92,23 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: ${{ success() }}
         with:
-          name: extension
+          name: Extension
           path: ./*.vsix
       
+  publish-test-results:
+    name: "Publish Unit Tests Results"
+    needs: build
+    runs-on: ubuntu-latest
+    # the build-and-test job might be skipped, we don't need to run this job then
+    if: success() || failure()
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        with:
+          files: artifacts/**/*.xml
