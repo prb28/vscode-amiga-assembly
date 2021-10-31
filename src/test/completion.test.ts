@@ -154,7 +154,7 @@ describe("Completion Tests", function () {
             results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results.length).to.be.greaterThan(0);
             elm = results[0];
-            expect(elm.label.toUpperCase()).to.be.equal("INTENAR");
+            expect(elm.label.toString().toUpperCase()).to.be.equal("INTENAR");
         });
     });
 });
