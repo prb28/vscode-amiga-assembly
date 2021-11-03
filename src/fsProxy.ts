@@ -271,4 +271,16 @@ export class FileProxy {
             }
         }
     }
+
+    /**
+     * Test if the two files are in the same directory.
+     * @param file1 First file
+     * @param file2 Second file
+     * @returns True if they are in the same directory
+     */
+    public static inSameDir(file1: string, file2: string): boolean {
+        const parentFile1 = FileProxy.normalize(path.basename(path.dirname(file1)));
+        const parentFile2 = FileProxy.normalize(path.basename(path.dirname(file2)));
+        return parentFile1 === parentFile2;
+    }
 }

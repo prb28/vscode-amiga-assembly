@@ -224,5 +224,12 @@ describe("FsProxy test", function () {
         // tslint:disable-next-line: no-unused-expression
         expect(await expFile.exists()).to.be.true;
     });
-
+    it("Should test if two files are in the same directory", async function () {
+        expect(FileProxy.inSameDir("/a/b/c/d", "/a/b/c/d")).to.be.true;
+        expect(FileProxy.inSameDir("/a/b/c/d", "/a/b/c/f")).to.be.true;
+        expect(FileProxy.inSameDir("C:\\a/b/c/d", "C:/a/b/c/d")).to.be.true;
+        expect(FileProxy.inSameDir("C:\\a/b/c/d", "C:\\a/b/c/f")).to.be.true;
+        expect(FileProxy.inSameDir("/a/b/c/d", "/a/b/f/d")).to.be.false;
+        expect(FileProxy.inSameDir("/a/b/c/d", "/a/b/f")).to.be.false;
+    });
 });

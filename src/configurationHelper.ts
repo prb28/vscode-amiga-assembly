@@ -1,17 +1,28 @@
 import * as vscode from 'vscode';
-
+import winston = require('winston');
+import { FileProxy } from './fsProxy';
 export class ConfigurationHelper {
     public static readonly CONFIGURATION_NAME = 'amiga-assembly';
     public static readonly BINARIES_PATH_KEY = 'binDir';
+    public static readonly BINARIES_PATH_DEFAULT = '${workspaceFolder}/bin';
     public static BINARY_PATH?: string;
 
     /**
      * Set the current binaries path
-     * @param path Path of the downloaded binaries
+     * @param binariesPath Path of the downloaded binaries
      */
-    public static setBinariesPath(path: string): Thenable<void> {
-        ConfigurationHelper.BINARY_PATH = path;
-        return ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, path);
+    public static async setBinariesPath(binariesPath: string): Promise<void> {
+        // get the last value 
+        const currentValue = ConfigurationHelper.getDefaultConfiguration(null).get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
+        if (!currentValue || FileProxy.inSameDir(currentValue, binariesPath) || currentValue === ConfigurationHelper.BINARIES_PATH_DEFAULT) {
+            try {
+                await ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, binariesPath);
+            } catch (error) {
+                ConfigurationHelper.BINARY_PATH = binariesPath;
+            }
+        } else {
+            winston.info(`Using binary path set by user: ${currentValue}`);
+        }
     }
 
     /**
@@ -103,12 +114,9 @@ export class ConfigurationHelper {
      */
     public static replaceBinDirVariable(value: string): string {
         const configuration = ConfigurationHelper.getDefaultConfiguration(null);
-        let binariesPath = ConfigurationHelper.BINARY_PATH;
-        if (!binariesPath) {
-            binariesPath = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
-            if (binariesPath) {
-                ConfigurationHelper.BINARY_PATH = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
-            }
+        let binariesPath = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
+        if (ConfigurationHelper.BINARY_PATH) {
+            binariesPath = ConfigurationHelper.BINARY_PATH;
         }
         if (binariesPath) {
             return value.replace("${config:amiga-assembly.binDir}", binariesPath);
