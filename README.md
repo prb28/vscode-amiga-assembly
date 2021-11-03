@@ -1,7 +1,3 @@
-[![CI](https://github.com/prb28/vscode-amiga-assembly/actions/workflows/main.yml/badge.svg?branch=dev_0.22)](https://github.com/prb28/vscode-amiga-assembly/actions/workflows/main.yml)
-[![Coverage Status](https://coveralls.io/repos/github/prb28/vscode-amiga-assembly/badge.png?branch=dev_0.22)](https://coveralls.io/github/prb28/vscode-amiga-assembly?branch=master)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=prb28_vscode-amiga-assembly&metric=alert_status)](https://sonarcloud.io/dashboard?id=prb28_vscode-amiga-assembly)
-
 # Amiga Assembly for Visual Studio Code
 Amiga Assembly for Visual Studio Code is a extension to support assembly language for the Amiga Motorola 68000 machines and emulators.
 
