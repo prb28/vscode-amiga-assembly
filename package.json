@@ -876,6 +876,9 @@
             }
         ]
     },
+    "extensionDependencies": [
+        "mindaro-dev.file-downloader"
+    ],
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p .",
