@@ -406,11 +406,10 @@
                         "emulatorWorkingDir": "${workspaceFolder}",
                         "program": "${workspaceFolder}/${command:AskForProgramName}",
                         "options": [
-                            "--chip_memory=1024",
+                            "--chip_memory=2048",
                             "--hard_drive_0=${workspaceFolder}/uae/dh0",
                             "--joystick_port_1=none",
                             "--amiga_model=A1200",
-                            "--slow_memory=1792",
                             "--remote_debugger=200",
                             "--use_remote_debugger=true",
                             "--automatic_input_grab=0"
@@ -434,11 +433,10 @@
                             "emulatorWorkingDir": "${workspaceFolder}",
                             "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
                             "options": [
-                                "--chip_memory=1024",
+                                "--chip_memory=2048",
                                 "--hard_drive_0=${workspaceFolder}/uae/dh0",
                                 "--joystick_port_1=none",
                                 "--amiga_model=A1200",
-                                "--slow_memory=1792",
                                 "--remote_debugger=200",
                                 "--use_remote_debugger=true",
                                 "--automatic_input_grab=0"
@@ -520,11 +518,10 @@
                             },
                             "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
                             "options": [
-                                "--chip_memory=1024",
+                                "--chip_memory=2048",
                                 "--hard_drive_0=${workspaceFolder}/uae/dh0",
                                 "--joystick_port_1=none",
-                                "--amiga_model=A1200",
-                                "--slow_memory=1792"
+                                "--amiga_model=A1200"
                             ],
                             "preLaunchTask": "amigaassembly: build"
                         }
@@ -677,11 +674,10 @@
                             "emulatorWorkingDir": "${workspaceFolder}",
                             "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
                             "options": [
-                                "--chip_memory=1024",
+                                "--chip_memory=2048",
                                 "--hard_drive_0=${workspaceFolder}/uae/dh0",
                                 "--joystick_port_1=none",
                                 "--amiga_model=A1200",
-                                "--slow_memory=1792",
                                 "--remote_debugger=200",
                                 "--use_remote_debugger=true",
                                 "--automatic_input_grab=0"
