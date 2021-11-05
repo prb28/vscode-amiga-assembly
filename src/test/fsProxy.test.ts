@@ -232,4 +232,30 @@ describe("FsProxy test", function () {
         expect(FileProxy.inSameDir("/a/b/c/d", "/a/b/f/d")).to.be.false;
         expect(FileProxy.inSameDir("/a/b/c/d", "/a/b/f")).to.be.false;
     });
+    it("Should rename a file", async function () {
+        // create a temp dir
+        const tempDir = temp.mkdirSync("renameDir");
+        const filePath = path.join(tempDir, "test.txt");
+        const newFilePath = path.join(tempDir, "newtest.txt");
+        const f = new FileProxy(Uri.file(filePath));
+        const writtenContents = "test";
+        const buf = Buffer.from(writtenContents);
+        await f.writeFile(buf);
+        f.rename(new FileProxy(Uri.file(newFilePath)));
+        const fDest = new FileProxy(Uri.file(newFilePath));
+        expect(f.exists()).to.eventually.be.false;
+        expect(fDest.exists()).to.eventually.be.true;
+    });
+    it("Should replace a string in a file", async function () {
+        // create a temp dir
+        const tempDir = temp.mkdirSync("repalceDir");
+        const filePath = path.join(tempDir, "test.txt");
+        const f = new FileProxy(Uri.file(filePath));
+        const writtenContents = "my new test is good test";
+        const buf = Buffer.from(writtenContents);
+        await f.writeFile(buf);
+        await f.replaceStringInFile(new RegExp("test", "g"), "done");
+        const contents = await f.readFile();
+        expect(contents.toString()).to.be.eq("my new done is good done")
+    });
 });

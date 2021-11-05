@@ -1,7 +1,6 @@
-import { ExtensionContext, OpenDialogOptions, Uri, window } from "vscode";
+import { ExtensionContext, InputBoxOptions, OpenDialogOptions, Uri, window } from "vscode";
 import { ExampleProjectManager } from "./downloadManager";
 import { FileProxy } from "./fsProxy";
-import * as path from 'path';
 import winston = require('winston');
 
 export class WorkspaceManager {
@@ -13,8 +12,9 @@ export class WorkspaceManager {
      */
     public async createExampleWorkspace(context: ExtensionContext, version: string, destinationURI?: Uri): Promise<Uri> {
         let destURI = destinationURI;
+        let programName: string | undefined;
         if (!destURI) {
-            destURI = await this.showInputPanel();
+            [destURI, programName] = await this.showInputPanel();
         }
         winston.info(`Downloading workspace version ${version} to folder ${destURI}`);
         // Download example workspace
@@ -24,40 +24,64 @@ export class WorkspaceManager {
         const destDir = new FileProxy(destURI);
         await downloadedFile.copy(destDir);
         const files = await destDir.listFiles();
+        let workspaceFileFound: Uri | undefined;
         for (const f of files) {
-            if (path.basename(f.getPath()).endsWith("code-workspace")) {
-                return f.getUri();
+            const baseName = f.getName();
+            if (baseName.endsWith("code-workspace")) {
+                workspaceFileFound = f.getUri();
+            } else if (programName && baseName === "gencop.s") {
+                // renaming the main file
+                const destFile = f.getParent().getRelativeFile(`${programName}.s`)
+                await f.rename(destFile);
             }
         }
-        return destDir.getUri();
+        // Vscode config files
+        if (programName) {
+            const regexp = new RegExp("gencop", "g");
+            const launchFile = destDir.getRelativeFile(".vscode/launch.json");
+            await launchFile.replaceStringInFile(regexp, programName);
+            const tasksFile = destDir.getRelativeFile(".vscode/tasks.json");
+            await tasksFile.replaceStringInFile(regexp, programName);
+            const startupFile = destDir.getRelativeFile("uae/dh0/s/startup-sequence");
+            await startupFile.replaceStringInFile(regexp, programName);
+        }
+        if (workspaceFileFound) {
+            return workspaceFileFound;
+        } else {
+            return destDir.getUri();
+        }
     }
 
     /**
      * Shows an input panel
      * @return selected folder Uri
      */
-    public async showInputPanel(): Promise<Uri> {
+    public async showInputPanel(): Promise<[Uri, string]> {
         winston.debug(`Opening Dialog`);
         const selectedFolders = await window.showOpenDialog(<OpenDialogOptions>{
-            prompt: "Select a file to disassemble",
+            prompt: "Select the project folder",
             canSelectMany: false,
             canSelectFiles: false,
             canSelectFolders: true,
         });
         if (selectedFolders && (selectedFolders.length > 0)) {
             const selectedFolder = selectedFolders[0];
-            // check if there is files in the folder
-            const fProxy = new FileProxy(selectedFolder);
-            const subFiles = await fProxy.listFiles();
-            if (subFiles.length > 0) {
-                const answer = await window.showWarningMessage("The folder is not empty. Do you really want to use it ?", "Yes", "Cancel");
-                if (answer === "Yes") {
-                    winston.info(`Selected folder: ${selectedFolder}`);
-                    return selectedFolder;
+            // select the program name
+            const programName = await window.showInputBox(<InputBoxOptions>{ prompt: "Program name", title: "Set the program name", placeHolder: "program name" });
+            if (programName && (programName.length > 0)) {
+                // check if there is files in the folder
+                const fProxy = new FileProxy(selectedFolder);
+                const subFiles = await fProxy.listFiles();
+                if (subFiles.length > 0) {
+                    const answer = await window.showWarningMessage("The folder is not empty. Do you really want to use it ?", "Yes", "Cancel");
+                    if (answer === "Yes") {
+                        winston.info(`Selected folder: ${selectedFolder} and program name: ${programName}`);
+                        return [selectedFolder, programName];
+                    }
+                } else {
+                    winston.info(`Selected folder: ${selectedFolder} and program name: ${programName}`);
+                    return [selectedFolder, programName];
                 }
-            } else {
-                winston.info(`Selected folder: ${selectedFolder}`);
-                return selectedFolder;
             }
         }
         const message = "Example project creation canceled";

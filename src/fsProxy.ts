@@ -75,7 +75,6 @@ export class FileProxy {
     /**
      * Write the file
      * @param contents Contents to be written
-     * @return buffer containing the file
      */
     public async writeFile(contents: Buffer): Promise<void> {
         if (this.useDirectAccess) {
@@ -85,6 +84,17 @@ export class FileProxy {
         }
     }
 
+    /**
+     * Rename the file
+     * @param newFile New file
+     */
+    public async rename(newFile: FileProxy): Promise<void> {
+        if (this.useDirectAccess) {
+            fs.renameSync(this.uri.fsPath, newFile.getUri().fsPath);
+        } else {
+            await workspace.fs.rename(this.uri, newFile.getUri());
+        }
+    }
     /**
      * Check it the uri exists
      */
@@ -166,6 +176,15 @@ export class FileProxy {
      */
     public getName(): string {
         return path.basename(this.uri.fsPath);
+    }
+
+    /**
+     * Gets the parent file
+     * @returns Parent file
+     */
+    public getParent(): FileProxy {
+        const parent = path.dirname(this.uri.fsPath);
+        return new FileProxy(Uri.file(parent));
     }
 
     /**
@@ -265,10 +284,21 @@ export class FileProxy {
             const files = await this.listFiles();
             await destination.mkdir();
             for (const f of files) {
-                const name = path.basename(f.getUri().fsPath);
-                const destUri = destination.getUri().with({ path: `${destination.getUri().path}/${name}` });
-                await f.copy(new FileProxy(destUri));
+                const name = f.getName();
+                const destFile = destination.getRelativeFile(name);
+                await f.copy(destFile);
             }
+        }
+    }
+
+    public async replaceStringInFile(stringToReplace: string | RegExp, replacementString: string): Promise<void> {
+        if (await this.isFile()) {
+            const contents = await this.readFile();
+            const strContents = contents.toString();
+            const replacedString = strContents.replace(stringToReplace, replacementString);
+            await this.writeFile(Buffer.from(replacedString));
+        } else {
+            throw new Error("Replace string cannot be done on a directory");
         }
     }
 
