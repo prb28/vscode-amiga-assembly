@@ -419,9 +419,24 @@ export class BinariesManager extends DownloadManager {
 
     /**
      * Constructor
+     * 
+     * @param branchURL URL to retrieve the branches
+     * @param tagsURL URL to retrieve the tags
      */
-    constructor() {
-        super(BinariesManager.BINARIES_BRANCH_URL, BinariesManager.BINARIES_TAGS_URL, "binaries", "vscode-amiga-assembly-binaries");
+    constructor(branchURL?: string, tagsURL?: string) {
+        let bURL;
+        if (branchURL) {
+            bURL = branchURL;
+        } else {
+            bURL = BinariesManager.BINARIES_BRANCH_URL;
+        }
+        let tURL;
+        if (tagsURL) {
+            tURL = tagsURL;
+        } else {
+            tURL = BinariesManager.BINARIES_TAGS_URL;
+        }
+        super(bURL, tURL, "binaries", "vscode-amiga-assembly-binaries");
     }
 
     /**
@@ -453,8 +468,23 @@ export class ExampleProjectManager extends DownloadManager {
 
     /**
      * Constructor
+     * 
+     * @param branchURL URL to retrieve the branches
+     * @param tagsURL URL to retrieve the tags
      */
-    constructor() {
-        super(ExampleProjectManager.BRANCH_URL, ExampleProjectManager.TAGS_URL, "example project", "vscode-amiga-wks-example");
+    constructor(branchURL?: string, tagsURL?: string) {
+        let bURL;
+        if (branchURL) {
+            bURL = branchURL;
+        } else {
+            bURL = ExampleProjectManager.BRANCH_URL;
+        }
+        let tURL;
+        if (tagsURL) {
+            tURL = tagsURL;
+        } else {
+            tURL = ExampleProjectManager.TAGS_URL;
+        }
+        super(bURL, tURL, "example project", "vscode-amiga-wks-example");
     }
 }

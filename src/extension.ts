@@ -161,7 +161,7 @@ export class ExtensionState {
     }
 
     public getBinariesManager(): BinariesManager {
-        return new BinariesManager();
+        return new BinariesManager(ConfigurationHelper.retrieveStringPropertyInDefaultConf("binariesBranchURL"), ConfigurationHelper.retrieveStringPropertyInDefaultConf("binariesTagsURL"));
     }
 
     public setExtensionPath(extensionPath: string): void {
