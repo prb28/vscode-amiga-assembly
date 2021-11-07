@@ -85,8 +85,8 @@ describe("Definition handler Tests", function () {
                 await workspace.openTextDocument(Uri.file(MAIN_SOURCE));
             });
             it("Should have the included files graph", async () => {
-                const files = dHnd.getIncludedFiles(Uri.file(MAIN_SOURCE));
-                return expect(files).to.be.eventually.eql(["include/hw.i"]);
+                const files = await dHnd.getIncludedFiles(Uri.file(MAIN_SOURCE));
+                return expect(files[0].includes("hw.i")).to.be.true;
             });
         });
     });

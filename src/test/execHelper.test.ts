@@ -205,8 +205,7 @@ describe("Executor Tests", function () {
                     expect.fail("Diagnostic errors should be an array");
                 }
                 if (fileUri instanceof vscode.Uri) {
-                    const fileParentDir = Path.parse(sourceDocument.uri.path).dir;
-                    expect(fileUri.path).to.be.eql(fileParentDir + "/include/hw.i");
+                    expect(fileUri.path.includes("test_files/sources/include/hw.i")).to.be.true;
                 } else {
                     expect.fail("FileUri should be defined and be a uri");
                 }

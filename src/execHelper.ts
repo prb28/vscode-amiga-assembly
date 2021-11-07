@@ -150,7 +150,6 @@ export class ExecutorHelper {
             if (error.line <= 0) {
                 vscode.window.showErrorMessage(error.msg);
             } else {
-                let parentCanonicalFile: string | null = null;
                 let canonicalFile;
                 if (document && document.fileName.endsWith(error.file)) {
                     canonicalFile = document.uri.toString();
@@ -163,19 +162,17 @@ export class ExecutorHelper {
                     let text = "";
                     // Processing path of included files
                     if (error.parentFile) {
-                        parentCanonicalFile = vscode.Uri.file(error.parentFile).toString();
                         const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                         const includedFiles = await definitionHandler.getIncludedFiles(document.uri);
-                        const fileParentDir = path.parse(parentCanonicalFile).dir;
                         const errorFilename = path.parse(error.file).base;
                         for (const filename of includedFiles) {
                             if (filename.endsWith(errorFilename)) {
-                                canonicalFile = fileParentDir + '/' + filename;
+                                canonicalFile = filename;
                                 break;
                             }
                         }
                         // Open the document to get the text
-                        const sourceDocument = await workspace.openTextDocument(Uri.parse(canonicalFile));
+                        const sourceDocument = await workspace.openTextDocument(Uri.file(canonicalFile));
                         if (sourceDocument) {
                             const sErrorLine = error.line - 1;
                             if (sourceDocument.lineCount > sErrorLine) {

@@ -11,7 +11,7 @@ export class SymbolFile {
     private subroutines = new Array<string>();
     private dcLabel = new Array<Symbol>();
     private includeDir = "";
-    private includedFiles = new Array<string>();
+    private includedFiles = new Array<Symbol>();
 
     constructor(uri: Uri) {
         this.uri = uri;
@@ -66,7 +66,9 @@ export class SymbolFile {
             } else if (instruct === "incdir") {
                 this.includeDir = asmLine.data.replace(/"/g, '');
             } else if (instruct === "include") {
-                this.includedFiles.push(asmLine.data.replace(/"/g, ''));
+                const includeSymbol = new Symbol(asmLine.data.replace(/"/g, ''), this, asmLine.dataRange);
+                this.includedFiles.push(includeSymbol);
+                this.definedSymbols.push(includeSymbol);
             }
         }
         let inSub = false;
@@ -94,7 +96,7 @@ export class SymbolFile {
         this.subroutines = new Array<string>();
         this.dcLabel = new Array<Symbol>();
         this.includeDir = "";
-        this.includedFiles = new Array<string>();
+        this.includedFiles = new Array<Symbol>();
     }
 
     public getUri(): Uri {
@@ -121,7 +123,7 @@ export class SymbolFile {
     public getIncludeDir(): string {
         return this.includeDir;
     }
-    public getIncludedFiles(): Array<string> {
+    public getIncludedFiles(): Array<Symbol> {
         return this.includedFiles;
     }
 }

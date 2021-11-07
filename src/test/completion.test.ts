@@ -156,5 +156,74 @@ describe("Completion Tests", function () {
             elm = results[0];
             expect(elm.label.toString().toUpperCase()).to.be.equal("INTENAR");
         });
+        context("Opened document", function () {
+            let sourceDocument: vscode.TextDocument;
+            before(async function () {
+                sourceDocument = await vscode.workspace.openTextDocument(Uri.file(MAIN_SOURCE));
+            });
+            it("Should return a completion for an include file", async function () {
+                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+                const position = new Position(20, 23);
+                const tokenEmitter = new CancellationTokenSource();
+                const results = await cp.provideCompletionItems(sourceDocument, position, tokenEmitter.token);
+                expect(results.length).to.be.equal(3);
+                expect(results[0].label).to.be.equal("hardware/");
+                expect(results[1].label).to.be.equal("hw.i");
+                expect(results[2].label).to.be.equal("include/");
+            });
+            it("Should return a completion for an include file in a directory", async function () {
+                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+                const document = new DummyTextDocument();
+                document.uri = Uri.file(Path.join(SOURCES_DIR, 'dummy.s'));
+                const tokenEmitter = new CancellationTokenSource();
+                document.addLine("  include \"include/\"");
+                const results = await cp.provideCompletionItems(document, new Position(0, 19), tokenEmitter.token);
+                expect(results.length).to.be.equal(2);
+                expect(results[0].label).to.be.equal("hardware/");
+                expect(results[1].label).to.be.equal("hw.i");
+            });
+            it("Should return a completion for an include file filtering the beginning", async function () {
+                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+                const document = new DummyTextDocument();
+                document.uri = Uri.file(Path.join(SOURCES_DIR, 'dummy.s'));
+                const tokenEmitter = new CancellationTokenSource();
+                document.addLine("  include \"include/\"");
+                let results = await cp.provideCompletionItems(document, new Position(0, 15), tokenEmitter.token);
+                expect(results.length).to.be.equal(1);
+                expect(results[0].label).to.be.equal("include/");
+                document.addLine("  include \"include/hw\"");
+                results = await cp.provideCompletionItems(document, new Position(1, 21), tokenEmitter.token);
+                expect(results.length).to.be.equal(1);
+                expect(results[0].label).to.be.equal("hw.i");
+            });
+            it("Should return a completion for an include file with an incdir instruction", async function () {
+                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+                const document = new DummyTextDocument();
+                document.uri = Uri.file(MAIN_SOURCE);
+                const tokenEmitter = new CancellationTokenSource();
+                document.addLine("  incdir include");
+                document.addLine("  include \"ha");
+                let results = await cp.provideCompletionItems(document, new Position(1, 14), tokenEmitter.token);
+                expect(results.length).to.be.equal(1);
+                expect(results[0].label).to.be.equal("hardware/");
+                document.addLine("  include \"hardware/cu");
+                results = await cp.provideCompletionItems(document, new Position(2, 23), tokenEmitter.token);
+                expect(results.length).to.be.equal(1);
+                expect(results[0].label).to.be.equal("custom.i");
+            });
+            it("Should return a completion for an include file with an absolute path", async function () {
+                const absPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
+                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+                const document = new DummyTextDocument();
+                document.uri = Uri.file(MAIN_SOURCE);
+                const tokenEmitter = new CancellationTokenSource();
+                document.addLine(`  include "${absPath}`);
+                const results = await cp.provideCompletionItems(document, new Position(0, 12 + absPath.length), tokenEmitter.token);
+                expect(results.length).to.be.equal(3);
+                expect(results[0].label).to.be.equal("fs-uae/");
+                expect(results[1].label).to.be.equal("gencop.s");
+                expect(results[2].label).to.be.equal("hello.c");
+            });
+        });
     });
 });
