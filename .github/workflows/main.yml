@@ -34,7 +34,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
       - run: npm install
       - run: npm run build
       - name: xvfb test
@@ -83,7 +83,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 16.x
       - run: npm install
       - name: Install vsce
         run: npm install -g vsce
