@@ -17,7 +17,7 @@ import { VASMCompiler, VASMParser } from "../vasm";
 import { ExecutorHelper, ICheckResult } from "../execHelper";
 import { DummyTextDocument } from "./dummy";
 import { ExtensionState } from "../extension";
-import { VLINKLinker } from "../vlink";
+import { VlinkBuildProperties, VLINKLinker } from "../vlink";
 import { FileProxy } from "../fsProxy";
 
 describe("VASM Tests", function () {
@@ -172,6 +172,40 @@ describe("VASM Tests", function () {
       error.msg = "file not found <myfile.i>";
       compiler.processGlobalErrors(document, [error]);
       expect(error.line).to.be.equal(2);
+    });
+    it("Should select documents to build", async function () {
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      const rootDir = vscode.Uri.file(Path.join(__dirname, '..', '..', 'test_files', 'sources'));
+      let vlinkConf = <VlinkBuildProperties>{};
+      let files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files).to.be.empty;
+      vlinkConf = <VlinkBuildProperties>{
+        "includes": "*.s",
+      };
+      files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files.length).to.be.equal(1);
+      expect(files[0].path.includes("tutorial.s")).to.be.true;
+      vlinkConf = <VlinkBuildProperties>{
+        "includes": "**/*.{s,i}",
+        "excludes": "*/hw.i"
+      };
+      files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files.length).to.be.equal(2);
+      expect(files[0].path.includes("custom.i")).to.be.true;
+      expect(files[1].path.includes("tutorial.s")).to.be.true;
+      vlinkConf = <VlinkBuildProperties>{
+        exefilename: "myExec"
+      };
+      // No opened editor
+      files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files).to.be.empty;
+      // editor opened
+      const documentFilename = Path.join(__dirname, '..', '..', 'test_files', 'sources', 'tutorial.s');
+      await vscode.window.showTextDocument(vscode.Uri.file(documentFilename));
+      files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files.length).to.be.equal(1);
+      expect(files[0].path.includes("tutorial.s")).to.be.true;
     });
     it("Should build all the workspace", async function () {
       ExtensionState.getCurrent().setWorkspaceRootDir(vscode.Uri.parse("file:///workdir"))

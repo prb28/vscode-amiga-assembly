@@ -209,15 +209,27 @@ export class VASMCompiler {
   public async listFilesToBuild(workspaceRootDir: Uri | null, vlinkConf: VlinkBuildProperties): Promise<Uri[]> {
     if (workspaceRootDir) {
       const fp = new FileProxy(workspaceRootDir);
-      const files = await fp.findFiles(vlinkConf.includes, vlinkConf.excludes);
       const filesURI = new Array<Uri>();
-      for (const f of files) {
-        const fileUri = f.getUri();
-        filesURI.push(fileUri);
+      if (vlinkConf.includes) {
+        const files = await fp.findFiles(vlinkConf.includes, vlinkConf.excludes);
+        for (const f of files) {
+          const fileUri = f.getUri();
+          filesURI.push(fileUri);
+        }
+      } else if (vlinkConf.exefilename) {
+        // Is there an Asm file opened
+        const editor = window.activeTextEditor;
+        if (editor) {
+          filesURI.push(editor.document.uri);
+        }
       }
       return filesURI;
     } else {
-      return workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
+      let files = await workspace.findFiles(vlinkConf.includes, vlinkConf.excludes);
+      if (!files) {
+        files = new Array<Uri>();
+      }
+      return files;
     }
   }
 
