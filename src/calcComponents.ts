@@ -15,28 +15,30 @@ export class CalcComponent {
         }
     }
     public async updateCalc(): Promise<void> {
-        if (!this.statusBarItem) {
-            this.activate();
-        }
-        if (this.statusBarItem) {
-            const statusBarItemConst = this.statusBarItem;
-            // Get the current text editor
-            const editor = window.activeTextEditor;
-            if (!editor) {
-                this.statusBarItem.hide();
-                return;
+        if (ExtensionState.isActive()) {
+            if (!this.statusBarItem) {
+                this.activate();
             }
-            const docContent = editor.document.getText(editor.selection);
-            // Replace hex / bin
-            if (docContent.length > 0) {
-                const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
-                try {
-                    const result = await definitionHandler.evaluateFormula(docContent);
-                    // Update the status bar
-                    statusBarItemConst.text = this.formatResult(docContent, result);
-                    statusBarItemConst.show();
-                } catch (err) {
-                    statusBarItemConst.hide();
+            if (this.statusBarItem) {
+                const statusBarItemConst = this.statusBarItem;
+                // Get the current text editor
+                const editor = window.activeTextEditor;
+                if (!editor) {
+                    this.statusBarItem.hide();
+                    return;
+                }
+                const docContent = editor.document.getText(editor.selection);
+                // Replace hex / bin
+                if (docContent.length > 0) {
+                    const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                    try {
+                        const result = await definitionHandler.evaluateFormula(docContent);
+                        // Update the status bar
+                        statusBarItemConst.text = this.formatResult(docContent, result);
+                        statusBarItemConst.show();
+                    } catch (err) {
+                        statusBarItemConst.hide();
+                    }
                 }
             }
         }

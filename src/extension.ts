@@ -129,6 +129,14 @@ export class ExtensionState {
         }
         return new ExtensionState();
     }
+    public static isActive(): boolean {
+        // activate the extension
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            return ext.isActive;
+        }
+        return false;
+    }
     public getDefinitionHandler(): M68kDefinitionHandler {
         if (this.definitionHandler === undefined) {
             this.definitionHandler = new M68kDefinitionHandler();
