@@ -507,14 +507,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     vscode.window.registerTreeDataProvider('disassembledMemory', disassembledMemoryDataProvider);
     vscode.commands.registerCommand('disassembledMemory.setDisassembledMemory', (memory: DisassembledInstructionAdapter[]) => disassembledMemoryDataProvider.setDisassembledMemory(memory));
 
-    // Debug configuration
-    context.subscriptions.push(vscode.commands.registerCommand('amiga-assembly.getProgramName', config => {
-        return vscode.window.showInputBox({
-            placeHolder: "Please enter the name of a program file in the workspace folder",
-            value: "myprogram"
-        });
-    }));
-
     // register a configuration provider for 'fs-uae' debug type
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', new FsUAEConfigurationProvider()));
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('fs-uae', new FsUAEInlineDebugAdapterFactory()));
@@ -616,12 +608,24 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
                 config.request = 'launch';
                 config.stopOnEntry = true;
                 config.startEmulator = true;
-                config.emulator = "fs-uae";
-                config.program = "${workspaceFolder}/${command:AskForProgramName}";
-                config.conf = "configuration/dev.fs-uae";
+                config.emulator = "${config:amiga-assembly.binDir}/fs-uae";
+                if (process.platform === "win32") {
+                    config.emulator = config.emulator + ".exe";
+                }
+                config.program = "${workspaceFolder}/uae/dh0/myprogram";
                 config.serverName = "localhost";
                 config.serverPort = 6860;
                 config.preLaunchTask = AmigaBuildTaskProvider.AMIGA_BUILD_PRELAUNCH_TASK_NAME;
+                config.options = [
+                    "--chip_memory=2048",
+                    "--hard_drive_0=${workspaceFolder}//uae/dh0",
+                    "--joystick_port_1=none",
+                    "--amiga_model=A1200",
+                    "--remote_debugger=200",
+                    "--use_remote_debugger=true",
+                    "--automatic_input_grab=0"
+                ];
+                config.emulatorWorkingDir = "${config:amiga-assembly.binDir}";
             }
         }
         return config;
@@ -680,12 +684,22 @@ class WinUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
                 config.request = 'launch';
                 config.stopOnEntry = true;
                 config.startEmulator = true;
-                config.emulator = "winuae";
-                config.program = "${workspaceFolder}/${command:AskForProgramName}";
+                config.emulator = "${config:amiga-assembly.binDir}/winuae.exe";
+                config.program = "${workspaceFolder}/uae/dh0/myprogram";
                 config.conf = "configuration/dev.winuae";
                 config.preLaunchTask = AmigaBuildTaskProvider.AMIGA_BUILD_PRELAUNCH_TASK_NAME;
                 config.serverName = "localhost";
                 config.serverPort = 2345;
+                config.emulatorWorkingDir = "${config:amiga-assembly.binDir}";
+                config.options = [
+                    "-s",
+                    "debugging_trigger=SYS:myprogram",
+                    "-s",
+                    "filesystem=rw,dh0:${workspaceFolder}\\uae\\dh0",
+                    "-s",
+                    "debugging_features=gdbserver"
+                ];
+                config.preLaunchTask = "amigaassembly: build";
             }
         }
         return config;

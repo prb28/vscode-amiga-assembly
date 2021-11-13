@@ -13,6 +13,8 @@ export interface VlinkBuildProperties {
     excludes: string;
     exefilename: string;
     args: Array<string>;
+    createStartupSequence: boolean;
+    createExeFileParentDir: boolean;
     entrypoint: string;
 }
 
@@ -25,7 +27,9 @@ export class VLINKLinker {
         command: "${config:amiga-assembly.binDir}/vlink",
         includes: "**/*.{s,S,asm,ASM}",
         excludes: "",
-        exefilename: "../uae/dh0/a.out",
+        createStartupSequence: true,
+        createExeFileParentDir: true,
+        exefilename: "../uae/dh0/myprogram",
         args: [
             "-bamigahunk",
             "-Bstatic"

@@ -82,6 +82,9 @@ describe("VASM Tests", function () {
       resetCalls(executorLinker);
       resetCalls(spiedLinker);
       buildDirMock = mock(FileProxy);
+      when(buildDirMock.getRelativeFile(anything())).thenReturn(instance(buildDirMock));
+      when(buildDirMock.getParent()).thenReturn(instance(buildDirMock));
+      when(buildDirMock.exists()).thenResolve(true);
       when(buildDirMock.mkdir()).thenReturn(Promise.resolve());
       when(buildDirMock.getPath()).thenReturn("/workdir/build");
       when(buildDirMock.getUri()).thenReturn(vscode.Uri.file("/workdir/build"));
@@ -311,7 +314,7 @@ describe("VASM Tests", function () {
         "-bamigahunk",
         "-Bstatic",
         "-o",
-        "/workdir/uae/dh0/".replace(/\/+/g, Path.sep) + "a.out",
+        "/workdir/uae/dh0/".replace(/\/+/g, Path.sep) + "myprogram",
         buildPath + "file1.o",
         buildPath + "file2.o"
       ]);

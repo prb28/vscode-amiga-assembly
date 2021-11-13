@@ -354,7 +354,7 @@
                             "program": {
                                 "type": "string",
                                 "description": "Path to an amiga program.",
-                                "default": "${workspaceFolder}/${command:AskForProgramName}"
+                                "default": "${workspaceFolder}/uae/dh0/myprogram"
                             },
                             "startEmulator": {
                                 "type": "boolean",
@@ -364,12 +364,12 @@
                             "emulator": {
                                 "type": "string",
                                 "description": "Path to the fs-uae emulator.",
-                                "default": "Path to fs-uae executable"
+                                "default": "${config:amiga-assembly.binDir}/fs-uae"
                             },
                             "emulatorWorkingDir": {
                                 "type": "string",
                                 "description": "Path to the working directory of the emulator.",
-                                "default": "."
+                                "default": "${config:amiga-assembly.binDir}"
                             },
                             "stopOnEntry": {
                                 "type": "boolean",
@@ -379,7 +379,7 @@
                             "trace": {
                                 "type": "boolean",
                                 "description": "Enable logging of the Debug Adapter Protocol.",
-                                "default": true
+                                "default": false
                             },
                             "serverName": {
                                 "type": "string",
@@ -438,9 +438,17 @@
                         "serverName": "localhost",
                         "serverPort": 6860,
                         "startEmulator": true,
-                        "emulator": "fs-uae",
-                        "emulatorWorkingDir": "${workspaceFolder}",
-                        "program": "${workspaceFolder}/${command:AskForProgramName}",
+                        "windows": {
+                            "emulator": "${config:amiga-assembly.binDir}/fs-uae.exe"
+                        },
+                        "osx": {
+                            "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+                        },
+                        "linux": {
+                            "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+                        },
+                        "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+                        "program": "${workspaceFolder}/uae/dh0/myprogram",
                         "options": [
                             "--chip_memory=2048",
                             "--hard_drive_0=${workspaceFolder}/uae/dh0",
@@ -465,9 +473,17 @@
                             "serverName": "localhost",
                             "serverPort": 6860,
                             "startEmulator": true,
-                            "emulator": "Path to fs-uae executable file",
-                            "emulatorWorkingDir": "${workspaceFolder}",
-                            "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
+                            "windows": {
+                                "emulator": "${config:amiga-assembly.binDir}/fs-uae.exe"
+                            },
+                            "osx": {
+                                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+                            },
+                            "linux": {
+                                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+                            },
+                            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+                            "program": "^\"\\${workspaceFolder}/uae/dh0/\\myprogram\"",
                             "options": [
                                 "--chip_memory=2048",
                                 "--hard_drive_0=${workspaceFolder}/uae/dh0",
@@ -480,10 +496,7 @@
                             "preLaunchTask": "amigaassembly: build"
                         }
                     }
-                ],
-                "variables": {
-                    "AskForProgramName": "amiga-assembly.getProgramName"
-                }
+                ]
             },
             {
                 "type": "uae-run",
@@ -596,7 +609,7 @@
                             "program": {
                                 "type": "string",
                                 "description": "Path to an amiga program.",
-                                "default": "${workspaceFolder}/${command:AskForProgramName}"
+                                "default": "${workspaceFolder}/myprogram"
                             },
                             "startEmulator": {
                                 "type": "boolean",
@@ -682,10 +695,10 @@
                         "startEmulator": true,
                         "emulator": "${config:amiga-assembly.binDir}/winuae.exe",
                         "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
-                        "program": "${workspaceFolder}/${command:AskForProgramName}",
+                        "program": "${workspaceFolder}/uae/dh0/myprogram",
                         "options": [
                             "-s",
-                            "debugging_trigger=SYS:${command:AskForProgramName}",
+                            "debugging_trigger=SYS:myprogram",
                             "-s",
                             "filesystem=rw,dh0:${workspaceFolder}\\uae\\dh0",
                             "-s",
@@ -708,7 +721,7 @@
                             "startEmulator": true,
                             "emulator": "Path to WinUAE executable file",
                             "emulatorWorkingDir": "${workspaceFolder}",
-                            "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
+                            "program": "^\"\\${workspaceFolder}/\\myprogram\"",
                             "options": [
                                 "--chip_memory=2048",
                                 "--hard_drive_0=${workspaceFolder}/uae/dh0",
@@ -721,10 +734,7 @@
                             "preLaunchTask": "amigaassembly: build"
                         }
                     }
-                ],
-                "variables": {
-                    "AskForProgramName": "amiga-assembly.getProgramName"
-                }
+                ]
             }
         ],
         "snippets": [
@@ -827,6 +837,14 @@
                                 "type": "string",
                                 "description": "Name of the object file containing the entrypoint"
                             },
+                            "createStartupSequence": {
+                                "type": "boolean",
+                                "description": "If true a startup-sequence file will be created if not present"
+                            },
+                            "createExeFileParentDir": {
+                                "type": "boolean",
+                                "description": "If true the parent dir of the exe file will be created"
+                            },
                             "exefilename": {
                                 "type": "string",
                                 "description": "Name of the executable file relative to the build dir"
@@ -844,9 +862,11 @@
                         "default": {
                             "enabled": true,
                             "command": "${config:amiga-assembly.binDir}/vlink",
-                            "includes": "**/*.{s,S,asm,ASM}",
+                            "includes": "*.{s,S,asm,ASM}",
                             "excludes": "",
-                            "exefilename": "../uae/dh0/a.out",
+                            "createStartupSequence": true,
+                            "createExeFileParentDir": true,
+                            "exefilename": "../uae/dh0/myprogram",
                             "args": [
                                 "-bamigahunk",
                                 "-Bstatic"

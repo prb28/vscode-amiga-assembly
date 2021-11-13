@@ -272,6 +272,24 @@ export class VASMCompiler {
           if (logEmitter) {
             logEmitter.fire("Linking_________________________________________\r\n");
           }
+          // check if the directory for the executable exists
+          const exeFile = buildDir.getRelativeFile(vlinkConf.exefilename);
+          const exeParentDir = exeFile.getParent();
+          if (vlinkConf.createExeFileParentDir) {
+            if (!await exeParentDir.exists()) {
+              await exeParentDir.mkdir();
+            }
+          }
+          // check if the startup-sequence must be created
+          if (vlinkConf.createStartupSequence) {
+            // create the s directory
+            const sDir = exeParentDir.getRelativeFile("s");
+            sDir.mkdir();
+            const startupSequenceFile = sDir.getRelativeFile("startup-sequence");
+            const writtenContents = `sys:${exeFile.getName()}`;
+            const buf = Buffer.from(writtenContents);
+            startupSequenceFile.writeFile(buf);
+          }
           const errors = await this.linker.linkFiles(vlinkConf, filesURI, vlinkConf.exefilename, vlinkConf.entrypoint, workspaceRootDir, buildDir.getUri(), logEmitter);
           if (errors && errors.length > 0) {
             throw new Error(`Linker error: ${errors[0].msg}`);
