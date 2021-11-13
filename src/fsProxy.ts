@@ -255,7 +255,7 @@ export class FileProxy {
     public async mkdir(): Promise<void> {
         if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
             try {
-                fs.mkdirSync(this.uri.fsPath);
+                fs.mkdirSync(this.uri.fsPath, { recursive: true });
             } catch (err) {
                 if (err.code !== 'EEXIST') {
                     throw err;
