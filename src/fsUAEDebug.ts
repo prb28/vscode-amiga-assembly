@@ -875,8 +875,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         try {
             await this.gdbProxy.waitConnected();
             const value = await this.gdbProxy.getRegister(args.expression, args.frameId);
+            const valueNumber = parseInt(value[0], 16);
+            let formatter = this.variableFormatterMap.get(args.expression);
+            if (!formatter) {
+                formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
+            }
+            const strValue = formatter.format(valueNumber);
             response.body = {
-                result: value[0],
+                result: strValue,
                 variablesReference: 0,
             };
             this.sendResponse(response);
@@ -1046,11 +1052,35 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         // Evaluate an expression
         const matches = /^([ad][0-7]|pc|sr)$/i.exec(args.expression);
         if (matches) {
-            this.evaluateRequestRegister(response, args);
+            if (args.expression.startsWith("a") && args.context === "watch") {
+                let format = ConfigurationHelper.retrieveStringPropertyInDefaultConf('display.memoryFormat.watch');
+                if (!format) {
+                    format = "m ${symbol},100,2,4";
+                }
+                args.expression = format.replace("symbol", args.expression);
+                this.evaluateRequestGetMemory(response, args);
+            } else {
+                this.evaluateRequestRegister(response, args);
+            }
         } else if (args.expression.startsWith('m')) {
             this.evaluateRequestGetMemory(response, args);
         } else if (args.expression.startsWith('M')) {
             this.evaluateRequestSetMemory(response, args);
+        } else if (this.symbolsMap.has(args.expression)) {
+            let format;
+            if (args.context === "watch") {
+                format = ConfigurationHelper.retrieveStringPropertyInDefaultConf('display.memoryFormat.watch');
+                if (!format) {
+                    format = "m ${symbol},104,2,4";
+                }
+            } else {
+                format = ConfigurationHelper.retrieveStringPropertyInDefaultConf('display.memoryFormat.hover');
+                if (!format) {
+                    format = "m ${symbol},24,2,4";
+                }
+            }
+            args.expression = format.replace("symbol", args.expression);
+            this.evaluateRequestGetMemory(response, args);
         } else {
             try {
                 const address = await this.debugExpressionHelper.getAddressFromExpression(args.expression, args.frameId, this);

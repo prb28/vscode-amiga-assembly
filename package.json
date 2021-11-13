@@ -14,7 +14,7 @@
     "version": "0.22.0",
     "publisher": "prb28",
     "engines": {
-        "vscode": "^1.61.0"
+        "vscode": "^1.62.0"
     },
     "categories": [
         "Formatters",
@@ -188,6 +188,18 @@
                     "scope": "resource",
                     "default": "#`@dec@` - $`@hex@` - %`@bin@` @ascii@",
                     "description": "Format of the detailed number display use @dec@, @hex@, @bin@, @oct@ and @ascii@ as values replacements"
+                },
+                "amiga-assembly.display.memoryFormat.hover": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "m ${symbol},24,2,4",
+                    "description": "Default format for a memory dump in hover ('symbol' is replaced)"
+                },
+                "amiga-assembly.display.memoryFormat.watch": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "m ${symbol},104,2,4",
+                    "description": "Default format for a memory dump in watch ('symbol' is replaced)"
                 },
                 "amiga-assembly.cstool": {
                     "type": "string",
