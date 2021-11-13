@@ -19,6 +19,13 @@ The build system has been reviewed :
 ## New in 0.22
 - Build sequence review with output displayed
 - Selection of display format for variables
+- Add a "Run current file" launch configuration
+- Able to change the filename from GENCOP
+- Add command to download the example project workspace
+- Automatically download binaries
+- Right click to add a memory dump in the watch window
+- Include files reference/autocomplete
+- Provide standard vscode tasks 
 - Bug fixes
 
 ### Other features
@@ -87,6 +94,13 @@ The assembly language will be formatted with the standard shortcuts :
 ## New in 0.22
 - Build sequence review with output displayed
 - Selection of display format for variables
+- Add a "Run current file" launch configuration
+- Able to change the filename from GENCOP
+- Add command to download the example project workspace
+- Automatically download binaries
+- Right click to add a memory dump in the watch window
+- Include files reference/autocomplete
+- Provide standard vscode tasks 
 - Bug fixes
 
 ## 0.21.3
