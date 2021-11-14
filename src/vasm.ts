@@ -277,6 +277,9 @@ export class VASMCompiler {
           const exeParentDir = exeFile.getParent();
           if (vlinkConf.createExeFileParentDir) {
             if (!await exeParentDir.exists()) {
+              if (logEmitter) {
+                logEmitter.fire(`Creating parent exe directory: ${exeParentDir.getPath()}`);
+              }
               await exeParentDir.mkdir();
             }
           }
@@ -286,9 +289,14 @@ export class VASMCompiler {
             const sDir = exeParentDir.getRelativeFile("s");
             sDir.mkdir();
             const startupSequenceFile = sDir.getRelativeFile("startup-sequence");
-            const writtenContents = `sys:${exeFile.getName()}`;
-            const buf = Buffer.from(writtenContents);
-            startupSequenceFile.writeFile(buf);
+            if (!startupSequenceFile.exists()) {
+              if (logEmitter) {
+                logEmitter.fire(`Creating startup-sequence file: ${startupSequenceFile.getPath()}`);
+              }
+              const writtenContents = `sys:${exeFile.getName()}`;
+              const buf = Buffer.from(writtenContents);
+              startupSequenceFile.writeFile(buf);
+            }
           }
           const errors = await this.linker.linkFiles(vlinkConf, filesURI, vlinkConf.exefilename, vlinkConf.entrypoint, workspaceRootDir, buildDir.getUri(), logEmitter);
           if (errors && errors.length > 0) {
