@@ -1,4 +1,4 @@
-import { commands, CustomExecution, Disposable, Event, EventEmitter, Pseudoterminal, Task, TaskDefinition, TaskProvider, TaskScope, TerminalDimensions, TextDocument, workspace } from 'vscode';
+import { commands, CustomExecution, Disposable, Event, EventEmitter, Pseudoterminal, Task, TaskDefinition, TaskProvider, TaskScope, TextDocument, workspace } from 'vscode';
 import { AdfGeneratorProperties, ADFTools } from './adf';
 import { ExtensionState } from './extension';
 import { VasmBuildProperties, VASMCompiler } from './vasm';
@@ -12,10 +12,10 @@ interface AmigaBuildTaskDefinition extends TaskDefinition {
 
 export class AmigaBuildTaskProvider implements TaskProvider {
 	static readonly AMIGA_BUILD_TASK_NAME = 'build';
+	static readonly AMIGA_BUILD_CURRENT_TASK_NAME = 'build current file';
 	static readonly AMIGA_COMPILE_CURRENT_TASK_NAME = 'compile current file';
 	static readonly AMIGA_CREATE_ADF_TASK_NAME = 'create ADF';
 	static readonly AMIGA_BUILD_SCRIPT_TYPE = 'amigaassembly';
-	static readonly AMIGA_CREATE_ADF_FULL_TASK_NAME = `${AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE}: ${AmigaBuildTaskProvider.AMIGA_CREATE_ADF_TASK_NAME}`;
 	static readonly AMIGA_COMPILE_FULL_TASK_NAME = `${AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE}: ${AmigaBuildTaskProvider.AMIGA_COMPILE_CURRENT_TASK_NAME}`;
 	static readonly AMIGA_BUILD_PRELAUNCH_TASK_NAME = `${AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE}: ${AmigaBuildTaskProvider.AMIGA_BUILD_TASK_NAME}`;
 
@@ -31,7 +31,7 @@ export class AmigaBuildTaskProvider implements TaskProvider {
 	}
 
 	public resolveTask(_task: Task): Task | undefined {
-		const definition: AmigaBuildTaskDefinition = <any>_task.definition;
+		const definition: AmigaBuildTaskDefinition = <TaskDefinition>_task.definition;
 		return this.getTask(definition);
 	}
 
@@ -39,23 +39,28 @@ export class AmigaBuildTaskProvider implements TaskProvider {
 		if (this.tasks !== undefined) {
 			return this.tasks;
 		}
-		this.tasks = [this.getTask(), this.getTask(undefined, true), this.getTask(undefined, false, true)];
+		this.tasks = [this.getTask(undefined, false, false, false), this.getTask(undefined, false, false, true), this.getTask(undefined, true, false, false), this.getTask(undefined, false, true, false)];
 		return this.tasks;
 	}
 
-	private getTask(definition?: AmigaBuildTaskDefinition, isCompileTask?: boolean, isBuildWithADF?: boolean): Task {
+	private getTask(definition?: AmigaBuildTaskDefinition, isCompileTask?: boolean, isBuildWithADF?: boolean, isBuildCurrentTask?: boolean): Task {
 		let lDefinition: AmigaBuildTaskDefinition;
 		if (!definition) {
 			lDefinition = {
 				type: AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE,
-				watch: false,
-				vasm: VASMCompiler.DEFAULT_BUILD_CONFIGURATION
-			};
-			if (!isCompileTask) {
-				lDefinition.vlink = VLINKLinker.DEFAULT_BUILD_CONFIGURATION;
+				watch: false
 			}
 			if (isBuildWithADF) {
 				lDefinition.adfgenerator = ADFTools.DEFAULT_BUILD_CONFIGURATION;
+			} else {
+				lDefinition.vasm = VASMCompiler.DEFAULT_BUILD_CONFIGURATION;
+				if (!isCompileTask) {
+					if (isBuildCurrentTask) {
+						lDefinition.vlink = VLINKLinker.DEFAULT_BUILD_CURRENT_FILE_CONFIGURATION;
+					} else {
+						lDefinition.vlink = VLINKLinker.DEFAULT_BUILD_CONFIGURATION;
+					}
+				}
 			}
 		} else {
 			lDefinition = definition;
@@ -65,12 +70,15 @@ export class AmigaBuildTaskProvider implements TaskProvider {
 			taskName = AmigaBuildTaskProvider.AMIGA_COMPILE_CURRENT_TASK_NAME;
 		} else if (isBuildWithADF) {
 			taskName = AmigaBuildTaskProvider.AMIGA_CREATE_ADF_TASK_NAME;
+		} else if (isBuildCurrentTask) {
+			taskName = AmigaBuildTaskProvider.AMIGA_BUILD_CURRENT_TASK_NAME;
 		} else {
 			taskName = AmigaBuildTaskProvider.AMIGA_BUILD_TASK_NAME;
 		}
+		const task = new AmigaBuildTaskTerminal(this.extensionState, lDefinition.vasm, lDefinition.vlink, lDefinition.adfgenerator);
 		return new Task(lDefinition, TaskScope.Workspace, taskName,
 			AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE, new CustomExecution(async (): Promise<Pseudoterminal> => {
-				return new AmigaBuildTaskTerminal(this.extensionState, lDefinition.vasm, lDefinition.vlink, lDefinition.adfgenerator, isCompileTask);
+				return task;
 			}));
 	}
 }
@@ -83,16 +91,14 @@ class AmigaBuildTaskTerminal implements Pseudoterminal {
 	private vasmBuildProperties?: VasmBuildProperties;
 	private vlinkBuildProperties?: VlinkBuildProperties;
 	private adfGeneratorProperties?: AdfGeneratorProperties;
-	private compileCurrentFile?: boolean;
 
-	constructor(private extensionState: ExtensionState, vasmBuildProperties?: VasmBuildProperties, vlinkBuildProperties?: VlinkBuildProperties, adfGeneratorProperties?: AdfGeneratorProperties, compileCurrentFile?: boolean) {
+	constructor(private extensionState: ExtensionState, vasmBuildProperties?: VasmBuildProperties, vlinkBuildProperties?: VlinkBuildProperties, adfGeneratorProperties?: AdfGeneratorProperties) {
 		this.vasmBuildProperties = vasmBuildProperties;
 		this.vlinkBuildProperties = vlinkBuildProperties;
-		this.compileCurrentFile = compileCurrentFile;
 		this.adfGeneratorProperties = adfGeneratorProperties;
 	}
 
-	open(initialDimensions: TerminalDimensions | undefined): Promise<void> {
+	open(): Promise<void> {
 		return this.doBuild();
 	}
 
@@ -102,18 +108,17 @@ class AmigaBuildTaskTerminal implements Pseudoterminal {
 
 	private async doBuild(): Promise<void> {
 		try {
-			if (this.compileCurrentFile) {
+			if (this.adfGeneratorProperties) {
+				const adfTools = new ADFTools(this.adfGeneratorProperties.ADFToolsParentDir);
+				this.writeEmitter.fire('\u001b[36mCreating ADF file...\r\n\u001b[0m');
+				await adfTools.createBootableADFDisk(this.adfGeneratorProperties, this.writeEmitter, this.extensionState.getCompiler());
+				this.writeEmitter.fire('\u001b[32mADF file done\r\n\u001b[0m');
+			} else if (!this.vlinkBuildProperties || !this.vlinkBuildProperties.enabled) {
 				this.writeEmitter.fire('\u001b[36mCompiling current editor file...\r\n\u001b[0m');
 				await this.extensionState.getCompiler().buildCurrentEditorFile(this.vasmBuildProperties, this.writeEmitter);
 			} else {
 				this.writeEmitter.fire('\u001b[36mStarting build...\r\n\u001b[0m');
 				await this.extensionState.getCompiler().buildWorkspace(this.writeEmitter, this.vasmBuildProperties, this.vlinkBuildProperties);
-				if (this.adfGeneratorProperties) {
-					const adfTools = new ADFTools(this.adfGeneratorProperties.ADFToolsParentDir);
-					this.writeEmitter.fire('\u001b[36mCreating ADF file...\r\n\u001b[0m');
-					await adfTools.createBootableADFDisk(this.adfGeneratorProperties, this.writeEmitter, this.extensionState.getCompiler());
-					this.writeEmitter.fire('\u001b[32mADF file done\r\n\u001b[0m');
-				}
 			}
 			this.closeEmitter.fire(0);
 		} catch (e) {

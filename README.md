@@ -11,10 +11,14 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ## Breaking change 0.22!
 
 The build system has been reviewed :
-- Build are triggered in a terminal to show the output
-- there is no more the "Build" button in the bottom of the window
-- A build task has been created `amigaassembly: build`. Type F1 and select to run this task.
-- The launch parameter `"buildWorkspace": true,` is replaced by `"preLaunchTask": "amigaassembly: build"`
+- 3 commands have been replaced by tasks:
+    - `amigaassembly: build`: to build the workspace
+    - `amigaassembly: build current file`: to build the current file as an executable
+    - `amigaassembly: compile current file`: to compile the current file (creates a .o file)
+    - `amigaassembly: create ADF`: to create an ADF file
+- Builds are triggered in a terminal to show the output
+- There is no more the "Build" button in the bottom of the window
+- The *launch.json* parameter `"buildWorkspace": true,` is replaced by `"preLaunchTask": "amigaassembly: build"`
 
 ## New in 0.22
 - Build sequence review with output displayed

@@ -22,10 +22,21 @@ export interface VlinkBuildProperties {
  * Class to manage the VLINK linker
  */
 export class VLINKLinker {
+    static readonly DEFAULT_BUILD_CURRENT_FILE_CONFIGURATION = <VlinkBuildProperties>{
+        enabled: true,
+        command: "${config:amiga-assembly.binDir}/vlink",
+        createStartupSequence: true,
+        createExeFileParentDir: true,
+        exefilename: "../uae/dh0/myprogram",
+        args: [
+            "-bamigahunk",
+            "-Bstatic"
+        ]
+    };
     static readonly DEFAULT_BUILD_CONFIGURATION = <VlinkBuildProperties>{
         enabled: true,
         command: "${config:amiga-assembly.binDir}/vlink",
-        includes: "**/*.{s,S,asm,ASM}",
+        includes: "*.{s,S,asm,ASM}",
         excludes: "",
         createStartupSequence: true,
         createExeFileParentDir: true,

@@ -2,7 +2,7 @@
     "name": "amiga-assembly",
     "displayName": "Amiga Assembly",
     "description": "Amiga Assembly Support for Visual Studio Code",
-    "license": "SEE LICENSE IN FILE LICENSE",
+    "license": "GNU General Public License v3.0",
     "homepage": "https://github.com/prb28/vscode-amiga-assembly",
     "bugs": {
         "url": "https://github.com/prb28/vscode-amiga-assembly/issues"
@@ -42,7 +42,8 @@
         "onCommand:amiga-assembly.view-iff",
         "onCommand:amiga-assembly.download-binaries",
         "onCommand:amiga-assembly.create-example-workspace",
-        "onWebviewPanel:iffView"
+        "onWebviewPanel:iffView",
+        "workspaceContains:**/*.{s,S,asm,ASM}"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -270,11 +271,6 @@
                 "command": "amiga-assembly.disassemble-memory",
                 "title": "Amiga Assembly: Disassemble memory",
                 "description": "Disassembles memory address"
-            },
-            {
-                "command": "amiga-assembly.create-adffile",
-                "title": "Amiga Assembly: Create ADF file",
-                "description": "Creates a bootable ADF file from the build destination directory"
             },
             {
                 "command": "amiga-assembly.list-used-registers",
