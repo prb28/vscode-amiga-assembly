@@ -51,9 +51,9 @@ export class M86kColorProvider implements DocumentColorProvider {
             if (value.length > 3) {
                 pos = 1;
             }
-            let r = parseInt(value[pos++], 16) / 32;
-            let g = parseInt(value[pos++], 16) / 32;
-            let b = parseInt(value[pos], 16) / 32;
+            let r = parseInt(value[pos++], 16) / 15;
+            let g = parseInt(value[pos++], 16) / 15;
+            let b = parseInt(value[pos], 16) / 15;
 
             let color: Color = new Color(r, g, b, 1);
             colors.push(new ColorInformation(range, color));
@@ -73,9 +73,9 @@ export class M86kColorProvider implements DocumentColorProvider {
             prefix += documentText[1];
         }
         return prefix +
-            this.formatColorComponent(color.red * 32) +
-            this.formatColorComponent(color.green * 32) +
-            this.formatColorComponent(color.blue * 32);
+            this.formatColorComponent(color.red * 15) +
+            this.formatColorComponent(color.green * 15) +
+            this.formatColorComponent(color.blue * 15);
     }
 
     /**
