@@ -35,7 +35,7 @@ export class ConfigurationHelper {
     public static retrieveNumberProperty(configuration: vscode.WorkspaceConfiguration, key: string, defaultValue: number): number {
         let value = defaultValue;
         const confValue = configuration.get(key);
-        if (confValue) {
+        if (confValue !== undefined) {
             value = Number(confValue);
             if (value < 1) {
                 value = 1;
@@ -69,7 +69,7 @@ export class ConfigurationHelper {
     public static retrieveBooleanProperty(configuration: vscode.WorkspaceConfiguration, key: string, defaultValue: boolean): boolean {
         let value = defaultValue;
         const confValue = configuration.get(key);
-        if (confValue) {
+        if (confValue !== undefined) {
             value = Boolean(confValue);
         }
         return value;
