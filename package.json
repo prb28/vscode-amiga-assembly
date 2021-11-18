@@ -225,6 +225,12 @@
                     "scope": "window",
                     "default": false,
                     "description": "Enables the ASMOne source compatibility commands."
+                },
+                "amiga-assembly.checkErrorOnSave": {
+                    "type": "boolean",
+                    "scope": "resource",
+                    "default": true,
+                    "description": "Compiles the current assembler file on save to show errors."
                 }
             },
             "completionProvider": {

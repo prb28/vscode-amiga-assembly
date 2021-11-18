@@ -1,5 +1,6 @@
 import { commands, CustomExecution, Disposable, Event, EventEmitter, Pseudoterminal, Task, TaskDefinition, TaskProvider, TaskScope, TextDocument, workspace } from 'vscode';
 import { AdfGeneratorProperties, ADFTools } from './adf';
+import { ConfigurationHelper } from './configurationHelper';
 import { ExtensionState } from './extension';
 import { VasmBuildProperties, VASMCompiler } from './vasm';
 import { VlinkBuildProperties, VLINKLinker } from './vlink';
@@ -153,7 +154,8 @@ export class CompilerController {
 	public async onSaveDocument(document: TextDocument): Promise<void> {
 		const state = ExtensionState.getCurrent();
 		const statusManager = state.getStatusManager();
-		if (document.languageId === "m68k") {
+		const checkErrorOnSave = ConfigurationHelper.retrieveBooleanProperty(ConfigurationHelper.getDefaultConfiguration(null), 'checkErrorOnSave', true);
+		if (document.languageId === "m68k" && checkErrorOnSave) {
 			statusManager.onDefault();
 			try {
 				await this.compile();
