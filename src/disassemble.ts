@@ -1,4 +1,4 @@
-import { window, OpenDialogOptions, InputBoxOptions, Uri, workspace, Position, TextDocumentShowOptions } from 'vscode';
+import { window, OpenDialogOptions, InputBoxOptions, Uri, workspace } from 'vscode';
 import { Capstone } from './capstone';
 import { DebugDisassembledFile } from './debugDisassembled';
 import { ConfigurationHelper } from './configurationHelper';
