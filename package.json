@@ -356,7 +356,7 @@
                             "program": {
                                 "type": "string",
                                 "description": "Path to an amiga program.",
-                                "default": "${workspaceFolder}/uae/dh0/myprogram"
+                                "default": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\""
                             },
                             "startEmulator": {
                                 "type": "boolean",
@@ -366,12 +366,12 @@
                             "emulator": {
                                 "type": "string",
                                 "description": "Path to the fs-uae emulator.",
-                                "default": "${config:amiga-assembly.binDir}/fs-uae"
+                                "default": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
                             },
                             "emulatorWorkingDir": {
                                 "type": "string",
                                 "description": "Path to the working directory of the emulator.",
-                                "default": "${config:amiga-assembly.binDir}"
+                                "default": "^\"\\${config:amiga-assembly.binDir\\}\""
                             },
                             "stopOnEntry": {
                                 "type": "boolean",
@@ -435,7 +435,7 @@
                     {
                         "type": "fs-uae",
                         "request": "launch",
-                        "name": "FSUAE Debug",
+                        "name": "FS-UAE Debug",
                         "stopOnEntry": true,
                         "serverName": "localhost",
                         "serverPort": 6860,
@@ -465,30 +465,30 @@
                 ],
                 "configurationSnippets": [
                     {
-                        "label": "FS-UAE Debug: Launch",
+                        "label": "Amiga-Assembly: FS-UAE Debug",
                         "description": "A new configuration for debugging a program in FS-UAE.",
                         "body": {
                             "type": "fs-uae",
                             "request": "launch",
-                            "name": "Debug",
+                            "name": "FS-UAE Debug",
                             "stopOnEntry": true,
                             "serverName": "localhost",
                             "serverPort": 6860,
                             "startEmulator": true,
                             "windows": {
-                                "emulator": "${config:amiga-assembly.binDir}/fs-uae.exe"
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae.exe\""
                             },
                             "osx": {
-                                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
                             },
                             "linux": {
-                                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
                             },
-                            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
-                            "program": "${workspaceFolder}/uae/dh0/myprogram",
+                            "emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
+                            "program": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\"",
                             "options": [
                                 "--chip_memory=2048",
-                                "--hard_drive_0=${workspaceFolder}/uae/dh0",
+                                "^\"--hard_drive_0=\\${workspaceFolder\\}/uae/dh0\"",
                                 "--joystick_port_1=none",
                                 "--amiga_model=A1200",
                                 "--remote_debugger=200",
@@ -502,7 +502,7 @@
             },
             {
                 "type": "uae-run",
-                "label": "UAE Run",
+                "label": "Win-UAE or FS-UAE Run",
                 "program": "./out/runNoDebugAdapter.js",
                 "runtime": "node",
                 "configurationAttributes": {
@@ -542,55 +542,76 @@
                     {
                         "type": "uae-run",
                         "request": "launch",
-                        "name": "UAE Run",
-                        "emulator": "Path to uae executable file",
-                        "emulatorWorkingDir": "${config:amiga-assembly.binDir}/",
-                        "options": [],
+                        "name": "WinUAE or FS-UAE Run",
+                        "windows": {
+                            "emulator": "${config:amiga-assembly.binDir}/winuae.exe",
+                            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+                            "options": [
+                                "-s",
+                                "filesystem=rw,dh0:${workspaceFolder}/uae/dh0"
+                            ]
+                        },
+                        "osx": {
+                            "emulator": "${config:amiga-assembly.binDir}/fs-uae",
+                            "options": [
+                                "--chip_memory=2048",
+                                "--hard_drive_0=${workspaceFolder}/uae/dh0",
+                                "--amiga_model=A1200",
+                                "--automatic_input_grab=0"
+                            ]
+                        },
+                        "linux": {
+                            "emulator": "${config:amiga-assembly.binDir}/fs-uae",
+                            "options": [
+                                "--chip_memory=2048",
+                                "--hard_drive_0=${workspaceFolder}/uae/dh0",
+                                "--amiga_model=A1200",
+                                "--automatic_input_grab=0"
+                            ]
+                        },
+                        "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
                         "preLaunchTask": "amigaassembly: build"
                     }
                 ],
                 "configurationSnippets": [
                     {
-                        "label": "FS-UAE Run",
+                        "label": "Amiga-Assembly: FS-UAE Run",
                         "description": "A new configuration for running FS-UAE.",
                         "body": {
                             "type": "uae-run",
                             "request": "launch",
-                            "name": "Run",
-                            "emulator": "F/fs-uae",
+                            "name": "FS-UAE Run",
                             "windows": {
-                                "emulator": "${config:amiga-assembly.binDir}/fs-uae.exe"
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae.exe\""
                             },
                             "osx": {
-                                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
                             },
                             "linux": {
-                                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
                             },
-                            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+                            "emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
                             "options": [
                                 "--chip_memory=2048",
-                                "--hard_drive_0=${workspaceFolder}/uae/dh0",
-                                "--joystick_port_1=none",
-                                "--amiga_model=A1200"
+                                "^\"--hard_drive_0=\\${workspaceFolder\\}/uae/dh0\"",
+                                "--amiga_model=A1200",
+                                "--automatic_input_grab=0"
                             ],
                             "preLaunchTask": "amigaassembly: build"
                         }
                     },
                     {
-                        "label": "WinUAE Run",
+                        "label": "Amiga-Assembly: WinUAE Run",
                         "description": "A new configuration for running WinUAE.",
                         "body": {
                             "type": "uae-run",
                             "request": "launch",
-                            "name": "Run",
-                            "emulator": "${config:amiga-assembly.binDir}/winuae.exe",
-                            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+                            "name": "WinUAE Run",
+                            "emulator": "^\"\\${config:amiga-assembly.binDir\\}/winuae.exe\"",
+                            "emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
                             "options": [
                                 "-s",
-                                "quickstart=a500,1",
-                                "-s",
-                                "filesystem=rw,dh0:${workspaceFolder}\\uae\\dh0"
+                                "^\"filesystem=rw,dh0:\\${workspaceFolder\\}/uae/dh0\""
                             ],
                             "preLaunchTask": "amigaassembly: build"
                         }
@@ -702,7 +723,7 @@
                             "-s",
                             "debugging_trigger=SYS:myprogram",
                             "-s",
-                            "filesystem=rw,dh0:${workspaceFolder}\\uae\\dh0",
+                            "filesystem=rw,dh0:${workspaceFolder}/uae/dh0",
                             "-s",
                             "debugging_features=gdbserver"
                         ],
@@ -711,27 +732,26 @@
                 ],
                 "configurationSnippets": [
                     {
-                        "label": "WinUAE Debug: Launch",
+                        "label": "Amiga-Assembly: WinUAE Debug",
                         "description": "A new configuration for debugging a program in WinUAE.",
                         "body": {
                             "type": "winuae",
                             "request": "launch",
-                            "name": "Debug",
+                            "name": "WinUAE Debug",
                             "stopOnEntry": true,
                             "serverName": "localhost",
                             "serverPort": 2345,
                             "startEmulator": true,
-                            "emulator": "Path to WinUAE executable file",
-                            "emulatorWorkingDir": "${workspaceFolder}",
-                            "program": "${workspaceFolder}/uae/dh0/myprogram",
+                            "emulator": "^\"\\${config:amiga-assembly.binDir\\}/winuae.exe\"",
+                            "emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
+                            "program": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\"",
                             "options": [
-                                "--chip_memory=2048",
-                                "--hard_drive_0=${workspaceFolder}/uae/dh0",
-                                "--joystick_port_1=none",
-                                "--amiga_model=A1200",
-                                "--remote_debugger=200",
-                                "--use_remote_debugger=true",
-                                "--automatic_input_grab=0"
+                                "-s",
+                                "debugging_trigger=SYS:myprogram",
+                                "-s",
+                                "^\"filesystem=rw,dh0:\\${workspaceFolder\\}/uae/dh0\"",
+                                "-s",
+                                "debugging_features=gdbserver"
                             ],
                             "preLaunchTask": "amigaassembly: build"
                         }

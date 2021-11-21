@@ -609,7 +609,7 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
                 config.stopOnEntry = true;
                 config.startEmulator = true;
                 config.emulator = "${config:amiga-assembly.binDir}/fs-uae";
-                if (process.platform === "win32") {
+                if (process.platform === "win32" && !config.emulator.endsWith(".exe")) {
                     config.emulator = config.emulator + ".exe";
                 }
                 config.program = "${workspaceFolder}/uae/dh0/myprogram";
@@ -654,7 +654,18 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
                 config.name = 'Launch';
                 config.request = 'launch';
                 config.emulator = 'fs-uae';
+                config.emulator = "${config:amiga-assembly.binDir}/fs-uae";
+                if (process.platform === "win32" && !config.emulator.endsWith(".exe")) {
+                    config.emulator = config.emulator + ".exe";
+                }
                 config.preLaunchTask = AmigaBuildTaskProvider.AMIGA_BUILD_PRELAUNCH_TASK_NAME;
+                config.options = [
+                    "--chip_memory=2048",
+                    "--hard_drive_0=${workspaceFolder}//uae/dh0",
+                    "--amiga_model=A1200",
+                    "--automatic_input_grab=0"
+                ];
+                config.emulatorWorkingDir = "${config:amiga-assembly.binDir}";
             }
         }
         return config;
