@@ -1,6 +1,5 @@
-import { window, OpenDialogOptions, InputBoxOptions, Uri, workspace, Position } from 'vscode';
+import { window, OpenDialogOptions, InputBoxOptions, Uri, workspace, Position, TextDocumentShowOptions } from 'vscode';
 import { Capstone } from './capstone';
-import * as path from 'path';
 import { DebugDisassembledFile } from './debugDisassembled';
 import { ConfigurationHelper } from './configurationHelper';
 
@@ -54,28 +53,18 @@ export class Disassembler {
                     // Disassembles the file
                     try {
                         const data = await capstone.disassembleFile(selectedFile);
-                        // opens a new editor document
-                        let folder = ".";
-                        const folders = workspace.workspaceFolders;
-                        if (folders && folders.length) {
-                            folder = folders[0].uri.fsPath;
-                        }
-                        const filename = path.basename(selectedFile.fsPath) + "_" + Date.now() + "_dis.s";
-                        const newFile = Uri.parse("untitled:" + folder + "/" + filename);
-                        const textEditor = await window.showTextDocument(newFile);
-                        await textEditor.edit(edit => {
-                            let text = "";
-                            const lines = data.split(/\r\n|\r|\n/g);
-                            for (const l of lines) {
-                                const elms = l.split("  ");
-                                if (elms.length > 2) {
-                                    text += " " + elms[2].replace(", ", ",") + ";" + l + '\n';
-                                } else {
-                                    text += l.replace(", ", ",") + ";" + l + '\n';
-                                }
+                        let text = "";
+                        const lines = data.split(/\r\n|\r|\n/g);
+                        for (const l of lines) {
+                            const elms = l.split("  ");
+                            if (elms.length > 2) {
+                                text += " " + elms[2].replace(", ", ",") + ";" + l + '\n';
+                            } else {
+                                text += l.replace(", ", ",") + ";" + l + '\n';
                             }
-                            edit.insert(new Position(0, 0), text);
-                        });
+                        }
+                        const document = await workspace.openTextDocument({ language: "m68k", content: text });
+                        await window.showTextDocument(document);
                     } catch (err) {
                         window.showErrorMessage(err.message);
                         throw new Error(err.message);

@@ -32,7 +32,7 @@ import { ConfigurationHelper } from './configurationHelper';
 import { WorkspaceManager } from './workspaceManager';
 
 // Setting all the globals values
-export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
+export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
 export const AMIGA_DEBUG_ASM_MODE: vscode.DocumentFilter = { language: 'amiga-assembly-debug.disassembly', scheme: 'disassembly' };
 
 class SimpleConsoleTransport extends TransportStream {
