@@ -137,12 +137,12 @@ describe("Formatter Tests", function () {
         expect(f.getEndPad("aaaa", 4, 4, true, 4)).to.be.equal("\t"); // When it's filled : at least one space
         expect(f.getEndPad("aaaa", 6, 11, true, 4)).to.be.equal("\t");
     });
-    it("Should retrieve 1 for a negative property", function () {
+    it("Should retrieve 0 for a negative property", function () {
         const conf = new DummyWorkspaceConfiguration();
         expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(12);
         conf.update('testconf', -1);
         expect(conf.has('testconf')).to.be.true;
-        expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(1);
+        expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(0);
         conf.update('testconf', 5);
         expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(5);
     });
