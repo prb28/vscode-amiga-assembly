@@ -8,7 +8,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
-## Breaking change 0.22!
+## Breaking change 1.0!
 
 The build system has been reviewed :
 - 3 commands have been replaced by tasks:
@@ -20,7 +20,7 @@ The build system has been reviewed :
 - There is no more the "Build" button in the bottom of the window
 - The *launch.json* parameter `"buildWorkspace": true,` is replaced by `"preLaunchTask": "amigaassembly: build"`
 
-## New in 0.22
+## New in 1.0
 - Build sequence review with output displayed
 - Selection of display format for variables
 - Add a "Run current file" launch configuration
@@ -95,7 +95,7 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
-## New in 0.22
+## New in 1.0
 - Build sequence review with output displayed
 - Selection of display format for variables
 - Add a "Run current file" launch configuration

@@ -11,7 +11,7 @@
         "type": "git",
         "url": "https://github.com/prb28/vscode-amiga-assembly"
     },
-    "version": "0.22.0",
+    "version": "1.0.0",
     "publisher": "prb28",
     "engines": {
         "vscode": "^1.62.0"
@@ -344,7 +344,7 @@
         "debuggers": [
             {
                 "type": "fs-uae",
-                "label": "FS-UAE Debug",
+                "label": "Amiga-Assembly: FS-UAE Debug",
                 "program": "./out/debugAdapter.js",
                 "runtime": "node",
                 "configurationAttributes": {
@@ -435,7 +435,7 @@
                     {
                         "type": "fs-uae",
                         "request": "launch",
-                        "name": "FS-UAE Debug",
+                        "name": "Amiga-Assembly: FS-UAE Debug",
                         "stopOnEntry": true,
                         "serverName": "localhost",
                         "serverPort": 6860,
@@ -502,7 +502,7 @@
             },
             {
                 "type": "uae-run",
-                "label": "Win-UAE or FS-UAE Run",
+                "label": "Amiga-Assembly: Run",
                 "program": "./out/runNoDebugAdapter.js",
                 "runtime": "node",
                 "configurationAttributes": {
@@ -542,7 +542,7 @@
                     {
                         "type": "uae-run",
                         "request": "launch",
-                        "name": "WinUAE or FS-UAE Run",
+                        "name": "Amiga-Assembly: Run",
                         "windows": {
                             "emulator": "${config:amiga-assembly.binDir}/winuae.exe",
                             "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
@@ -620,7 +620,7 @@
             },
             {
                 "type": "winuae",
-                "label": "WinUAE Debug",
+                "label": "Amiga-Assembly: WinUAE Debug",
                 "program": "./out/debugAdapterWinUAE.js",
                 "runtime": "node",
                 "configurationAttributes": {
@@ -711,7 +711,7 @@
                     {
                         "type": "winuae",
                         "request": "launch",
-                        "name": "WinUAE Debug",
+                        "name": "Amiga-Assembly: WinUAE Debug",
                         "stopOnEntry": true,
                         "serverName": "localhost",
                         "serverPort": 2345,

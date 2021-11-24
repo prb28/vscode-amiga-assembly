@@ -14,7 +14,12 @@ export class ConfigurationHelper {
     public static async setBinariesPath(binariesPath: string): Promise<void> {
         // get the last value 
         const currentValue = ConfigurationHelper.getDefaultConfiguration(null).get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
-        if (!currentValue || FileProxy.inSameDir(currentValue, binariesPath) || currentValue === ConfigurationHelper.BINARIES_PATH_DEFAULT) {
+        let upCurrent: FileProxy | undefined;
+        if (currentValue) {
+            upCurrent = (new FileProxy(vscode.Uri.file(currentValue))).getParent();
+        }
+        const upBin = (new FileProxy(vscode.Uri.file(binariesPath))).getParent();
+        if (!currentValue || (upCurrent && FileProxy.inSameDir(upCurrent.getPath(), upBin.getPath())) || currentValue === ConfigurationHelper.BINARIES_PATH_DEFAULT) {
             try {
                 await ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, binariesPath);
             } catch (error) {
