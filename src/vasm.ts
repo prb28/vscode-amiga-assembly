@@ -99,7 +99,7 @@ export class VASMCompiler {
       const error = errors[i];
       if (error.line <= 0) {
         // match include errors
-        const match = /.*[<](.*)+[>]/.exec(error.msg);
+        const match = /.*[<](.+)[>]/.exec(error.msg);
         if (match) {
           const regexp = new RegExp(
             '^[\\s]+include[\\s]+"' +
