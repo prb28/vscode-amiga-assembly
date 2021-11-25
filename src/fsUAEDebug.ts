@@ -960,7 +960,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async evaluateRequestGetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
-        const matches = /m\s*([{}$#0-9a-z_+\-*/%()]+)\s*,\s*([0-9]+)(,\s*([0-9]+),\s*([0-9]+))?(,([abd]+))?/i.exec(args.expression);
+        const matches = /m\s*([{}$#0-9a-z_+\-*/%()]+)\s*,\s*(\d+)(,\s*(\d+),\s*(\d+))?(,([abd]+))?/i.exec(args.expression);
         if (matches) {
             let rowLength = 4;
             let wordLength = 4;
