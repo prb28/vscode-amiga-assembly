@@ -43,7 +43,7 @@ export class WorkspaceManager {
         }
         // Vscode config files
         if (programName) {
-            const regexp = new RegExp("gencop", "g");
+            const regexp = /gencop/g;
             const launchFile = destDir.getRelativeFile(".vscode/launch.json");
             await launchFile.replaceStringInFile(regexp, programName);
             const tasksFile = destDir.getRelativeFile(".vscode/tasks.json");
