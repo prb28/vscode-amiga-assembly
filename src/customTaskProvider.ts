@@ -32,7 +32,7 @@ export class AmigaBuildTaskProvider implements TaskProvider {
 	}
 
 	public resolveTask(_task: Task): Task | undefined {
-		const definition: AmigaBuildTaskDefinition = <TaskDefinition>_task.definition;
+		const definition: AmigaBuildTaskDefinition = _task.definition;
 		return this.getTask(definition);
 	}
 
