@@ -101,25 +101,6 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
-     * Waits for the debugger connected
-     */
-    public async waitConnected(): Promise<void> {
-        if (!this.connected) {
-            await new Promise<void>(resolve => this.once('gdbConnected', () => {
-                resolve();
-            }));
-        }
-    }
-
-    /**
-     * Declares the debugger connected.
-     */
-    public setConnected() {
-        this.connected = true;
-        this.sendEvent("gdbConnected");
-    }
-
-    /**
      * Function to connect to the server
      * @param host Server host
      * @param port Server socket port
