@@ -21,7 +21,7 @@ export class ConfigurationHelper {
         const upBin = (new FileProxy(vscode.Uri.file(binariesPath))).getParent();
         if (!currentValue || (upCurrent && FileProxy.inSameDir(upCurrent.getPath(), upBin.getPath())) || currentValue === ConfigurationHelper.BINARIES_PATH_DEFAULT) {
             try {
-                await ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, binariesPath);
+                await ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, binariesPath, vscode.ConfigurationTarget.Global);
             } catch (error) {
                 ConfigurationHelper.BINARY_PATH = binariesPath;
             }
@@ -85,8 +85,8 @@ export class ConfigurationHelper {
      * @param key Keyword for property
      * @param newValue Value to update
      */
-    public static updateProperty(key: string, newValue: string): Thenable<void> {
-        return ConfigurationHelper.getDefaultConfiguration(null).update(key, newValue);
+    public static updateProperty(key: string, newValue: string, configurationTarget?: vscode.ConfigurationTarget | boolean | null): Thenable<void> {
+        return ConfigurationHelper.getDefaultConfiguration(null).update(key, newValue, configurationTarget);
     }
 
     /**
