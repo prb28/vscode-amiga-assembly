@@ -5,7 +5,7 @@ import { DebugDisassembledFile, DisassembleAddressArguments } from './debugDisas
 export class DisassemblyContentProvider implements vscode.TextDocumentContentProvider {
     private testDebugSession: vscode.DebugSession | null = null;
 
-    public setTestContext(testDebugSession: vscode.DebugSession) {
+    public setTestContext(testDebugSession: vscode.DebugSession): void {
         this.testDebugSession = testDebugSession;
     }
 
@@ -18,24 +18,24 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
     }
 
     public async provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): Promise<string> {
-        let debugSession = this.getDebugSession();
+        const debugSession = this.getDebugSession();
         if (debugSession) {
             const path = uri.path;
             if (DebugDisassembledFile.isDebugAsmFile(path)) {
-                let dAsmFile = DebugDisassembledFile.fromPath(path);
+                const dAsmFile = DebugDisassembledFile.fromPath(path);
                 try {
                     if (dAsmFile.isSegment()) {
-                        let args = new DisassembleAddressArguments();
+                        const args = new DisassembleAddressArguments();
                         args.segmentId = dAsmFile.getSegmentId();
-                        let response = await debugSession.customRequest('disassembleInner', args);
+                        const response = await debugSession.customRequest('disassembleInner', args);
                         return this.printVariables(response.instructions);
                     } else if (dAsmFile.isCopper()) {
-                        let args = new DisassembleAddressArguments(dAsmFile.getAddressExpression(), dAsmFile.getLength(), true);
-                        let response = await debugSession.customRequest('disassembleInner', args);
+                        const args = new DisassembleAddressArguments(dAsmFile.getAddressExpression(), dAsmFile.getLength(), true);
+                        const response = await debugSession.customRequest('disassembleInner', args);
                         const variables: Array<DebugProtocol.DisassembledInstruction> = response.instructions;
                         let output = '';
                         let isFirst = true;
-                        for (let v of variables) {
+                        for (const v of variables) {
                             if (!isFirst) {
                                 output += `\n`;
                             } else {
@@ -49,9 +49,9 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
                             return output;
                         }
                     } else {
-                        let args = new DisassembleAddressArguments(dAsmFile.getAddressExpression(), dAsmFile.getLength(), false);
+                        const args = new DisassembleAddressArguments(dAsmFile.getAddressExpression(), dAsmFile.getLength(), false);
                         args.stackFrameIndex = dAsmFile.getStackFrameIndex();
-                        let response = await debugSession.customRequest('disassembleInner', args);
+                        const response = await debugSession.customRequest('disassembleInner', args);
                         return this.printVariables(response.instructions);
                     }
                 } catch (error) {
@@ -72,7 +72,7 @@ export class DisassemblyContentProvider implements vscode.TextDocumentContentPro
      */
     private printVariables(variables: Array<DebugProtocol.DisassembledInstruction>): string {
         let output = '';
-        for (let v of variables) {
+        for (const v of variables) {
             output += `${v.address}: ${v.instruction}\n`;
         }
         return output;

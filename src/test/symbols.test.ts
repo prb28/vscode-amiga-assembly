@@ -13,15 +13,15 @@ describe("Symbols reader Tests", function () {
     const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
     const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
     it("Should read all the symbols of a file", async function () {
-        let sf = new SymbolFile(Uri.file(MAIN_SOURCE));
-        let symbolFile = await sf.readFile();
-        let definedSymbols = symbolFile.getDefinedSymbols();
-        let variables = symbolFile.getVariables();
-        let labels = symbolFile.getLabels();
-        expect(definedSymbols.length).to.be.equal(58);
-        let referedSymbols = symbolFile.getReferredSymbols();
+        const sf = new SymbolFile(Uri.file(MAIN_SOURCE));
+        const symbolFile = await sf.readFile();
+        const definedSymbols = symbolFile.getDefinedSymbols();
+        const variables = symbolFile.getVariables();
+        const labels = symbolFile.getLabels();
+        expect(definedSymbols.length).to.be.equal(59);
+        const referedSymbols = symbolFile.getReferredSymbols();
         expect(referedSymbols.length).to.be.equal(313);
-        let firstDefined = definedSymbols[0];
+        const firstDefined = definedSymbols[1];
         expect(firstDefined.getLabel()).to.be.equal("COPPER_WAIT");
         let count = 0;
         for (let i = 0; i < referedSymbols.length; i++) {
@@ -33,6 +33,6 @@ describe("Symbols reader Tests", function () {
         expect(variables.length).to.be.equal(18);
         expect(labels.length).to.be.equal(40);
         expect(sf.getIncludeDir()).to.be.equal("include");
-        expect(sf.getIncludedFiles()).to.be.eql(["hw.i"]);
+        expect(sf.getIncludedFiles()[0].getLabel()).to.be.eql("hw.i");
     });
 });

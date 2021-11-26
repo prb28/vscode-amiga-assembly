@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import * as chai from 'chai';
 import { GdbRegister, GdbStackPosition, GdbStackFrame, GdbError, GdbAmigaSysThreadIdWinUAE, GdbThread } from '../gdbProxyCore';
 import { Socket } from 'net';
-import { spy, verify, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
+import { spy, verify, instance, when, anything, mock, reset } from '@johanblumenberg/ts-mockito';
 import * as chaiAsPromised from 'chai-as-promised';
 import { fail } from 'assert';
 import { GdbBreakpoint } from '../breakpointManager';
@@ -52,7 +52,6 @@ function createBreakpoint(breakpointId: number, segmentId: number | undefined, o
 }
 
 describe("GdbProxyWinUAE Tests", function () {
-    const defaultTimeout = 5000;
     const supportRequest = GdbProxyWinUAE.SUPPORT_STRING;
     const supportedReply = "vContSupported+;QStartNoAckMode+;QNonStop+";
     const vRunRequest = 'vRun;' + StringUtils.convertStringToHex("dh0:myprog") + ';';
@@ -80,13 +79,17 @@ describe("GdbProxyWinUAE Tests", function () {
         });
         beforeEach(function () {
             mockedSocket = mock(Socket);
-            when(mockedSocket.once('connect', anything())).thenCall(async (event: string, callback: (() => void)) => {
+            const fConnect = function (event: string, callback: (() => Socket)): Socket {
                 when(mockedSocket.writable).thenReturn(true);
                 callback();
-            });
-            when(mockedSocket.on('data', anything())).thenCall(async (event: string, callback: ((data: Buffer) => void)) => {
+                return socket;
+            };
+            when(mockedSocket.once('connect', anything())).thenCall(fConnect);
+            const fData = function (event: string, callback: ((data: Buffer) => void)): Socket {
                 mockedOnData = callback;
-            });
+                return socket;
+            };
+            when(mockedSocket.on('data', anything())).thenCall(fData);
             socket = instance(mockedSocket);
             proxy = new GdbProxyWinUAE(socket);
             spiedProxy = spy(proxy);
@@ -95,7 +98,6 @@ describe("GdbProxyWinUAE Tests", function () {
             reset(mockedSocket);
         });
         it("Should load a program and stop on entry", async function () {
-            this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString(vRunRequest, anything())).thenResolve(dummyStopResponse);
@@ -117,7 +119,6 @@ describe("GdbProxyWinUAE Tests", function () {
             verify(spiedProxy.stepIn(anything())).never();
         });
         it("Should load a program and continue if not stop on entry", async function () {
-            this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
@@ -139,7 +140,6 @@ describe("GdbProxyWinUAE Tests", function () {
             verify(spiedProxy.stepIn(anything())).never();
         });
         it("Should generate an error with on threadInfo error", async function () {
-            this.timeout(defaultTimeout);
             when(spiedProxy.waitConnected()).thenResolve();
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
@@ -150,7 +150,6 @@ describe("GdbProxyWinUAE Tests", function () {
             verify(spiedProxy.sendPacketString(vRunRequest, anything())).once();
         });
         it("Should load a program and reject if there is an error during run command", async function () {
-            this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
@@ -159,21 +158,19 @@ describe("GdbProxyWinUAE Tests", function () {
             verify(spiedProxy.sendPacketString(vRunRequest, anything())).once();
         });
         it("Should reject breakpoint when not connected", async function () {
-            this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString(supportRequest, anything())).thenResolve(supportedReply);
             when(spiedProxy.sendPacketString('QStartNoAckMode', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.sendPacketString('qfThreadInfo', anything())).thenResolve(vThreadInfoResponse);
             when(spiedProxy.sendPacketString('Z0,af3', anything())).thenResolve(RESPONSE_OK);
-            let bp = createBreakpoint(0, undefined, 4);
+            const bp = createBreakpoint(0, undefined, 4);
             await expect(proxy.setBreakpoint(bp)).to.be.rejected;
             verify(spiedProxy.sendPacketString('Z0,af3', anything())).never();
         });
         it("Should get an error when removing breakpoint without connection", async function () {
             // Remove
-            this.timeout(defaultTimeout);
             when(spiedProxy.sendPacketString('z0,5,0', anything())).thenResolve(RESPONSE_OK);
             when(spiedProxy.waitConnected()).thenResolve();
-            let bp = createBreakpoint(0, 0, 5);
+            const bp = createBreakpoint(0, 0, 5);
             await expect(proxy.removeBreakpoint(bp)).to.be.rejected;
             verify(spiedProxy.sendPacketString('z0,5,0', anything())).never();
         });
@@ -196,7 +193,6 @@ describe("GdbProxyWinUAE Tests", function () {
                 mockedOnData(proxy.formatString("S05;0"));
             });
             it("Should accept a breakpoint", async function () {
-                this.timeout(defaultTimeout);
                 when(spiedProxy.sendPacketString('Z0,af3', anything())).thenResolve(RESPONSE_OK);
                 when(spiedProxy.sendPacketString('Z0,4', anything())).thenResolve(RESPONSE_OK);
                 let bp = createBreakpoint(0, undefined, 4);
@@ -208,7 +204,7 @@ describe("GdbProxyWinUAE Tests", function () {
             });
             it("Should set an exception breakpoint", async function () {
                 when(spiedProxy.sendPacketString('Z1,0,0;X1,a', anything())).thenResolve(RESPONSE_OK);
-                let bp = createBreakpoint(0, undefined, 0, 10);
+                const bp = createBreakpoint(0, undefined, 0, 10);
                 await expect(proxy.setBreakpoint(bp)).to.not.be.rejected;
                 verify(spiedProxy.sendPacketString('Z1,0,0;X1,a', anything())).once();
             });
@@ -221,22 +217,20 @@ describe("GdbProxyWinUAE Tests", function () {
                 await expect(proxy.setBreakpoint(bp)).to.be.rejected;
             });
             it("Should return an error when setting a breakpoint", async function () {
-                this.timeout(defaultTimeout);
                 when(spiedProxy.sendPacketString('Z0,af3', anything())).thenReject(error);
-                let bp = createBreakpoint(0, 0, 4);
+                const bp = createBreakpoint(0, 0, 4);
                 await expect(proxy.setBreakpoint(bp)).to.be.rejectedWith(error);
                 verify(spiedProxy.sendPacketString('Z0,af3', anything())).once();
             });
             it("Should return an error on invalid breakpoint", async function () {
-                this.timeout(defaultTimeout);
                 // segment 1 is invalid
                 when(spiedProxy.sendPacketString('Z0,af3', anything())).thenResolve(RESPONSE_OK);
-                let bp = createBreakpoint(0, 1, 4);
+                const bp = createBreakpoint(0, 1, 4);
                 await expect(proxy.setBreakpoint(bp)).to.be.rejected;
                 verify(spiedProxy.sendPacketString('Z0,af3', anything())).never();
             });
             it("Should get the registers", async function () {
-                let registers = await proxy.registers(null, null);
+                const registers = await proxy.registers(null, null);
                 let pos = 0;
                 expect(registers[pos]).to.be.eql(<GdbRegister>{
                     name: "pc",
@@ -312,19 +306,18 @@ describe("GdbProxyWinUAE Tests", function () {
                 });
             });
             it("Should get the stack frames", async function () {
-                this.timeout(defaultTimeout);
                 when(spiedProxy.sendPacketString("QTFrame:ffffffff", anything())).thenResolve(RESPONSE_OK);
                 when(spiedProxy.sendPacketString("qTStatus", anything())).thenResolve(qtStatusResponse);
-                let rIdx = proxy.getRegisterIndex("pc");
+                const rIdx = proxy.getRegisterIndex("pc");
                 expect(rIdx).not.to.be.equal(null);
                 if (rIdx !== null) {
-                    let pcGetRegisterMessage = "p" + rIdx.toString(16);
+                    const pcGetRegisterMessage = "p" + rIdx.toString(16);
                     when(spiedProxy.sendPacketString(pcGetRegisterMessage, anything())).thenResolve("0000000a");
                     when(spiedProxy.sendPacketString("QTFrame:0", anything())).thenResolve("00000000");
                     when(spiedProxy.sendPacketString("QTFrame:-1", anything())).thenResolve("-1");
-                    let thread = proxy.getCurrentCpuThread();
+                    const thread = proxy.getCurrentCpuThread();
                     if (thread) {
-                        let stkFrame = await proxy.stack(thread);
+                        const stkFrame = await proxy.stack(thread);
                         expect(stkFrame).to.be.eql(<GdbStackFrame>{
                             frames: [<GdbStackPosition>{
                                 index: -1,
@@ -347,13 +340,12 @@ describe("GdbProxyWinUAE Tests", function () {
                 }
             });
             it("Should get the copper stack frame", async function () {
-                this.timeout(defaultTimeout);
-                let rIdx = proxy.getRegisterIndex("copper");
+                const rIdx = proxy.getRegisterIndex("copper");
                 expect(rIdx).not.to.be.equal(null);
                 if (rIdx !== null) {
                     when(spiedProxy.sendPacketString("Hg2", anything())).thenResolve("0000000100f906840000400000c3b65400000000000000000000000000c3b65400c3b65400c3e08000c390e800c3de9400c3de9800f9070c00f9075800c41fdc0000001000000001");
                     when(spiedProxy.sendPacketString('?', anything())).thenResolve(`S05`);
-                    let thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadIdWinUAE.COP);
+                    const thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadIdWinUAE.COP);
                     if (thread) {
                         return expect(proxy.stack(thread)).to.eventually.eql(<GdbStackFrame>{
                             frames: [<GdbStackPosition>{
@@ -371,12 +363,12 @@ describe("GdbProxyWinUAE Tests", function () {
                 }
             });
             it("Should raise error on get the copper stack frame", async function () {
-                let rIdx = proxy.getRegisterIndex("copper");
+                const rIdx = proxy.getRegisterIndex("copper");
                 expect(rIdx).not.to.be.equal(null);
                 if (rIdx !== null) {
                     when(spiedProxy.sendPacketString("Hg2", anything())).thenReject(new Error("nope"));
                     when(spiedProxy.sendPacketString('?', anything())).thenResolve(`S05`);
-                    let thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadIdWinUAE.COP);
+                    const thread = proxy.getThreadFromSysThreadId(GdbAmigaSysThreadIdWinUAE.COP);
                     if (thread) {
                         return expect(proxy.stack(thread)).to.be.rejected;
                     } else {
@@ -387,7 +379,7 @@ describe("GdbProxyWinUAE Tests", function () {
             it("Should remove an existing breakpoint", async function () {
                 // Set a breakpoint
                 when(spiedProxy.sendPacketString('Z0,af3', anything())).thenResolve(RESPONSE_OK);
-                let bp = createBreakpoint(0, 0, 4);
+                const bp = createBreakpoint(0, 0, 4);
                 await proxy.setBreakpoint(bp);
                 // Remove
                 when(spiedProxy.sendPacketString('z0,af3', anything())).thenResolve(RESPONSE_OK);
@@ -397,7 +389,7 @@ describe("GdbProxyWinUAE Tests", function () {
             it("Should remove an existing exception breakpoint", async function () {
                 // Set a breakpoint
                 when(spiedProxy.sendPacketString('Z1,0,0;X1,a', anything())).thenResolve(RESPONSE_OK);
-                let bp = createBreakpoint(0, undefined, 0, 10);
+                const bp = createBreakpoint(0, undefined, 0, 10);
                 await proxy.setBreakpoint(bp);
                 // Remove
                 when(spiedProxy.sendPacketString('z1,a', anything())).thenResolve(RESPONSE_OK);
@@ -405,12 +397,12 @@ describe("GdbProxyWinUAE Tests", function () {
                 verify(spiedProxy.sendPacketString('z1,a', anything())).once();
             });
             it("Should reject on error removing a breakpoint", async function () {
-                let bp = createBreakpoint(1, undefined, -5);
+                const bp = createBreakpoint(1, undefined, -5);
                 await expect(proxy.removeBreakpoint(bp)).to.be.rejected;
             });
             it("Should step instruction", async function () {
                 when(spiedProxy.sendPacketString(vContRRequest, anything())).thenResolve(RESPONSE_OK);
-                let thread = proxy.getCurrentCpuThread();
+                const thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     await expect(proxy.stepToRange(thread, 0, 0)).to.be.fulfilled;
                     verify(spiedProxy.sendPacketString(vContRRequest, anything())).once();
@@ -419,7 +411,7 @@ describe("GdbProxyWinUAE Tests", function () {
                 }
             });
             it("Should reject on step instruction error", async function () {
-                let thread = proxy.getCurrentCpuThread();
+                const thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     when(spiedProxy.sendPacketString(vContRRequest, anything())).thenReject(error);
                     await expect(proxy.stepToRange(thread, 0, 0)).to.be.rejectedWith(error);
@@ -428,7 +420,7 @@ describe("GdbProxyWinUAE Tests", function () {
                 }
             });
             it("Should step in instruction", async function () {
-                let thread = proxy.getCurrentCpuThread();
+                const thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     when(spiedProxy.sendPacketString(vContSRequest, anything())).thenResolve(RESPONSE_OK);
                     await expect(proxy.stepIn(thread)).to.be.fulfilled;
@@ -438,7 +430,7 @@ describe("GdbProxyWinUAE Tests", function () {
                 }
             });
             it("Should reject on step in instruction error", async function () {
-                let thread = proxy.getCurrentCpuThread();
+                const thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     when(spiedProxy.sendPacketString(vContSRequest, anything())).thenReject(error);
                     await expect(proxy.stepIn(thread)).to.be.rejectedWith(error);
@@ -468,7 +460,7 @@ describe("GdbProxyWinUAE Tests", function () {
             });
             it("Should continue execution", async function () {
                 when(spiedProxy.sendPacketString(vContCRequest, anything())).thenResolve(RESPONSE_OK);
-                let thread = proxy.getCurrentCpuThread();
+                const thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     await expect(proxy.continueExecution(thread)).to.be.fulfilled;
                 } else {
@@ -478,7 +470,7 @@ describe("GdbProxyWinUAE Tests", function () {
             });
             it("Should reject continue execution error", async function () {
                 when(spiedProxy.sendPacketString(vContCRequest, anything(), anything())).thenReject(error);
-                let thread = proxy.getCurrentCpuThread();
+                const thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     await expect(proxy.continueExecution(thread)).to.be.rejectedWith(error);
                 } else {
@@ -497,7 +489,7 @@ describe("GdbProxyWinUAE Tests", function () {
             });
             it("Should query for pause", async function () {
                 when(spiedProxy.sendPacketString(vContTRequest, anything())).thenResolve(RESPONSE_OK);
-                let thread = proxy.getCurrentCpuThread();
+                const thread = proxy.getCurrentCpuThread();
                 if (thread) {
                     await expect(proxy.pause(thread)).to.be.fulfilled;
                 } else {

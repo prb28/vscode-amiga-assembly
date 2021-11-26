@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
-import { reset, capture, spy, verify, anyString, instance, when, anything, mock, resetCalls } from 'ts-mockito/lib/ts-mockito';
+import { reset, capture, spy, verify, anyString, instance, when, anything, mock, resetCalls, imock } from '@johanblumenberg/ts-mockito';
 import { ExecutorHelper, ExecutorParser, ICheckResult } from '../execHelper';
 import { ExtensionState } from '../extension';
 import { DummyTextDocument } from './dummy';
@@ -15,30 +15,37 @@ describe("Executor Tests", function () {
     let spiedOutputChannel: vscode.OutputChannel;
     before(async () => {
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
         const newFile = vscode.Uri.parse("untitled://./exe.s");
         return vscode.window.showTextDocument(newFile).then(() => { spiedOutputChannel = spy(ExtensionState.getCurrent().getOutputChannel()); });
     });
+    after(async () => {
+        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    });
     it("Should execute a command and parse stdout", async () => {
         resetCalls(spiedOutputChannel);
         const stdoutText = 'My Stdout\ntext';
-        let spiedCp = spy(cp);
-        when(spiedCp.execFile(anything(), anything(), anything(), anything())).thenCall((cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)) => {
+        const spiedCp = spy(cp);
+        const cpMock: cp.ChildProcess = imock();
+        const cpMockInstance: cp.ChildProcess = instance(cpMock);
+        const f = (cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
             callback(new Error('notgood'), stdoutText, null);
-        });
-        let ex = new ExecutorHelper();
-        let mockedDummy = mock(DummyParser);
-        let error: ICheckResult = new ICheckResult();
+            return cpMockInstance;
+        };
+        when(spiedCp.execFile('ls', anything(), anything(), anything())).thenCall(f);
+        const ex = new ExecutorHelper();
+        const mockedDummy = mock(DummyParser);
+        const error: ICheckResult = new ICheckResult();
         error.file = "file";
         error.line = 0;
         error.msg = "errorin0";
         error.severity = "error";
         when(mockedDummy.parse(anyString())).thenReturn([error]);
-        let spiedParser = instance(mockedDummy);
-        let ret = await ex.runTool(['arg1'], 'mydir', 'error', false, 'ls', {}, false, spiedParser);
+        const spiedParser = instance(mockedDummy);
+        const ret = await ex.runTool(['arg1'], 'mydir', 'error', false, 'ls', {}, false, spiedParser);
         verify(mockedDummy.parse(anyString())).once();
         expect(ret[0]).to.be.equal(error);
         expect(capture(mockedDummy.parse).last()[0]).to.be.equal(stdoutText);
@@ -46,24 +53,27 @@ describe("Executor Tests", function () {
         verify(spiedOutputChannel.appendLine(anyString())).atLeast(1);
         reset(spiedCp);
     });
-    it("Should execute a command and parse stdr", async () => {
+    it("Should execute a command and parse stderr", async () => {
         resetCalls(spiedOutputChannel);
-        const stdoutText = 'My Stdout\ntext';
         const stderrText = 'My Strerr\ntext';
-        let spiedCp = spy(cp);
-        when(spiedCp.execFile(anything(), anything(), anything(), anything())).thenCall((cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string) => void)) => {
-            callback(new Error('notgood'), stdoutText, stderrText);
-        });
-        let ex = new ExecutorHelper();
-        let mockedDummy = mock(DummyParser);
-        let error: ICheckResult = new ICheckResult();
+        const spiedCp = spy(cp);
+        const cpMock: cp.ChildProcess = imock();
+        const cpMockInstance: cp.ChildProcess = instance(cpMock);
+        const f = (cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
+            callback(new Error('notgood'), "", stderrText);
+            return cpMockInstance;
+        };
+        when(spiedCp.execFile('ls', anything(), anything(), anything())).thenCall(f);
+        const ex = new ExecutorHelper();
+        const mockedDummy = mock(DummyParser);
+        const error: ICheckResult = new ICheckResult();
         error.file = "file";
         error.line = 0;
         error.msg = "errorin0";
         error.severity = "error";
         when(mockedDummy.parse(anyString())).thenReturn([error]);
-        let spiedParser = instance(mockedDummy);
-        let ret = await ex.runTool(['arg1'], 'mydir', 'error', true, 'ls', {}, false, spiedParser);
+        const spiedParser = instance(mockedDummy);
+        const ret = await ex.runTool(['arg1'], 'mydir', 'error', true, 'ls', {}, false, spiedParser);
         verify(mockedDummy.parse(anyString())).once();
         expect(ret[0]).to.be.equal(error);
         expect(capture(mockedDummy.parse).last()[0]).to.be.equal(stderrText);
@@ -105,7 +115,7 @@ describe("Executor Tests", function () {
         });
         it("Should handle the Diagnostics errors and warning", async () => {
             // this warning 2 will be dismissed by the error
-            let warning2 = new ICheckResult();
+            const warning2 = new ICheckResult();
             warning2.file = document.uri.path;
             warning2.line = 1;
             warning2.msg = "warn0";
@@ -142,7 +152,7 @@ describe("Executor Tests", function () {
             await ex.handleDiagnosticErrors(document, errors, vscode.DiagnosticSeverity.Error);
             verify(spiedErrorDiagnosticCollection.clear()).never();
             verify(spiedWarningDiagnosticCollection.clear()).never();
-            let [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
+            const [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
             if (newErrors instanceof Array) {
                 expect(newErrors.length).to.be.equal(1);
                 expect(newErrors[0].message).to.be.equal(error.msg);
@@ -160,7 +170,7 @@ describe("Executor Tests", function () {
             await ex.handleDiagnosticErrors(document, errors, vscode.DiagnosticSeverity.Warning);
             verify(spiedErrorDiagnosticCollection.clear()).never();
             verify(spiedWarningDiagnosticCollection.clear()).never();
-            let [fileUri, newErrors] = capture(spiedWarningDiagnosticCollection.set).last();
+            const [fileUri, newErrors] = capture(spiedWarningDiagnosticCollection.set).last();
             if (newErrors instanceof Array) {
                 expect(newErrors.length).to.be.equal(1);
                 expect(newErrors[0].message).to.be.equal(warning.msg);
@@ -180,14 +190,14 @@ describe("Executor Tests", function () {
                 sourceDocument = await workspace.openTextDocument(Uri.file(MAIN_SOURCE));
             });
             it("Should handle the Diagnostics errors of included files", async () => {
-                let includedFileError = new ICheckResult();
+                const includedFileError = new ICheckResult();
                 includedFileError.file = "hw.i";
                 includedFileError.parentFile = sourceDocument.uri.path;
                 includedFileError.line = 1;
                 includedFileError.msg = "errorin0";
                 includedFileError.severity = "error";
                 await ex.handleDiagnosticErrors(sourceDocument, [includedFileError], undefined);
-                let [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
+                const [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
                 if (newErrors instanceof Array) {
                     expect(newErrors.length).to.be.equal(1);
                     expect(newErrors[0].message).to.be.equal(error.msg);
@@ -195,8 +205,7 @@ describe("Executor Tests", function () {
                     expect.fail("Diagnostic errors should be an array");
                 }
                 if (fileUri instanceof vscode.Uri) {
-                    let fileParentDir = Path.parse(sourceDocument.uri.path).dir;
-                    expect(fileUri.path).to.be.eql(fileParentDir + "/include/hw.i");
+                    expect(fileUri.path.includes("test_files/sources/include/hw.i")).to.be.true;
                 } else {
                     expect.fail("FileUri should be defined and be a uri");
                 }

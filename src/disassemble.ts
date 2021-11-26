@@ -1,7 +1,7 @@
-import { window, OpenDialogOptions, InputBoxOptions, Uri, workspace, Position } from 'vscode';
+import { window, OpenDialogOptions, InputBoxOptions, Uri, workspace } from 'vscode';
 import { Capstone } from './capstone';
-import * as path from 'path';
 import { DebugDisassembledFile } from './debugDisassembled';
+import { ConfigurationHelper } from './configurationHelper';
 
 export enum DisassembleRequestType {
     MEMORY,
@@ -10,7 +10,7 @@ export enum DisassembleRequestType {
 }
 export class Disassembler {
     public getCapstone(): (Capstone | null) {
-        let conf: any = workspace.getConfiguration('amiga-assembly', null).get('cstool');
+        const conf = ConfigurationHelper.retrieveStringPropertyInDefaultConf('cstool');
         if (conf && (conf.length > 5)) {
             return new Capstone(conf);
         }
@@ -29,7 +29,7 @@ export class Disassembler {
             if (address !== undefined) {
                 // Code to replace #, it is not done by the Uri.parse
                 address = address.replace('#', '%23');
-                let filename = `${DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR}${address}__3000.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
+                const filename = `${DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR}${address}__3000.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
                 const newFile = Uri.parse(`disassembly:${filename}`);
                 try {
                     await window.showTextDocument(newFile);
@@ -42,7 +42,7 @@ export class Disassembler {
         } else if (disassembleRequestType === DisassembleRequestType.FILE) {
             const capstone = this.getCapstone();
             if (capstone) {
-                let selectedFiles = await window.showOpenDialog(<OpenDialogOptions>{
+                const selectedFiles = await window.showOpenDialog(<OpenDialogOptions>{
                     prompt: "Select a file to disassemble",
                     canSelectMany: false,
                     canSelectFiles: true,
@@ -52,50 +52,40 @@ export class Disassembler {
                     const selectedFile = selectedFiles[0];
                     // Disassembles the file
                     try {
-                        let data = await capstone.disassembleFile(selectedFile);
-                        // opens a new editor document
-                        let folder = ".";
-                        let folders = workspace.workspaceFolders;
-                        if (folders && folders.length) {
-                            folder = folders[0].uri.fsPath;
-                        }
-                        let filename = path.basename(selectedFile.fsPath) + "_" + Date.now() + "_dis.s";
-                        const newFile = Uri.parse("untitled:" + folder + "/" + filename);
-                        let textEditor = await window.showTextDocument(newFile);
-                        await textEditor.edit(edit => {
-                            let text = "";
-                            let lines = data.split(/\r\n|\r|\n/g);
-                            for (let l of lines) {
-                                let elms = l.split("  ");
-                                if (elms.length > 2) {
-                                    text += " " + elms[2].replace(", ", ",") + ";" + l + '\n';
-                                } else {
-                                    text += l.replace(", ", ",") + ";" + l + '\n';
-                                }
+                        const data = await capstone.disassembleFile(selectedFile);
+                        let text = "";
+                        const lines = data.split(/\r\n|\r|\n/g);
+                        for (const l of lines) {
+                            const elms = l.split("  ");
+                            if (elms.length > 2) {
+                                text += " " + elms[2].replace(", ", ",") + ";" + l + '\n';
+                            } else {
+                                text += l.replace(", ", ",") + ";" + l + '\n';
                             }
-                            edit.insert(new Position(0, 0), text);
-                        });
+                        }
+                        const document = await workspace.openTextDocument({ language: "m68k", content: text });
+                        await window.showTextDocument(document);
                     } catch (err) {
                         window.showErrorMessage(err.message);
                         throw new Error(err.message);
                     }
                 } else {
-                    let message = "No selected File to disassemble";
+                    const message = "No selected File to disassemble";
                     window.showErrorMessage(message);
                     throw new Error(message);
                 }
             } else {
-                let message = "To use this command: configure the capstone path in the settings";
+                const message = "To use this command: configure the capstone path in the settings";
                 window.showErrorMessage(message);
                 throw new Error(message);
             }
         } else {
             // Memory disassemble
-            let address = await window.showInputBox(<InputBoxOptions>{
+            const address = await window.showInputBox(<InputBoxOptions>{
                 prompt: "Memory address: $xxxxxxxx or #{symbol} or ${symbol} "
             });
             if (address !== undefined) {
-                let dFile = new DebugDisassembledFile();
+                const dFile = new DebugDisassembledFile();
                 dFile.setStackFrameIndex(0);
                 dFile.setAddressExpression(address);
                 dFile.setLength(1000);

@@ -55,7 +55,7 @@ export class GdbThread {
     }
     public static parse(value: string): GdbThread {
         // Thread id has the form : "p<process id in hex>.<thread id in hex>"
-        let pth = value.split('.');
+        const pth = value.split('.');
         let pId = GdbThread.DEFAULT_PROCESS_ID;
         let tId = 0;
         if (pth.length > 1) {
@@ -154,10 +154,10 @@ export class GdbThread {
         }
         return name;
     }
-    public getProcessId() {
+    public getProcessId(): number {
         return this.processId;
     }
-    public getThreadId() {
+    public getThreadId(): number {
         return this.threadId;
     }
     public getId(): number {
@@ -166,10 +166,10 @@ export class GdbThread {
     private static getNextId(): number {
         return GdbThread.nextId++;
     }
-    public static setSupportMultiprocess(supportMultiprocess: boolean) {
+    public static setSupportMultiprocess(supportMultiprocess: boolean): void {
         GdbThread.supportMultiprocess = supportMultiprocess;
     }
-    public setState(state: GdbThreadState) {
+    public setState(state: GdbThreadState): void {
         this.state = state;
     }
     public getState(): GdbThreadState {

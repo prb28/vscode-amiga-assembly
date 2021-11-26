@@ -6,7 +6,7 @@ tsconfig.json
 .vscode*/**
 test*/**
 .gitignore
-tsconfig.json
+tsconfig.base.json
 vsc-extension-quickstart.md
 coverage
 template
@@ -26,7 +26,10 @@ out/test/
 src/
 package-json.lock
 webpack.config.js
-tslint-report.json
+lint-report.json
 npm-shrinkwrap.json
 coverconfig.json
 azure-pipelines.yml
+.azure-pipelines
+.nyc_output
+test-result*

@@ -1,20 +1,21 @@
 import { expect } from 'chai';
 import { ExtensionState } from '../extension';
-import { spy, verify, anyString, when } from 'ts-mockito/lib/ts-mockito';
+import { spy, verify, anyString, when } from '@johanblumenberg/ts-mockito';
 import * as vscode from 'vscode';
 
 // tslint:disable:no-unused-expression
 describe("Status Tests", function () {
     before(async () => {
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
     });
     it("Should status show on command", () => {
-        let state = ExtensionState.getCurrent();
-        let statusManager = state.getStatusManager();
+        const state = ExtensionState.getCurrent();
+        const statusManager = state.getStatusManager();
+        statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', 'Build Workspace');
         statusManager.diagnosticsStatusBarItem.show();
         // status is shown
         expect(statusManager.statusBarEntry).not.to.be.null;
@@ -24,14 +25,16 @@ describe("Status Tests", function () {
             expect(statusManager.statusBarEntry.command).to.be.equal('amiga-assembly.build-vasm-workspace');
             expect(statusManager.statusBarEntry.tooltip).to.be.equal('Build Workspace');
             expect(statusManager.statusBarEntry.color).to.be.equal('yellow');
-            let spiedStatusBarEntry = spy(statusManager.statusBarEntry);
+            const spiedStatusBarEntry = spy(statusManager.statusBarEntry);
             // try to toggle
             statusManager.showHideStatus();
             verify(spiedStatusBarEntry.hide()).once();
 
             // dispose
-            let spiedDiag = spy(statusManager.diagnosticsStatusBarItem);
+            const spiedDiag = spy(statusManager.diagnosticsStatusBarItem);
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             when(spiedDiag.dispose()).thenCall(() => { });
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             when(spiedStatusBarEntry.dispose()).thenCall(() => { });
             statusManager.dispose();
             verify(spiedDiag.dispose()).once();
@@ -46,9 +49,10 @@ describe("Status Tests", function () {
 
     });
     it("Should show react to an error", () => {
-        let spiedWindow = spy(vscode.window);
-        let state = ExtensionState.getCurrent();
-        let statusManager = state.getStatusManager();
+        const spiedWindow = spy(vscode.window);
+        const state = ExtensionState.getCurrent();
+        const statusManager = state.getStatusManager();
+        statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', 'Build Workspace');
         expect(statusManager.statusBarEntry).not.to.be.null;
         if (statusManager.statusBarEntry) {
             // onError
@@ -59,8 +63,9 @@ describe("Status Tests", function () {
         }
     });
     it("Should show react to a success", () => {
-        let state = ExtensionState.getCurrent();
-        let statusManager = state.getStatusManager();
+        const state = ExtensionState.getCurrent();
+        const statusManager = state.getStatusManager();
+        statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', 'Build Workspace');
         expect(statusManager.statusBarEntry).not.to.be.null;
         if (statusManager.statusBarEntry) {
             // onError

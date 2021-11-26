@@ -1,6 +1,6 @@
 import {
     InitializedEvent, TerminatedEvent, BreakpointEvent,
-    Thread, StackFrame, Scope, Source, Handles, DebugSession, OutputEvent, ContinuedEvent
+    Thread, StackFrame, Scope, Source, Handles, DebugSession, OutputEvent, ContinuedEvent, InvalidatedEvent
 } from 'vscode-debugadapter/lib/main';
 import * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
@@ -8,7 +8,7 @@ import { basename } from 'path';
 import { GdbProxy } from './gdbProxy';
 import { Segment, GdbHaltStatus } from './gdbProxyCore';
 import { ExecutorHelper } from './execHelper';
-import { CancellationTokenSource, workspace, window, Uri } from 'vscode';
+import { CancellationTokenSource, window, Uri } from 'vscode';
 import { DebugInfo } from './debugInfo';
 import { Capstone } from './capstone';
 import { DebugVariableResolver } from './debugVariableResolver';
@@ -19,6 +19,8 @@ import { MemoryLabelsRegistry } from './customMemoryAddresses';
 import { BreakpointManager, GdbBreakpoint } from './breakpointManager';
 import { CopperDisassembler } from './copperDisassembler';
 import { FileProxy } from './fsProxy';
+import { VariableDisplayFormat, VariableDisplayFormatRequest, VariableFormatter } from './variableFormatter';
+import { ConfigurationHelper } from './configurationHelper';
 
 /**
  * This interface describes the mock-debug specific launch attributes
@@ -46,16 +48,14 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     /** Emulator options */
     options: Array<string>;
     /** path replacements for source files */
+    // eslint-disable-next-line @typescript-eslint/ban-types
     sourceFileMap?: Object;
     /** root paths for sources */
     rootSourceFileMap?: Array<string>;
-    /** Build the workspace before debug */
-    buildWorkspace?: boolean;
     /** default exception's mask */
     exceptionMask?: number;
     /** Waiting time for emulator start */
     emulatorStartDelay?: number;
-
 }
 
 export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
@@ -70,6 +70,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     /** Variables expression map */
     protected variableExpressionMap = new Map<string, number>();
+
+    /** Variables format map */
+    protected variableFormatterMap = new Map<string, VariableFormatter | null>();
 
     /** All the symbols in the file */
     protected symbolsMap = new Map<string, number>();
@@ -108,7 +111,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     protected currentMemoryViewPc = -1;
 
     /** trace the communication protocol */
-    protected trace: boolean = false;
+    protected trace = false;
 
     /**
      * Creates a new debug adapter that is used for one debug session.
@@ -139,7 +142,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
      * @param executor mocked executor
      * @param capstone mocked capstone
      */
-    public setTestContext(gdbProxy: GdbProxy, executor: ExecutorHelper, capstone: Capstone) {
+    public setTestContext(gdbProxy: GdbProxy, executor: ExecutorHelper, capstone: Capstone): void {
         this.executor = executor;
         this.gdbProxy = gdbProxy;
         this.initProxy();
@@ -167,7 +170,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     /**
      * Initialize proxy
      */
-    public initProxy() {
+    public initProxy(): void {
         // setup event handlers
         this.gdbProxy.on('stopOnEntry', (threadId: number) => {
             this.sendEvent(this.crateStoppedEvent(threadId, "entry", false));
@@ -201,7 +204,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             }, 100);
         });
         this.gdbProxy.on('threadStarted', (threadId: number) => {
-            let event = <DebugProtocol.ThreadEvent>{
+            const event = <DebugProtocol.ThreadEvent>{
                 event: "thread",
                 body: {
                     reason: 'started',
@@ -277,7 +280,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         response.body.supportsSetVariable = true;
 
         // Sets the capstone path
-        let conf: any = workspace.getConfiguration('amiga-assembly', null).get('cstool');
+        const conf = ConfigurationHelper.retrieveStringPropertyInDefaultConf('cstool');
         if (!this.capstone && conf && (conf.length > 5)) {
             this.capstone = new Capstone(conf);
         }
@@ -296,10 +299,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
      * Load the program with all the debug information
      */
     protected loadDebugInfo(args: LaunchRequestArguments): Promise<boolean> {
-        let sMap = new Map<string, string>();
+        const sMap = new Map<string, string>();
         if (args.sourceFileMap) {
-            let keys = Object.keys(args.sourceFileMap);
-            for (let k of keys) {
+            const keys = Object.keys(args.sourceFileMap);
+            for (const k of keys) {
                 const desc = Object.getOwnPropertyDescriptor(args.sourceFileMap, k);
                 if (desc) {
                     sMap.set(k, desc.value);
@@ -315,7 +318,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
      * @param response response to send
      * @param message Error message
      */
-    protected sendStringErrorResponse(response: DebugProtocol.Response, message: string) {
+    protected sendStringErrorResponse(response: DebugProtocol.Response, message: string): void {
         response.success = false;
         response.message = message;
         this.sendResponse(response);
@@ -343,11 +346,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             } else {
                 // Showing the help text
                 if (!this.testMode) {
-                    let text = "Commands:\n" +
+                    const text = "Commands:\n" +
                         "    Memory dump:\n" +
                         "        m address, size[, wordSizeInBytes, rowSizeInWords,ab]\n" +
                         "        			a: show ascii output, b: show bytes output\n" +
-                        "            example: m 5c50,10,2,4\n" +
+                        "            example: m $5c50,10,2,4\n" +
                         "        m ${register|symbol}, #{symbol}, size[, wordSizeInBytes, rowSizeInWords]\n" +
                         "            example: m ${mycopperlabel},10,2,4\n" +
                         "    Disassembled Memory dump:\n" +
@@ -355,7 +358,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         "            example: m ${pc},10,d\n" +
                         "    Memory set:\n" +
                         "        M address=bytes\n" +
-                        "            example: M 5c50=0ff534\n" +
+                        "            example: M $5c50=0ff534\n" +
                         "        M ${register|symbol}=bytes\n" +
                         "        M #{register|symbol}=bytes\n" +
                         "            example: M ${mycopperlabel}=0ff534\n" +
@@ -390,11 +393,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected async connect(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
-        return new Promise(async (resolve) => {
-            // temp to use in timeout
-            let debAdapter = this;
-
+    protected connect(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
+        return new Promise((resolve) => {
             let timeoutValue = 3000;
             if (this.testMode) {
                 timeoutValue = 1;
@@ -402,13 +402,13 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             setTimeout(async () => {
                 // connects to FS-UAE
                 try {
-                    await debAdapter.gdbProxy.connect(args.serverName, args.serverPort);
+                    await this.gdbProxy.connect(args.serverName, args.serverPort);
                     // Loads the program
-                    debAdapter.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
-                    await debAdapter.gdbProxy.load(args.program, args.stopOnEntry);
-                    debAdapter.sendResponse(response);
+                    this.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
+                    await this.gdbProxy.load(args.program, args.stopOnEntry);
+                    this.sendResponse(response);
                 } catch (err) {
-                    debAdapter.sendStringErrorResponse(response, err.message);
+                    this.sendStringErrorResponse(response, err.message);
                 }
                 resolve();
             }, timeoutValue);
@@ -418,19 +418,22 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     public checkEmulator(emulatorPath: string): Promise<boolean> {
         // Function useful for testing - mocking
-        let fileProxy = new FileProxy(Uri.file(emulatorPath));
+        const fileProxy = new FileProxy(Uri.file(emulatorPath));
         return fileProxy.exists();
     }
 
-    public startEmulator(args: LaunchRequestArguments): void {
+    public async startEmulator(args: LaunchRequestArguments): Promise<void> {
         if (args.startEmulator) {
             this.sendEvent(new OutputEvent(`Starting emulator: ${args.emulator}`));
-            const emulatorExe = args.emulator;
-            if (emulatorExe) {
+            if (args.emulator) {
+                const emulatorExe = ConfigurationHelper.replaceBinDirVariable(args.emulator);
                 // Is the emulator exe present in the filesystem ?
-                if (this.checkEmulator(emulatorExe)) {
+                if (await this.checkEmulator(emulatorExe)) {
                     this.cancellationTokenSource = new CancellationTokenSource();
-                    const emulatorWorkingDir = args.emulatorWorkingDir || null;
+                    let emulatorWorkingDir = args.emulatorWorkingDir || null;
+                    if (emulatorWorkingDir) {
+                        emulatorWorkingDir = ConfigurationHelper.replaceBinDirVariable(emulatorWorkingDir);
+                    }
                     this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
                         this.sendEvent(new TerminatedEvent());
                     }).catch(err => {
@@ -451,15 +454,33 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     protected customRequest(command: string, response: DebugProtocol.Response, args: any): void {
         if (command === 'disassembleInner') {
             this.disassembleRequestInner(response, args);
-        } else {
-            response.body = { error: 'Invalid command.' };
+        } else if (command === 'modifyVariableFormat') {
+            const variableReq: VariableDisplayFormatRequest = args;
+            switch (variableReq.variableDisplayFormat) {
+                case VariableDisplayFormat.BINARY:
+                    this.variableFormatterMap.set(variableReq.variableInfo.variable.name, VariableFormatter.BINARY_FORMATTER);
+                    break;
+                case VariableDisplayFormat.HEXADECIMAL:
+                    this.variableFormatterMap.set(variableReq.variableInfo.variable.name, VariableFormatter.HEXADECIMAL_FORMATTER);
+                    break;
+                case VariableDisplayFormat.DECIMAL:
+                    this.variableFormatterMap.set(variableReq.variableInfo.variable.name, VariableFormatter.DECIMAL_FORMATTER);
+                    break;
+                default:
+                    this.variableFormatterMap.set(variableReq.variableInfo.variable.name, null);
+                    break;
+
+            }
+            this.sendEvent(new InvalidatedEvent(['variables']));
             this.sendResponse(response);
+        } else {
+            super.customRequest(command, response, args);
         }
     }
 
     protected async disassembleRequestInner(response: DebugProtocol.DisassembleResponse, args: DisassembleAddressArguments): Promise<void> {
         try {
-            let instructions = await this.debugDisassembledManager.disassembleRequest(args);
+            const instructions = await this.debugDisassembledManager.disassembleRequest(args);
             response.body = {
                 instructions: instructions,
             };
@@ -470,26 +491,26 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected disassembleRequest(response: DebugProtocol.DisassembleResponse, args: DebugProtocol.DisassembleArguments): Promise<void> {
-        let dArgs = DisassembleAddressArguments.copy(args, false);
+        const dArgs = DisassembleAddressArguments.copy(args, false);
         return this.disassembleRequestInner(response, dArgs);
     }
 
-    protected terminateEmulator() {
+    protected terminateEmulator(): void {
         if (this.cancellationTokenSource) {
             this.cancellationTokenSource.cancel();
         }
     }
 
     protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
-        let debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
+        const debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
         // clear all breakpoints for this file
         await this.breakpointManager.clearBreakpoints(args.source);
         // set and verify breakpoint locations
         if (args.breakpoints) {
-            for (let reqBp of args.breakpoints) {
-                let debugBp = this.breakpointManager.createBreakpoint(args.source, reqBp.line);
+            for (const reqBp of args.breakpoints) {
+                const debugBp = this.breakpointManager.createBreakpoint(args.source, reqBp.line);
                 try {
-                    let modifiedBp = await this.breakpointManager.setBreakpoint(debugBp);
+                    const modifiedBp = await this.breakpointManager.setBreakpoint(debugBp);
                     debugBreakPoints.push(modifiedBp);
                 } catch (err) {
                     debugBreakPoints.push(debugBp);
@@ -507,9 +528,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     protected async threadsRequest(response: DebugProtocol.ThreadsResponse): Promise<void> {
         try {
             await this.gdbProxy.waitConnected();
-            let thIds = await this.gdbProxy.getThreadIds();
-            let threads = new Array<Thread>();
-            for (let t of thIds) {
+            const thIds = await this.gdbProxy.getThreadIds();
+            const threads = new Array<Thread>();
+            for (const t of thIds) {
                 threads.push(new Thread(t.getId(), this.gdbProxy.getThreadDisplayName(t)));
             }
             response.body = {
@@ -528,10 +549,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             const thread = this.gdbProxy.getThread(args.threadId);
             if (thread) {
                 try {
-                    let stk = await this.gdbProxy.stack(thread);
-                    let stackFrames = [];
+                    const stk = await this.gdbProxy.stack(thread);
+                    const stackFrames = [];
                     let updatedView = false;
-                    for (let f of stk.frames) {
+                    for (const f of stk.frames) {
                         if ((!updatedView) && (this.gdbProxy.isCPUThread(thread))) {
                             // Update the cpu view
                             this.updateDisassembledView(f.pc, 100);
@@ -540,13 +561,13 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             this.breakpointManager.checkTemporaryBreakpoints(f.pc);
                         }
                         let stackFrameDone = false;
-                        let pc = f.pc.toString(16);
+                        const pc = VariableFormatter.ADDRESS_FORMATTER.format(f.pc);
                         if (f.segmentId >= 0) {
-                            let values = await dbgInfo.resolveFileLine(f.segmentId, f.offset);
+                            const values = await dbgInfo.resolveFileLine(f.segmentId, f.offset);
                             if (values) {
                                 let line = values[2];
                                 if (line) {
-                                    let idx = line.indexOf(';');
+                                    const idx = line.indexOf(';');
                                     if (idx > 0) {
                                         line = line.substring(0, idx);
                                     }
@@ -561,7 +582,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         if (!stackFrameDone) {
                             let line: string = pc;
                             if (this.gdbProxy.isCPUThread(thread)) {
-                                let dCode = this.disassembledCache.get(f.pc);
+                                const dCode = this.disassembledCache.get(f.pc);
                                 if (dCode) {
                                     line = dCode;
                                 } else {
@@ -569,46 +590,46 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                     line += ": ";
                                     if (this.capstone) {
                                         try {
-                                            let memory = await this.gdbProxy.getMemory(f.pc, 10);
-                                            let disassembled = await this.capstone.disassemble(memory);
-                                            let lines = disassembled.split(/\r\n|\r|\n/g);
+                                            const memory = await this.gdbProxy.getMemory(f.pc, 10);
+                                            const disassembled = await this.capstone.disassemble(memory);
+                                            const lines = disassembled.split(/\r\n|\r|\n/g);
                                             let selectedLine = lines[0];
-                                            for (let l of lines) {
+                                            for (const l of lines) {
                                                 if (l.trim().length > 0) {
                                                     selectedLine = l;
                                                     break;
                                                 }
                                             }
-                                            let elms = selectedLine.split("  ");
+                                            const elms = selectedLine.split("  ");
                                             if (elms.length > 2) {
                                                 selectedLine = elms[2];
                                             }
                                             line += selectedLine.trim().replace(/\s\s+/g, ' ');
                                         } catch (err) {
-                                            console.error("Error ignored: " + err.getMessage());
+                                            console.error("Error ignored: " + err.message);
                                         }
                                     }
                                     this.disassembledCache.set(f.pc, line);
                                 }
                             } else if (this.gdbProxy.isCopperThread(thread)) {
-                                let dCopperCode = this.disassembledCopperCache.get(f.pc);
+                                const dCopperCode = this.disassembledCopperCache.get(f.pc);
                                 if (dCopperCode) {
                                     line = dCopperCode;
                                 } else {
                                     // Get the disassembled line
                                     line += ": ";
                                     try {
-                                        let memory = await this.gdbProxy.getMemory(f.pc, 10);
-                                        let cDis = new CopperDisassembler(memory);
+                                        const memory = await this.gdbProxy.getMemory(f.pc, 10);
+                                        const cDis = new CopperDisassembler(memory);
                                         line = line + cDis.disassemble()[0].toString().split("    ")[0];
                                         this.disassembledCopperCache.set(f.pc, line);
                                     } catch (err) {
-                                        console.error("Error ignored: " + err.getMessage());
+                                        console.error("Error ignored: " + err.message);
                                     }
                                 }
                             }
                             // The the stack frame from the manager
-                            let stackFrame = await this.debugDisassembledManager.getStackFrame(f.index, f.pc, line, (this.gdbProxy.isCopperThread(thread)));
+                            const stackFrame = await this.debugDisassembledManager.getStackFrame(f.index, f.pc, line, (this.gdbProxy.isCopperThread(thread)));
                             stackFrames.push(stackFrame);
                         }
                     }
@@ -642,7 +663,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments): Promise<void> {
-        let variables = this.variableRefMap.get(args.variablesReference);
+        const variables = this.variableRefMap.get(args.variablesReference);
         if (variables) {
             response.body = {
                 variables: variables
@@ -655,18 +676,24 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 if (id.startsWith("registers_")) {
                     try {
                         //Gets the frameId
-                        let frameId = parseInt(id.substring(10));
-                        let registers = await this.gdbProxy.registers(frameId, null);
+                        const frameId = parseInt(id.substring(10));
+                        const registers = await this.gdbProxy.registers(frameId, null);
                         const variablesArray = new Array<DebugProtocol.Variable>();
                         const srVariablesArray = new Array<DebugProtocol.Variable>();
                         const srVRef = this.variableHandles.create("status_register_" + frameId);
                         for (let i = 0; i < registers.length; i++) {
-                            let r = registers[i];
+                            const r = registers[i];
+                            let variableName = r.name;
                             if (r.name.startsWith("SR_")) {
+                                variableName = variableName.replace("SR_", "");
+                                let formatter = this.variableFormatterMap.get(variableName);
+                                if (!formatter) {
+                                    formatter = VariableFormatter.DECIMAL_FORMATTER;
+                                }
                                 srVariablesArray.push({
-                                    name: r.name.replace("SR_", ""),
+                                    name: variableName,
                                     type: "register",
-                                    value: r.value.toString(10),
+                                    value: formatter.format(r.value),
                                     variablesReference: 0
                                 });
                             } else {
@@ -674,10 +701,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                 if (r.name.startsWith("sr")) {
                                     vRef = srVRef;
                                 }
+                                let formatter = this.variableFormatterMap.get(variableName);
+                                if (!formatter) {
+                                    formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
+                                }
                                 variablesArray.push({
-                                    name: r.name,
+                                    name: variableName,
                                     type: "register",
-                                    value: StringUtils.padStart(r.value.toString(16), 8, "0"),
+                                    value: formatter.format(r.value),
                                     variablesReference: vRef
                                 });
                             }
@@ -695,11 +726,16 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     const segments = this.gdbProxy.getSegments();
                     if (segments) {
                         for (let i = 0; i < segments.length; i++) {
-                            let s = segments[i];
+                            const s = segments[i];
+                            const variableName = `Segment #${i}`;
+                            let formatter = this.variableFormatterMap.get(variableName);
+                            if (!formatter) {
+                                formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
+                            }
                             variablesArray.push({
-                                name: "Segment #" + i,
+                                name: variableName,
                                 type: "segment",
-                                value: s.address.toString(16) + " {size:" + s.size + "}",
+                                value: `${formatter.format(s.address)} {size:${s.size}}`,
                                 variablesReference: 0
                             });
                         }
@@ -713,13 +749,18 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     this.sendResponse(response);
                 } else if (id.startsWith("symbols_")) {
                     const variablesArray = new Array<DebugProtocol.Variable>();
-                    for (let entry of Array.from(this.symbolsMap.entries())) {
-                        let key = entry[0];
-                        let value = entry[1];
+                    for (const entry of Array.from(this.symbolsMap.entries())) {
+                        const key = entry[0];
+                        const value = entry[1];
+                        const variableName = key;
+                        let formatter = this.variableFormatterMap.get(variableName);
+                        if (!formatter) {
+                            formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
+                        }
                         variablesArray.push({
                             name: key,
                             type: "symbol",
-                            value: value.toString(16),
+                            value: formatter.format(value),
                             variablesReference: 0
                         });
                     }
@@ -740,31 +781,31 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         const id = this.variableHandles.get(args.variablesReference);
         if ((id !== null) && (id.startsWith("registers_"))) {
             try {
-                let newValue = await this.gdbProxy.setRegister(args.name, args.value);
+                const newValue = await this.gdbProxy.setRegister(args.name, args.value);
                 response.body = {
                     value: newValue
                 };
                 this.sendResponse(response);
             } catch (err) {
-                this.sendStringErrorResponse(response, err.getMessage());
+                this.sendStringErrorResponse(response, err.message);
             }
         } else {
             this.sendStringErrorResponse(response, "Illegal variable request");
         }
     }
 
-    public terminate() {
+    public terminate(): void {
         this.gdbProxy.destroy();
         this.terminateEmulator();
     }
 
-    public shutdown() {
+    public shutdown(): void {
         this.terminate();
     }
 
     protected async continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): Promise<void> {
         await this.gdbProxy.waitConnected();
-        let thread = this.gdbProxy.getThread(args.threadId);
+        const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
                 await this.gdbProxy.continueExecution(thread);
@@ -782,7 +823,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected async nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): Promise<void> {
         await this.gdbProxy.waitConnected();
-        let thread = this.gdbProxy.getThread(args.threadId);
+        const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
                 await this.gdbProxy.stepToRange(thread, 0, 0);
@@ -797,7 +838,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected async stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments): Promise<void> {
         await this.gdbProxy.waitConnected();
-        let thread = this.gdbProxy.getThread(args.threadId);
+        const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
                 await this.gdbProxy.stepIn(thread);
@@ -815,10 +856,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
-                let stk = await this.gdbProxy.stack(thread);
-                let frame = stk.frames[1];
-                let startAddress = frame.pc + 1;
-                let endAddress = frame.pc + 10;
+                const stk = await this.gdbProxy.stack(thread);
+                const frame = stk.frames[1];
+                const startAddress = frame.pc + 1;
+                const endAddress = frame.pc + 10;
                 await this.gdbProxy.stepToRange(thread, startAddress, endAddress);
                 this.sendResponse(response);
             } catch (err) {
@@ -833,9 +874,15 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         // It's a reg value
         try {
             await this.gdbProxy.waitConnected();
-            let value = await this.gdbProxy.getRegister(args.expression, args.frameId);
+            const value = await this.gdbProxy.getRegister(args.expression, args.frameId);
+            const valueNumber = parseInt(value[0], 16);
+            let formatter = this.variableFormatterMap.get(args.expression);
+            if (!formatter) {
+                formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
+            }
+            const strValue = formatter.format(valueNumber);
             response.body = {
-                result: value[0],
+                result: strValue,
                 variablesReference: 0,
             };
             this.sendResponse(response);
@@ -851,7 +898,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
         try {
             await this.gdbProxy.waitConnected();
-            let memory = await this.gdbProxy.getMemory(address, args.count);
+            const memory = await this.gdbProxy.getMemory(address, args.count);
             response.body = {
                 address: address.toString(),
                 data: StringUtils.hexToBase64(memory)
@@ -864,12 +911,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     public async getMemory(address: number, size: number): Promise<string> {
         await this.gdbProxy.waitConnected();
-        let memory = this.gdbProxy.getMemory(address, size);
-        return memory;
+        return this.gdbProxy.getMemory(address, size);
     }
 
     public async getVariablePointedMemory(variableName: string, frameIndex?: number, size?: number): Promise<string> {
-        let address = await this.getVariableValueAsNumber(variableName, frameIndex);
+        const address = await this.getVariableValueAsNumber(variableName, frameIndex);
         let lSize = size;
         if (lSize === undefined) {
             // By default me assume it is an address 32b
@@ -880,22 +926,21 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         return this.gdbProxy.getMemory(address, lSize);
     }
 
-    public getVariableValue(variableName: string, frameIndex?: number): Promise<string> {
-        return new Promise(async (resolve, reject) => {
-            await this.getVariableValueAsNumber(variableName, frameIndex).then((value) => {
-                resolve(value.toString(16));
-            }).catch(err => {
-                reject(err);
-            });
-        });
+    public async getVariableValue(variableName: string, frameIndex?: number): Promise<string> {
+        const value = await this.getVariableValueAsNumber(variableName, frameIndex);
+        let formatter = this.variableFormatterMap.get(variableName);
+        if (!formatter) {
+            formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
+        }
+        return formatter.format(value);
     }
 
     public async getVariableValueAsNumber(variableName: string, frameIndex?: number): Promise<number> {
         // Is it a register?
-        let matches = /^([ad][0-7]|pc|sr)$/i.exec(variableName);
+        const matches = /^([ad][0-7]|pc|sr)$/i.exec(variableName);
         if (matches) {
             await this.gdbProxy.waitConnected();
-            let values = await this.gdbProxy.getRegister(variableName, frameIndex);
+            const values = await this.gdbProxy.getRegister(variableName, frameIndex);
             return parseInt(values[0], 16);
         } else {
             // Is it a symbol?
@@ -915,12 +960,12 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async evaluateRequestGetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
-        const matches = /m\s*([\{\}\$#0-9a-z_\+\-\*\/\%\(\)]+)\s*,\s*([0-9]+)(,\s*([0-9]+),\s*([0-9]+))?(,([abd]+))?/i.exec(args.expression);
+        const matches = /m\s*([{}$#0-9a-z_+\-*/%()]+)\s*,\s*(\d+)(,\s*(\d+),\s*(\d+))?(,([abd]+))?/i.exec(args.expression);
         if (matches) {
             let rowLength = 4;
             let wordLength = 4;
             let mode = "ab";
-            let length = parseInt(matches[2]);
+            const length = parseInt(matches[2]);
             if ((matches.length > 5) && matches[4] && matches[5]) {
                 wordLength = parseInt(matches[4]);
                 rowLength = parseInt(matches[5]);
@@ -931,17 +976,17 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             if (length !== null) {
                 try {
                     // replace the address if it is a variable
-                    let address = await this.debugExpressionHelper.getAddressFromExpression(matches[1], args.frameId, this);
+                    const address = await this.debugExpressionHelper.getAddressFromExpression(matches[1], args.frameId, this);
                     // ask for memory dump
                     await this.gdbProxy.waitConnected();
-                    let memory = await this.gdbProxy.getMemory(address, length);
+                    const memory = await this.gdbProxy.getMemory(address, length);
                     let key = this.variableExpressionMap.get(args.expression);
                     if (!key) {
                         key = this.variableHandles.create(args.expression);
                     }
-                    let startAddress = address;
+                    const startAddress = address;
                     if (mode !== "d") {
-                        let [firstRow, variables] = this.debugExpressionHelper.processOutputFromMemoryDump(memory, startAddress, mode, wordLength, rowLength);
+                        const [firstRow, variables] = this.debugExpressionHelper.processOutputFromMemoryDump(memory, startAddress, mode, wordLength, rowLength);
                         this.variableRefMap.set(key, variables);
                         this.variableExpressionMap.set(args.expression, key);
                         response.body = {
@@ -954,8 +999,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         if (this.capstone) {
                             const constKey = key;
                             // disassemble the code 
-                            let code = await this.capstone.disassemble(memory);
-                            let [firstRow, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, startAddress);
+                            const code = await this.capstone.disassemble(memory);
+                            const [firstRow, variables] = this.debugExpressionHelper.processVariablesFromDisassembler(code, startAddress);
                             this.variableRefMap.set(constKey, variables);
                             this.variableExpressionMap.set(args.expression, constKey);
                             response.body = {
@@ -980,14 +1025,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async evaluateRequestSetMemory(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
-        const matches = /M\s*([\{\}\$#0-9a-z_]+)\s*=\s*([0-9a-z_]+)/i.exec(args.expression);
+        const matches = /M\s*([{}$#0-9a-z_]+)\s*=\s*([0-9a-z_]+)/i.exec(args.expression);
         if (matches) {
-            let addrStr = matches[1];
-            let data = matches[2];
+            const addrStr = matches[1];
+            const data = matches[2];
             if ((addrStr !== null) && (data !== null) && (data.length > 0)) {
                 try {
                     // replace the address if it is a variable
-                    let address = await this.debugExpressionHelper.getAddressFromExpression(addrStr, args.frameId, this);
+                    const address = await this.debugExpressionHelper.getAddressFromExpression(addrStr, args.frameId, this);
                     await this.gdbProxy.waitConnected();
                     await this.gdbProxy.setMemory(address, data);
                     args.expression = 'm' + addrStr + ',' + data.length.toString(16);
@@ -1005,18 +1050,42 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected async evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
         // Evaluate an expression
-        let matches = /^([ad][0-7]|pc|sr)$/i.exec(args.expression);
+        const matches = /^([ad][0-7]|pc|sr)$/i.exec(args.expression);
         if (matches) {
-            this.evaluateRequestRegister(response, args);
+            if (args.expression.startsWith("a") && args.context === "watch") {
+                let format = ConfigurationHelper.retrieveStringPropertyInDefaultConf('display.memoryFormat.watch');
+                if (!format) {
+                    format = "m ${symbol},100,2,4";
+                }
+                args.expression = format.replace("symbol", args.expression);
+                this.evaluateRequestGetMemory(response, args);
+            } else {
+                this.evaluateRequestRegister(response, args);
+            }
         } else if (args.expression.startsWith('m')) {
             this.evaluateRequestGetMemory(response, args);
         } else if (args.expression.startsWith('M')) {
             this.evaluateRequestSetMemory(response, args);
+        } else if (this.symbolsMap.has(args.expression)) {
+            let format;
+            if (args.context === "watch") {
+                format = ConfigurationHelper.retrieveStringPropertyInDefaultConf('display.memoryFormat.watch');
+                if (!format) {
+                    format = "m ${symbol},104,2,4";
+                }
+            } else {
+                format = ConfigurationHelper.retrieveStringPropertyInDefaultConf('display.memoryFormat.hover');
+                if (!format) {
+                    format = "m ${symbol},24,2,4";
+                }
+            }
+            args.expression = format.replace("symbol", args.expression);
+            this.evaluateRequestGetMemory(response, args);
         } else {
             try {
-                let address = await this.debugExpressionHelper.getAddressFromExpression(args.expression, args.frameId, this);
+                const address = await this.debugExpressionHelper.getAddressFromExpression(args.expression, args.frameId, this);
                 response.body = {
-                    result: '$' + address.toString(16),
+                    result: VariableFormatter.HEXADECIMAL_FORMATTER.format(address),
                     type: "string",
                     variablesReference: 0,
                 };
@@ -1029,7 +1098,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected async pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): Promise<void> {
         await this.gdbProxy.waitConnected();
-        let thread = this.gdbProxy.getThread(args.threadId);
+        const thread = this.gdbProxy.getThread(args.threadId);
         if (thread) {
             try {
                 await this.gdbProxy.pause(thread);
@@ -1045,9 +1114,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     protected async exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments): Promise<void> {
         try {
             await this.gdbProxy.waitConnected();
-            let haltStatus = await this.gdbProxy.getHaltStatus();
+            const haltStatus = await this.gdbProxy.getHaltStatus();
             let selectedHs: GdbHaltStatus = haltStatus[0];
-            for (let hs of haltStatus) {
+            for (const hs of haltStatus) {
                 if ((hs.thread) && (this.gdbProxy.isCPUThread(hs.thread))) {
                     selectedHs = hs;
                     break;
@@ -1085,12 +1154,12 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
      * 
      *@param segment The list of returned segments from the debugger 
      */
-    public updateSegments(segments: Array<Segment>) {
+    public updateSegments(segments: Array<Segment>): void {
         if (this.debugInfo) {
-            let lastPos = this.debugInfo.hunks.length;
+            const lastPos = this.debugInfo.hunks.length;
             for (let posSegment = 0; posSegment < lastPos; posSegment++) {
                 // Segments in order of file
-                let hunk = this.debugInfo.hunks[posSegment];
+                const hunk = this.debugInfo.hunks[posSegment];
                 let segment;
                 let address;
                 if (posSegment >= segments.length) {
@@ -1110,7 +1179,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 hunk.segmentsAddress = address;
                 // Retrieve the symbols
                 if (hunk.symbols) {
-                    for (let s of hunk.symbols) {
+                    for (const s of hunk.symbols) {
                         this.symbolsMap.set(s.name, s.offset + address);
                     }
                 }
@@ -1121,7 +1190,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     public async updateDisassembledView(address: number, length: number): Promise<void> {
         if (address !== this.currentMemoryViewPc) {
             this.currentMemoryViewPc = address;
-            let dLines = await this.debugDisassembledManager.disassembleNumericalAddressCPU(address, length);
+            const dLines = await this.debugDisassembledManager.disassembleNumericalAddressCPU(address, length);
             await vscode.commands.executeCommand('disassembledMemory.setDisassembledMemory', dLines);
         }
     }

@@ -7,9 +7,6 @@ export class DisassembledMemoryDataProvider implements vscode.TreeDataProvider<V
     readonly onDidChangeTreeData: vscode.Event<ViewLineItem | undefined> = this._onDidChangeTreeData.event;
     private currentValues?: Array<ViewLineItem>;
 
-    constructor() {
-    }
-
     refresh(): void {
         this._onDidChangeTreeData.fire(undefined);
     }
@@ -25,13 +22,13 @@ export class DisassembledMemoryDataProvider implements vscode.TreeDataProvider<V
             return [];
         }
     }
-    setDisassembledMemory(memory: DisassembledInstructionAdapter[]) {
+    setDisassembledMemory(memory: DisassembledInstructionAdapter[]): void {
         this.currentValues = new Array<ViewLineItem>();
-        for (let dl of memory) {
-            let address = dl.address;
-            let asmLine = new ASMLine(` ${dl.instruction}`);
-            let label = `${asmLine.instruction}  ${asmLine.data}`;
-            let item = new ViewLineItem(`${address}: ${label}`);
+        for (const dl of memory) {
+            const address = dl.address;
+            const asmLine = new ASMLine(` ${dl.instruction}`);
+            const label = `${asmLine.instruction}  ${asmLine.data}`;
+            const item = new ViewLineItem(`${address}: ${label}`);
             if (dl.instructionBytes) {
                 item.description = dl.instructionBytes;
             }
@@ -42,13 +39,13 @@ export class DisassembledMemoryDataProvider implements vscode.TreeDataProvider<V
 }
 
 export class ViewLineItem extends vscode.TreeItem {
-    public description: string = "";
+    public description = "";
 
     constructor(label: string) {
         super(label, vscode.TreeItemCollapsibleState.None);
     }
 
-    getdescription(): string {
+    getDescription(): string {
         return this.description;
     }
 }

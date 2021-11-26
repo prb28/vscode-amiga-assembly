@@ -9,8 +9,8 @@ export enum DocumentationType {
     FUNCTION
 }
 export class DocumentationElement {
-    name: string = "";
-    description: string = "";
+    name = "";
+    description = "";
     type: DocumentationType = DocumentationType.UNKNOWN;
 }
 
@@ -23,20 +23,17 @@ abstract class DocumentationMDFileFolderManager {
         this.dirPath = path.join(extensionPath, "docs", dirName);
     }
 
-    public load(): Promise<void> {
-        return new Promise(async (resolve, _reject) => {
-            // Read the registers file
-            // Creating the relative path to find the test file
-            const dirProxy = new FileProxy(Uri.file(this.dirPath), true);
-            let files = await dirProxy.listFiles();
-            files.forEach(fileProxy => {
-                let filename = fileProxy.getName();
-                if (filename.endsWith(".md")) {
-                    this.loadFile(filename);
-                }
-            });
-            resolve();
-        });
+    public async load(): Promise<void> {
+        // Read the registers file
+        // Creating the relative path to find the test file
+        const dirProxy = new FileProxy(Uri.file(this.dirPath), true);
+        const files = await dirProxy.listFiles();
+        for (const fileProxy of files) {
+            const filename = fileProxy.getName();
+            if (filename.endsWith(".md")) {
+                this.loadFile(filename);
+            }
+        }
     }
 
     protected abstract loadFile(filename: string): void;
@@ -56,7 +53,7 @@ export class DocumentationInstructionsManager extends DocumentationMDFileFolderM
         super(extensionPath, "instructions");
     }
 
-    protected loadFile(filename: string) {
+    protected loadFile(filename: string): void {
         let elms = filename.replace(".md", "").split("_");
         if (elms[0] === "bcc") {
             elms = DocumentationInstructionsManager.bccVariants;
@@ -66,9 +63,9 @@ export class DocumentationInstructionsManager extends DocumentationMDFileFolderM
             elms = DocumentationInstructionsManager.sccVariants;
         }
         elms.forEach(element => {
-            let filePath = path.join(this.dirPath, filename);
-            let name = element.toUpperCase();
-            let di = new DocumentationInstruction(element, this.dirPath, filePath);
+            const filePath = path.join(this.dirPath, filename);
+            const name = element.toUpperCase();
+            const di = new DocumentationInstruction(element, this.dirPath, filePath);
             this.instructions.set(name, di);
         });
     }
@@ -77,14 +74,12 @@ export class DocumentationInstructionsManager extends DocumentationMDFileFolderM
      * Retrieves an instruction by it's name
      * @param name Name of the instruction
      */
-    public getInstructionByName(name: string): Promise<DocumentationInstruction | undefined> {
-        return new Promise(async (resolve, _) => {
-            let instruction = this.instructions.get(name);
-            if (instruction) {
-                await instruction.loadDescription();
-            }
-            resolve(instruction);
-        });
+    public async getInstructionByName(name: string): Promise<DocumentationInstruction | undefined> {
+        const instruction = this.instructions.get(name);
+        if (instruction) {
+            await instruction.loadDescription();
+        }
+        return instruction;
     }
 
     /**
@@ -100,7 +95,7 @@ export class DocumentationInstructionsManager extends DocumentationMDFileFolderM
 }
 
 /**
- * Class representing an intruction documentation
+ * Class representing an instruction documentation
  */
 export class DocumentationInstruction extends DocumentationElement {
     filename: string;
@@ -124,10 +119,12 @@ export class DocumentationInstruction extends DocumentationElement {
 
     private removeImages(text: string): string {
         let rText = text;
+        // eslint-disable-next-line no-useless-escape
         const matcher = /[!]?\[([\/\\a-z0-9_\s\.\-]*)\]\(([a-z0-9_\-\/\\\.]*)\)/gi;
-        let match;
-        while (match = matcher.exec(text)) {
+        let match = matcher.exec(text)
+        while (match) {
             rText = rText.replace(match[0], '');
+            match = matcher.exec(text)
         }
         return rText;
     }
@@ -135,16 +132,13 @@ export class DocumentationInstruction extends DocumentationElement {
     /**
      * Lazy loading for descriptions
      */
-    public loadDescription(): Promise<void> {
-        return new Promise(async (resolve, _reject) => {
-            if (!this.loaded) {
-                let fProxy = new FileProxy(Uri.file(this.filename), true);
-                let contents = await fProxy.readFileText('utf8');
-                this.description = this.removeImages(contents);
-                this.loaded = true;
-            }
-            resolve();
-        });
+    public async loadDescription(): Promise<void> {
+        if (!this.loaded) {
+            const fProxy = new FileProxy(Uri.file(this.filename), true);
+            const contents = await fProxy.readFileText('utf8');
+            this.description = this.removeImages(contents);
+            this.loaded = true;
+        }
     }
 }
 
@@ -160,13 +154,13 @@ export class DocumentationRegistersManager extends DocumentationMDFileFolderMana
         super(extensionPath, "hardware");
     }
 
-    protected loadFile(filename: string) {
-        let elms = filename.replace(".md", "").split("_");
+    protected loadFile(filename: string): void {
+        const elms = filename.replace(".md", "").split("_");
         if (elms.length === 2) {
-            let filePath = path.join(this.dirPath, filename);
-            let name = elms[1].toUpperCase();
-            let address = elms[0].toUpperCase();
-            let hr = new DocumentationRegister(address, name, filePath);
+            const filePath = path.join(this.dirPath, filename);
+            const name = elms[1].toUpperCase();
+            const address = elms[0].toUpperCase();
+            const hr = new DocumentationRegister(address, name, filePath);
             this.registersByAddress.set(address, hr);
             this.registersByName.set(name, hr);
         }
@@ -176,28 +170,24 @@ export class DocumentationRegistersManager extends DocumentationMDFileFolderMana
      * Retrieves a register by it's address
      * @param address Address of the register
      */
-    public getRegistersByAddress(address: string): Promise<DocumentationRegister | undefined> {
-        return new Promise(async (resolve, _) => {
-            let register = this.registersByAddress.get(address);
-            if (register) {
-                await register.loadDescription();
-            }
-            resolve(register);
-        });
+    public async getRegistersByAddress(address: string): Promise<DocumentationRegister | undefined> {
+        const register = this.registersByAddress.get(address);
+        if (register) {
+            await register.loadDescription();
+        }
+        return register;
     }
 
     /**
      * Retrieves a register by it's name
      * @param name Name of the register
      */
-    public getRegistersByName(name: string): Promise<DocumentationRegister | undefined> {
-        return new Promise(async (resolve, _) => {
-            let register = this.registersByName.get(name);
-            if (register) {
-                await register.loadDescription();
-            }
-            resolve(register);
-        });
+    public async getRegistersByName(name: string): Promise<DocumentationRegister | undefined> {
+        const register = this.registersByName.get(name);
+        if (register) {
+            await register.loadDescription();
+        }
+        return register;
     }
 
     /**
@@ -241,16 +231,13 @@ export class DocumentationRegister extends DocumentationElement {
     /**
      * Lazy loading for descriptions
      */
-    public loadDescription(): Promise<void> {
-        return new Promise(async (resolve, _reject) => {
-            if (!this.loaded) {
-                let fProxy = new FileProxy(Uri.file(this.filename), true);
-                let contents = await fProxy.readFileText('utf8');
-                this.description = this.modifyDescription(contents, this.address, this.name);
-                this.loaded = true;
-            }
-            resolve();
-        });
+    public async loadDescription(): Promise<void> {
+        if (!this.loaded) {
+            const fProxy = new FileProxy(Uri.file(this.filename), true);
+            const contents = await fProxy.readFileText('utf8');
+            this.description = this.modifyDescription(contents, this.address, this.name);
+            this.loaded = true;
+        }
     }
 
     /**
@@ -262,8 +249,8 @@ export class DocumentationRegister extends DocumentationElement {
     private modifyDescription(description: string, address: string, name: string): string {
         // Retrieve the first line
         if (description.trim().startsWith("**")) {
-            let lAddress = address.toLocaleLowerCase();
-            return description.replace("**", `**${name}(\$${lAddress}) - `);
+            const lAddress = address.toLocaleLowerCase();
+            return description.replace("**", `**${name}($${lAddress}) - `);
         } else {
             return description;
         }
@@ -280,55 +267,52 @@ export class DocumentationLibraryManager {
         this.extensionPath = extensionPath;
     }
 
-    public load(): Promise<void> {
-        return new Promise(async (resolve, _reject) => {
-            // Read the registers file
-            // Creating the relative path to find the test file
-            const dirPath = path.join(this.extensionPath, "docs", "libs");
-            const dirProxy = new FileProxy(Uri.file(dirPath), true);
-            let files = await dirProxy.listFiles();
-            files.forEach(async fileProxy => {
-                let dirName = fileProxy.getName();
-                if (!dirName.startsWith(".")) {
-                    let childFiles = await fileProxy.listFiles();
-                    childFiles.forEach(childFile => {
-                        let childFileName = childFile.getName();
-                        if (childFileName.endsWith(".md")) {
-                            let name = childFileName.replace(".md", "");
-                            let lf = new DocumentationLibraryFunction(dirName, name, "", childFile);
-                            this.functionsByName.set(name.toUpperCase(), lf);
-                        }
-                    });
-                }
-            });
-            resolve();
-        });
+    public async load(): Promise<void> {
+        // Read the registers file
+        // Creating the relative path to find the test file
+        const dirPath = path.join(this.extensionPath, "docs", "libs");
+        const dirProxy = new FileProxy(Uri.file(dirPath), true);
+        const files = await dirProxy.listFiles();
+        for (const fileProxy of files) {
+            const dirName = fileProxy.getName();
+            if (!dirName.startsWith(".")) {
+                const childFiles = await fileProxy.listFiles();
+                childFiles.forEach(childFile => {
+                    const childFileName = childFile.getName();
+                    if (childFileName.endsWith(".md")) {
+                        const name = childFileName.replace(".md", "");
+                        const lf = new DocumentationLibraryFunction(dirName, name, "", childFile);
+                        this.functionsByName.set(name.toUpperCase(), lf);
+                    }
+                });
+            }
+        }
     }
 
     private refactorLinks(relativePath: string, text: string): string {
         let rText = text;
+        // eslint-disable-next-line no-useless-escape
         const matcher = /\[([\/\\a-z0-9_\.\-]*)\]\(([a-z0-9_\-\/\\\.]*)\)/gi;
-        let match;
-        while (match = matcher.exec(text)) {
-            let title = match[1];
-            let pageName = match[2];
-            let args = [{ path: `${relativePath}/${pageName}` }];
+        let match = matcher.exec(text);
+        while (match) {
+            const title = match[1];
+            const pageName = match[2];
+            const args = [{ path: `${relativePath}/${pageName}` }];
             const commandUri = `[${title}](command:amiga-assembly.showdoc?${encodeURIComponent(JSON.stringify(args))})`;
             rText = rText.replace(match[0], commandUri);
+            match = matcher.exec(text);
         }
         return rText;
     }
 
-    public loadDescription(functionName: string): Promise<DocumentationLibraryFunction | undefined> {
-        return new Promise(async (resolve, reject) => {
-            let hLibFunc = this.functionsByName.get(functionName);
-            if (hLibFunc && (hLibFunc.description.length === 0)) {
-                let description = await hLibFunc.fileProxy.readFileText('utf8');
-                // refactor the description links
-                hLibFunc.description = this.refactorLinks(`libs/${hLibFunc.libraryName}`, description);
-            }
-            resolve(hLibFunc);
-        });
+    public async loadDescription(functionName: string): Promise<DocumentationLibraryFunction | undefined> {
+        const hLibFunc = this.functionsByName.get(functionName);
+        if (hLibFunc && (hLibFunc.description.length === 0)) {
+            const description = await hLibFunc.fileProxy.readFileText('utf8');
+            // refactor the description links
+            hLibFunc.description = this.refactorLinks(`libs/${hLibFunc.libraryName}`, description);
+        }
+        return hLibFunc;
     }
     public size(): number {
         return this.functionsByName.size;
@@ -374,32 +358,27 @@ export class DocumentationManager {
         this.relevantKeywordsMap = new Map<string, Array<DocumentationElement>>();
     }
 
-    public load(): Promise<void> {
+    public async load(): Promise<void> {
         if (!this.isLoaded) {
-            return new Promise(async (resolve, _) => {
-                await Promise.all([this.instructionsManager.load(),
-                this.registersManager.load(),
-                this.libraryManager.load()]);
-                for (const [key, value] of this.instructionsManager.entriesByName()) {
-                    this.addRelevantKeywordElements(key, value);
-                }
-                for (const [key, value] of this.registersManager.entriesByName()) {
-                    this.addRelevantKeywordElements(key, value);
-                }
-                for (const [key, value] of this.libraryManager.functionsByName.entries()) {
-                    this.addRelevantKeywordElements(key, value);
-                }
-                this.isLoaded = true;
-                resolve();
-            });
-        } else {
-            return Promise.resolve();
+            await Promise.all([this.instructionsManager.load(),
+            this.registersManager.load(),
+            this.libraryManager.load()]);
+            for (const [key, value] of this.instructionsManager.entriesByName()) {
+                this.addRelevantKeywordElements(key, value);
+            }
+            for (const [key, value] of this.registersManager.entriesByName()) {
+                this.addRelevantKeywordElements(key, value);
+            }
+            for (const [key, value] of this.libraryManager.functionsByName.entries()) {
+                this.addRelevantKeywordElements(key, value);
+            }
+            this.isLoaded = true;
         }
     }
 
     private addRelevantKeywordElements(key: string, element: DocumentationElement) {
-        let lKey = key.toUpperCase();
-        let lElements = this.relevantKeywordsMap.get(lKey);
+        const lKey = key.toUpperCase();
+        const lElements = this.relevantKeywordsMap.get(lKey);
         if (!lElements) {
             this.relevantKeywordsMap.set(lKey, [element]);
         } else {
@@ -426,63 +405,59 @@ export class DocumentationManager {
      * @param keyword Word to search
      * @return Description
      */
-    public get(keyword: string): Promise<string | null> {
-        return new Promise(async (resolve, _reject) => {
-            let value: DocumentationElement | undefined;
-            if (keyword.length > 0) {
-                value = await this.getRegisterByAddress(keyword);
+    public async get(keyword: string): Promise<string | null> {
+        let value: DocumentationElement | undefined;
+        if (keyword.length > 0) {
+            value = await this.getRegisterByAddress(keyword);
+            if (!value) {
+                value = await this.getRegisterByName(keyword);
                 if (!value) {
-                    value = await this.getRegisterByName(keyword);
-                    if (!value) {
-                        let newKeyword = keyword;
-                        let pos = newKeyword.indexOf('(');
-                        if (pos > 0) {
-                            newKeyword = newKeyword.substring(0, pos);
-                        }
-                        if (newKeyword.startsWith("_LVO")) {
-                            newKeyword = newKeyword.substring(4);
-                        }
-                        value = await this.getFunction(newKeyword);
+                    let newKeyword = keyword;
+                    const pos = newKeyword.indexOf('(');
+                    if (pos > 0) {
+                        newKeyword = newKeyword.substring(0, pos);
                     }
+                    if (newKeyword.startsWith("_LVO")) {
+                        newKeyword = newKeyword.substring(4);
+                    }
+                    value = await this.getFunction(newKeyword);
                 }
             }
-            if (value) {
-                resolve(value.description);
-            } else {
-                resolve(null);
-            }
-        });
+        }
+        if (value) {
+            return value.description;
+        } else {
+            return null;
+        }
     }
     /**
      * Seeks for a keyword starting with 
      * @param keyword Keyword part
      * @return Array of keywords
      */
-    public findKeywordStartingWith(keyword: string): Promise<Array<DocumentationElement>> {
-        return new Promise(async (resolve, _reject) => {
-            let values = new Array<DocumentationElement>();
-            let upper = keyword.toUpperCase();
-            if (upper.startsWith("_LVO")) {
-                upper = upper.substring(4);
-            }
-            for (const key of this.relevantKeywordsMap.keys()) {
-                if (key.startsWith(upper)) {
-                    let keywordValues = this.relevantKeywordsMap.get(key);
-                    if (keywordValues) {
-                        for (const v of keywordValues) {
-                            if (v instanceof DocumentationLibraryFunction) {
-                                const loaded = await this.libraryManager.loadDescription(key);
-                                if (loaded) {
-                                    values.push(loaded);
-                                }
-                            } else {
-                                values.push(v);
+    public async findKeywordStartingWith(keyword: string): Promise<Array<DocumentationElement>> {
+        const values = new Array<DocumentationElement>();
+        let upper = keyword.toUpperCase();
+        if (upper.startsWith("_LVO")) {
+            upper = upper.substring(4);
+        }
+        for (const key of this.relevantKeywordsMap.keys()) {
+            if (key.startsWith(upper)) {
+                const keywordValues = this.relevantKeywordsMap.get(key);
+                if (keywordValues) {
+                    for (const v of keywordValues) {
+                        if (v instanceof DocumentationLibraryFunction) {
+                            const loaded = await this.libraryManager.loadDescription(key);
+                            if (loaded) {
+                                values.push(loaded);
                             }
+                        } else {
+                            values.push(v);
                         }
                     }
                 }
             }
-            resolve(values);
-        });
+        }
+        return values;
     }
 }

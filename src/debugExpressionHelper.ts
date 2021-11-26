@@ -4,47 +4,38 @@ import { StringUtils } from './stringUtils';
 import { ExtensionState } from './extension';
 
 export class DebugExpressionHelper {
-    public getAddressFromExpression(expression: string, frameIndex: number | undefined, variableResolver: DebugVariableResolver): Promise<number> {
-        return new Promise<number>(async (resolve, reject) => {
-            if (expression !== null) {
-                let newExpression = expression;
-                // Replace all variables
-                let variableRegexp = /([\$#]\{[a-zA-Z0-9_\-\.]*\})/g;
-                let match;
-                while (match = variableRegexp.exec(expression)) {
-                    let variableExpression = match[1];
-                    let variableName = variableExpression.substring(2, variableExpression.length - 1);
-                    let value: string | void;
-                    if (variableExpression.startsWith('$')) {
-                        value = await variableResolver.getVariableValue(variableName, frameIndex).catch(err => {
-                            return reject(err);
-                        });
-                    } else {
-                        value = await variableResolver.getVariablePointedMemory(variableName, frameIndex).catch(err => {
-                            return reject(err);
-                        });
-                    }
-                    if (value) {
-                        newExpression = newExpression.replace("#{", "${").replace("${" + variableName + "}", "$" + value);
-                    }
+    public async getAddressFromExpression(expression: string, frameIndex: number | undefined, variableResolver: DebugVariableResolver): Promise<number> {
+        if (expression !== null) {
+            let newExpression = expression;
+            // Replace all variables
+            const variableRegexp = /([$#]\{[a-zA-Z0-9_\-.]*\})/g;
+            let match = variableRegexp.exec(expression);
+            while (match) {
+                const variableExpression = match[1];
+                const variableName = variableExpression.substring(2, variableExpression.length - 1);
+                let value: string | void;
+                if (variableExpression.startsWith('$')) {
+                    value = await variableResolver.getVariableValue(variableName, frameIndex);
+                } else {
+                    value = await variableResolver.getVariablePointedMemory(variableName, frameIndex);
                 }
-                // call the function to calculate the expression
-                let dHnd = ExtensionState.getCurrent().getDefinitionHandler();
-                dHnd.evaluateFormula(newExpression).then(result => {
-                    resolve(result);
-                }).catch(err => {
-                    reject(err);
-                });
-            } else {
-                reject(new Error("Invalid address"));
+                if (value) {
+                    newExpression = newExpression.replace("#{", "${").replace("${" + variableName + "}", "$" + value);
+                }
+                match = variableRegexp.exec(expression)
             }
-        });
+            // call the function to calculate the expression
+            const dHnd = ExtensionState.getCurrent().getDefinitionHandler();
+            return dHnd.evaluateFormula(newExpression);
+        } else {
+            throw new Error("Invalid address");
+        }
     }
 
     public processOutputFromMemoryDump(memory: string, startAddress: number, mode: string, wordLength: number, rowLength: number): [string, Array<DebugProtocol.Variable>] {
         let firstRow = "";
-        let variables = new Array<DebugProtocol.Variable>();
-        let chunks = StringUtils.chunk(memory.toString(), wordLength * 2);
+        const variables = new Array<DebugProtocol.Variable>();
+        const chunks = StringUtils.chunk(memory.toString(), wordLength * 2);
         let i = 0;
         let rowCount = 0;
         let row = "";
@@ -58,11 +49,11 @@ export class DebugExpressionHelper {
             nextAddress += chunks[i].length / 2;
             if ((rowCount >= rowLength - 1) || (i === chunks.length - 1)) {
                 if (mode.indexOf('a') >= 0) {
-                    let asciiText = StringUtils.convertHexStringToASCII(row.replace(/\s+/g, ''), 2);
+                    const asciiText = StringUtils.convertHexStringToASCII(row.replace(/\s+/g, ''), 2);
                     if (mode.indexOf('b') >= 0) {
                         if ((i === chunks.length - 1) && (rowCount < rowLength - 1)) {
-                            let chunksMissing = rowLength - 1 - rowCount;
-                            let padding = chunksMissing * wordLength * 2 + chunksMissing;
+                            const chunksMissing = rowLength - 1 - rowCount;
+                            const padding = chunksMissing * wordLength * 2 + chunksMissing;
                             for (let j = 0; j < padding; j++) {
                                 row += " ";
                             }
@@ -93,9 +84,9 @@ export class DebugExpressionHelper {
     }
 
     public processVariablesFromDisassembler(code: string, startAddress: number): [string, Array<DebugProtocol.Variable>] {
-        let variables = new Array<DebugProtocol.Variable>();
-        let [firstRow, instructions] = this.processOutputFromDisassembler(code, startAddress);
-        for (let instruction of instructions) {
+        const variables = new Array<DebugProtocol.Variable>();
+        const [firstRow, instructions] = this.processOutputFromDisassembler(code, startAddress);
+        for (const instruction of instructions) {
             let ib = instruction.instructionBytes;
             if (!ib) {
                 ib = "";
@@ -111,22 +102,22 @@ export class DebugExpressionHelper {
 
     public processOutputFromDisassembler(code: string, startAddress: number): [string, Array<DisassembledInstructionAdapter>] {
         let firstRow = "";
-        let disassembledLines = new Array<DisassembledInstructionAdapter>();
-        let lines = code.split(/\r\n|\r|\n/g);
+        const disassembledLines = new Array<DisassembledInstructionAdapter>();
+        const lines = code.split(/\r\n|\r|\n/g);
         let i = 0;
         for (let l of lines) {
             l = l.trim();
             if (l.length > 0) {
-                let elms = l.split("  ");
+                const elms = l.split("  ");
                 if (elms.length > 2) {
-                    let instructionElms = elms[2].split('\t');
+                    const instructionElms = elms[2].split('\t');
                     let instruction = elms[2];
                     if (instructionElms.length > 1) {
                         instruction = instructionElms[0] + StringUtils.createPad(instructionElms[0], 10) + instructionElms[1];
                     }
-                    let offset = parseInt(elms[0], 16);
-                    let addOffset = startAddress + offset;
-                    let dInstr = DisassembledInstructionAdapter.createNumerical(addOffset, instruction);
+                    const offset = parseInt(elms[0], 16);
+                    const addOffset = startAddress + offset;
+                    const dInstr = DisassembledInstructionAdapter.createNumerical(addOffset, instruction);
                     dInstr.line = i;
                     dInstr.instructionBytes = elms[1];
                     dInstr.column = 0;
@@ -135,7 +126,7 @@ export class DebugExpressionHelper {
                         firstRow = elms[2].replace("\t", " ");
                     }
                 } else {
-                    let dInstr = DisassembledInstructionAdapter.createNumerical(i, l);
+                    const dInstr = DisassembledInstructionAdapter.createNumerical(i, l);
                     dInstr.line = i;
                     dInstr.instructionBytes = l;
                     dInstr.column = 0;
@@ -167,7 +158,7 @@ export class DisassembledInstructionAdapter implements DebugProtocol.Disassemble
         this.instruction = instruction;
     }
     public static createNumerical(address: number, instruction: string): DisassembledInstructionAdapter {
-        let addr = DisassembledInstructionAdapter.getAddressString(address);
+        const addr = DisassembledInstructionAdapter.getAddressString(address);
         return new DisassembledInstructionAdapter(addr, instruction);
     }
     public static createString(address: string, instruction: string): DisassembledInstructionAdapter {

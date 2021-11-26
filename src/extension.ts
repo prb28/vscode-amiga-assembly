@@ -5,17 +5,14 @@ import * as path from 'path';
 import { M68kFormatter } from './formatter';
 import { M68kHoverProvider } from './hover';
 import { M86kColorProvider } from './color';
-import { CalcController } from './calcComponents';
-import { VASMController } from './vasm';
+import { CalcController, CalcComponent } from './calcComponents';
 import { FsUAEDebugSession } from './fsUAEDebug';
 import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
-import { CalcComponent } from './calcComponents';
 import { VASMCompiler } from './vasm';
 import { StatusManager } from "./status";
 import { Disassembler, DisassembleRequestType } from './disassemble';
 import { M68kDefinitionHandler } from './definitionHandler';
 import { DisassemblyContentProvider } from './disassemblyContentProvider';
-import { ADFTools } from './adf';
 import { DataGeneratorCodeLensProvider } from './expressionDataGenerator';
 import { IFFViewerPanel } from './iffImageViewer';
 import { M68kCompletionItemProvider } from './completion';
@@ -28,9 +25,14 @@ import * as winston from "winston";
 import * as TransportStream from "winston-transport";
 import { FileProxy } from './fsProxy';
 import { WinUAEDebugSession } from './winUAEDebug';
+import { AmigaBuildTaskProvider, CompilerController } from './customTaskProvider';
+import { VariableDisplayFormat, VariableDisplayFormatRequest } from './variableFormatter';
+import { BinariesManager } from './downloadManager';
+import { ConfigurationHelper } from './configurationHelper';
+import { WorkspaceManager } from './workspaceManager';
 
 // Setting all the globals values
-export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k', scheme: 'file' };
+export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
 export const AMIGA_DEBUG_ASM_MODE: vscode.DocumentFilter = { language: 'amiga-assembly-debug.disassembly', scheme: 'disassembly' };
 
 class SimpleConsoleTransport extends TransportStream {
@@ -49,14 +51,12 @@ class SimpleConsoleTransport extends TransportStream {
 }
 
 export class ExtensionState {
-    public static readonly CONFIGURATION_NAME = 'amiga-assembly';
     private compiler: VASMCompiler | undefined;
     private errorDiagnosticCollection: vscode.DiagnosticCollection | undefined;
     private warningDiagnosticCollection: vscode.DiagnosticCollection | undefined;
     private statusManager: StatusManager | undefined;
     private calc: CalcComponent | undefined;
     private disassembler: Disassembler | undefined;
-    private adfTools: ADFTools | undefined;
     private definitionHandler: M68kDefinitionHandler | undefined;
     private dataGenerator: DataGeneratorCodeLensProvider | undefined;
     private documentationManager: DocumentationManager | undefined;
@@ -65,20 +65,25 @@ export class ExtensionState {
     private outputChannel: vscode.OutputChannel;
     private buildDir: FileProxy | undefined;
     private tmpDir: FileProxy | undefined;
+    private context: vscode.ExtensionContext | undefined;
+    private version: string;
+    private workspaceRootDir: vscode.Uri | null = null;
+    private forcedBuildDir?: FileProxy;
 
     private extensionPath: string = path.join(__dirname, "..");
 
     public constructor() {
         this.outputChannel = vscode.window.createOutputChannel('Amiga Assembly');
-        let transport = new SimpleConsoleTransport(this.outputChannel);
-        let level: string | undefined = this.getLogLevel();
+        const transport = new SimpleConsoleTransport(this.outputChannel);
+        const level: string | undefined = this.getLogLevel();
         if (level) {
             transport.level = level;
         }
         winston.add(transport);
+        this.version = vscode.extensions.getExtension('prb28.amiga-assembly')?.packageJSON.version;
     }
     public getLogLevel(): string | undefined {
-        return vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('logLevel');
+        return ConfigurationHelper.retrieveStringPropertyInDefaultConf('logLevel');
     }
     public getErrorDiagnosticCollection(): vscode.DiagnosticCollection {
         if (this.errorDiagnosticCollection === undefined) {
@@ -116,19 +121,21 @@ export class ExtensionState {
         }
         return this.disassembler;
     }
-    public getADFTools(): ADFTools {
-        if (this.adfTools === undefined) {
-            this.adfTools = ADFTools.create();
-        }
-        return this.adfTools;
-    }
     public static getCurrent(): ExtensionState {
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             return ext.exports.getState();
         }
         return new ExtensionState();
+    }
+    public static isActive(): boolean {
+        // activate the extension
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            return ext.isActive;
+        }
+        return false;
     }
     public getDefinitionHandler(): M68kDefinitionHandler {
         if (this.definitionHandler === undefined) {
@@ -141,8 +148,8 @@ export class ExtensionState {
         }
         return this.definitionHandler;
     }
-    public static scanFileWatcher(uri: vscode.Uri) {
-        let dHandler = ExtensionState.getCurrent().getDefinitionHandler();
+    public static scanFileWatcher(uri: vscode.Uri): void {
+        const dHandler = ExtensionState.getCurrent().getDefinitionHandler();
         if (dHandler) {
             dHandler.scanFile(uri);
         }
@@ -153,16 +160,19 @@ export class ExtensionState {
         }
         return this.dataGenerator;
     }
-    public getDocumentationManager(): Promise<DocumentationManager> {
-        return new Promise(async (resolve, reject) => {
-            if (this.documentationManager === undefined) {
-                this.documentationManager = new DocumentationManager(this.extensionPath);
-                await this.documentationManager.load();
-            }
-            resolve(this.documentationManager);
-        });
+    public async getDocumentationManager(): Promise<DocumentationManager> {
+        if (this.documentationManager === undefined) {
+            this.documentationManager = new DocumentationManager(this.extensionPath);
+            await this.documentationManager.load();
+        }
+        return this.documentationManager;
     }
-    public setExtensionPath(extensionPath: string) {
+
+    public getBinariesManager(): BinariesManager {
+        return new BinariesManager(ConfigurationHelper.retrieveStringPropertyInDefaultConf("binariesBranchURL"), ConfigurationHelper.retrieveStringPropertyInDefaultConf("binariesTagsURL"));
+    }
+
+    public setExtensionPath(extensionPath: string): void {
         this.extensionPath = extensionPath;
         // reset language
         this.language = undefined;
@@ -170,20 +180,18 @@ export class ExtensionState {
     public getExtensionPath(): string {
         return this.extensionPath;
     }
-    public getLanguage(): Promise<M68kLanguage> {
+    public async getLanguage(): Promise<M68kLanguage> {
         if (this.language === undefined) {
-            return new Promise(async (resolve, _reject) => {
-                this.language = new M68kLanguage(this.extensionPath);
-                await this.language.load();
-                resolve(this.language);
-            });
+            this.language = new M68kLanguage(this.extensionPath);
+            await this.language.load();
+            return this.language;
         }
-        return Promise.resolve(this.language);
+        return this.language;
     }
     public getOutputChannel(): vscode.OutputChannel {
         return this.outputChannel;
     }
-    public dispose() {
+    public dispose(): void {
         if (this.outputChannel) {
             this.outputChannel.dispose();
         }
@@ -193,7 +201,7 @@ export class ExtensionState {
      * Default build dir : Workspace/build
      */
     private getDefaultBuildDir(): FileProxy {
-        let rootDir = this.getWorkspaceRootDir();
+        const rootDir = this.getWorkspaceRootDir();
         if (rootDir) {
             return new FileProxy(rootDir.with({ path: rootDir.path + "/build" }));
         }
@@ -205,7 +213,7 @@ export class ExtensionState {
      */
     private getPathOrRelative(pathSelected: string): FileProxy {
         if (!path.isAbsolute(pathSelected)) {
-            let rootDir = this.getWorkspaceRootDir();
+            const rootDir = this.getWorkspaceRootDir();
             if (rootDir) {
                 return new FileProxy(rootDir.with({ path: `${rootDir.path}/${pathSelected}` }));
             }
@@ -217,7 +225,7 @@ export class ExtensionState {
      * Returns the temporary directory
      */
     public getTmpDir(): FileProxy {
-        let tmpDirPath: any = vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('tmpDir');
+        const tmpDirPath: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('tmpDir');
         if (tmpDirPath) {
             this.tmpDir = this.getPathOrRelative(tmpDirPath);
         } else {
@@ -226,11 +234,23 @@ export class ExtensionState {
         return this.tmpDir;
     }
 
+
+    /**
+     * Forces build dir for the tests
+     * @param buildDir Forced build dir
+     */
+    public forceBuildDir(buildDir: FileProxy): void {
+        this.forcedBuildDir = buildDir;
+    }
+
     /**
      * Returns the build directory
      */
     public getBuildDir(): FileProxy {
-        let buildDirPath: any = vscode.workspace.getConfiguration(ExtensionState.CONFIGURATION_NAME, null).get('buildDir');
+        if (this.forcedBuildDir) {
+            return this.forcedBuildDir;
+        }
+        const buildDirPath: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('buildDir');
         if (buildDirPath) {
             this.buildDir = this.getPathOrRelative(buildDirPath);
         } else {
@@ -243,10 +263,41 @@ export class ExtensionState {
      * Reads the workspace folder dir
      */
     getWorkspaceRootDir(): vscode.Uri | null {
-        if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+        if (this.workspaceRootDir) {
+            return this.workspaceRootDir;
+        } else if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
             return vscode.workspace.workspaceFolders[0].uri;
         }
         return null;
+    }
+
+    /**
+     * Select a workspace root directory
+     * @param workspaceRootDir Workspace root directory
+     */
+    setWorkspaceRootDir(workspaceRootDir: vscode.Uri): void {
+        this.workspaceRootDir = workspaceRootDir;
+    }
+
+    /**
+     * Set the extension context
+     */
+    setExtensionContext(context: vscode.ExtensionContext): void {
+        this.context = context;
+    }
+
+    /**
+     * Get the extension context
+     */
+    getExtensionContext(): vscode.ExtensionContext | undefined {
+        return this.context;
+    }
+
+    /**
+     * Get the extension version
+     */
+    getExtensionVersion(): string {
+        return this.version;
     }
 }
 
@@ -254,20 +305,18 @@ const state = new ExtensionState();
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export async function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext): Promise<any> {
     state.setExtensionPath(context.extensionPath);
-    await state.getLanguage().then((language) => {
-        ASMLine.init(language);
-    });
-    context.globalState.update('state', state);
+    const languageAsm = await state.getLanguage();
+    ASMLine.init(languageAsm);
+
     // Preparing the status manager
-    let statusManager = state.getStatusManager();
-    statusManager.showStatus("Build", 'amiga-assembly.build-vasm-workspace', "Build Workspace");
+    const statusManager = state.getStatusManager();
     vscode.window.onDidChangeActiveTextEditor(statusManager.showHideStatus, null, context.subscriptions);
     context.subscriptions.push(statusManager);
 
     winston.info("Starting Amiga Assembly");
-    let formatter = new M68kFormatter();
+    const formatter = new M68kFormatter();
     // Declaring the formatter
     let disposable = vscode.languages.registerDocumentFormattingEditProvider(AMIGA_ASM_MODE, formatter);
     context.subscriptions.push(disposable);
@@ -281,57 +330,55 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     // Declaring the Hover
-    await state.getDocumentationManager().then((docManager) => {
-        disposable = vscode.languages.registerHoverProvider(AMIGA_ASM_MODE, new M68kHoverProvider(docManager));
-        context.subscriptions.push(disposable);
-    });
+    const docManager = await state.getDocumentationManager();
+    disposable = vscode.languages.registerHoverProvider(AMIGA_ASM_MODE, new M68kHoverProvider(docManager));
+    context.subscriptions.push(disposable);
 
     // create a new disassembler
-    let disassembler = state.getDisassembler();
+    const disassembler = state.getDisassembler();
     disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-file', async () => {
-        await disassembler.showInputPanel(DisassembleRequestType.FILE).catch(err => {
+        try {
+            await disassembler.showInputPanel(DisassembleRequestType.FILE);
+        } catch (err) {
             vscode.window.showErrorMessage(err.message);
-        });
+        }
     });
     context.subscriptions.push(disposable);
 
     // create a new disassembler for copper address
     disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-copper', async () => {
-        await disassembler.showInputPanel(DisassembleRequestType.COPPER).catch(err => {
+        try {
+            await disassembler.showInputPanel(DisassembleRequestType.COPPER);
+        } catch (err) {
             vscode.window.showErrorMessage(err.message);
-        });
+        }
     });
     context.subscriptions.push(disposable);
 
     // create a new disassembler for memory address
     disposable = vscode.commands.registerCommand('amiga-assembly.disassemble-memory', async () => {
-        await disassembler.showInputPanel(DisassembleRequestType.MEMORY).catch(err => {
+        try {
+            await disassembler.showInputPanel(DisassembleRequestType.MEMORY);
+        } catch (err) {
             vscode.window.showErrorMessage(err.message);
-        });
-    });
-    context.subscriptions.push(disposable);
-
-    // create ADF file creator command
-    disposable = vscode.commands.registerCommand('amiga-assembly.create-adffile', async () => {
-        state.getADFTools().createBootableADFDisk(state.getCompiler()).catch(err => {
-            vscode.window.showErrorMessage(err.message);
-        });
+        }
     });
     context.subscriptions.push(disposable);
 
     // List all symbols in selection
     disposable = vscode.commands.registerCommand('amiga-assembly.list-used-registers', async () => {
-        state.getDefinitionHandler().provideUsedRegistersSymbols().then(symbolsMessage => {
+        try {
+            const symbolsMessage = await state.getDefinitionHandler().provideUsedRegistersSymbols();
             vscode.window.showInformationMessage(symbolsMessage);
-        }).catch(err => {
+        } catch (err) {
             vscode.window.showErrorMessage(err.message);
-        });
+        }
     });
     context.subscriptions.push(disposable);
 
     // create a new calculator
-    let calc = state.getCalc();
-    let controller = new CalcController(calc);
+    const calc = state.getCalc();
+    const controller = new CalcController(calc);
 
     // Add to a list of disposables which are disposed when this extension is deactivated.
     context.subscriptions.push(controller);
@@ -355,107 +402,110 @@ export async function activate(context: vscode.ExtensionContext) {
         if (args) {
             formula = args.formula;
         }
-        await calc.applyFormulaToSelections(formula).catch(error => {
+        try {
+            await calc.applyFormulaToSelections(formula);
+        } catch (error) {
             statusManager.onError(error.message);
-        });
+        }
     });
     context.subscriptions.push(disposable);
 
     // Show documentation
     disposable = vscode.commands.registerCommand('amiga-assembly.showdoc', async (args: any) => {
-        let docsPathOnDisk = vscode.Uri.file(
+        const docsPathOnDisk = vscode.Uri.file(
             path.join(context.extensionPath, 'docs', args.path + ".md")
         );
-        vscode.commands.executeCommand('markdown.showPreview', docsPathOnDisk);
+        await vscode.commands.executeCommand('markdown.showPreview', docsPathOnDisk);
     });
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('amiga-assembly.showdoc-toc', async () => {
-        let docsPathOnDisk = vscode.Uri.file(
+        const docsPathOnDisk = vscode.Uri.file(
             path.join(context.extensionPath, 'docs', "toc.md")
         );
-        vscode.commands.executeCommand('markdown.showPreview', docsPathOnDisk);
+        await vscode.commands.executeCommand('markdown.showPreview', docsPathOnDisk);
     });
     context.subscriptions.push(disposable);
 
 
 
     // Completion provider
-    await state.getLanguage().then(async (language) => {
-        await state.getDocumentationManager().then((docManager) => {
-            context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AMIGA_ASM_MODE, new M68kCompletionItemProvider(docManager, state.getDefinitionHandler(), language), '.', '\"'));
-        });
-    });
+    const language = await state.getLanguage();
+    context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AMIGA_ASM_MODE, new M68kCompletionItemProvider(docManager, state.getDefinitionHandler(), language), '.', '"'));
 
     // Color provider
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_ASM_MODE, new M86kColorProvider()));
     context.subscriptions.push(vscode.languages.registerColorProvider(AMIGA_DEBUG_ASM_MODE, new M86kColorProvider()));
 
     // Definition provider
-    let definitionHandler = state.getDefinitionHandler();
+    const definitionHandler = state.getDefinitionHandler();
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(AMIGA_ASM_MODE, definitionHandler));
     context.subscriptions.push(vscode.languages.registerReferenceProvider(AMIGA_ASM_MODE, definitionHandler));
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(AMIGA_ASM_MODE, definitionHandler));
 
     // Diagnostics 
-    let errorDiagnosticCollection = state.getErrorDiagnosticCollection();
-    let warningDiagnosticCollection = state.getWarningDiagnosticCollection();
+    const errorDiagnosticCollection = state.getErrorDiagnosticCollection();
+    const warningDiagnosticCollection = state.getWarningDiagnosticCollection();
     context.subscriptions.push(errorDiagnosticCollection);
     context.subscriptions.push(warningDiagnosticCollection);
 
     // VASM Command
-    let compiler = state.getCompiler();
-    // Build a file
-    disposable = vscode.commands.registerCommand('amiga-assembly.build-vasm', async () => {
-        statusManager.onDefault();
-        await compiler.buildCurrentEditorFile().catch(error => {
-            statusManager.onError(error.message);
-        });
-    });
-    context.subscriptions.push(disposable);
+    const compiler = state.getCompiler();
     // Build on save
-    let vController = new VASMController(compiler);
+    const vController = new CompilerController();
     context.subscriptions.push(vController);
-    // Build the workspace
-    vscode.commands.registerCommand('amiga-assembly.build-vasm-workspace', async () => {
-        statusManager.onDefault();
-        await compiler.buildWorkspace().then(() => {
-            statusManager.onSuccess();
-        }).catch(error => {
-            statusManager.onError(error.message);
-        });
-    });
-    context.subscriptions.push(disposable);
     // Clean the workspace
     disposable = vscode.commands.registerCommand('amiga-assembly.clean-vasm-workspace', async () => {
-        await compiler.cleanWorkspace().then(() => {
+        try {
+            await compiler.cleanWorkspace();
             statusManager.onDefault();
-        }).catch(error => {
+        } catch (error) {
             statusManager.onError(error.message);
-        });
+        }
     });
     context.subscriptions.push(disposable);
 
+    // Build task provides
+    context.subscriptions.push(vscode.tasks.registerTaskProvider(AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE, new AmigaBuildTaskProvider(state)));
+
     // Data generator code lens provider
     disposable = vscode.commands.registerCommand('amiga-assembly.generate-data', async (range: vscode.Range) => {
-        await state.getDataGenerator().onGenerateData(range).catch(error => {
+        try {
+            await state.getDataGenerator().onGenerateData(range);
+        } catch (error) {
             vscode.window.showErrorMessage(error.message);
-        });
+        }
     });
     context.subscriptions.push(disposable);
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(AMIGA_ASM_MODE, state.getDataGenerator()));
+
+    // Debugger View commands
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDec', (variable) => {
+        const ds = vscode.debug.activeDebugSession;
+        if (ds) {
+            ds.customRequest('modifyVariableFormat', <VariableDisplayFormatRequest>{ variableInfo: variable, variableDisplayFormat: VariableDisplayFormat.DECIMAL });
+        }
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsBin', (variable) => {
+        const ds = vscode.debug.activeDebugSession;
+        if (ds) {
+            ds.customRequest('modifyVariableFormat', <VariableDisplayFormatRequest>{ variableInfo: variable, variableDisplayFormat: VariableDisplayFormat.BINARY });
+        }
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHex', (variable) => {
+        const ds = vscode.debug.activeDebugSession;
+        if (ds) {
+            ds.customRequest('modifyVariableFormat', <VariableDisplayFormatRequest>{ variableInfo: variable, variableDisplayFormat: VariableDisplayFormat.HEXADECIMAL });
+        }
+    });
+    context.subscriptions.push(disposable);
+
 
     // Views
     const disassembledMemoryDataProvider = new DisassembledMemoryDataProvider();
     vscode.window.registerTreeDataProvider('disassembledMemory', disassembledMemoryDataProvider);
     vscode.commands.registerCommand('disassembledMemory.setDisassembledMemory', (memory: DisassembledInstructionAdapter[]) => disassembledMemoryDataProvider.setDisassembledMemory(memory));
-
-    // Debug configuration
-    context.subscriptions.push(vscode.commands.registerCommand('amiga-assembly.getProgramName', config => {
-        return vscode.window.showInputBox({
-            placeHolder: "Please enter the name of a program file in the workspace folder",
-            value: "myprogram"
-        });
-    }));
 
     // register a configuration provider for 'fs-uae' debug type
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', new FsUAEConfigurationProvider()));
@@ -471,7 +521,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (vscode.window.registerWebviewPanelSerializer) {
         // Make sure we register a serializer in activation event
         vscode.window.registerWebviewPanelSerializer(IFFViewerPanel.VIEW_TYPE, {
-            async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, wVState: any) {
+            async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, wVState: never) {
                 IFFViewerPanel.revive(webviewPanel, context.extensionPath, wVState);
             }
         });
@@ -481,11 +531,60 @@ export async function activate(context: vscode.ExtensionContext) {
             IFFViewerPanel.create(context.extensionPath, imageUri);
         })
     );
-    let api = {
+    context.subscriptions.push(
+        vscode.commands.registerCommand('amiga-assembly.download-binaries', async () => {
+            const binariesManager = state.getBinariesManager();
+            const ctx = state.getExtensionContext();
+            const version = state.getExtensionVersion();
+            if (ctx) {
+                try {
+                    console.log("executing command");
+                    ConfigurationHelper.setBinariesPath((await binariesManager.downloadProject(ctx, version)).fsPath);
+                    console.log("executing command END");
+                } catch (error) {
+                    vscode.window.showErrorMessage(error.message);
+                }
+            }
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('amiga-assembly.clean-downloaded-binaries', async () => {
+            const binariesManager = state.getBinariesManager();
+            const ctx = state.getExtensionContext();
+            if (ctx) {
+                try {
+                    await binariesManager.deleteAllDownloadedFiles(ctx);
+                } catch (error) {
+                    vscode.window.showErrorMessage(error.message);
+                }
+            }
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('amiga-assembly.create-example-workspace', async (destinationDirectory?: vscode.Uri) => {
+            const ctx = state.getExtensionContext();
+            if (ctx) {
+                const workspaceManager = new WorkspaceManager();
+                const version = state.getExtensionVersion();
+                try {
+                    const workspaceURI = await workspaceManager.createExampleWorkspace(ctx, version, destinationDirectory);
+                    await vscode.commands.executeCommand("vscode.openFolder", workspaceURI);
+                } catch (error) {
+                    vscode.window.showErrorMessage(error.message);
+                }
+            }
+        })
+    );
+    state.setExtensionContext(context);
+    const api = {
         getState(): ExtensionState {
             return state;
         }
     };
+
+    if (ConfigurationHelper.retrieveBooleanProperty(ConfigurationHelper.getDefaultConfiguration(null), 'downloadBinaries', true)) {
+        await vscode.commands.executeCommand('amiga-assembly.download-binaries');
+    }
     return api;
 }
 
@@ -509,31 +608,32 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
                 config.request = 'launch';
                 config.stopOnEntry = true;
                 config.startEmulator = true;
-                config.emulator = "fs-uae";
-                config.program = "${workspaceFolder}/${command:AskForProgramName}";
-                config.conf = "configuration/dev.fs-uae";
-                config.buildWorkspace = true;
+                config.emulator = "${config:amiga-assembly.binDir}/fs-uae";
+                if (process.platform === "win32" && !config.emulator.endsWith(".exe")) {
+                    config.emulator = config.emulator + ".exe";
+                }
+                config.program = "${workspaceFolder}/uae/dh0/myprogram";
                 config.serverName = "localhost";
                 config.serverPort = 6860;
+                config.preLaunchTask = AmigaBuildTaskProvider.AMIGA_BUILD_PRELAUNCH_TASK_NAME;
+                config.options = [
+                    "--chip_memory=2048",
+                    "--hard_drive_0=${workspaceFolder}//uae/dh0",
+                    "--joystick_port_1=none",
+                    "--amiga_model=A1200",
+                    "--remote_debugger=200",
+                    "--use_remote_debugger=true",
+                    "--automatic_input_grab=0"
+                ];
+                config.emulatorWorkingDir = "${config:amiga-assembly.binDir}";
             }
         }
-
-        if (!config.program) {
-            return vscode.window.showInformationMessage("Cannot find a program to debug").then(_ => {
-                return undefined;	// abort launch
-            });
-        }
-        if (config.buildWorkspace) {
-            return vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace").then(() => {
-                return config;
-            });
-        } else {
-            return config;
-        }
+        return config;
     }
 }
 
 class FsUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
         return <any>new vscode.DebugAdapterInlineImplementation(new FsUAEDebugSession());
@@ -545,8 +645,7 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
      * Massage a debug configuration just before a debug session is being launched,
      * e.g. add all missing attributes to the debug configuration.
      */
-    resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
-
+    async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
         // if launch.json is missing or empty
         if (!config.type && !config.request && !config.name) {
             const editor = vscode.window.activeTextEditor;
@@ -555,16 +654,21 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
                 config.name = 'Launch';
                 config.request = 'launch';
                 config.emulator = 'fs-uae';
-                config.buildWorkspace = true;
+                config.emulator = "${config:amiga-assembly.binDir}/fs-uae";
+                if (process.platform === "win32" && !config.emulator.endsWith(".exe")) {
+                    config.emulator = config.emulator + ".exe";
+                }
+                config.preLaunchTask = AmigaBuildTaskProvider.AMIGA_BUILD_PRELAUNCH_TASK_NAME;
+                config.options = [
+                    "--chip_memory=2048",
+                    "--hard_drive_0=${workspaceFolder}//uae/dh0",
+                    "--amiga_model=A1200",
+                    "--automatic_input_grab=0"
+                ];
+                config.emulatorWorkingDir = "${config:amiga-assembly.binDir}";
             }
         }
-        if (config.buildWorkspace) {
-            return vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace").then(() => {
-                return config;
-            });
-        } else {
-            return config;
-        }
+        return config;
     }
 }
 
@@ -580,7 +684,7 @@ class WinUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
      * Massage a debug configuration just before a debug session is being launched,
      * e.g. add all missing attributes to the debug configuration.
      */
-    resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
+    async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
 
         // if launch.json is missing or empty
         if (!config.type && !config.request && !config.name) {
@@ -591,27 +695,25 @@ class WinUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
                 config.request = 'launch';
                 config.stopOnEntry = true;
                 config.startEmulator = true;
-                config.emulator = "winuae";
-                config.program = "${workspaceFolder}/${command:AskForProgramName}";
+                config.emulator = "${config:amiga-assembly.binDir}/winuae.exe";
+                config.program = "${workspaceFolder}/uae/dh0/myprogram";
                 config.conf = "configuration/dev.winuae";
-                config.buildWorkspace = true;
+                config.preLaunchTask = AmigaBuildTaskProvider.AMIGA_BUILD_PRELAUNCH_TASK_NAME;
                 config.serverName = "localhost";
                 config.serverPort = 2345;
+                config.emulatorWorkingDir = "${config:amiga-assembly.binDir}";
+                config.options = [
+                    "-s",
+                    "debugging_trigger=SYS:myprogram",
+                    "-s",
+                    "filesystem=rw,dh0:${workspaceFolder}\\uae\\dh0",
+                    "-s",
+                    "debugging_features=gdbserver"
+                ];
+                config.preLaunchTask = "amigaassembly: build";
             }
         }
-
-        if (!config.program) {
-            return vscode.window.showInformationMessage("Cannot find a program to debug").then(_ => {
-                return undefined;	// abort launch
-            });
-        }
-        if (config.buildWorkspace) {
-            return vscode.commands.executeCommand("amiga-assembly.build-vasm-workspace").then(() => {
-                return config;
-            });
-        } else {
-            return config;
-        }
+        return config;
     }
 }
 

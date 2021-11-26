@@ -54,7 +54,7 @@ export class RunFsUAENoDebugSession extends DebugSession {
 	 * Setting the context to run the tests.
 	 * @param executor mocked executor
 	 */
-	public setTestContext(executor: ExecutorHelper) {
+	public setTestContext(executor: ExecutorHelper): void {
 		this.executor = executor;
 	}
 
@@ -82,26 +82,26 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		this.sendEvent(new InitializedEvent());
 	}
 
-	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
+	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): Promise<void> {
 		// make sure to set the buffered logging to warn if 'trace' is not set
 		logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Log, false);
 
 		// Launch the emulator
-		this.startEmulator(args).catch(err => {
+		try {
+			await this.startEmulator(args);
+			this.sendResponse(response);
+		} catch (err) {
 			window.showErrorMessage(err.message);
 			this.sendEvent(new TerminatedEvent());
 			response.success = false;
 			response.message = err.message;
 			this.sendResponse(response);
-			return;
-		});
-
-		this.sendResponse(response);
+		}
 	}
 
 	public checkEmulator(emulatorPath: string): Promise<boolean> {
 		// Function useful for testing - mocking
-		let fileProxy = new FileProxy(Uri.file(emulatorPath));
+		const fileProxy = new FileProxy(Uri.file(emulatorPath));
 		return fileProxy.exists();
 	}
 
@@ -111,7 +111,7 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		const emulatorWorkingDir = args.emulatorWorkingDir || null;
 		if (emulatorExe) {
 			// Is the emulator exe present in the filesystem ?
-			if (this.checkEmulator(emulatorExe)) {
+			if (await this.checkEmulator(emulatorExe)) {
 				this.cancellationTokenSource = new CancellationTokenSource();
 				try {
 					await this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token);
@@ -127,17 +127,17 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		}
 	}
 
-	protected terminateEmulator() {
+	protected terminateEmulator(): void {
 		if (this.cancellationTokenSource) {
 			this.cancellationTokenSource.cancel();
 		}
 	}
 
-	public terminate() {
+	public terminate(): void {
 		this.terminateEmulator();
 	}
 
-	public shutdown() {
+	public shutdown(): void {
 		this.terminate();
 	}
 

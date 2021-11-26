@@ -6,13 +6,14 @@ import { workspace, Uri } from 'vscode';
 import * as winston from 'winston';
 
 export class ICheckResult {
-    file: string = "";
-    parentFile: string = "";
-    line: number = -1;
-    col: number = 0;
-    msg: string = "";
-    msgData: string = "";
-    severity: string = "error";
+    file = "";
+    parentFile = "";
+    line = -1;
+    col = 0;
+    msg = "";
+    msgData = "";
+    severity = "error";
+    parentFileLine = -1;
 }
 
 export interface ExecutorParser {
@@ -29,19 +30,24 @@ export class ExecutorHelper {
      * @param cmd The path and name of the tool to run
      * @param printUnexpectedOutput If true, then output that doesn't match expected format is printed to the output channel
      * @param parser Parser for the output
+     * @param logEmitter Log event emitter
      */
-    runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken): Promise<ICheckResult[]> {
+    runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken, logEmitter?: vscode.EventEmitter<string>): Promise<ICheckResult[]> {
         return new Promise((resolve, reject) => {
-            let options: any = {
+            const options: any = {
                 env: env
             };
             if (cwd) {
                 options.cwd = cwd;
             }
-            let p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
+            const p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
                     if (err && (<any>err).code === 'ENOENT') {
-                        throw new Error(`Cannot find ${cmd} : ${err.message}`);
+                        const errorMessage = `Cannot find ${cmd} : ${err.message}`;
+                        if (logEmitter) {
+                            logEmitter.fire(errorMessage + '\r\n');
+                        }
+                        throw new Error(errorMessage);
                     }
                     if (stdout) {
                         winston.info(stdout.toString());
@@ -52,17 +58,28 @@ export class ExecutorHelper {
                     }
                     console.log(stderr);
                     if (err && stderr && !useStdErr) {
-                        let errorMessage = ['Error while running tool:', cmd, ...args].join(' ');
-                        winston.info(['Error while running tool:', cmd, ...args].join(' '));
+                        const errorMessage = ['Error while running tool:', cmd, ...args].join(' ');
+                        winston.info(errorMessage);
+                        if (logEmitter) {
+                            logEmitter.fire(errorMessage + '\r\n');
+                        }
                         throw new Error(errorMessage);
                     }
-                    let text = (useStdErr ? stderr : stdout).toString();
-                    winston.info([cwd + '>Finished running tool:', cmd, ...args].join(' '));
-
+                    const message = [cwd + '>Finished running tool:', cmd, ...args].join(' ');
+                    winston.info(message);
+                    if (logEmitter) {
+                        logEmitter.fire([cmd, ...args].join(' ') + '\r\n');
+                    }
 
                     let ret: ICheckResult[] = [];
-                    if (parser) {
-                        ret = parser.parse(text);
+                    if (stdout || (useStdErr && stderr)) {
+                        const text = ((useStdErr && stderr) ? stderr : stdout).toString();
+                        if (logEmitter) {
+                            logEmitter.fire(text + '\r\n');
+                        }
+                        if (parser) {
+                            ret = parser.parse(text);
+                        }
                     }
                     winston.info('');
                     resolve(ret);
@@ -99,13 +116,13 @@ export class ExecutorHelper {
      */
     runToolRetrieveStdout(args: string[], cwd: string | null, cmd: string, env: any, token?: vscode.CancellationToken): Promise<string> {
         return new Promise((resolve, reject) => {
-            let options: any = {
+            const options: any = {
                 env: env
             };
             if (cwd) {
                 options.cwd = cwd;
             }
-            let p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
+            const p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
                     let bufferOut = "";
                     if (err) {
@@ -127,108 +144,115 @@ export class ExecutorHelper {
         });
     }
 
-    handleDiagnosticErrors(document: vscode.TextDocument | undefined, errors: ICheckResult[], diagnosticSeverity?: vscode.DiagnosticSeverity): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            let diagnosticMap: Map<string, Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>> = new Map();
-            for (let error of errors) {
-                if (error.line <= 0) {
-                    vscode.window.showErrorMessage(error.msg);
+    async handleDiagnosticErrors(document: vscode.TextDocument | undefined, errors: ICheckResult[], diagnosticSeverity?: vscode.DiagnosticSeverity): Promise<void> {
+        const diagnosticMap: Map<string, Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>> = new Map();
+        for (const error of errors) {
+            if (error.line <= 0) {
+                vscode.window.showErrorMessage(error.msg);
+            } else {
+                let canonicalFile;
+                if (document && document.fileName.endsWith(error.file)) {
+                    canonicalFile = document.uri.toString();
                 } else {
-                    let canonicalFile;
-                    if (document && document.fileName.endsWith(error.file)) {
-                        canonicalFile = document.uri.toString();
-                    } else {
-                        canonicalFile = vscode.Uri.file(error.file).toString();
-                    }
-                    let startColumn = 0;
-                    let endColumn = 1;
-                    if ((document) && ((document.uri.toString() === canonicalFile) || error.parentFile)) {
-                        let newRange = new vscode.Range(error.line - 1, 0, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
-                        let text = "";
-                        // Processing path of included files
-                        if (error.parentFile) {
-                            let parentCanonicalFile = vscode.Uri.file(error.parentFile).toString();
-                            let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
-                            let includedFiles = await definitionHandler.getIncludedFiles(document.uri);
-                            let fileParentDir = path.parse(parentCanonicalFile).dir;
-                            let errorFilename = path.parse(error.file).base;
-                            for (let filename of includedFiles) {
-                                if (filename.endsWith(errorFilename)) {
-                                    canonicalFile = fileParentDir + '/' + filename;
-                                    break;
-                                }
+                    canonicalFile = vscode.Uri.file(error.file).toString();
+                }
+                let startColumn = 0;
+                let endColumn = 1;
+                if ((document) && ((document.uri.toString() === canonicalFile) || error.parentFile)) {
+                    let text = "";
+                    // Processing path of included files
+                    if (error.parentFile) {
+                        const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                        const includedFiles = await definitionHandler.getIncludedFiles(document.uri);
+                        const errorFilename = path.parse(error.file).base;
+                        for (const filename of includedFiles) {
+                            if (filename.endsWith(errorFilename)) {
+                                canonicalFile = filename;
+                                break;
                             }
-                            // Open the document to get the text
-                            let sourceDocument = await workspace.openTextDocument(Uri.parse(canonicalFile));
-                            if (sourceDocument) {
+                        }
+                        // Open the document to get the text
+                        const sourceDocument = await workspace.openTextDocument(Uri.file(canonicalFile));
+                        if (sourceDocument) {
+                            const sErrorLine = error.line - 1;
+                            if (sourceDocument.lineCount > sErrorLine) {
+                                const newRange = new vscode.Range(sErrorLine, 0, sErrorLine, sourceDocument.lineAt(sErrorLine).range.end.character + 1);
                                 text = sourceDocument.getText(newRange);
-                            }
-                        } else {
-                            text = document.getText(newRange);
-                        }
-                        let match = /^(\s*).*(\s*)$/.exec(text);
-                        if (match) {
-                            let leading = match[1];
-                            let trailing = match[2];
-                            if (!error.col) {
-                                startColumn = leading.length;
                             } else {
-                                startColumn = error.col - 1; // range is 0-indexed
+                                winston.error(`Invalid error message: '${error.msg}'`);
                             }
-                            endColumn = text.length - trailing.length;
                         }
 
-                    }
-                    let errorRange = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
-                    let severity = this.mapSeverityToVSCodeSeverity(error.severity);
-                    let diagnostic = new vscode.Diagnostic(errorRange, error.msg, severity);
-                    let diagnostics = diagnosticMap.get(canonicalFile);
-                    if (!diagnostics) {
-                        diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
-                    }
-                    let diag = diagnostics.get(severity);
-                    if (!diag) {
-                        diag = [];
-                        diagnostics.set(severity, diag);
-                    }
-                    diag.push(diagnostic);
-                    diagnosticMap.set(canonicalFile, diagnostics);
-                }
-            }
-
-            for (const [file, diagMap] of diagnosticMap) {
-                const fileUri = vscode.Uri.parse(file);
-                let warningDiagnosticCollection = ExtensionState.getCurrent().getWarningDiagnosticCollection();
-                let errorDiagnosticCollection = ExtensionState.getCurrent().getErrorDiagnosticCollection();
-                if (diagnosticSeverity === undefined || diagnosticSeverity === vscode.DiagnosticSeverity.Error) {
-                    const newErrors = diagMap.get(vscode.DiagnosticSeverity.Error);
-                    let existingWarnings = warningDiagnosticCollection.get(fileUri);
-                    errorDiagnosticCollection.set(fileUri, newErrors);
-
-                    // If there are warnings on current file, remove the ones equal to new errors
-                    if (newErrors && existingWarnings) {
-                        const errorLines = newErrors.map(x => x.range.start.line);
-                        existingWarnings = existingWarnings.filter(x => errorLines.indexOf(x.range.start.line) === -1);
-                        if (existingWarnings.length > 0) {
-                            warningDiagnosticCollection.set(fileUri, existingWarnings);
+                    } else {
+                        const sErrorLine = error.line - 1;
+                        if (document.lineCount > sErrorLine) {
+                            const newRange = new vscode.Range(sErrorLine, 0, sErrorLine, document.lineAt(sErrorLine).range.end.character + 1);
+                            text = document.getText(newRange);
+                        } else {
+                            winston.error(`Invalid error message: '${error.msg}'`);
                         }
                     }
-                }
-                if (diagnosticSeverity === undefined || diagnosticSeverity === vscode.DiagnosticSeverity.Warning) {
-                    const existingErrors = errorDiagnosticCollection.get(fileUri);
-                    let newWarnings = diagMap.get(vscode.DiagnosticSeverity.Warning);
-
-                    // If there are errors on current file, ignore the new warnings similar with them
-                    if (existingErrors && newWarnings) {
-                        const errorLines = existingErrors.map(x => x.range.start.line);
-                        newWarnings = newWarnings.filter(x => errorLines.indexOf(x.range.start.line) === -1);
+                    const match = /^(\s*).*(\s*)$/.exec(text);
+                    if (match) {
+                        const leading = match[1];
+                        const trailing = match[2];
+                        if (!error.col) {
+                            startColumn = leading.length;
+                        } else {
+                            startColumn = error.col - 1; // range is 0-indexed
+                        }
+                        endColumn = text.length - trailing.length;
                     }
 
-                    warningDiagnosticCollection.set(fileUri, newWarnings);
+                }
+                const errorRange = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
+                const severity = this.mapSeverityToVSCodeSeverity(error.severity);
+                const diagnostic = new vscode.Diagnostic(errorRange, error.msg, severity);
+                let diagnostics = diagnosticMap.get(canonicalFile);
+                if (!diagnostics) {
+                    diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
+                }
+                let diag = diagnostics.get(severity);
+                if (!diag) {
+                    diag = [];
+                    diagnostics.set(severity, diag);
+                }
+                diag.push(diagnostic);
+                diagnosticMap.set(canonicalFile, diagnostics);
+            }
+        }
+
+        for (const [file, diagMap] of diagnosticMap) {
+            const fileUri = vscode.Uri.parse(file);
+            const warningDiagnosticCollection = ExtensionState.getCurrent().getWarningDiagnosticCollection();
+            const errorDiagnosticCollection = ExtensionState.getCurrent().getErrorDiagnosticCollection();
+            if (diagnosticSeverity === undefined || diagnosticSeverity === vscode.DiagnosticSeverity.Error) {
+                const newErrors = diagMap.get(vscode.DiagnosticSeverity.Error);
+                let existingWarnings = warningDiagnosticCollection.get(fileUri);
+                errorDiagnosticCollection.set(fileUri, newErrors);
+
+                // If there are warnings on current file, remove the ones equal to new errors
+                if (newErrors && existingWarnings) {
+                    const errorLines = newErrors.map(x => x.range.start.line);
+                    existingWarnings = existingWarnings.filter(x => errorLines.indexOf(x.range.start.line) === -1);
+                    if (existingWarnings.length > 0) {
+                        warningDiagnosticCollection.set(fileUri, existingWarnings);
+                    }
                 }
             }
-            resolve();
-        });
+            if (diagnosticSeverity === undefined || diagnosticSeverity === vscode.DiagnosticSeverity.Warning) {
+                const existingErrors = errorDiagnosticCollection.get(fileUri);
+                let newWarnings = diagMap.get(vscode.DiagnosticSeverity.Warning);
+
+                // If there are errors on current file, ignore the new warnings similar with them
+                if (existingErrors && newWarnings) {
+                    const errorLines = existingErrors.map(x => x.range.start.line);
+                    newWarnings = newWarnings.filter(x => errorLines.indexOf(x.range.start.line) === -1);
+                }
+
+                warningDiagnosticCollection.set(fileUri, newWarnings);
+            }
+        }
     }
 
 
@@ -242,20 +266,20 @@ export class ExecutorHelper {
 
     getWorkspaceFolderPath(fileUri: vscode.Uri): string {
         if (fileUri) {
-            let wFolder = vscode.workspace.getWorkspaceFolder(fileUri);
+            const wFolder = vscode.workspace.getWorkspaceFolder(fileUri);
             if (wFolder) {
                 return wFolder.uri.fsPath;
             }
         }
         // fall back to the first workspace
-        let folders = vscode.workspace.workspaceFolders;
+        const folders = vscode.workspace.workspaceFolders;
         if (folders && folders.length) {
             return folders[0].uri.fsPath;
         }
         return ".";
     }
 
-    killProcess(p: cp.ChildProcess) {
+    killProcess(p: cp.ChildProcess): void {
         if (p) {
             try {
                 p.kill();

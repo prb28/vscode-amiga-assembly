@@ -8,7 +8,7 @@ import { ADFTools } from '../adf';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as path from 'path';
 import { ExecutorHelper } from '../execHelper';
-import { instance, when, anything, mock, capture, reset } from 'ts-mockito/lib/ts-mockito';
+import { instance, when, anything, mock, capture, reset } from '@johanblumenberg/ts-mockito';
 import * as fs from 'fs';
 import * as temp from 'temp';
 import { Uri } from 'vscode';
@@ -18,8 +18,10 @@ describe("ADFTools test", function () {
     let mockedExecutor: ExecutorHelper;
     let executor: ExecutorHelper;
     before(async () => {
+        // Automatically track and cleanup files at exit
+        temp.track();
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
@@ -32,11 +34,11 @@ describe("ADFTools test", function () {
         reset(mockedExecutor);
     });
     it("Should create a bootable disk", async function () {
-        let rootToolsDir = __dirname;
-        let adfDiskName = "mydisk.adf";
-        let adfRootDir = path.join(__dirname, "..", "..", "test_files", "debug", "fs-uae", "hd0");
+        const rootToolsDir = __dirname;
+        const adfDiskName = "mydisk.adf";
+        const adfRootDir = path.join(__dirname, "..", "..", "test_files", "debug", "fs-uae", "hd0");
         when(mockedExecutor.runToolRetrieveStdout(anything(), anything(), anything(), anything(), anything())).thenResolve("Done.\n");
-        let adfTools = new ADFTools(rootToolsDir);
+        const adfTools = new ADFTools(rootToolsDir);
         adfTools.setTestContext(executor);
         await adfTools.createBootableADFDiskFromDir(adfDiskName, adfRootDir, "s/*", "**/.*", ["myopt", "myopt2"]);
         let i = 0;
@@ -63,11 +65,11 @@ describe("ADFTools test", function () {
         expect(args[2]).to.be.equal("s");
     });
     it("Should catch an error", async function () {
-        let rootToolsDir = "rootDir";
-        let adfDiskName = "mydisk.adf";
-        let adfRootDir = path.join(__dirname, "..", "..", "test_files", "debug", "fs-uae", "hd0");
+        const rootToolsDir = "rootDir";
+        const adfDiskName = "mydisk.adf";
+        const adfRootDir = path.join(__dirname, "..", "..", "test_files", "debug", "fs-uae", "hd0");
         when(mockedExecutor.runToolRetrieveStdout(anything(), anything(), anything(), anything(), anything())).thenResolve("Not good\n");
-        let adfTools = new ADFTools(rootToolsDir);
+        const adfTools = new ADFTools(rootToolsDir);
         adfTools.setTestContext(executor);
         // tslint:disable-next-line:no-unused-expression
         return expect(adfTools.createBootableADFDiskFromDir(adfDiskName, adfRootDir, "**/genc*", "**/.*", ["opts"])).to.be.rejected;
@@ -79,15 +81,15 @@ describe("ADFTools test", function () {
         before(function () {
             // Automatically track and cleanup files at exit
             temp.track();
-            let rootToolsDir = "rootDir";
+            const rootToolsDir = "rootDir";
             adfTools = new ADFTools(rootToolsDir);
-            let bootBlockFileName = path.join(__dirname, "..", "..", "test_files", "bootblock", "OS13.bb");
+            const bootBlockFileName = path.join(__dirname, "..", "..", "test_files", "bootblock", "OS13.bb");
             let fileSizeInBytes = fs.statSync(bootBlockFileName).size;
             referenceBootBlock = Buffer.alloc(fileSizeInBytes);
             let fd = fs.openSync(bootBlockFileName, 'r');
             fs.readSync(fd, referenceBootBlock, 0, fileSizeInBytes, 0);
             fs.closeSync(fd);
-            let croppedBootBlockFileName = path.join(__dirname, "..", "..", "test_files", "bootblock", "OS13Crop.bb");
+            const croppedBootBlockFileName = path.join(__dirname, "..", "..", "test_files", "bootblock", "OS13Crop.bb");
             fileSizeInBytes = fs.statSync(croppedBootBlockFileName).size;
             binaryBootBlockData = Buffer.alloc(fileSizeInBytes);
             fd = fs.openSync(croppedBootBlockFileName, 'r');
@@ -101,13 +103,13 @@ describe("ADFTools test", function () {
             expect(adfTools.createBootBlock(binaryBootBlockData)).to.be.eql(referenceBootBlock);
         });
         it("Should write a bootblock file from a binary file", async function () {
-            let tempDir = temp.mkdirSync("build-test");
-            let outputFile = path.join(tempDir, "boot.bb");
+            const tempDir = temp.mkdirSync("build-test");
+            const outputFile = path.join(tempDir, "boot.bb");
             await adfTools.writeBootBlockFile(binaryBootBlockData, Uri.file(outputFile));
             // Read the file to check
-            let fileSizeInBytes = fs.statSync(outputFile).size;
-            let fileContents = Buffer.alloc(fileSizeInBytes);
-            let fd = fs.openSync(outputFile, 'r');
+            const fileSizeInBytes = fs.statSync(outputFile).size;
+            const fileContents = Buffer.alloc(fileSizeInBytes);
+            const fd = fs.openSync(outputFile, 'r');
             fs.readSync(fd, fileContents, 0, fileSizeInBytes, 0);
             fs.closeSync(fd);
             expect(fileContents).to.be.eql(referenceBootBlock);

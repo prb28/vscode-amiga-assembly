@@ -18,16 +18,16 @@ export class ASMLine {
     static m68kLang?: M68kLanguage;
     static keywordsRegExps?: Array<RegExp>;
     static macrosRegExps?: Array<RegExp>;
-    label: string = "";
-    instruction: string = "";
-    data: string = "";
-    comment: string = "";
-    raw: string = "";
+    label = "";
+    instruction = "";
+    data = "";
+    comment = "";
+    raw = "";
     start: Position;
     end: Position;
-    variable: string = "";
-    operator: string = "";
-    value: string = "";
+    variable = "";
+    operator = "";
+    value = "";
     spacesBeforeLabelRange: Range;
     labelRange: Range;
     spacesLabelToInstructionRange: Range;
@@ -43,7 +43,7 @@ export class ASMLine {
 
     vscodeTextLine?: TextLine;
 
-    public static init(language: M68kLanguage) {
+    public static init(language: M68kLanguage): void {
         if (!ASMLine.m68kLang) {
             ASMLine.m68kLang = language;
             ASMLine.keywordsRegExps = ASMLine.m68kLang.getAllRegExps(/keyword.*/g);
@@ -85,7 +85,7 @@ export class ASMLine {
      * @param line Line to parse
      * @param lineNumber index of the line in document
      */
-    parse(line: string, lineNumber: number) {
+    parse(line: string, lineNumber: number): void {
         let l = line.trim();
         let leadingSpacesCount = line.search(/\S/);
         let current = new Position(lineNumber, 0);
@@ -108,7 +108,7 @@ export class ASMLine {
             let inQuotes = false;
             let commentPosInInputLine = -1;
             for (let i = 0; i < line.length; i++) {
-                let c = line.charAt(i);
+                const c = line.charAt(i);
                 if (c === "\"") {
                     inQuotes = !inQuotes;
                 } else if (!inQuotes && (c === ";")) {
@@ -133,7 +133,7 @@ export class ASMLine {
             let keywordIndex = 0;
             if (leadingSpacesCount === 0) {
                 // Fist word must be a label
-                let sPos = line.search(/\s/);
+                const sPos = line.search(/\s/);
                 if (sPos > 0) {
                     searchInstructionString = searchInstructionString.substring(sPos);
                     keywordIndex = sPos;
@@ -163,7 +163,7 @@ export class ASMLine {
                 this.instruction = keyword[0];
                 keywordIndex += keyword.index;
                 let startInInputLine = leadingSpacesCount + keywordIndex;
-                let endInInputLine = startInInputLine + this.instruction.length;
+                const endInInputLine = startInInputLine + this.instruction.length;
                 this.instructionRange = new Range(new Position(lineNumber, startInInputLine), new Position(lineNumber, endInInputLine));
                 if (keywordIndex > 0) {
                     this.label = l.substring(0, keywordIndex).trim();
@@ -174,8 +174,8 @@ export class ASMLine {
                     this.spacesLabelToInstructionRange = new Range(current, next);
                 }
                 current = this.instructionRange.end;
-                let endInTrimLine = keywordIndex + keyword[0].length;
-                let dataStr = l.substring(endInTrimLine);
+                const endInTrimLine = keywordIndex + keyword[0].length;
+                const dataStr = l.substring(endInTrimLine);
                 this.data = dataStr.trim();
                 if (this.data.length > 0) {
                     startInInputLine = this.instructionRange.end.character + dataStr.indexOf(this.data);
@@ -191,10 +191,44 @@ export class ASMLine {
                 }
             } else {
                 // no keyword
-                // Consider it is a label
-                this.lineType = ASMLineType.LABEL;
-                this.label = l;
-                this.labelRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + this.label.length));
+                const startPosValue = leadingSpacesCount;
+                let lastPos = startPosValue;
+                let pos = 0;
+                const regexp = /([^\s]+)/g;
+                let match = regexp.exec(l);
+                while (match) {
+                    const word = match[0];
+                    const startPos = startPosValue + match.index;
+                    const endPos = startPos + word.length;
+                    const spacesCount = startPos - lastPos;
+                    const range = new Range(new Position(lineNumber, startPos), new Position(lineNumber, endPos));
+                    if (pos === 0) {
+                        if (leadingSpacesCount <= 0) {
+                            this.label = word;
+                            this.labelRange = range;
+                        } else {
+                            this.instruction = word;
+                            this.instructionRange = range;
+                        }
+                    } else if (pos === 1) {
+                        this.instruction = word;
+                        this.instructionRange = range;
+                        this.spacesLabelToInstructionRange = new Range(new Position(lineNumber, endPos), new Position(lineNumber, endPos + spacesCount));
+                    } else {
+                        this.data = word;
+                        this.dataRange = range;
+                        this.spacesInstructionToDataRange = new Range(new Position(lineNumber, endPos), new Position(lineNumber, endPos + spacesCount));
+                        break;
+                    }
+                    lastPos = endPos;
+                    pos++;
+                    match = regexp.exec(l)
+                }
+                if (pos > 1) {
+                    this.lineType = ASMLineType.INSTRUCTION;
+                } else {
+                    this.lineType = ASMLineType.LABEL;
+                }
             }
         }
     }
@@ -206,7 +240,7 @@ export class ASMLine {
      * @return True if it as been found
      */
     test(regexps: Array<RegExp>, value: string): boolean {
-        for (let regexp of regexps) {
+        for (const regexp of regexps) {
             if (regexp.test(value)) {
                 return true;
             }
@@ -221,9 +255,9 @@ export class ASMLine {
      * @return RegExpExecArray if found or null
      */
     search(regexps: Array<RegExp>, value: string): RegExpExecArray | null {
-        let firstMatch: any | null = null;
-        for (let regexp of regexps) {
-            let r = regexp.exec(value);
+        let firstMatch: RegExpExecArray | null = null;
+        for (const regexp of regexps) {
+            const r = regexp.exec(value);
             if (r) {
                 if (firstMatch !== null) {
                     // Which one is the first in the line
@@ -243,18 +277,18 @@ export class ASMLine {
      * @return true if it is an assignment
      */
     public parseAssignment(line: string, lineNumber: number): boolean {
-        let regexp = /^([a-z0-9\-_]*)[\s]*(\=|[\s][a-z]?equ(\.[a-z])?[\s])[\s]*(.*)/gi;
-        let match = regexp.exec(line);
+        const regexp = /^([a-z0-9\-_]*)[\s]*(=|[\s][a-z]?equ(\.[a-z])?[\s])[\s]*(.*)/gi;
+        const match = regexp.exec(line);
         if (match !== null) {
             this.variable = match[1].trim();
             this.operator = match[2].trim();
             this.value = match[4].trim();
             this.variableRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, this.variable.length));
-            let startPosOperator = line.indexOf(this.operator);
-            let endPosOperator = startPosOperator + this.operator.length;
+            const startPosOperator = line.indexOf(this.operator);
+            const endPosOperator = startPosOperator + this.operator.length;
             this.operatorRange = new Range(new Position(lineNumber, startPosOperator), new Position(lineNumber, endPosOperator));
-            let startPosValue = endPosOperator + line.substring(endPosOperator).indexOf(this.value);
-            let endPosValue = startPosValue + this.value.length;
+            const startPosValue = endPosOperator + line.substring(endPosOperator).indexOf(this.value);
+            const endPosValue = startPosValue + this.value.length;
             this.valueRange = new Range(new Position(lineNumber, startPosValue), new Position(lineNumber, endPosValue));
             return true;
         }
@@ -270,11 +304,11 @@ export class ASMLine {
         if (this.variable.length > 0) {
             return [this.variable, this.variableRange];
         } else if (this.label.length > 0) {
-            let elements = this.label.split(/(\s)*(\=|[a-z]?equ(.[a-z])?|:)(\s)*/gi);
-            let symbol = elements[0].trim();
-            let sPos = this.label.indexOf(symbol);
+            const elements = this.label.split(/(\s)*(=|[a-z]?equ(.[a-z])?|:)(\s)*/gi);
+            const symbol = elements[0].trim();
+            const sPos = this.label.indexOf(symbol);
             if (sPos !== undefined) {
-                let range = new Range(new Position(this.labelRange.start.line, sPos), new Position(this.labelRange.end.line, sPos + symbol.length));
+                const range = new Range(new Position(this.labelRange.start.line, sPos), new Position(this.labelRange.end.line, sPos + symbol.length));
                 return [symbol, range];
             }
         }
@@ -287,15 +321,16 @@ export class ASMLine {
      * @return the symbol string and the range, otherwise undefined
      */
     public getSymbolFromData(): Array<[string, Range]> {
-        let symbols = new Array<[string, Range]>();
+        const symbols = new Array<[string, Range]>();
         if (this.data.length > 0) {
-            let reg = /([a-z\.]+[a-z0-9_\.]*|[0-9]+[a-z]+[a-z0-9_\.]*)/gi;
-            let match;
-            while (match = reg.exec(this.data)) {
-                let symbol = match[0];
-                let startPos = this.dataRange.start.character + match.index;
-                let range = new Range(new Position(this.dataRange.start.line, startPos), new Position(this.dataRange.end.line, startPos + symbol.length));
+            const reg = /([a-z.]+[a-z0-9_.]*|\d+[a-z]+[a-z0-9_.]*)/gi;
+            let match = reg.exec(this.data);
+            while (match) {
+                const symbol = match[0];
+                const startPos = this.dataRange.start.character + match.index;
+                const range = new Range(new Position(this.dataRange.start.line, startPos), new Position(this.dataRange.end.line, startPos + symbol.length));
                 symbols.push([symbol, range]);
+                match = reg.exec(this.data)
             }
         }
         return symbols;
@@ -308,14 +343,14 @@ export class ASMLine {
      * @return a list of registers found
      */
     public getRegistersFromRegistersRange(registersRange: string): Array<string> {
-        let registers = new Array<string>();
-        let reg = /^([ad][0-7])\-([ad]?[0-7])$/gi;
-        let match = reg.exec(registersRange);
+        const registers = new Array<string>();
+        const reg = /^([ad][0-7])-([ad]?[0-7])$/gi;
+        const match = reg.exec(registersRange);
         if (match) {
-            let start = match[1];
-            let end = match[2];
-            let startKey = start.charAt(0);
-            let startIndex = parseInt(start.charAt(1));
+            const start = match[1];
+            const end = match[2];
+            const startKey = start.charAt(0);
+            const startIndex = parseInt(start.charAt(1));
             let endIndex = 0;
             let endKey;
             if (end.length > 1) {
@@ -346,16 +381,16 @@ export class ASMLine {
      * @return a list of registers found
      */
     public getRegistersFromData(): Array<string> {
-        let registers = new Array<string>();
+        const registers = new Array<string>();
         if (this.data.length > 0) {
-            let reg = /(^|[\(,\s\/])([ad][0-7](\-[ad]?[0-7])?)/gi;
-            let match;
-            while (match = reg.exec(this.data)) {
-                let value = match[2].toLowerCase();
-                let regRegistersRange = /^[ad][0-7]\-[ad]?[0-7]$/gi;
+            const reg = /(^|[(,\s/])([ad][0-7](-[ad]?[0-7])?)/gi;
+            let match = reg.exec(this.data);
+            while (match) {
+                const value = match[2].toLowerCase();
+                const regRegistersRange = /^[ad][0-7]-[ad]?[0-7]$/gi;
                 if (value.match(regRegistersRange)) {
-                    let lRegisters = this.getRegistersFromRegistersRange(value);
-                    for (let r of lRegisters) {
+                    const lRegisters = this.getRegistersFromRegistersRange(value);
+                    for (const r of lRegisters) {
                         if (registers.indexOf(r) < 0) {
                             registers.push(r);
                         }
@@ -365,6 +400,7 @@ export class ASMLine {
                         registers.push(value);
                     }
                 }
+                match = reg.exec(this.data);
             }
         }
         return registers.sort();
@@ -376,19 +412,20 @@ export class ASMLine {
      * @return a list of registers found
      */
     public getNumbersFromData(): Array<[string, Range]> {
-        let numbers = new Array<[string, Range]>();
+        const numbers = new Array<[string, Range]>();
         if (this.data.length > 0) {
-            let numberParser = new NumberParser();
-            let reg = /([\w$#%@\-]+)/g;
-            let match;
+            const numberParser = new NumberParser();
+            const reg = /([\w$#%@-]+)/g;
+            let match = reg.exec(this.data);
             // Match all words
-            while (match = reg.exec(this.data)) {
-                let value = match[0];
+            while (match) {
+                const value = match[0];
                 if (numberParser.parse(value) !== null) {
-                    let startPos = this.dataRange.start.character + match.index;
-                    let range = new Range(new Position(this.dataRange.start.line, startPos), new Position(this.dataRange.end.line, startPos + value.length));
+                    const startPos = this.dataRange.start.character + match.index;
+                    const range = new Range(new Position(this.dataRange.start.line, startPos), new Position(this.dataRange.end.line, startPos + value.length));
                     numbers.push([value, range]);
                 }
+                match = reg.exec(this.data)
             }
         }
         return numbers;
@@ -405,7 +442,7 @@ export class NumberParser {
      * @param word Word to parse
      */
     public parse(word: string): number | null {
-        let parsedValue = this.parseWithType(word);
+        const parsedValue = this.parseWithType(word);
         if (parsedValue) {
             return parsedValue[0];
         }
@@ -417,10 +454,10 @@ export class NumberParser {
      * @param word Word to parse
      */
     public parseWithType(word: string): [number, NumberType] | null {
-        let hexValueRegExp = /[#]?\$([\da-z]+)/i;
-        let decValueRegExp = /[#]?([-]?[\d]+)/;
-        let octValueRegExp = /@(\d+)/;
-        let binValueRegExp = /%([01]*)/;
+        const hexValueRegExp = /[#]?\$([\da-z]+)/i;
+        const decValueRegExp = /[#]?([-]?[\d]+)/;
+        const octValueRegExp = /@(\d+)/;
+        const binValueRegExp = /%([01]*)/;
         // look for an hex value
         let match = hexValueRegExp.exec(word);
         if (match) {
@@ -454,7 +491,7 @@ export class NumberParser {
      * @return Type or null
      */
     public parseType(word: string): NumberType | null {
-        let parsedValue = this.parseWithType(word);
+        const parsedValue = this.parseWithType(word);
         if (parsedValue) {
             return parsedValue[1];
         }
@@ -462,43 +499,48 @@ export class NumberParser {
     }
 
     public transformToDecimal(text: string): string {
-        let hexValueRegExp = /\$([\da-z]+)/gi;
-        let octValueRegExp = /@(\d+)/g;
-        let binValueRegExp = /%([01]*)/g;
+        const hexValueRegExp = /\$([\da-z]+)/gi;
+        const octValueRegExp = /@(\d+)/g;
+        const binValueRegExp = /%([01]*)/g;
         let transformed = text;
         // look for an hex value
-        let match;
-        while (match = hexValueRegExp.exec(transformed)) {
+        let match = hexValueRegExp.exec(transformed);
+        while (match) {
             for (let i = 1; i < match.length; i++) {
-                let s = match[i];
-                let v = parseInt(s, 16);
+                const s = match[i];
+                const v = parseInt(s, 16);
                 transformed = transformed.replace("$" + s, v.toString());
             }
+            match = hexValueRegExp.exec(transformed);
         }
         // look for an octal value
-        while (match = octValueRegExp.exec(transformed)) {
+        match = octValueRegExp.exec(transformed);
+        while (match) {
             for (let i = 1; i < match.length; i++) {
-                let s = match[i];
-                let v = parseInt(s, 8);
+                const s = match[i];
+                const v = parseInt(s, 8);
                 transformed = transformed.replace("@" + s, v.toString());
             }
+            match = octValueRegExp.exec(transformed);
         }
         // look for a binary value
-        while (match = binValueRegExp.exec(transformed)) {
+        match = binValueRegExp.exec(transformed);
+        while (match) {
             for (let i = 1; i < match.length; i++) {
-                let s = match[i];
-                let v = parseInt(s, 2);
+                const s = match[i];
+                const v = parseInt(s, 2);
                 transformed = transformed.replace("%" + s, v.toString());
             }
+            match = binValueRegExp.exec(transformed);
         }
         // replace all decimal marks
         transformed = transformed.replace("#", "");
         return transformed;
     }
 
-    chunk(str: string, len: number) {
-        let size = Math.ceil(str.length / len);
-        let ret = new Array(size);
+    chunk(str: string, len: number): Array<string> {
+        const size = Math.ceil(str.length / len);
+        const ret = new Array<string>(size);
         let i;
         let pos = size - 1;
         let startPos = str.length - len;
@@ -509,7 +551,7 @@ export class NumberParser {
             startPos -= len;
             pos--;
         }
-        let end = startPos + len;
+        const end = startPos + len;
         ret[0] = str.substring(0, end);
         return ret;
     }
@@ -609,7 +651,7 @@ export class ASMDocument {
      * @param range Range to format or undefined
      * @param position in case of on type format
      */
-    public parse(document: TextDocument, formatterConfiguration: DocumentFormatterConfiguration, token?: CancellationToken, range?: Range, position?: Position) {
+    public parse(document: TextDocument, formatterConfiguration: DocumentFormatterConfiguration, token?: CancellationToken, range?: Range, position?: Position): void {
         this.useTabs = formatterConfiguration.useTabs;
         let localRange = range;
         if (document.lineCount <= 0) {
@@ -625,7 +667,7 @@ export class ASMDocument {
                 return;
             }
             const line = document.lineAt(i);
-            let asmLine = new ASMLine(line.text, line);
+            const asmLine = new ASMLine(line.text, line);
             if (position && (i === position.line)) {
                 this.onTypeAsmLine = asmLine;
             } else {
@@ -633,7 +675,7 @@ export class ASMDocument {
             }
             if ((formatterConfiguration.preferredCommentPosition > 0) || (formatterConfiguration.preferredInstructionPosition > 0)) {
                 // Check if it is a oversized line
-                let endOfLineCommentPositionInst = asmLine.label.length + asmLine.instruction.length + asmLine.data.length +
+                const endOfLineCommentPositionInst = asmLine.label.length + asmLine.instruction.length + asmLine.data.length +
                     formatterConfiguration.labelToInstructionDistance + formatterConfiguration.instructionToDataDistance + formatterConfiguration.dataToCommentsDistance;
                 if (((formatterConfiguration.preferredCommentPosition > 0) && (endOfLineCommentPositionInst > formatterConfiguration.preferredCommentPosition)) ||
                     ((formatterConfiguration.preferredInstructionPosition > 0) && (asmLine.label.length + formatterConfiguration.labelToInstructionDistance >= formatterConfiguration.preferredInstructionPosition))) {

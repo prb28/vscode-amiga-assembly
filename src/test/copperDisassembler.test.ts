@@ -4,7 +4,7 @@ import { CopperInstruction, CopperInstructionType, CopperWait, CopperSkip, Coppe
 describe("Copper Disassembler Tests", function () {
     // tslint:disable:no-unused-expression
     it("Should disassemble a move instruction", function () {
-        let i = CopperInstruction.parse("f1800502"); // the first f is just for tests -> not real
+        const i = CopperInstruction.parse("f1800502"); // the first f is just for tests -> not real
         expect(i.instructionType).to.be.equal(CopperInstructionType.MOVE);
         expect(i.first).to.be.equal(0xf180);
         expect(i.second).to.be.equal(0x0502);
@@ -57,7 +57,7 @@ describe("Copper Disassembler Tests", function () {
         }
     });
     it("Should disassemble a skip instruction", function () {
-        let i = CopperInstruction.parse("6401ff01");
+        const i = CopperInstruction.parse("6401ff01");
         expect(i.instructionType).to.be.equal(CopperInstructionType.SKIP);
         expect(i.first).to.be.equal(0x6401);
         expect(i.second).to.be.equal(0xff01);
@@ -74,27 +74,27 @@ describe("Copper Disassembler Tests", function () {
         }
     });
     it("Should disassemble a memory buffer", function () {
-        let buffer = "018005023fd3fffe6401ff01";
-        let cd = new CopperDisassembler(buffer);
-        let instructions = cd.disassemble();
+        const buffer = "018005023fd3fffe6401ff01";
+        const cd = new CopperDisassembler(buffer);
+        const instructions = cd.disassemble();
         expect(instructions.length).to.be.equal(3);
         expect(instructions[0].first).to.be.equal(0x180);
         expect(instructions[1].first).to.be.equal(0x3fd3);
         expect(instructions[2].first).to.be.equal(0x6401);
-        let str = cd.toString().split('\n');
+        const str = cd.toString().split('\n');
         expect(instructions.length).to.be.equal(3);
         expect(str[0]).to.be.equal(instructions[0].toString());
         expect(str[1]).to.be.equal(instructions[1].toString());
         expect(str[2]).to.be.equal(instructions[2].toString());
     });
     it("Should stop at end of the copper list", function () {
-        let buffer = "01800502fffffffe3fd3fffe6401ff01";
-        let cd = new CopperDisassembler(buffer);
-        let instructions = cd.disassemble();
+        const buffer = "01800502fffffffe3fd3fffe6401ff01";
+        const cd = new CopperDisassembler(buffer);
+        const instructions = cd.disassemble();
         expect(instructions.length).to.be.equal(2);
         expect(instructions[0].first).to.be.equal(0x180);
         expect(instructions[1].first).to.be.equal(0xffff);
-        let str = cd.toString().split('\n');
+        const str = cd.toString().split('\n');
         expect(instructions.length).to.be.equal(2);
         expect(str[0]).to.be.equal(instructions[0].toString());
         expect(str[1]).to.be.equal(instructions[1].toString());

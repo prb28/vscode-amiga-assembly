@@ -3,6 +3,8 @@ import { DocumentationManager, DocumentationType } from './documentation';
 import { M68kDefinitionHandler } from './definitionHandler';
 import { ASMLine } from './parser';
 import { M68kLanguage } from './language';
+import { FileProxy } from './fsProxy';
+import { Uri } from 'vscode';
 
 export class M68kCompletionItemProvider implements vscode.CompletionItemProvider {
     documentationManager: DocumentationManager;
@@ -13,74 +15,177 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         this.definitionHandler = definitionHandler;
         this.language = language;
     }
-    public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionItem[]> {
-        return new Promise(async (resolve, _reject) => {
-            let completions = new Array<vscode.CompletionItem>();
-            let range = document.getWordRangeAtPosition(position);
-            let line = document.lineAt(position.line);
-            let text = line.text;
-            let lastChar = "";
-            if (position.character > 0) {
-                lastChar = line.text.charAt(position.character - 1);
-            }
-            let asmLine = new ASMLine(text, line);
-            if (range) {
-                let word = document.getText(range);
-                let isInComment = (range.intersection(asmLine.commentRange) !== undefined);
-                let isInInstruction = (range.intersection(asmLine.instructionRange) !== undefined);
-                if ((!isInComment) && ((!isInInstruction) || ((lastChar !== ".") && (!asmLine.instruction.includes("."))))) {
-                    let labelsAdded = new Array<string>();
-                    let isInData = (range.intersection(asmLine.dataRange) !== undefined);
-                    // In the documentation
-                    let values = await this.documentationManager.findKeywordStartingWith(word);
-                    if (values) {
-                        for (const value of values) {
-                            let label = value.name;
-                            let kind = vscode.CompletionItemKind.Function;
-                            if (isInData) {
-                                if (value.type === DocumentationType.INSTRUCTION) {
-                                    continue;
-                                } else {
-                                    if (value.type === DocumentationType.REGISTER) {
-                                        kind = vscode.CompletionItemKind.Variable;
-                                    } else if (word.startsWith("_LVO")) {
-                                        label = "_LVO" + label;
-                                    }
-                                }
-                            } else if (value.type !== DocumentationType.INSTRUCTION) {
+    public async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionItem[]> {
+        let completions = new Array<vscode.CompletionItem>();
+        const range = document.getWordRangeAtPosition(position);
+        const line = document.lineAt(position.line);
+        const text = line.text;
+        let lastChar = "";
+        if (position.character > 0) {
+            lastChar = line.text.charAt(position.character - 1);
+        }
+        const asmLine = new ASMLine(text, line);
+        if (range) {
+            const word = document.getText(range);
+            const isInComment = (range.intersection(asmLine.commentRange) !== undefined);
+            const isInInstruction = (range.intersection(asmLine.instructionRange) !== undefined);
+            if ((!isInComment) && ((!isInInstruction) || ((lastChar !== ".") && (!asmLine.instruction.includes("."))))) {
+                const labelsAdded = new Array<string>();
+                const isInData = (range.intersection(asmLine.dataRange) !== undefined);
+                // In the documentation
+                const values = await this.documentationManager.findKeywordStartingWith(word);
+                if (values) {
+                    for (const value of values) {
+                        let label = value.name;
+                        let kind = vscode.CompletionItemKind.Function;
+                        if (isInData) {
+                            if (value.type === DocumentationType.INSTRUCTION) {
                                 continue;
+                            } else {
+                                if (value.type === DocumentationType.REGISTER) {
+                                    kind = vscode.CompletionItemKind.Variable;
+                                } else if (word.startsWith("_LVO")) {
+                                    label = "_LVO" + label;
+                                }
                             }
-                            let completion = new vscode.CompletionItem(label, kind);
-                            completion.documentation = new vscode.MarkdownString(value.description);
-                            completions.push(completion);
-                            labelsAdded.push(label);
+                        } else if (value.type !== DocumentationType.INSTRUCTION) {
+                            continue;
                         }
+                        const completion = new vscode.CompletionItem(label, kind);
+                        completion.documentation = new vscode.MarkdownString(value.description);
+                        completions.push(completion);
+                        labelsAdded.push(label);
                     }
-                    if (isInData) {
+                }
+                if (isInData) {
+                    // Look for the include instruction
+                    if (asmLine.instruction.toLowerCase() === "include") {
+                        completions = await this.provideCompletionForIncludes(asmLine, document, position);
+                    } else {
                         // In the current symbols
-                        let variables: Map<string, string | undefined> = this.definitionHandler.findVariableStartingWith(word);
+                        const variables: Map<string, string | undefined> = this.definitionHandler.findVariableStartingWith(word);
                         for (const [variable, value] of variables.entries()) {
                             if (!labelsAdded.includes(variable)) {
-                                let kind = vscode.CompletionItemKind.Variable;
-                                let completion = new vscode.CompletionItem(variable, kind);
+                                const kind = vscode.CompletionItemKind.Variable;
+                                const completion = new vscode.CompletionItem(variable, kind);
                                 completion.detail = value;
                                 completions.push(completion);
                             }
                         }
                     }
                 }
-            } else if ((lastChar === ".") && asmLine.instructionRange.contains(position.translate(undefined, -1))) {
-                let localRange = document.getWordRangeAtPosition(position.translate(undefined, -1));
-                let word = document.getText(localRange);
-                let extensions = this.language.getExtensions(word);
-                if (extensions) {
-                    for (let ext of extensions) {
-                        let completion = new vscode.CompletionItem(ext, vscode.CompletionItemKind.Unit);
-                        completions.push(completion);
+            }
+        } else if ((lastChar === ".") && asmLine.instructionRange.contains(position.translate(undefined, -1))) {
+            const localRange = document.getWordRangeAtPosition(position.translate(undefined, -1));
+            const word = document.getText(localRange);
+            const extensions = this.language.getExtensions(word);
+            if (extensions) {
+                for (const ext of extensions) {
+                    const completion = new vscode.CompletionItem(ext, vscode.CompletionItemKind.Unit);
+                    completions.push(completion);
+                }
+            }
+        }
+        return completions;
+    }
+
+    private async retrieveIncludeDir(documentFile: FileProxy): Promise<FileProxy | undefined> {
+        let includeDir: FileProxy | undefined;
+        if (await documentFile.exists()) {
+            const includeDirInSource = await this.definitionHandler.getIncludeDir(documentFile.getUri());
+            if (includeDirInSource) {
+                let incDirFile = new FileProxy(Uri.file(includeDirInSource));
+                if (await incDirFile.exists() && await incDirFile.isDirectory()) {
+                    includeDir = incDirFile
+                } else {
+                    // May be a relative path to the current
+                    incDirFile = documentFile.getParent().getRelativeFile(includeDirInSource);
+                    if (await incDirFile.exists() && await incDirFile.isDirectory()) {
+                        includeDir = incDirFile
                     }
                 }
             }
-            resolve(completions);
-        });
+        }
+        return includeDir;
+    }
+
+    private async provideCompletionsForFile(asmLine: ASMLine, documentFile: FileProxy, parent: FileProxy, position: vscode.Position, checkAbsolute: boolean): Promise<vscode.CompletionItem[]> {
+        const documentPath = FileProxy.normalize(documentFile.getPath());
+        const completions = new Array<vscode.CompletionItem>();
+        // filtering the path from the include
+        let length = position.character - asmLine.dataRange.start.character;
+        let start = 0;
+        if (asmLine.data.startsWith("\"")) {
+            start = 1;
+            length--;
+        }
+        let filter: string | undefined;
+        if (length > 0) {
+            const typedPath = asmLine.data.substr(start, length);
+            // check for an absolute path
+            let newParent = new FileProxy(Uri.file(FileProxy.normalize(typedPath)));
+            if (checkAbsolute && await newParent.exists() && await newParent.isDirectory()) {
+                parent = newParent;
+            } else {
+                // check for a relative path
+                newParent = parent.getRelativeFile(typedPath);
+                if (await newParent.exists() && await newParent.isDirectory()) {
+                    parent = newParent;
+                } else {
+                    // check for relative path with filename
+                    const normalizedTypedPath = FileProxy.normalize(typedPath);
+                    const pos = normalizedTypedPath.lastIndexOf("/");
+                    if (pos > 0) {
+                        const subPath = normalizedTypedPath.substr(0, pos);
+                        newParent = parent.getRelativeFile(subPath);
+                        if (await newParent.exists() && await newParent.isDirectory()) {
+                            parent = newParent;
+                            filter = normalizedTypedPath.substr(pos + 1);
+                        } else {
+                            filter = typedPath;
+                        }
+                    } else {
+                        filter = typedPath;
+                    }
+                }
+            }
+        }
+        for (const f of await parent.listFiles()) {
+            if (documentPath !== FileProxy.normalize(f.getPath()) && (!filter || f.getName().startsWith(filter)) && !f.getName().startsWith(".")) {
+                // search for the files
+                let kind = vscode.CompletionItemKind.File;
+                let name = f.getName();
+                let sortText = `B${name}`;
+                if (await f.isDirectory()) {
+                    kind = vscode.CompletionItemKind.Folder;
+                    name += "/";
+                    sortText = `A${name}`;
+                }
+                const completion = new vscode.CompletionItem(name, kind);
+                completion.sortText = sortText;
+                completions.push(completion);
+            }
+        }
+        return completions;
+    }
+
+    private cleanAndReorder(completions: vscode.CompletionItem[]): vscode.CompletionItem[] {
+        const fileMap = new Map<string, vscode.CompletionItem>();
+        for (const c of completions) {
+            fileMap.set(c.label.toString(), c);
+        }
+        return Array.from(fileMap.values());
+    }
+
+    private async provideCompletionForIncludes(asmLine: ASMLine, document: vscode.TextDocument, position: vscode.Position): Promise<vscode.CompletionItem[]> {
+        let completions = new Array<vscode.CompletionItem>();
+        // current folder of the document
+        const fp = new FileProxy(document.uri);
+        const includeDir: FileProxy | undefined = await this.retrieveIncludeDir(fp);
+        if (includeDir) {
+            completions = await this.provideCompletionsForFile(asmLine, fp, includeDir, position, false);
+        }
+        completions = completions.concat(await this.provideCompletionsForFile(asmLine, fp, fp.getParent(), position, true));
+        return this.cleanAndReorder(completions);
     }
 }

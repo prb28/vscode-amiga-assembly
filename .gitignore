@@ -9,5 +9,7 @@ test_files/debug/fs-uae/hd0_*
 test_files/debug/fs-uae/fs-uae
 test-report*
 .scannerwork
-tslint-report.json
+lint-report.json
 dist
+.nyc_output
+test-result*

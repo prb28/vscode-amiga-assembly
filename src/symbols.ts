@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Range, Uri, workspace, TextDocument } from 'vscode';
 import { ASMLine } from './parser';
 
@@ -10,37 +11,31 @@ export class SymbolFile {
     private subroutines = new Array<string>();
     private dcLabel = new Array<Symbol>();
     private includeDir = "";
-    private includedFiles = new Array<string>();
+    private includedFiles = new Array<Symbol>();
 
     constructor(uri: Uri) {
         this.uri = uri;
     }
 
-    public readFile(): Promise<SymbolFile> {
-        return new Promise(async (resolve, reject) => {
-            // Read the file
-            let document = await workspace.openTextDocument(this.uri);
-            if (document) {
-                this.readDocument(document);
-                resolve(this);
-            } else {
-                reject(new Error("Error opening document: '" + this.uri + "'"));
-            }
-        });
+    public async readFile(): Promise<SymbolFile> {
+        // Read the file
+        const document = await workspace.openTextDocument(this.uri);
+        this.readDocument(document);
+        return this;
     }
 
-    public readDocument(document: TextDocument) {
+    public readDocument(document: TextDocument): void {
         this.clear();
         let lastLabel: Symbol | null = null;
-        let labelsBeforeRts = Array<Symbol>();
+        const labelsBeforeRts = Array<Symbol>();
         for (let i = 0; i < document.lineCount; i++) {
-            let line = document.lineAt(i);
-            let asmLine = new ASMLine(line.text, line);
+            const line = document.lineAt(i);
+            const asmLine = new ASMLine(line.text, line);
             let [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
             if ((symbol !== undefined) && (range !== undefined)) {
                 this.definedSymbols.push(new Symbol(symbol, this, range));
             } else {
-                let results = asmLine.getSymbolFromData();
+                const results = asmLine.getSymbolFromData();
                 for (let k = 0; k < results.length; k++) {
                     [symbol, range] = results[k];
                     if ((symbol !== undefined) && (range !== undefined)) {
@@ -49,15 +44,15 @@ export class SymbolFile {
                 }
             }
             if (asmLine.label.length > 0) {
-                let label = asmLine.label.replace(":", "");
-                let s = new Symbol(label, this, asmLine.labelRange);
+                const label = asmLine.label.replace(":", "");
+                const s = new Symbol(label, this, asmLine.labelRange);
                 this.labels.push(s);
                 lastLabel = s;
             }
             if (asmLine.variable.length > 0) {
                 this.variables.push(new Symbol(asmLine.variable, this, asmLine.variableRange, asmLine.value));
             }
-            let instruct = asmLine.instruction.toLowerCase();
+            const instruct = asmLine.instruction.toLowerCase();
             if (instruct.indexOf("bsr") >= 0) {
                 this.subroutines.push(asmLine.data);
             } else if ((instruct.indexOf("dc") === 0) || (instruct.indexOf("ds") === 0) || (instruct.indexOf("incbin") === 0)) {
@@ -71,18 +66,20 @@ export class SymbolFile {
             } else if (instruct === "incdir") {
                 this.includeDir = asmLine.data.replace(/"/g, '');
             } else if (instruct === "include") {
-                this.includedFiles.push(asmLine.data.replace(/"/g, ''));
+                const includeSymbol = new Symbol(asmLine.data.replace(/"/g, ''), this, asmLine.dataRange);
+                this.includedFiles.push(includeSymbol);
+                this.definedSymbols.push(includeSymbol);
             }
         }
         let inSub = false;
         let lastParent: Symbol | undefined;
-        for (let l of this.labels) {
+        for (const l of this.labels) {
             if (this.subroutines.indexOf(l.getLabel()) >= 0) {
                 inSub = true;
                 lastParent = l;
             } else if (inSub && lastParent) {
                 l.setParent(lastParent.getLabel());
-                let range = lastParent.getRange();
+                const range = lastParent.getRange();
                 lastParent.setRange(range.union(l.getRange()));
             }
             if (labelsBeforeRts.indexOf(l) >= 0) {
@@ -91,7 +88,7 @@ export class SymbolFile {
         }
     }
 
-    public clear() {
+    public clear(): void {
         this.definedSymbols = new Array<Symbol>();
         this.referredSymbols = new Array<Symbol>();
         this.variables = new Array<Symbol>();
@@ -99,7 +96,7 @@ export class SymbolFile {
         this.subroutines = new Array<string>();
         this.dcLabel = new Array<Symbol>();
         this.includeDir = "";
-        this.includedFiles = new Array<string>();
+        this.includedFiles = new Array<Symbol>();
     }
 
     public getUri(): Uri {
@@ -126,7 +123,7 @@ export class SymbolFile {
     public getIncludeDir(): string {
         return this.includeDir;
     }
-    public getIncludedFiles(): Array<string> {
+    public getIncludedFiles(): Array<Symbol> {
         return this.includedFiles;
     }
 }
@@ -136,7 +133,7 @@ export class Symbol {
     private file: SymbolFile;
     private range: Range;
     private value?: string;
-    private parent: string = "";
+    private parent = "";
     constructor(label: string, file: SymbolFile, range: Range, value?: string) {
         this.label = label;
         this.file = file;
@@ -150,7 +147,7 @@ export class Symbol {
     public getRange(): Range {
         return this.range;
     }
-    public setRange(range: Range) {
+    public setRange(range: Range): void {
         this.range = range;
     }
     public getLabel(): string {
@@ -162,7 +159,7 @@ export class Symbol {
     public getParent(): string {
         return this.parent;
     }
-    public setParent(parent: string) {
+    public setParent(parent: string): void {
         this.parent = parent;
     }
 }

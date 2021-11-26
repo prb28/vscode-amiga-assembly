@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
-import { when, mock, anything, instance, spy, verify, resetCalls } from 'ts-mockito/lib/ts-mockito';
+import { when, mock, anything, instance, spy, verify, resetCalls, reset } from '@johanblumenberg/ts-mockito';
 import { GdbProxy } from '../gdbProxy';
 import { DebugDisassembledManager } from '../debugDisassembled';
 import { DebugInfo } from '../debugInfo';
@@ -10,7 +10,7 @@ import * as chai from 'chai';
 chai.use(chaiAsPromised);
 
 describe('Breakpoint Manager', () => {
-    let err = new Error("not Good");
+    const err = new Error("not Good");
     const SOURCE_PATH = "/my/source.s";
     const DIS_NAME = "cop_xx_xx.dbgasm";
     const DIS_PATH = `disassemble://${DIS_NAME}`;
@@ -25,22 +25,27 @@ describe('Breakpoint Manager', () => {
         mockedDebugInfo = mock(DebugInfo);
         bpManager = new BreakpointManager(instance(mockedGdbProxy), instance(mockedDebugDisassembledManager));
     });
+    afterEach(function () {
+        reset(mockedGdbProxy);
+        reset(mockedDebugInfo);
+        reset(mockedDebugDisassembledManager);
+    });
     context('Spied bpManager', () => {
         beforeEach(function () {
             spiedBpManager = spy(bpManager);
         });
         context('Source breakpoint', () => {
-            let sourceLine = 1;
-            let source = <DebugProtocol.Source>{
+            const sourceLine = 1;
+            const source = <DebugProtocol.Source>{
                 path: SOURCE_PATH,
             };
-            let bp = <GdbBreakpoint>{
+            const bp = <GdbBreakpoint>{
                 id: 1,
                 source: source,
                 line: sourceLine
             };
-            let segId = 1;
-            let offset = 2;
+            const segId = 1;
+            const offset = 2;
             context('Source existing', () => {
                 beforeEach(function () {
                     when(mockedDebugInfo.getAddressSeg(SOURCE_PATH, sourceLine)).thenResolve([segId, offset]);
@@ -51,7 +56,7 @@ describe('Breakpoint Manager', () => {
                     });
                     it('should add a breakpoint', async function () {
                         when(mockedGdbProxy.setBreakpoint(anything())).thenResolve();
-                        let rBp = await bpManager.setBreakpoint(bp);
+                        const rBp = await bpManager.setBreakpoint(bp);
                         expect(rBp.id).to.be.equal(bp.id);
                         expect(rBp.segmentId).to.be.equal(segId);
                         expect(rBp.offset).to.be.equal(offset);
@@ -98,8 +103,8 @@ describe('Breakpoint Manager', () => {
             });
         });
         context('Address breakpoint', () => {
-            let sourceLine = 1;
-            let bp = <GdbBreakpoint>{
+            const sourceLine = 1;
+            const bp = <GdbBreakpoint>{
                 id: 1,
                 source: <DebugProtocol.Source>{
                     name: DIS_NAME,
@@ -107,14 +112,14 @@ describe('Breakpoint Manager', () => {
                 },
                 line: sourceLine
             };
-            let address = 123;
+            const address = 123;
             context('Source existing', () => {
                 beforeEach(function () {
                     when(mockedDebugDisassembledManager.getAddressForFileEditorLine(DIS_NAME, sourceLine)).thenResolve(address);
                 });
                 it('should add a breakpoint', async function () {
                     when(mockedGdbProxy.setBreakpoint(anything())).thenResolve();
-                    let rBp = await bpManager.setBreakpoint(bp);
+                    const rBp = await bpManager.setBreakpoint(bp);
                     expect(rBp.id).to.be.equal(bp.id);
                     // tslint:disable-next-line: no-unused-expression
                     expect(rBp.segmentId).to.be.undefined;
@@ -137,22 +142,22 @@ describe('Breakpoint Manager', () => {
             });
         });
         it('should reject if the breakpoint is incomplete', async function () {
-            let bp = <GdbBreakpoint>{};
+            const bp = <GdbBreakpoint>{};
             await expect(bpManager.setBreakpoint(bp)).to.be.rejected;
             verify(spiedBpManager.addPendingBreakpoint(anything(), anything())).once();
         });
     });
     it('should send all pending breakpoints', async function () {
-        let sourceLine = 1;
-        let bp = <GdbBreakpoint>{
+        const sourceLine = 1;
+        const bp = <GdbBreakpoint>{
             id: 1,
             source: <DebugProtocol.Source>{
                 path: SOURCE_PATH,
             },
             line: sourceLine
         };
-        let segId = 1;
-        let offset = 2;
+        const segId = 1;
+        const offset = 2;
         bpManager.setDebugInfo(instance(mockedDebugInfo));
         when(mockedDebugInfo.getAddressSeg(SOURCE_PATH, sourceLine)).thenResolve([segId, offset]);
         when(mockedGdbProxy.setBreakpoint(anything())).thenReject(err);

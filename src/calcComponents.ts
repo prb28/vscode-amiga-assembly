@@ -9,34 +9,37 @@ export class CalcComponent {
     public getStatusBar(): StatusBarItem | undefined {
         return this.statusBarItem;
     }
-    public activate() {
+    public activate(): void {
         if ((this.statusBarItem === undefined) && (window)) {
             this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
         }
     }
     public async updateCalc(): Promise<void> {
-        if (!this.statusBarItem) {
-            this.activate();
-        }
-        if (this.statusBarItem) {
-            const statusBarItemConst = this.statusBarItem;
-            // Get the current text editor
-            let editor = window.activeTextEditor;
-            if (!editor) {
-                this.statusBarItem.hide();
-                return;
+        if (ExtensionState.isActive()) {
+            if (!this.statusBarItem) {
+                this.activate();
             }
-            let docContent = editor.document.getText(editor.selection);
-            // Replace hex / bin
-            if (docContent.length > 0) {
-                let definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
-                await definitionHandler.evaluateFormula(docContent).then(result => {
-                    // Update the status bar
-                    statusBarItemConst.text = this.formatResult(docContent, result);
-                    statusBarItemConst.show();
-                }).catch(err => {
-                    statusBarItemConst.hide();
-                });
+            if (this.statusBarItem) {
+                const statusBarItemConst = this.statusBarItem;
+                // Get the current text editor
+                const editor = window.activeTextEditor;
+                if (!editor) {
+                    this.statusBarItem.hide();
+                    return;
+                }
+                const docContent = editor.document.getText(editor.selection);
+                // Replace hex / bin
+                if (docContent.length > 0) {
+                    const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
+                    try {
+                        const result = await definitionHandler.evaluateFormula(docContent);
+                        // Update the status bar
+                        statusBarItemConst.text = this.formatResult(docContent, result);
+                        statusBarItemConst.show();
+                    } catch (err) {
+                        statusBarItemConst.hide();
+                    }
+                }
             }
         }
     }
@@ -50,11 +53,11 @@ export class CalcComponent {
         let s = "No result";
         if (result) {
             // Transform to hex
-            let dec = result.toString(10);
+            const dec = result.toString(10);
             // Transform to hex
-            let hex = this.numberParser.hexToString(result, false);
+            const hex = this.numberParser.hexToString(result, false);
             // Transform to bin
-            let bin = this.numberParser.binaryToString(result, false);
+            const bin = this.numberParser.binaryToString(result, false);
             // Format the text
             s = "#" + dec + "/$" + hex + "/%" + bin;
         }
@@ -66,7 +69,7 @@ export class CalcComponent {
      */
     public async calculate(expression: string): Promise<number> {
         // call the function to calculate the expression
-        let dHnd = ExtensionState.getCurrent().getDefinitionHandler();
+        const dHnd = ExtensionState.getCurrent().getDefinitionHandler();
         return await dHnd.evaluateFormula(expression);
     }
 
@@ -78,7 +81,7 @@ export class CalcComponent {
      */
     private async iterateSelections(all: boolean, replace: boolean): Promise<void> {
         // Get the current text editor
-        let editor = window.activeTextEditor;
+        const editor = window.activeTextEditor;
         if (editor === undefined) {
             throw new Error("Cannot access to editor");
         } else {
@@ -123,42 +126,42 @@ export class CalcComponent {
     /**
      * Shows an input panel to calculate
      */
-    public async showInputPanel() {
-        await window.showInputBox({
+    public async showInputPanel(): Promise<void> {
+        const value = await window.showInputBox({
             prompt: "Enter a Math Expression to evaluate.",
             placeHolder: "Expression"
-        }).then((value) => {
-            if (value) {
-                this.calculate(value).then(result => {
-                    window.showInformationMessage(this.formatResult(value, result));
-                }).catch(err => {
-                    // do nothing
-                });
-            }
         });
+        if (value) {
+            try {
+                const result = await this.calculate(value);
+                window.showInformationMessage(this.formatResult(value, result));
+            } catch (err) {
+                // do nothing
+            }
+        }
     }
 
     /**
      * Applies a formula to selected numerical values and generates edits
      */
     public async getReplaceValuesForFormula(formula: string, document: TextDocument, selections: Selection[]): Promise<Array<[string, Range]>> {
-        let numberParser = new NumberParser();
-        let replaceValues = new Array<[string, Range]>();
+        const numberParser = new NumberParser();
+        const replaceValues = new Array<[string, Range]>();
         for (const selection of selections) {
             if (!selection.isEmpty) {
                 for (let lineIdx = selection.start.line; lineIdx < selection.end.line + 1; lineIdx++) {
                     const line = document.lineAt(lineIdx);
-                    let asmLine = new ASMLine(line.text, line);
-                    let numbers = asmLine.getNumbersFromData();
+                    const asmLine = new ASMLine(line.text, line);
+                    const numbers = asmLine.getNumbersFromData();
                     for (let i = numbers.length - 1; i >= 0; i--) {
-                        let [value, range] = numbers[i];
+                        const [value, range] = numbers[i];
                         if (selection.contains(range)) {
-                            let result = numberParser.parseWithType(value);
+                            const result = numberParser.parseWithType(value);
                             if (result !== null) {
-                                let num = result[0];
-                                let tp = result[1];
-                                let modifiedFormula = formula.replace('x', num.toString());
-                                let resultValue = await this.calculate(modifiedFormula);
+                                const num = result[0];
+                                const tp = result[1];
+                                const modifiedFormula = formula.replace('x', num.toString());
+                                const resultValue = await this.calculate(modifiedFormula);
                                 replaceValues.push([numberParser.numberToTypedString(resultValue, tp), range]);
                             }
                         }
@@ -189,9 +192,9 @@ export class CalcComponent {
                 const document = editor.document;
                 const selections = editor.selections;
                 // calculate all edits
-                let replaceValues = await this.getReplaceValuesForFormula(selectedFormula, document, selections);
+                const replaceValues = await this.getReplaceValuesForFormula(selectedFormula, document, selections);
                 await editor.edit((edit) => {
-                    for (let [value, range] of replaceValues) {
+                    for (const [value, range] of replaceValues) {
                         edit.replace(range, value);
                     }
                 });
@@ -202,7 +205,7 @@ export class CalcComponent {
     /**
      * Disposes the resources
      */
-    dispose() {
+    dispose(): void {
         if (this.statusBarItem) {
             this.statusBarItem.dispose();
         }
@@ -217,7 +220,7 @@ export class CalcController {
         this.calc = calc;
 
         // subscribe to selection change and editor activation events
-        let subscriptions: Disposable[] = [];
+        const subscriptions: Disposable[] = [];
         window.onDidChangeTextEditorSelection(this.onEvent, this, subscriptions);
         window.onDidChangeActiveTextEditor(this.onEvent, this, subscriptions);
 
@@ -228,7 +231,7 @@ export class CalcController {
         this.disposable = Disposable.from(...subscriptions);
     }
 
-    dispose() {
+    dispose(): void {
         this.disposable.dispose();
     }
 

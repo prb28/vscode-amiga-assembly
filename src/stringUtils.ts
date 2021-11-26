@@ -6,7 +6,7 @@ export class StringUtils {
      * @param padString Char as string to fill default to space
      * @return Padding string
      */
-    public static padStart(stringToPad: string, targetLength: number, padString: string = " "): string {
+    public static padStart(stringToPad: string, targetLength: number, padString = " "): string {
         return StringUtils.createPad(stringToPad, targetLength, padString) + stringToPad;
     }
 
@@ -17,7 +17,7 @@ export class StringUtils {
      * @param padString Char as string to fill default to space
      * @return Padding string
      */
-    public static createPad(stringToPad: string, targetLength: number, padString: string = " "): string {
+    public static createPad(stringToPad: string, targetLength: number, padString = " "): string {
         targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
         if (stringToPad.length > targetLength) {
             return '';
@@ -38,7 +38,7 @@ export class StringUtils {
      * @param padString Char as string to fill default to space
      * @return Padded string
      */
-    public static padEnd(stringToPad: string, targetLength: number, padString: string = " "): string {
+    public static padEnd(stringToPad: string, targetLength: number, padString = " "): string {
         return stringToPad + StringUtils.createPad(stringToPad, targetLength, padString);
     }
 
@@ -48,8 +48,8 @@ export class StringUtils {
      * @param n Array of check elements
      */
     public static chunk(str: string, n: number): string[] {
-        let ret = [];
-        let maxCount = str.length - n - 1;
+        const ret = [];
+        const maxCount = str.length - n - 1;
         let i;
         for (i = 0; i < maxCount; i += n) {
             ret.push(str.substring(i, n + i));
@@ -83,9 +83,9 @@ export class StringUtils {
      */
     public static convertHexStringToASCII(value: string, chunkSize: number): string {
         let asciiContents = "";
-        let chunks = this.chunk(value, chunkSize);
-        for (let c of chunks) {
-            let i = parseInt(c, 16);
+        const chunks = this.chunk(value, chunkSize);
+        for (const c of chunks) {
+            const i = parseInt(c, 16);
             asciiContents += StringUtils.convertByteToASCII(i);
         }
         return asciiContents;
@@ -98,10 +98,10 @@ export class StringUtils {
      */
     public static convertHexUTF8StringToUTF8(value: string): string {
         // split input into groups of two
-        let hex = value.match(/[\s\S]{2}/g) || [];
+        const hex = value.match(/[\s\S]{2}/g) || [];
         let output = '';
         // build a hex-encoded representation of your string
-        let j = hex.length;
+        const j = hex.length;
         for (let i = 0; i < j; i++) {
             output += '%' + ('0' + hex[i]).slice(-2);
         }
@@ -130,8 +130,8 @@ export class StringUtils {
      */
     public static convertInt32ToASCII(value: number): string {
         let asciiContents = "";
-        let bytes = StringUtils.toBytesInt32(value);
-        for (let i of bytes) {
+        const bytes = StringUtils.toBytesInt32(value);
+        for (const i of bytes) {
             asciiContents += StringUtils.convertByteToASCII(i);
         }
         return asciiContents;
@@ -154,7 +154,7 @@ export class StringUtils {
      * Convert a hex string to a byte array
      **/
     public static hexToBytes(hex: string): Array<number> {
-        let bytes = new Array<number>();
+        const bytes = new Array<number>();
         for (let c = 0; c < hex.length; c += 2) {
             bytes.push(parseInt(hex.substr(c, 2), 16));
         }
@@ -165,9 +165,9 @@ export class StringUtils {
      * Convert a byte array to a hex string
      **/
     public static bytesToHex(bytes: Array<number>): string {
-        let hex = Array<string>();
+        const hex = Array<string>();
         for (let i = 0; i < bytes.length; i++) {
-            let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+            const current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
             hex.push((current >>> 4).toString(16));
             hex.push((current & 0xF).toString(16));
         }
@@ -179,7 +179,7 @@ export class StringUtils {
      **/
     static hexToBase64(hexString: string): string {
         // Conversion to bytes
-        let buffer = Buffer.from(StringUtils.hexToBytes(hexString));
+        const buffer = Buffer.from(StringUtils.hexToBytes(hexString));
         return buffer.toString('base64');
     }
 }

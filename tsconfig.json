@@ -1,11 +1,12 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es6",
-        "outDir": "out",
+        "target": "es2019",
         "lib": [
-            "es6"
+            "ES2019",
+            "dom" // for error : TS2304: Cannot find name 'AbortSignal'
         ],
+        "outDir": "out",
         "sourceMap": true,
         "rootDir": "src",
         "removeComments": true,
@@ -16,11 +17,14 @@
         "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
         "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
         // "noUnusedParameters": true,  /* Report errors on unused parameters. */
-        "allowJs": true
+        "allowJs": true,
+        "useUnknownInCatchVariables": false
     },
     "include": [
         "src/**/*.ts",
-        "./node_modules/vscode/vscode.d.ts"
     ],
-    "exclude": []
+    "exclude": [
+        "node_modules",
+        ".vscode-test"
+    ]
 }

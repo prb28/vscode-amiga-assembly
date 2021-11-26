@@ -1,7 +1,3 @@
-[![Build Status](https://prb28.visualstudio.com/vscode-amiga-assembly/_apis/build/status/prb28.vscode-amiga-assembly?branchName=master)](https://prb28.visualstudio.com/vscode-amiga-assembly/_build/latest?definitionId=1&branchName=master)
-[![Coverage Status](https://coveralls.io/repos/github/prb28/vscode-amiga-assembly/badge.png?branch=master)](https://coveralls.io/github/prb28/vscode-amiga-assembly?branch=master)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=prb28_vscode-amiga-assembly&metric=alert_status)](https://sonarcloud.io/dashboard?id=prb28_vscode-amiga-assembly)
-
 # Amiga Assembly for Visual Studio Code
 Amiga Assembly for Visual Studio Code is a extension to support assembly language for the Amiga Motorola 68000 machines and emulators.
 
@@ -12,13 +8,28 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
-## New in 0.21.3
-- Compatibility fix for vscode 1.56
-- Bug fix
+## Breaking change 1.0!
 
-## New in 0.21
-- Integration WinUAE (custom build)
-- Show CCR codes (Status register)
+The build system has been reviewed :
+- 3 commands have been replaced by tasks:
+    - `amigaassembly: build`: to build the workspace
+    - `amigaassembly: build current file`: to build the current file as an executable
+    - `amigaassembly: compile current file`: to compile the current file (creates a .o file)
+    - `amigaassembly: create ADF`: to create an ADF file
+- Builds are triggered in a terminal to show the output
+- There is no more the "Build" button in the bottom of the window
+- The *launch.json* parameter `"buildWorkspace": true,` is replaced by `"preLaunchTask": "amigaassembly: build"`
+
+## New in 1.0
+- Build sequence review with output displayed
+- Selection of display format for variables
+- Add a "Run current file" launch configuration
+- Able to change the filename from GENCOP
+- Add command to download the example project workspace
+- Automatically download binaries
+- Right click to add a memory dump in the watch window
+- Include files reference/autocomplete
+- Provide standard vscode tasks 
 - Bug fixes
 
 ### Other features
@@ -84,6 +95,18 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## New in 1.0
+- Build sequence review with output displayed
+- Selection of display format for variables
+- Add a "Run current file" launch configuration
+- Able to change the filename from GENCOP
+- Add command to download the example project workspace
+- Automatically download binaries
+- Right click to add a memory dump in the watch window
+- Include files reference/autocomplete
+- Provide standard vscode tasks 
+- Bug fixes
+
 ## 0.21.3
 - Bug fixes
 ## 0.21.2

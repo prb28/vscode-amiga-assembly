@@ -10,7 +10,7 @@ describe("GdbPacket Tests", function () {
         expected = [new GdbPacket(GdbPacketType.UNKNOWN, "4ef900f8101c4ef900f8")];
         expect(GdbPacket.parseData("$4ef900f8101c4ef900f8#61")).to.be.eql(expected);
         // Notification
-        let p = new GdbPacket(GdbPacketType.STOP, "T0505:98e7ffbf;04:4ce6ffbf;08:b1b6e54c;thread:p7526.7526;core:0;");
+        const p = new GdbPacket(GdbPacketType.STOP, "T0505:98e7ffbf;04:4ce6ffbf;08:b1b6e54c;thread:p7526.7526;core:0;");
         p.setNotification(true);
         expected = [p];
         expect(GdbPacket.parseData("$%Stop:T0505:98e7ffbf;04:4ce6ffbf;08:b1b6e54c;thread:p7526.7526;core:0;#00")).to.be.eql(expected);

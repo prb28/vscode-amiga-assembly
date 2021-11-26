@@ -13,7 +13,7 @@ import { DocumentFormatterConfiguration } from '../formatterConfiguration';
 describe("Parser Tests", function () {
     before(async function () {
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
@@ -34,13 +34,28 @@ describe("Parser Tests", function () {
             expect(asmLine.lineType).to.be.equal(ASMLineType.COMMENT);
         });
         it("Should parse a label line", function () {
-            let asmLine = new ASMLine("mylabel");
+            const asmLine = new ASMLine("mylabel");
             expect(asmLine.label).to.be.equal("mylabel");
             expect(asmLine.comment).to.be.empty;
             expect(asmLine.data).to.be.empty;
             expect(asmLine.instruction).to.be.empty;
             expect(asmLine.lineType).to.be.equal(ASMLineType.LABEL);
         });
+
+
+        it("Should parse a line with no known instruction", function () {
+            const asmLine = new ASMLine("doslib EQUR d4 ;my comment");
+            expect(asmLine.label).to.be.equal("doslib");
+            expect(asmLine.labelRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 6)));
+            expect(asmLine.instruction).to.be.equal("EQUR");
+            expect(asmLine.instructionRange).to.be.eql(new Range(new Position(0, 7), new Position(0, 11)));
+            expect(asmLine.data).to.be.equal("d4");
+            expect(asmLine.dataRange).to.be.eql(new Range(new Position(0, 12), new Position(0, 14)));
+            expect(asmLine.comment).to.be.equal(";my comment");
+            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 15), new Position(0, 26)));
+            expect(asmLine.lineType).to.be.equal(ASMLineType.INSTRUCTION);
+        });
+
         it("Should retrieve the symbol from a label line", function () {
             let asmLine = new ASMLine("mylabel");
             let [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
@@ -167,7 +182,7 @@ describe("Parser Tests", function () {
             expect(results).to.be.eql(["a1", "a2", "d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
         });
         it("Should retrieve the registers from a registers range", function () {
-            let asmLine = new ASMLine("");
+            const asmLine = new ASMLine("");
             let results = asmLine.getRegistersFromRegistersRange("d1-d7");
             expect(results.sort()).to.be.eql(["d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
             results = asmLine.getRegistersFromRegistersRange("d1-7");
@@ -178,7 +193,7 @@ describe("Parser Tests", function () {
             expect(results.sort()).to.be.eql(["a0", "a1", "a2", "a3", "a4", "a5", "a6", "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
         });
         it("Should parse a single line instruction", function () {
-            let asmLine = new ASMLine(" rts");
+            const asmLine = new ASMLine(" rts");
             expect(asmLine.instruction).to.be.equal("rts");
             expect(asmLine.comment).to.be.empty;
             expect(asmLine.data).to.be.empty;
@@ -284,7 +299,7 @@ describe("Parser Tests", function () {
             expect(asmLine.lineType).to.be.equal(ASMLineType.ASSIGNMENT);
         });
         it("Should parse a line without label", function () {
-            let asmLine = new ASMLine("\t\tmove.l #mempos,d1     ; mycomment");
+            const asmLine = new ASMLine("\t\tmove.l #mempos,d1     ; mycomment");
             expect(asmLine.label).to.be.empty;
             expect(asmLine.instruction).to.be.equal("move.l");
             expect(asmLine.data).to.be.equal("#mempos,d1");
@@ -292,7 +307,7 @@ describe("Parser Tests", function () {
             expect(asmLine.lineType).to.be.equal(ASMLineType.INSTRUCTION);
         });
         it("Should parse a line without labels nor comment", function () {
-            let asmLine = new ASMLine("\t\tmove.l #mempos,d1 ");
+            const asmLine = new ASMLine("\t\tmove.l #mempos,d1 ");
             expect(asmLine.label).to.be.empty;
             expect(asmLine.instruction).to.be.equal("move.l");
             expect(asmLine.data).to.be.equal("#mempos,d1");
@@ -310,14 +325,14 @@ describe("Parser Tests", function () {
             expect(asmLine.data).to.be.equal("or,d1");
         });
         it("Should parse compiler option as instruction", function () {
-            let asmLine = new ASMLine("\t\tOPT O+,OW-,OW1+,OW6+,P=68000    ; mycomment");
+            const asmLine = new ASMLine("\t\tOPT O+,OW-,OW1+,OW6+,P=68000    ; mycomment");
             expect(asmLine.label).to.be.empty;
             expect(asmLine.instruction).to.be.equal("OPT");
             expect(asmLine.data).to.be.equal("O+,OW-,OW1+,OW6+,P=68000");
             expect(asmLine.comment).to.be.equal("; mycomment");
         });
         it("Should parse a library call", function () {
-            let asmLine = new ASMLine(" jsr AllocMem(a6)");
+            const asmLine = new ASMLine(" jsr AllocMem(a6)");
             expect(asmLine.label).to.be.empty;
             expect(asmLine.instruction).to.be.equal("jsr");
             expect(asmLine.data).to.be.equal("AllocMem(a6)");
@@ -327,7 +342,7 @@ describe("Parser Tests", function () {
             let asmLine = new ASMLine(" jsr $010");
             expect(asmLine.getNumbersFromData()).to.be.eql([['$010', new Range(new Position(0, 5), new Position(0, 9))]]);
             asmLine = new ASMLine(" dc.b $1, #10, $a, %1010, @-12");
-            let numbers = asmLine.getNumbersFromData();
+            const numbers = asmLine.getNumbersFromData();
             expect(numbers.length).to.be.equal(5);
             let pos = 6;
             expect(numbers[0]).to.be.eql(['$1', new Range(new Position(0, pos), new Position(0, pos + 2))]);
@@ -343,7 +358,7 @@ describe("Parser Tests", function () {
     });
     context("Number parsing", function () {
         it("Should parse a number", function () {
-            let np = new NumberParser();
+            const np = new NumberParser();
             expect(np.parse("#10")).to.be.equal(10);
             expect(np.parse("$10")).to.be.equal(16);
             expect(np.parse("%10")).to.be.equal(2);
@@ -355,28 +370,28 @@ describe("Parser Tests", function () {
             expect(np.parse(" -10 ")).to.be.equal(-10);
         });
         it("Should tranform a text to decimals", function () {
-            let np = new NumberParser();
+            const np = new NumberParser();
             expect(np.transformToDecimal("#10 + $a + %1010 + @12")).to.be.equal("10 + 10 + 10 + 10");
             expect(np.transformToDecimal("$1000+$100")).to.be.equal("4096+256");
             expect(np.transformToDecimal("$1000+($100-%10)/12+$100+@12")).to.be.equal("4096+(256-2)/12+256+10");
         });
         it("Should display a binary correctly", function () {
-            let np = new NumberParser();
+            const np = new NumberParser();
             expect(np.binaryToString(3840, true)).to.be.equal("1111.00000000");
             expect(np.binaryToString(3840, false)).to.be.equal("111100000000");
         });
         it("Should display an hex correctly", function () {
-            let np = new NumberParser();
+            const np = new NumberParser();
             expect(np.hexToString(703710, true)).to.be.equal("a.bcde");
             expect(np.hexToString(703710, false)).to.be.equal("abcde");
         });
         it("Should display an ascii correctly", function () {
-            let np = new NumberParser();
+            const np = new NumberParser();
             expect(np.asciiToString(40, true)).to.be.equal("...(");
             expect(np.asciiToString(0x41424344, false)).to.be.equal("ABCD");
         });
         it("Should parse the type of a number", function () {
-            let np = new NumberParser();
+            const np = new NumberParser();
             expect(np.parseWithType("#10")).to.be.eql([10, NumberType.DEC]);
             expect(np.parseWithType("$10")).to.be.eql([16, NumberType.HEX]);
             expect(np.parseWithType("%10")).to.be.eql([2, NumberType.BIN]);
@@ -384,7 +399,7 @@ describe("Parser Tests", function () {
             expect(np.parseWithType("#$10")).to.be.eql([16, NumberType.REF]);
         });
         it("Should transform a number to a typed string", function () {
-            let np = new NumberParser();
+            const np = new NumberParser();
             expect(np.numberToTypedString(10, NumberType.DEC)).to.be.equal('#10');
             expect(np.numberToTypedString(10, NumberType.HEX)).to.be.equal('$a');
             expect(np.numberToTypedString(10, NumberType.BIN)).to.be.equal('%1010');
@@ -393,7 +408,7 @@ describe("Parser Tests", function () {
         });
     });
     context("ASMDocument asmDocumentiters parsing", function () {
-        let document = new DummyTextDocument();
+        const document = new DummyTextDocument();
         let labelToInstructionDistance = 1;
         let instructionToDataDistance = 2;
         let dataToCommentsDistance = 3;
@@ -404,13 +419,13 @@ describe("Parser Tests", function () {
         let useTabs = false;
         let tabSize = 4;
         let extraSize = 10;
-        let label = ".mylabel";
-        let instruction = "move.l";
-        let data = "#mempos,d1";
-        let comment = ";mycomment";
-        let variable = "myvar";
-        let operator = "equ";
-        let value = "MYVAL";
+        const label = ".mylabel";
+        const instruction = "move.l";
+        const data = "#mempos,d1";
+        const comment = ";mycomment";
+        const variable = "myvar";
+        const operator = "equ";
+        const value = "MYVAL";
         beforeEach(() => {
             labelToInstructionDistance = 2;
             instructionToDataDistance = 4;
@@ -430,8 +445,8 @@ describe("Parser Tests", function () {
             });
             it("Should fit to tab columns", async () => {
                 useTabs = true;
-                let conf = new DocumentFormatterConfiguration(labelToInstructionDistance, instructionToDataDistance, dataToCommentsDistance, variableToOperatorDistance, operatorToValueDistance, preferredInstructionPosition, preferredCommentPosition, useTabs, tabSize);
-                let asmDocument = new ASMDocument();
+                const conf = new DocumentFormatterConfiguration(labelToInstructionDistance, instructionToDataDistance, dataToCommentsDistance, variableToOperatorDistance, operatorToValueDistance, preferredInstructionPosition, preferredCommentPosition, useTabs, tabSize);
+                const asmDocument = new ASMDocument();
                 asmDocument.parse(document, conf);
                 expect(asmDocument.fitToTabColumn(0)).to.be.equal(0);
                 expect(asmDocument.fitToTabColumn(2)).to.be.equal(4);
@@ -473,11 +488,11 @@ describe("Parser Tests", function () {
                 let asmDocument = new ASMDocument();
                 asmDocument.parse(document, conf);
                 expect(asmDocument.labelColumn).to.be.equal(0);
-                let expectedInstructionColumn = label.length + extraSize;
+                const expectedInstructionColumn = label.length + extraSize;
                 expect(asmDocument.instructionColumn).to.be.equal(expectedInstructionColumn);
-                let expectedDataColumn = expectedInstructionColumn + instruction.length + instructionToDataDistance;
+                const expectedDataColumn = expectedInstructionColumn + instruction.length + instructionToDataDistance;
                 expect(asmDocument.dataColumn).to.be.equal(expectedDataColumn);
-                let expectedCommentColumn = expectedDataColumn + data.length + dataToCommentsDistance;
+                const expectedCommentColumn = expectedDataColumn + data.length + dataToCommentsDistance;
                 expect(asmDocument.commentColumn).to.be.equal(expectedCommentColumn);
 
                 // Setting the preferred comment position
@@ -489,10 +504,10 @@ describe("Parser Tests", function () {
             });
         });
         context("Single assignment line document", function () {
-            let var2 = "v2";
-            let op2 = "=";
-            let value2 = "3";
-            let comment2 = ";C";
+            const var2 = "v2";
+            const op2 = "=";
+            const value2 = "3";
+            const comment2 = ";C";
             before(() => {
                 document.addLine(`${variable}\t ${operator}   ${value} ${comment}`);
                 document.addLine(`${var2} ${op2} ${value2} ${comment2}`);
@@ -502,11 +517,11 @@ describe("Parser Tests", function () {
                 let asmDocument = new ASMDocument();
                 asmDocument.parse(document, conf);
                 expect(asmDocument.variableColumn).to.be.equal(0);
-                let expectedOperatorColumn = variable.length + variableToOperatorDistance;
+                const expectedOperatorColumn = variable.length + variableToOperatorDistance;
                 expect(asmDocument.operatorColumn).to.be.equal(expectedOperatorColumn);
-                let expectedValueColumn = expectedOperatorColumn + operator.length + operatorToValueDistance;
+                const expectedValueColumn = expectedOperatorColumn + operator.length + operatorToValueDistance;
                 expect(asmDocument.valueColumn).to.be.equal(expectedValueColumn);
-                let expectedAssignmentCommentColumn = expectedValueColumn + value.length + dataToCommentsDistance;
+                const expectedAssignmentCommentColumn = expectedValueColumn + value.length + dataToCommentsDistance;
                 expect(asmDocument.assignmentCommentColumn).to.be.equal(expectedAssignmentCommentColumn);
 
                 // With tabs 
@@ -515,11 +530,11 @@ describe("Parser Tests", function () {
                 asmDocument = new ASMDocument();
                 asmDocument.parse(document, conf);
                 expect(asmDocument.variableColumn).to.be.equal(0);
-                let expectedOperatorColumnTab = asmDocument.fitToTabColumn(variable.length + variableToOperatorDistance);
+                const expectedOperatorColumnTab = asmDocument.fitToTabColumn(variable.length + variableToOperatorDistance);
                 expect(asmDocument.operatorColumn).to.be.equal(expectedOperatorColumnTab);
-                let expectedValueColumnTab = asmDocument.fitToTabColumn(expectedOperatorColumnTab + operator.length + operatorToValueDistance);
+                const expectedValueColumnTab = asmDocument.fitToTabColumn(expectedOperatorColumnTab + operator.length + operatorToValueDistance);
                 expect(asmDocument.valueColumn).to.be.equal(expectedValueColumnTab);
-                let expectedAssignmentCommentColumnTab = asmDocument.fitToTabColumn(expectedValueColumnTab + value.length + dataToCommentsDistance);
+                const expectedAssignmentCommentColumnTab = asmDocument.fitToTabColumn(expectedValueColumnTab + value.length + dataToCommentsDistance);
                 expect(asmDocument.assignmentCommentColumn).to.be.equal(expectedAssignmentCommentColumnTab);
 
                 // with preferred comment

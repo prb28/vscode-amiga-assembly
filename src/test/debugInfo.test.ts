@@ -14,9 +14,9 @@ describe("Debug Info", function () {
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
         const sourceRootPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
         const sourceFilename = Path.join(sourceRootPath, 'gencop.s');
-        let pathReplacements = new Map<string, string>();
+        const pathReplacements = new Map<string, string>();
         pathReplacements.set("c:\\Users\\paulr\\workspace\\amiga\\projects\\vscode-amiga-wks-example", sourceRootPath);
-        let di = new DebugInfo(Uri.file(programFilename), pathReplacements);
+        const di = new DebugInfo(Uri.file(programFilename), pathReplacements);
         await di.load();
         expect(await di.getAddressSeg(sourceFilename, 32)).to.be.eql([0, 0]);
         expect(await di.getAddressSeg(sourceFilename, 33)).to.be.eql([0, 4]);
@@ -25,9 +25,9 @@ describe("Debug Info", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
         const sourceRootPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
-        let pathReplacements = new Map<string, string>();
+        const pathReplacements = new Map<string, string>();
         pathReplacements.set("c:\\Users\\paulr\\workspace\\amiga\\projects\\vscode-amiga-wks-example", sourceRootPath);
-        let di = new DebugInfo(Uri.file(programFilename), pathReplacements);
+        const di = new DebugInfo(Uri.file(programFilename), pathReplacements);
         await expect(di.load()).to.be.eventually.equal(true);
         await expect(di.resolveFileLine(0, 4)).to.be.eventually.eql([FileProxy.normalize(sourceRootPath + Path.sep + "gencop.s"), 33, "              clr.l      d0                      ; les registres sont des long - il faut les nettoyer avec un .l"]);
     });
@@ -36,18 +36,18 @@ describe("Debug Info", function () {
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'gencop');
         const sourceRootPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
         const sourceFilename = Path.join(sourceRootPath, 'gencop.s');
-        let pathReplacements = new Map<string, string>();
+        const pathReplacements = new Map<string, string>();
         pathReplacements.set("c:\\Users\\paulr\\workspace\\amiga\\projects\\vscode-amiga-wks-example", sourceRootPath);
-        let di = new DebugInfo(Uri.file(programFilename), pathReplacements);
+        const di = new DebugInfo(Uri.file(programFilename), pathReplacements);
         await expect(di.load()).to.be.eventually.equal(true);
         await expect(di.getAllSegmentIds(sourceFilename)).to.be.eventually.eql([0]);
     });
     it("Should raise an error if the file is not found", async function () {
-        let di = new DebugInfo(Uri.file("nothere"));
+        const di = new DebugInfo(Uri.file("nothere"));
         await expect(di.load()).to.be.eventually.equal(false);
     });
     it("Should compare filenames", function () {
-        let di = new DebugInfo(Uri.file("nothere"));
+        const di = new DebugInfo(Uri.file("nothere"));
         // tslint:disable-next-line:no-unused-expression
         expect(di.areSameSourceFileNames("b", "b")).to.be.true;
         // tslint:disable-next-line:no-unused-expression
@@ -59,8 +59,8 @@ describe("Debug Info", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'hello-vbcc');
         const sourceRootPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
-        let pathReplacements = new Map<string, string>();
-        let di = new DebugInfo(Uri.file(programFilename), pathReplacements, [sourceRootPath]);
+        const pathReplacements = new Map<string, string>();
+        const di = new DebugInfo(Uri.file(programFilename), pathReplacements, [sourceRootPath]);
         await expect(di.load()).to.be.eventually.equal(true);
         await expect(di.resolveFileLine(0, 1024)).to.be.eventually.eql([FileProxy.normalize(sourceRootPath + Path.sep + "hello.c"), 9, "        printf(\"10 * %d = %d\\n\", i, mul_by_ten(i));"]);
     });
@@ -69,8 +69,8 @@ describe("Debug Info", function () {
         const programFilename = Path.join(PROJECT_ROOT, 'test_files', 'debug', 'fs-uae', 'hd0', 'hello-vbcc');
         const sourceRootPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
         const sourceFilename = Path.join(sourceRootPath, 'hello.c');
-        let pathReplacements = new Map<string, string>();
-        let di = new DebugInfo(Uri.file(programFilename), pathReplacements, [sourceRootPath]);
+        const pathReplacements = new Map<string, string>();
+        const di = new DebugInfo(Uri.file(programFilename), pathReplacements, [sourceRootPath]);
         await di.load();
         await expect(di.getAddressSeg(sourceFilename, 9)).to.be.eventually.eql([0, 986]);
         // Without path

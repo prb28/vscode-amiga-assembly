@@ -12,23 +12,26 @@ import {
   reset,
   mock,
   instance
-} from "ts-mockito/lib/ts-mockito";
-import { VASMCompiler, VASMParser, VASMController } from "../vasm";
+} from "@johanblumenberg/ts-mockito";
+import { VASMCompiler, VASMParser } from "../vasm";
 import { ExecutorHelper, ICheckResult } from "../execHelper";
 import { DummyTextDocument } from "./dummy";
 import { ExtensionState } from "../extension";
-import { VLINKLinker } from "../vlink";
+import { VlinkBuildProperties, VLINKLinker } from "../vlink";
 import { FileProxy } from "../fsProxy";
 
 describe("VASM Tests", function () {
   before(async () => {
     // activate the extension
-    let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+    const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
     if (ext) {
       await ext.activate();
     }
     const newFile = vscode.Uri.parse("untitled://./vasm.s");
     return vscode.window.showTextDocument(newFile);
+  });
+  after(async () => {
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   });
   context("VASMCompiler", function () {
     let compiler: VASMCompiler;
@@ -52,11 +55,15 @@ describe("VASM Tests", function () {
           anything(),
           anything(),
           anything(),
+          anything(),
+          anything(),
           anything()
         )
       ).thenResolve([]);
       when(
         executorLinker.runTool(
+          anything(),
+          anything(),
           anything(),
           anything(),
           anything(),
@@ -75,9 +82,14 @@ describe("VASM Tests", function () {
       resetCalls(executorLinker);
       resetCalls(spiedLinker);
       buildDirMock = mock(FileProxy);
+      when(buildDirMock.getRelativeFile(anything())).thenReturn(instance(buildDirMock));
+      when(buildDirMock.getParent()).thenReturn(instance(buildDirMock));
+      when(buildDirMock.exists()).thenResolve(true);
       when(buildDirMock.mkdir()).thenReturn(Promise.resolve());
       when(buildDirMock.getPath()).thenReturn("/workdir/build");
       when(buildDirMock.getUri()).thenReturn(vscode.Uri.file("/workdir/build"));
+      const spiedExtensionState = spy(ExtensionState.getCurrent());
+      when(spiedExtensionState.getBuildDir()).thenReturn(instance(buildDirMock));
       tmpDirMock = mock(FileProxy);
       when(tmpDirMock.mkdir()).thenReturn(Promise.resolve());
       when(tmpDirMock.getPath()).thenReturn("/workdir/tmp");
@@ -89,14 +101,16 @@ describe("VASM Tests", function () {
       when(spiedCompiler.getWorkspaceRootDir()).thenReturn(vscode.Uri.file("/workdir"));
     });
     after(function () {
+      reset(buildDirMock);
+      reset(tmpDirMock);
       reset(executorCompiler);
       reset(executorLinker);
       reset(spiedLinker);
       reset(spiedCompiler);
     });
     it("Should call the compiler command", async function () {
-      let fileUri = vscode.Uri.file("file1.s");
-      await compiler.buildFile(fileUri, false, false);
+      const fileUri = vscode.Uri.file("file1.s");
+      await compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false);
       verify(
         executorCompiler.runTool(
           anything(),
@@ -106,11 +120,13 @@ describe("VASM Tests", function () {
           anyString(),
           anything(),
           anything(),
+          anything(),
+          anything(),
           anything()
         )
       ).once();
-      let args = capture(executorCompiler.runTool).last();
-      let filePath = "/workdir/build/file1.o".replace(/\/+/g, Path.sep);
+      const args = capture(executorCompiler.runTool).last();
+      const filePath = "/workdir/build/file1.o".replace(/\/+/g, Path.sep);
       expect(args[0]).to.be.eql([
         "-m68000",
         "-Fhunk",
@@ -131,11 +147,13 @@ describe("VASM Tests", function () {
             anyString(),
             anything(),
             anything(),
+            anything(),
+            anything(),
             anything()
           )
         ).once();
-        let args = capture(executorCompiler.runTool).last();
-        let filePath = "/workdir/tmp/vasm.o".replace(/\/+/g, Path.sep);
+        const args = capture(executorCompiler.runTool).last();
+        const filePath = "/workdir/tmp/vasm.o".replace(/\/+/g, Path.sep);
         verify(tmpDirMock.mkdir()).once();
         expect(args[0]).to.be.eql([
           "-m68000",
@@ -148,36 +166,67 @@ describe("VASM Tests", function () {
       });
     });
     it("Should process the global errors to find the line in document", async function () {
-      let document = new DummyTextDocument();
+      const document = new DummyTextDocument();
       document.addLine("First line");
       document.addLine('   include "myfile.i"');
       document.addLine("alabel");
-      let error = new ICheckResult();
+      const error = new ICheckResult();
       error.line = -1;
       error.msg = "file not found <myfile.i>";
       compiler.processGlobalErrors(document, [error]);
       expect(error.line).to.be.equal(2);
     });
+    it("Should select documents to build", async function () {
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      const rootDir = vscode.Uri.file(Path.join(__dirname, '..', '..', 'test_files', 'sources'));
+      let vlinkConf = <VlinkBuildProperties>{};
+      let files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files).to.be.empty;
+      vlinkConf = <VlinkBuildProperties>{
+        "includes": "*.s",
+      };
+      files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files.length).to.be.equal(1);
+      expect(files[0].path.includes("tutorial.s")).to.be.true;
+      vlinkConf = <VlinkBuildProperties>{
+        "includes": "**/*.{s,i}",
+        "excludes": "*/hw.i"
+      };
+      files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files.length).to.be.equal(2);
+      expect(files[0].path.includes("custom.i")).to.be.true;
+      expect(files[1].path.includes("tutorial.s")).to.be.true;
+      vlinkConf = <VlinkBuildProperties>{
+        exefilename: "myExec"
+      };
+      // No opened editor
+      files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files).to.be.empty;
+      // editor opened
+      const documentFilename = Path.join(__dirname, '..', '..', 'test_files', 'sources', 'tutorial.s');
+      await vscode.window.showTextDocument(vscode.Uri.file(documentFilename));
+      files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files.length).to.be.equal(1);
+      expect(files[0].path.includes("tutorial.s")).to.be.true;
+    });
     it("Should build all the workspace", async function () {
-      this.timeout(3000);
-      let spiedWorkspace = spy(vscode.workspace);
-      let file1 = vscode.Uri.parse("file:///file1.s");
-      let file2 = vscode.Uri.parse("file:///file2");
-      when(spiedWorkspace.findFiles(anything(), anything())).thenReturn(
-        new Promise((resolve, reject) => {
-          resolve([file1, file2]);
-        })
-      );
+      ExtensionState.getCurrent().setWorkspaceRootDir(vscode.Uri.parse("file:///workdir"))
+      const spiedWorkspace = spy(vscode.workspace);
+      const file1 = vscode.Uri.parse("file:///file1.s");
+      const file2 = vscode.Uri.parse("file:///file2");
+      spiedCompiler = spy(compiler);
+      when(spiedCompiler.listFilesToBuild(anything(), anything())).thenResolve([file1, file2]);
       when(spiedWorkspace.openTextDocument(file1)).thenReturn(
-        new Promise((resolve, reject) => {
-          let document = new DummyTextDocument();
+        new Promise((resolve) => {
+          const document = new DummyTextDocument();
           document.uri = file1;
           resolve(document);
         })
       );
       when(spiedWorkspace.openTextDocument(file2)).thenReturn(
-        new Promise((resolve, reject) => {
-          let document = new DummyTextDocument();
+        new Promise((resolve) => {
+          const document = new DummyTextDocument();
           document.uri = file2;
           resolve(document);
         })
@@ -192,6 +241,8 @@ describe("VASM Tests", function () {
           anyString(),
           anything(),
           anything(),
+          anything(),
+          anything(),
           anything()
         )
       ).twice();
@@ -202,6 +253,8 @@ describe("VASM Tests", function () {
           anyString(),
           anything(),
           anyString(),
+          anything(),
+          anything(),
           anything(),
           anything(),
           anything()
@@ -216,6 +269,8 @@ describe("VASM Tests", function () {
           anyString(),
           anything(),
           anything(),
+          anything(),
+          anything(),
           anything()
         )
       ).calledAfter(
@@ -227,13 +282,15 @@ describe("VASM Tests", function () {
           anyString(),
           anything(),
           anything(),
+          anything(),
+          anything(),
           anything()
         )
       );
 
       let args = capture(executorCompiler.runTool).last();
 
-      let buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
+      const buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
       expect(args[0]).to.be.eql([
         "-m68000",
         "-Fhunk",
@@ -257,7 +314,7 @@ describe("VASM Tests", function () {
         "-bamigahunk",
         "-Bstatic",
         "-o",
-        buildPath + "a.out",
+        "/workdir/uae/dh0/".replace(/\/+/g, Path.sep) + "myprogram",
         buildPath + "file1.o",
         buildPath + "file2.o"
       ]);
@@ -269,30 +326,33 @@ describe("VASM Tests", function () {
       );
       const error = new Error("Not possible");
       when(buildDirMock.mkdir()).thenReject(error);
+      when(buildDirMock.exists()).thenResolve(false);
+      when(spiedCompiler.getBuildDir()).thenReturn(instance(buildDirMock));
       when(spiedCompiler.mayCompile(anything())).thenReturn(true);
-      let fileUri = vscode.Uri.file("file1.s");
+      const fileUri = vscode.Uri.file("file1.s");
       return compiler
-        .buildFile(fileUri, false, false)
+        .buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false)
         .then(() => {
           expect.fail("Should reject");
         })
-        .catch(error => {
-          expect(error).to.be.equal(error);
+        .catch(lError => {
+          // tslint:disable-next-line: no-unused-expression
+          expect(lError.message.includes(error.message)).to.be.true;
         });
     });
     it("Should return an error on build document if the compiler is not configured", async function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);
       when(spiedCompiler.disabledInConf(anything())).thenReturn(false);
-      let fileUri = vscode.Uri.file("file1.s");
-      await expect(compiler.buildFile(fileUri, false, false)).to.be.rejectedWith(
+      const fileUri = vscode.Uri.file("file1.s");
+      await expect(compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false)).to.be.rejectedWith(
         VASMCompiler.CONFIGURE_VASM_ERROR
       );
     });
     it("Should not return an error on build document if the compiler is not enabled", async function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(true);
       when(spiedCompiler.disabledInConf(anything())).thenReturn(true);
-      let fileUri = vscode.Uri.file("file1.s");
-      await expect(compiler.buildFile(fileUri, false, false)).to.be.fulfilled;
+      const fileUri = vscode.Uri.file("file1.s");
+      await expect(compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false)).to.be.fulfilled;
     });
     it("Should return an error on build workspace if the compiler is not configured", async function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);
@@ -307,27 +367,26 @@ describe("VASM Tests", function () {
       await expect(compiler.buildWorkspace()).to.be.fulfilled;
     });
     it("Should build even if the linker is disable", function () {
-      this.timeout(3000);
-      let spiedWorkspace = spy(vscode.workspace);
-      let file1 = vscode.Uri.file("/file1.s");
-      let file2 = vscode.Uri.file("/file2");
+      const spiedWorkspace = spy(vscode.workspace);
+      const file1 = vscode.Uri.file("/file1.s");
+      const file2 = vscode.Uri.file("/file2");
       when(
         spiedWorkspace.findFiles(anything(), anything(), anything())
       ).thenReturn(
-        new Promise((resolve, reject) => {
+        new Promise((resolve) => {
           resolve([file1, file2]);
         })
       );
       when(spiedWorkspace.openTextDocument(file1)).thenReturn(
-        new Promise((resolve, reject) => {
-          let document = new DummyTextDocument();
+        new Promise((resolve) => {
+          const document = new DummyTextDocument();
           document.uri = file1;
           resolve(document);
         })
       );
       when(spiedWorkspace.openTextDocument(file2)).thenReturn(
-        new Promise((resolve, reject) => {
-          let document = new DummyTextDocument();
+        new Promise((resolve) => {
+          const document = new DummyTextDocument();
           document.uri = file2;
           resolve(document);
         })
@@ -336,42 +395,18 @@ describe("VASM Tests", function () {
       return compiler.buildWorkspace();
     });
     it("Should clean the workspace", async function () {
-      let state = ExtensionState.getCurrent();
-      let spiedOutputChannel = spy(state.getOutputChannel());
+      const state = ExtensionState.getCurrent();
+      const spiedOutputChannel = spy(state.getOutputChannel());
       when(buildDirMock.delete()).thenResolve();
-      let file1 = spy(new FileProxy(vscode.Uri.file("/workspace/build/file1.o")));
-      let file2 = spy(new FileProxy(vscode.Uri.file("/workspace/build/file2.o")));
-      let spyFile1 = spy(file1);
-      let spyFile2 = spy(file2);
-      when(spyFile1.delete()).thenResolve();
-      when(spyFile2.delete()).thenResolve();
-      when(buildDirMock.findFiles(anything(), anything())).thenReturn(
-        Promise.resolve([file1, file2])
-      );
-      return compiler.cleanWorkspace().then(() => {
-        verify(spyFile1.delete()).once();
-        verify(spyFile2.delete()).once();
-        verify(spiedOutputChannel.appendLine(anyString())).thrice();
-        return Promise.resolve();
-      });
-    });
-    it("Should get an error when cleaning the workspace", async function () {
-      let state = ExtensionState.getCurrent();
-      let spiedOutputChannel = spy(state.getOutputChannel());
-      spiedCompiler = spy(compiler);
-      when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
-        vscode.Uri.parse("file:///workdir")
-      );
-      when(buildDirMock.mkdir()).thenResolve();
-      when(spiedCompiler.mayCompile(anything())).thenReturn(false);
-      when(spiedCompiler.disabledInConf(anything())).thenReturn(false);
-      when(buildDirMock.delete()).thenResolve();
-      await expect(compiler.cleanWorkspace()).to.be.rejectedWith(
-        VASMCompiler.CONFIGURE_VASM_ERROR
-      );
-      verify(buildDirMock.delete()).never();
-      verify(spiedOutputChannel.appendLine(anyString())).once();
-      resetCalls(spiedOutputChannel);
+      const fileProxyMock = mock(FileProxy);
+      when(fileProxyMock.delete()).thenResolve();
+      const file1 = instance(fileProxyMock);
+      const file2 = instance(fileProxyMock);
+      when(buildDirMock.findFiles(anything(), anything())).thenResolve([file1, file2]);
+      await compiler.cleanWorkspace();
+      verify(fileProxyMock.delete()).twice();
+      verify(spiedOutputChannel.appendLine(anyString())).thrice();
+      reset(fileProxyMock);
     });
     it("Should not get an error when cleaning the workspace and vasm disabled", async function () {
       spiedCompiler = spy(compiler);
@@ -382,36 +417,8 @@ describe("VASM Tests", function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);
       when(spiedCompiler.disabledInConf(anything())).thenReturn(true);
       when(buildDirMock.delete()).thenResolve();
+      when(buildDirMock.findFiles(anything(), anything())).thenResolve([]);
       await expect(compiler.cleanWorkspace()).to.be.fulfilled;
-    });
-  });
-  context("VASMController", function () {
-    it("Should build the current document on save", async () => {
-      let compiler = new VASMCompiler();
-      const spiedCompiler = spy(compiler);
-      let state = ExtensionState.getCurrent();
-      const spiedStatus = spy(state.getStatusManager());
-      let controller = new VASMController(compiler);
-      let document = new DummyTextDocument();
-
-      when(spiedCompiler.buildDocument(anything(), anything())).thenCall(() => {
-        return Promise.resolve();
-      });
-      await controller.onSaveDocument(document);
-      verify(spiedCompiler.buildDocument(anything(), anything())).once();
-      verify(spiedStatus.onDefault()).once();
-      verify(spiedStatus.onSuccess()).never(); // On success is only for the workspace
-      // Generating a build error
-      resetCalls(spiedCompiler);
-      resetCalls(spiedStatus);
-      const error = new Error("nope");
-      when(spiedCompiler.buildDocument(anything(), anything())).thenCall(() => {
-        return Promise.reject(error);
-      });
-      await controller.onSaveDocument(document);
-      verify(spiedCompiler.buildDocument(anything(), anything())).once();
-      verify(spiedStatus.onDefault()).once();
-      verify(spiedStatus.onError("nope")).once();
     });
   });
   context("VASMParser", function () {
@@ -420,11 +427,11 @@ describe("VASM Tests", function () {
       parser = new VASMParser();
     });
     it("Should parse an empty string to no errors", async function () {
-      let errors = parser.parse("");
+      const errors = parser.parse("");
       expect(errors.length).to.be.equal(0);
     });
     it("Should parse a error", async function () {
-      let errors = parser.parse(
+      const errors = parser.parse(
         'error 3 : This is not good\n\nnothing\nerror 5 : This is not good too\nwarning 5 in line 2 of "myfile": oh no'
       );
       expect(errors.length).to.be.equal(3);
@@ -435,21 +442,21 @@ describe("VASM Tests", function () {
       error = errors[i++];
       expect(error.msg).to.be.equal("error 5 : This is not good too");
       expect(error.severity).to.be.equal("error");
-      error = errors[i++];
+      error = errors[i];
       expect(error.msg).to.be.equal("warning 5: oh no");
       expect(error.severity).to.be.equal("warning");
       expect(error.line).to.be.equal(2);
       expect(error.file).to.be.equal("myfile");
     });
     it("Should parse a multiline error", async function () {
-      let errStr =
+      const errStr =
         'error 9 in line 1 of "STAT_SVZC": instruction not supported on selected architecture\n' +
         'called from line 798 of "/myfolder/src/mysource.s"\n' +
         ">	move.w	ccr,StatusSZ				[06]\n" +
         "\n" +
         'error 2 in line 646 of "/myfolder/src/mysource.s": unknown mnemonic <CALLEXEC>\n' +
         ">	CALLEXEC AllocSignal			;Get signal for Stop/Resume control.";
-      let errors = parser.parse(errStr);
+      const errors = parser.parse(errStr);
       expect(errors.length).to.be.equal(2);
       let i = 0;
       let error = errors[i++];
@@ -459,20 +466,20 @@ describe("VASM Tests", function () {
       expect(error.severity).to.be.equal("error");
       expect(error.file).to.be.equal("/myfolder/src/mysource.s");
       expect(error.line).to.be.equal(798);
-      error = errors[i++];
+      error = errors[i];
       expect(error.msg).to.be.equal("error 2: unknown mnemonic <CALLEXEC>");
       expect(error.severity).to.be.equal("error");
       expect(error.file).to.be.equal("/myfolder/src/mysource.s");
       expect(error.line).to.be.equal(646);
     });
     it("Should parse a included file error", async function () {
-      let errStr =
+      const errStr =
         'error 9 in line 1 of "includedfile.s": instruction not supported on selected architecture\n' +
         'included from line 3 of "/myfolder/src/mysource.s"\n' +
         ">         movex.l    a9,dx\n";
-      let errors = parser.parse(errStr);
+      const errors = parser.parse(errStr);
       expect(errors.length).to.be.equal(1);
-      let error = errors[0];
+      const error = errors[0];
       expect(error.msg).to.be.equal(
         "error 9: instruction not supported on selected architecture"
       );

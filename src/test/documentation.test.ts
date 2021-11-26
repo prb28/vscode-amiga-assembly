@@ -12,16 +12,16 @@ describe("Documentation Tests", function () {
     let documentationManger: DocumentationManager;
     before(async () => {
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
-        let state = ExtensionState.getCurrent();
+        const state = ExtensionState.getCurrent();
         documentationManger = await state.getDocumentationManager();
     });
     context("Hover instruction file parsing", function () {
         it("Should read the file correctly", async function () {
-            let manager = documentationManger.instructionsManager;
+            const manager = documentationManger.instructionsManager;
             expect(manager.getCount()).to.be.equal(124);
             let addDocumentation = await manager.getInstructionByName("ADD");
             expect(addDocumentation).to.not.be.undefined;
@@ -35,8 +35,8 @@ describe("Documentation Tests", function () {
             }
         });
         it("Should resolve bcc variants", async function () {
-            let manager = documentationManger.instructionsManager;
-            let addDocumentation = await manager.getInstructionByName("BNE");
+            const manager = documentationManger.instructionsManager;
+            const addDocumentation = await manager.getInstructionByName("BNE");
             expect(addDocumentation).to.not.be.undefined;
             if (addDocumentation) {
                 expect(addDocumentation.name).to.be.equal("bne");
@@ -45,8 +45,8 @@ describe("Documentation Tests", function () {
             }
         });
         it("Should resolve dbcc variants", async function () {
-            let manager = documentationManger.instructionsManager;
-            let addDocumentation = await manager.getInstructionByName("DBNE");
+            const manager = documentationManger.instructionsManager;
+            const addDocumentation = await manager.getInstructionByName("DBNE");
             expect(addDocumentation).to.not.be.undefined;
             if (addDocumentation) {
                 expect(addDocumentation.name).to.be.equal("dbne");
@@ -55,8 +55,8 @@ describe("Documentation Tests", function () {
             }
         });
         it("Should resolve scc variants", async function () {
-            let manager = documentationManger.instructionsManager;
-            let addDocumentation = await manager.getInstructionByName("SNE");
+            const manager = documentationManger.instructionsManager;
+            const addDocumentation = await manager.getInstructionByName("SNE");
             expect(addDocumentation).to.not.be.undefined;
             if (addDocumentation) {
                 expect(addDocumentation.name).to.be.equal("sne");
@@ -65,8 +65,8 @@ describe("Documentation Tests", function () {
             }
         });
         it("Should remove images urls", async function () {
-            let manager = documentationManger.instructionsManager;
-            let addDocumentation = await manager.getInstructionByName("ROXL");
+            const manager = documentationManger.instructionsManager;
+            const addDocumentation = await manager.getInstructionByName("ROXL");
             expect(addDocumentation).to.not.be.undefined;
             if (addDocumentation) {
                 expect(addDocumentation.name).to.be.equal("roxl");
@@ -76,11 +76,11 @@ describe("Documentation Tests", function () {
     });
     context("Hover register file parsing", function () {
         it("Should read the files correctly", async function () {
-            let manager = documentationManger.registersManager;
+            const manager = documentationManger.registersManager;
             expect(manager.getRegistersByNameCount()).to.be.equal(280);
             expect(manager.getRegistersByAddressCount()).to.be.equal(266);
-            let registerByName = await manager.getRegistersByName("ADKCONR");
-            let registerByAddress = await manager.getRegistersByAddress("DFF010");
+            const registerByName = await manager.getRegistersByName("ADKCONR");
+            const registerByAddress = await manager.getRegistersByAddress("DFF010");
             expect(registerByName).to.not.be.undefined;
             expect(registerByAddress).to.not.be.undefined;
             if (registerByName) {
@@ -94,7 +94,7 @@ describe("Documentation Tests", function () {
     });
     context("Hover library file parsing", function () {
         it("Should read the files correctly", async function () {
-            let manager = documentationManger.libraryManager;
+            const manager = documentationManger.libraryManager;
             expect(manager.size()).to.be.equal(615);
             let registerByName = await manager.loadDescription("OPENLIBRARY");
             expect(registerByName).to.not.be.undefined;

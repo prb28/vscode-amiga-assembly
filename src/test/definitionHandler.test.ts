@@ -15,7 +15,7 @@ chai.use(chaiAsPromised);
 describe("Definition handler Tests", function () {
     before(async function () {
         // activate the extension
-        let ext = extensions.getExtension('prb28.amiga-assembly');
+        const ext = extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
@@ -24,7 +24,7 @@ describe("Definition handler Tests", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
         const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
-        let dHnd = new M68kDefinitionHandler();
+        const dHnd = new M68kDefinitionHandler();
         before(async function () {
             await dHnd.scanFile(Uri.file(MAIN_SOURCE));
         });
@@ -62,11 +62,14 @@ describe("Definition handler Tests", function () {
                     });
                 });
             });
+            after(async () => {
+                await commands.executeCommand('workbench.action.closeActiveEditor');
+            });
             it("Should find the used and free registers", async () => {
                 await expect(dHnd.provideUsedRegistersSymbols()).to.be.eventually.equal("Registers used: none - free: d0-d7/a0-a7");
             });
             it("Should find the variables beginning by a work", async () => {
-                let vars = dHnd.findVariableStartingWith("MY_");
+                const vars = dHnd.findVariableStartingWith("MY_");
                 expect(vars.size).to.be.equal(2);
                 expect(vars.get("MY_W_VAR")).to.be.equal("W/2");
                 expect(vars.get("MY_H_VAR")).to.be.equal("W*MY_W_VAR/2*(MY_W_VAR)");
@@ -75,22 +78,22 @@ describe("Definition handler Tests", function () {
         context("Opened document", function () {
             before(async function () {
                 // activate the extension
-                let ext = extensions.getExtension('prb28.amiga-assembly');
+                const ext = extensions.getExtension('prb28.amiga-assembly');
                 if (ext) {
                     await ext.activate();
                 }
                 await workspace.openTextDocument(Uri.file(MAIN_SOURCE));
             });
             it("Should have the included files graph", async () => {
-                let files = dHnd.getIncludedFiles(Uri.file(MAIN_SOURCE));
-                return expect(files).to.be.eventually.eql(["include/hw.i"]);
+                const files = await dHnd.getIncludedFiles(Uri.file(MAIN_SOURCE));
+                return expect(files[0].includes("hw.i")).to.be.true;
             });
         });
     });
     context("Functions", function () {
-        let dHnd = new M68kDefinitionHandler();
+        const dHnd = new M68kDefinitionHandler();
         it("Should find used registers", async () => {
-            let document = new DummyTextDocument();
+            const document = new DummyTextDocument();
             document.addLine(" move.w d0,d1");
             document.addLine(" movem.l	(a0)+,d1-d7/a2");
             document.addLine(" movem.l	d1-d7/a2,(a1)");
@@ -104,9 +107,9 @@ describe("Definition handler Tests", function () {
             selections.push(new Selection(new Position(1, 0), new Position(2, 0)));
             expect(dHnd.findUsedRegisters(document, selections)).to.be.eql(["a0", "a2", "d1", "d2", "d3", "d4", "d5", "d6", "d7"]);
 
-            // selections = new Array<Selection>();
-            // selections.push(new Selection(new Position(3, 0), new Position(5, 0)));
-            // expect(dHnd.findUsedRegisters(document, selections)).to.be.eql(["d0", "d4"]);
+            selections = new Array<Selection>();
+            selections.push(new Selection(new Position(3, 0), new Position(5, 0)));
+            expect(dHnd.findUsedRegisters(document, selections)).to.be.eql(["d0", "d4"]);
         });
     });
 });

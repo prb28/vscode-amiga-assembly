@@ -4,8 +4,9 @@ import { DebugClient } from 'vscode-debugadapter-testsupport/lib/main';
 import { LaunchRequestArguments, RunFsUAENoDebugSession } from '../runFsUAENoDebug';
 import * as Net from 'net';
 import * as vscode from 'vscode';
-import { spy, instance, when, anything, mock, reset } from 'ts-mockito/lib/ts-mockito';
+import { spy, instance, when, anything, mock, reset } from '@johanblumenberg/ts-mockito';
 import { ExecutorHelper } from '../execHelper';
+import { fail } from 'assert';
 
 describe('Node Debug Adapter Run', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..');
@@ -13,14 +14,14 @@ describe('Node Debug Adapter Run', () => {
 	const DATA_ROOT = Path.join(PROJECT_ROOT, 'test_files', 'debug');
 	const FSUAE_ROOT = Path.join(DATA_ROOT, 'fs-uae');
 	const UAE_DRIVE = Path.join(FSUAE_ROOT, 'hd0');
-	let launchArgs = <LaunchRequestArguments>{
+	const launchArgs = <LaunchRequestArguments>{
 		program: Path.join(UAE_DRIVE, 'hello'),
 		emulator: Path.join(FSUAE_ROOT, 'fs-uae'),
 		options: [Path.join(FSUAE_ROOT, 'test.fs-uae')],
 		drive: Path.join(FSUAE_ROOT, 'hd0'),
 	};
 	let dc: DebugClient;
-	let testWithRealEmulator = false;
+	const testWithRealEmulator = false;
 
 	before(function () {
 		// Opening file to activate the extension
@@ -48,7 +49,7 @@ describe('Node Debug Adapter Run', () => {
 		}
 		// make VS Code connect to debug server instead of launching debug adapter
 		dc = new DebugClient('node', DEBUG_ADAPTER, 'fs-uae');
-		let address: any = this.server.address();
+		const address = this.server.address();
 		let port = 0;
 		if (address instanceof Object) {
 			port = address.port;
@@ -62,7 +63,8 @@ describe('Node Debug Adapter Run', () => {
 		return dc.stop();
 	});
 
-	after(function () {
+	after(async function () {
+		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 		this.session.removeAllListeners();
 		this.session.shutdown();
 		this.server.close();
@@ -97,9 +99,9 @@ describe('Node Debug Adapter Run', () => {
 				linesStartAt1: true,
 				columnsStartAt1: true,
 				pathFormat: 'url'
-			}).then(function (response) {
-				done(new Error("does not report error on invalid 'pathFormat' attribute"));
-			}).catch(function (err) {
+			}).then(function () {
+				fail("does not report error on invalid 'pathFormat' attribute");
+			}).catch(function () {
 				// error expected
 				done();
 			});

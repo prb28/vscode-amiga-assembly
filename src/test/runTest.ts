@@ -1,6 +1,12 @@
 import * as path from 'path';
+import * as cp from 'child_process';
 
-import { runTests } from 'vscode-test';
+import {
+    downloadAndUnzipVSCode,
+    resolveCliPathFromVSCodeExecutablePath,
+    runTests
+} from 'vscode-test';
+import { TestOptions } from 'vscode-test/out/runTest';
 
 async function main() {
     try {
@@ -12,10 +18,21 @@ async function main() {
         // Passed to --extensionTestsPath
         const extensionTestsPath = path.resolve(__dirname, './suite/index');
 
+        const vscodeExecutablePath = await downloadAndUnzipVSCode('stable');
+        const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
+
+        // Use cp.spawn / cp.exec for custom setup
+        cp.spawnSync(cliPath, ['--install-extension', 'mindaro-dev.file-downloader'], {
+            encoding: 'utf-8',
+            stdio: 'inherit'
+        });
         // Download VS Code, unzip it and run the integration test
-        await runTests({
-            extensionDevelopmentPath: extensionDevelopmentPath,
-            extensionTestsPath: extensionTestsPath
+        await runTests(<TestOptions>{
+            // Use the specified `code` executable
+            vscodeExecutablePath,
+            extensionDevelopmentPath,
+            extensionTestsPath,
+            launchArgs: ["--disable-workspace-trust", "--trace-deprecation"]
         });
     } catch (err) {
         console.error('Failed to run tests');

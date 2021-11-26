@@ -26,7 +26,7 @@ describe("Completion Tests", function () {
     let documentationManager: DocumentationManager;
     before(async function () {
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
@@ -37,67 +37,67 @@ describe("Completion Tests", function () {
     });
     describe("Completion api", function () {
         it("Should return no completion on an unknown work", async function () {
-            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
-            let position: Position = new Position(0, 11);
-            let tokenEmitter = new CancellationTokenSource();
+            const position: Position = new Position(0, 11);
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" jsr mymymy");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.be.empty;
         });
         it("Should return a completion on a library function", async function () {
-            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
-            let position: Position = new Position(0, 11);
-            let tokenEmitter = new CancellationTokenSource();
+            const position: Position = new Position(0, 11);
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" jsr oldopen");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.not.be.undefined;
-            let elm = results[0];
+            const elm = results[0];
             expect(elm.label).to.be.equal("OldOpenLibrary");
         });
         it("Should return a completion on a register", async function () {
-            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
-            let position: Position = new Position(0, 11);
-            let tokenEmitter = new CancellationTokenSource();
+            const position: Position = new Position(0, 11);
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" move.l INTEN");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.not.be.undefined;
-            let elm = results[0];
+            const elm = results[0];
             expect(elm.label).to.be.equal("INTENAR");
         });
         it("Should return a completion on a variable", async function () {
-            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
-            let position: Position = new Position(0, 11);
-            let tokenEmitter = new CancellationTokenSource();
+            const position: Position = new Position(0, 11);
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" move.l MY_W_V");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.not.be.undefined;
-            let elm = results[0];
+            const elm = results[0];
             expect(elm.label).to.be.equal("MY_W_VAR");
         });
         it("Should return a completion on an instruction", async function () {
-            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
-            let position: Position = new Position(0, 3);
-            let tokenEmitter = new CancellationTokenSource();
+            const position: Position = new Position(0, 3);
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" mov");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results.length).to.be.equal(5);
-            let elm = results[0];
+            const elm = results[0];
             expect(elm.label).to.be.equal("move");
         });
         it("Should not return a completion on an instruction after .", async function () {
-            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 6);
-            let tokenEmitter = new CancellationTokenSource();
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" move.");
             let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results.length).to.be.equal(3);
-            let elm = results[0];
+            const elm = results[0];
             expect(elm.label).to.be.equal("b");
             position = new Position(1, 6);
             document.addLine(" move.l");
@@ -105,10 +105,10 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should not return completion in a comment", async function () {
-            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 4);
-            let tokenEmitter = new CancellationTokenSource();
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine("; mov");
             let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.be.empty;
@@ -118,10 +118,10 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should not return completion on a variable or function in an instruction place", async function () {
-            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 11);
-            let tokenEmitter = new CancellationTokenSource();
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine("  OldOpenLib");
             let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.be.empty;
@@ -131,19 +131,19 @@ describe("Completion Tests", function () {
             expect(results).to.be.empty;
         });
         it("Should not return completion with an instruction in a data", async function () {
-            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
-            let position = new Position(0, 11);
-            let tokenEmitter = new CancellationTokenSource();
+            const position = new Position(0, 11);
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine("  move.l jsr");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.be.empty;
         });
         it("Should not have the same completion in variable and library function or register", async function () {
-            let cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 14);
-            let tokenEmitter = new CancellationTokenSource();
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine("  jsr AddTail");
             let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results.length).to.be.equal(1);
@@ -154,7 +154,76 @@ describe("Completion Tests", function () {
             results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results.length).to.be.greaterThan(0);
             elm = results[0];
-            expect(elm.label.toUpperCase()).to.be.equal("INTENAR");
+            expect(elm.label.toString().toUpperCase()).to.be.equal("INTENAR");
+        });
+        context("Opened document", function () {
+            let sourceDocument: vscode.TextDocument;
+            before(async function () {
+                sourceDocument = await vscode.workspace.openTextDocument(Uri.file(MAIN_SOURCE));
+            });
+            it("Should return a completion for an include file", async function () {
+                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+                const position = new Position(20, 23);
+                const tokenEmitter = new CancellationTokenSource();
+                const results = await cp.provideCompletionItems(sourceDocument, position, tokenEmitter.token);
+                expect(results.length).to.be.equal(3);
+                expect(results[0].label).to.be.equal("hardware/");
+                expect(results[1].label).to.be.equal("hw.i");
+                expect(results[2].label).to.be.equal("include/");
+            });
+            it("Should return a completion for an include file in a directory", async function () {
+                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+                const document = new DummyTextDocument();
+                document.uri = Uri.file(Path.join(SOURCES_DIR, 'dummy.s'));
+                const tokenEmitter = new CancellationTokenSource();
+                document.addLine("  include \"include/\"");
+                const results = await cp.provideCompletionItems(document, new Position(0, 19), tokenEmitter.token);
+                expect(results.length).to.be.equal(2);
+                expect(results[0].label).to.be.equal("hardware/");
+                expect(results[1].label).to.be.equal("hw.i");
+            });
+            it("Should return a completion for an include file filtering the beginning", async function () {
+                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+                const document = new DummyTextDocument();
+                document.uri = Uri.file(Path.join(SOURCES_DIR, 'dummy.s'));
+                const tokenEmitter = new CancellationTokenSource();
+                document.addLine("  include \"include/\"");
+                let results = await cp.provideCompletionItems(document, new Position(0, 15), tokenEmitter.token);
+                expect(results.length).to.be.equal(1);
+                expect(results[0].label).to.be.equal("include/");
+                document.addLine("  include \"include/hw\"");
+                results = await cp.provideCompletionItems(document, new Position(1, 21), tokenEmitter.token);
+                expect(results.length).to.be.equal(1);
+                expect(results[0].label).to.be.equal("hw.i");
+            });
+            it("Should return a completion for an include file with an incdir instruction", async function () {
+                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+                const document = new DummyTextDocument();
+                document.uri = Uri.file(MAIN_SOURCE);
+                const tokenEmitter = new CancellationTokenSource();
+                document.addLine("  incdir include");
+                document.addLine("  include \"ha");
+                let results = await cp.provideCompletionItems(document, new Position(1, 14), tokenEmitter.token);
+                expect(results.length).to.be.equal(1);
+                expect(results[0].label).to.be.equal("hardware/");
+                document.addLine("  include \"hardware/cu");
+                results = await cp.provideCompletionItems(document, new Position(2, 23), tokenEmitter.token);
+                expect(results.length).to.be.equal(1);
+                expect(results[0].label).to.be.equal("custom.i");
+            });
+            it("Should return a completion for an include file with an absolute path", async function () {
+                const absPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
+                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+                const document = new DummyTextDocument();
+                document.uri = Uri.file(MAIN_SOURCE);
+                const tokenEmitter = new CancellationTokenSource();
+                document.addLine(`  include "${absPath}`);
+                const results = await cp.provideCompletionItems(document, new Position(0, 12 + absPath.length), tokenEmitter.token);
+                expect(results.length).to.be.equal(3);
+                expect(results[0].label).to.be.equal("fs-uae/");
+                expect(results[1].label).to.be.equal("gencop.s");
+                expect(results[2].label).to.be.equal("hello.c");
+            });
         });
     });
 });

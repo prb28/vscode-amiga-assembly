@@ -13,12 +13,12 @@ import { DocumentFormatterConfiguration } from '../formatterConfiguration';
 import { fail } from 'assert';
 import { ConfigurationHelper } from '../configurationHelper';
 
-function getEditsForLine(line: string, enableTabs: boolean = false): TextEdit[] {
-    let f = new M68kFormatter();
-    let document = new DummyTextDocument();
+function getEditsForLine(line: string, enableTabs = false): TextEdit[] {
+    const f = new M68kFormatter();
+    const document = new DummyTextDocument();
     document.addLine(line);
-    let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 0, 0, enableTabs, 4);
-    let asmDocument = new ASMDocument();
+    const conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 0, 0, enableTabs, 4);
+    const asmDocument = new ASMDocument();
     asmDocument.parse(document, conf);
     //asmDocument.maxLabelSize = 9;
     //asmDocument.maxInstructionSize = 7;
@@ -26,17 +26,17 @@ function getEditsForLine(line: string, enableTabs: boolean = false): TextEdit[] 
     return f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
 }
 
-function getEditsForLineOnType(line: string, enableTabs: boolean = false): TextEdit[] {
-    let f = new M68kFormatter();
-    let document = new DummyTextDocument();
+function getEditsForLineOnType(line: string, enableTabs = false): TextEdit[] {
+    const f = new M68kFormatter();
+    const document = new DummyTextDocument();
     document.addLine(line);
-    let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 0, 0, enableTabs, 4);
-    let asmDocument = new ASMDocument();
+    const conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 0, 0, enableTabs, 4);
+    const asmDocument = new ASMDocument();
     asmDocument.parse(document, conf);
     asmDocument.maxLabelSize = 9;
     asmDocument.maxInstructionSize = 7;
     asmDocument.maxDataSize = 11;
-    let asmLine = asmDocument.asmLinesArray[0];
+    const asmLine = asmDocument.asmLinesArray[0];
     return f.computeEditsForLineOnType(asmDocument, asmLine, conf, asmLine.end);
 }
 
@@ -44,7 +44,7 @@ function getEditsForLineOnType(line: string, enableTabs: boolean = false): TextE
 describe("Formatter Tests", function () {
     before(async () => {
         // activate the extension
-        let ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         } else {
@@ -52,7 +52,7 @@ describe("Formatter Tests", function () {
         }
     });
     it("Should format a full line", function () {
-        let lineToFormat = ".mylabel\t   move.l #mempos,d1        ; mycomment   ";
+        const lineToFormat = ".mylabel\t   move.l #mempos,d1        ; mycomment   ";
         let edits = getEditsForLine(lineToFormat);
         let i = 0;
         // Expected : ".mylabel  move.l    #mempos,d1    ; mycomment"
@@ -73,7 +73,7 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 8), new Position(0, 12)), "\t"));
     });
     it("Should format a full line without comment", function () {
-        let lineToFormat = "\t   move.l #mempos,d1        ; mycomment   ";
+        const lineToFormat = "\t   move.l #mempos,d1        ; mycomment   ";
         let edits = getEditsForLine(lineToFormat);
         let i = 0;
         // Expected : "  move.l    #mempos,d1   ; mycomment"
@@ -92,36 +92,36 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 4)), "\t"));
     });
     it("Should format a line with instruction and data", function () {
-        let edits = getEditsForLine("\t   move.l #mempos,d1     ");
+        const edits = getEditsForLine("\t   move.l #mempos,d1     ");
         let i = 0;
         expect(edits.length).to.be.equal(2);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 10), new Position(0, 11)), " ".repeat(4)));
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 4)), " ".repeat(2)));
     });
     it("Should format a line with only an instruction", function () {
-        let edits = getEditsForLine("\t   rts      ");
+        const edits = getEditsForLine("\t   rts      ");
         let i = 0;
         expect(edits.length).to.be.equal(1);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 4)), " ".repeat(2)));
     });
     it("Should format a line without data", function () {
-        let edits = getEditsForLine(".mylabel\t   rts        ; my comment");
+        const edits = getEditsForLine(".mylabel\t   rts        ; my comment");
         let i = 0;
         expect(edits.length).to.be.equal(2);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 15), new Position(0, 23)), " ".repeat(8)));
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 8), new Position(0, 12)), " ".repeat(2)));
     });
     it("Should format a line on typing with a label", function () {
-        let edits = getEditsForLineOnType(".mylabel ");
+        const edits = getEditsForLineOnType(".mylabel ");
         expect(edits.length).to.be.equal(0);
     });
     it("Should format a line on typing with an instruction", function () {
-        let edits = getEditsForLineOnType("\t   move.l ");
+        const edits = getEditsForLineOnType("\t   move.l ");
         expect(edits[0]).to.be.eql(TextEdit.insert(new Position(0, 10), " ".repeat(4)));
 
     });
     it("Should format a line on typing with a full", function () {
-        let edits = getEditsForLineOnType(".mylabel\t   move.l #mempos,d1        ; my comment");
+        const edits = getEditsForLineOnType(".mylabel\t   move.l #mempos,d1        ; my comment");
         let i = 0;
         expect(edits.length).to.be.equal(3);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 29), new Position(0, 37)), " ".repeat(4)));
@@ -129,7 +129,7 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 8), new Position(0, 12)), " ".repeat(2)));
     });
     it("Should add pad to the end of a string", function () {
-        let f = new M68kFormatter();
+        const f = new M68kFormatter();
         expect(f.getEndPad("aa", 0, 10, false, 0)).to.be.equal(" ".repeat(8));
         expect(f.getEndPad("aaaa", 0, 3, false, 0)).to.be.equal(" ");
         expect(f.getEndPad("aaaa", 0, 10, true, 4)).to.be.equal("\t\t");
@@ -137,38 +137,38 @@ describe("Formatter Tests", function () {
         expect(f.getEndPad("aaaa", 4, 4, true, 4)).to.be.equal("\t"); // When it's filled : at least one space
         expect(f.getEndPad("aaaa", 6, 11, true, 4)).to.be.equal("\t");
     });
-    it("Should retrieve 1 for a negative property", function () {
-        let conf = new DummyWorkspaceConfiguration();
+    it("Should retrieve 0 for a negative property", function () {
+        const conf = new DummyWorkspaceConfiguration();
         expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(12);
         conf.update('testconf', -1);
         expect(conf.has('testconf')).to.be.true;
-        expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(1);
+        expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(0);
         conf.update('testconf', 5);
         expect(ConfigurationHelper.retrieveNumberProperty(conf, 'testconf', 12)).to.be.equal(5);
     });
     describe("OnTypeFormattingEditProvider", function () {
         it("Should return no editing command on a empty document", function () {
-            let f = new M68kFormatter();
+            const f = new M68kFormatter();
             const document = new DummyTextDocument();
-            let position: Position = new Position(0, 1);
-            let ch = "";
-            let options = new DummyFormattingOptions();
-            let tokenEmitter = new CancellationTokenSource();
-            let results = f.provideOnTypeFormattingEdits(document, position, ch, options, tokenEmitter.token);
+            const position: Position = new Position(0, 1);
+            const ch = "";
+            const options = new DummyFormattingOptions();
+            const tokenEmitter = new CancellationTokenSource();
+            const results = f.provideOnTypeFormattingEdits(document, position, ch, options, tokenEmitter.token);
             if ((results) && (results instanceof Array)) {
                 expect(results.length).to.be.equal(0);
             }
         });
         it("Should return an insert spaces command after an instruction", function () {
-            let f = new M68kFormatter();
+            const f = new M68kFormatter();
             const document = new DummyTextDocument();
-            let ch = "";
-            let options = new DummyFormattingOptions();
-            let tokenEmitter = new CancellationTokenSource();
+            const ch = "";
+            const options = new DummyFormattingOptions();
+            const tokenEmitter = new CancellationTokenSource();
             document.addLine("\t   move.l #mempos,d1        ; mycomment   ");
             document.addLine("   rts ");
-            let position: Position = new Position(1, 7);
-            let edits = f.provideOnTypeFormattingEdits(document, position, ch, options, tokenEmitter.token);
+            const position: Position = new Position(1, 7);
+            const edits = f.provideOnTypeFormattingEdits(document, position, ch, options, tokenEmitter.token);
             expect(edits).to.not.be.undefined;
             if (edits instanceof Array) {
                 expect(edits.length).to.be.equal(1);
@@ -177,8 +177,8 @@ describe("Formatter Tests", function () {
         });
     });
     it("Should format an assignment", function () {
-        let f = new M68kFormatter();
-        let document = new DummyTextDocument();
+        const f = new M68kFormatter();
+        const document = new DummyTextDocument();
         document.addLine("myvar2  equ 28  ;comment");
         document.addLine("foo = 43");
         document.addLine("SC_W_P      = W");
@@ -186,7 +186,7 @@ describe("Formatter Tests", function () {
         //myvar2 equ 28 ;comment
         //foo      = 43
         //SC_W_P   = W
-        let asmDocument = new ASMDocument();
+        const asmDocument = new ASMDocument();
         let conf = new DocumentFormatterConfiguration(1, 1, 4, 1, 1, 0, 0, false, 4);
         asmDocument.parse(document, conf);
         let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
@@ -230,8 +230,8 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(2, 6), new Position(2, 12)), "\t"));
     });
     it("Should format with preferred sizes", function () {
-        let f = new M68kFormatter();
-        let document = new DummyTextDocument();
+        const f = new M68kFormatter();
+        const document = new DummyTextDocument();
         document.addLine("label: move #1,a0 ;comment");
         document.addLine("labelbiggerthanpreferred dc.b #2,#3,#4,#5,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6,#6 ;comment too far");
         document.addLine(" rts ; my comment");
@@ -306,8 +306,8 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(6, 1), new Position(6, 2)), "\t"));
     });
     it("Should format a macro", function () {
-        let f = new M68kFormatter();
-        let document = new DummyTextDocument();
+        const f = new M68kFormatter();
+        const document = new DummyTextDocument();
         document.addLine("        macro         some_macro");
         document.addLine("        \\1.b          \\2,d0");
         document.addLine("        endm");
@@ -319,22 +319,21 @@ describe("Formatter Tests", function () {
         //        endm
         //some_label:
         //        some_macro    or,d1
-        let asmDocument = new ASMDocument();
-        let conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 0, 0, false, 4);
+        const asmDocument = new ASMDocument();
+        const conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 0, 0, false, 4);
         asmDocument.parse(document, conf);
         let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
         let i = 0;
         expect(edits.length).to.be.equal(2);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 13), new Position(0, 22)), " ".repeat(9)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 8)), " ".repeat(2)));
+        expect(edits[i]).to.be.eql(TextEdit.replace(new Range(new Position(0, 0), new Position(0, 8)), " ".repeat(2)));
         edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[1], conf);
-        i = 0;
-        expect(edits.length).to.be.equal(0);
+        expect(edits.length).to.be.equal(1);
         edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[4], conf);
         i = 0;
         expect(edits.length).to.be.equal(2);
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(4, 18), new Position(4, 22)), " ".repeat(4)));
-        expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(4, 0), new Position(4, 8)), " ".repeat(2)));
+        expect(edits[i]).to.be.eql(TextEdit.replace(new Range(new Position(4, 0), new Position(4, 8)), " ".repeat(2)));
     });
 
 });

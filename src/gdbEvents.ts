@@ -31,7 +31,7 @@ class LiteConsumerEvent<T> implements ILiteConsumerEvent<T> {
 
     public trigger(data: T) {
         let consumer: { (data: T): boolean } | undefined;
-        for (let h of this.handlers) {
+        for (const h of this.handlers) {
             if (h(data)) {
                 consumer = h;
                 break;
@@ -53,8 +53,7 @@ interface ILiteHandler<T> {
     handle(data: T): boolean;
 }
 
-export interface GdbPacketHandler extends ILiteHandler<GdbPacket> {
-}
+export type GdbPacketHandler = ILiteHandler<GdbPacket>
 
 /**
  * Class to manage the Gdb data received.
@@ -67,8 +66,8 @@ export class GdbReceivedDataManager {
         this.onData = new LiteConsumerEvent<GdbPacket>(defaultHandler);
     }
 
-    public get OnData() { return this.onData.expose(); }
-    public trigger(data: GdbPacket) {
+    public get OnData(): ILiteConsumerEvent<GdbPacket> { return this.onData.expose(); }
+    public trigger(data: GdbPacket): void {
         this.onData.trigger(data);
     }
 

@@ -19,6 +19,7 @@
 
 'use strict';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 var MathCalc = (function (module) {
     var MathCalc = function () {
         this.parser = new MathExpression();
@@ -90,6 +91,7 @@ var MathCalc = (function (module) {
         var logger = new Logger('PARSER', Logger.NONE);
         var emitLogger = new Logger('EMIT', Logger.NONE);
 
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         var MathExpression = function () { };
         var proto = MathExpression.prototype;
 
@@ -165,6 +167,7 @@ var MathCalc = (function (module) {
                         emitLogger.warn('No emitter for %o', ast);
                 }
             }
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             return function () { };
         }
 
@@ -252,6 +255,7 @@ var MathCalc = (function (module) {
                 case 'Not': return function () { return ~right.apply(this, arguments); };
             }
             logger.warn('No emitter for %o', op);
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             return function () { };
         }
 
@@ -281,6 +285,7 @@ var MathCalc = (function (module) {
                 case 'Pow': return bifunc.bind(self, function (x, y) { return Math.pow(x, y); });
             }
             logger.warn('No emitter for %o', op);
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             return function () { };
         }
 
@@ -630,7 +635,7 @@ var MathCalc = (function (module) {
             };
         }
 
-        var Tokens = /^(?:(\s+)|((?:\d+e[-+]?\d+|\d+(?:\.\d*)?|\d*\.\d+))|(\&)|(\|)|(\^\|)|(<<)|(>>)|(>>>)|(\~)|(\+)|(\-)|(\*)|(\/)|(%)|(\^)|(\()|(\))|(=)|(,)|([a-zA-Z]\w*))/i;
+        var Tokens = /^(?:(\s+)|((?:\d+e[-+]?\d+|\d+(?:\.\d*)?|\d*\.\d+))|(&)|(\|)|(\^\|)|(<<)|(>>)|(>>>)|(~)|(\+)|(-)|(\*)|(\/)|(%)|(\^)|(\()|(\))|(=)|(,)|([a-zA-Z]\w*))/i;
         var TokenIds = ['Space', 'Number', 'And', 'Or', 'Xor', 'Lshift', 'Rshift', 'Zrshift', 'Not', 'Plus', 'Minus', 'Mul', 'Div', 'Mod', 'Pow', 'LParen', 'RParen', 'Eq', 'Comma', 'Var'];
 
         function tokenizer(content, pos) {

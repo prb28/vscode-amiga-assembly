@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [1.0.0] -
+- Configuration *checkErrorOnSave* to disable compile on save to check errors
+- [Pull #171](https://github.com/prb28/vscode-amiga-assembly/pull/171) *dansalvato* Fix color picker float <-> hex calculations
+- [Feat #170](https://github.com/prb28/vscode-amiga-assembly/issues/170) Add a "Run current file" launch configuration
+- [Feat #164](https://github.com/prb28/vscode-amiga-assembly/issues/164) Able to change the filename from GENCOP
+- [Feat #153](https://github.com/prb28/vscode-amiga-assembly/issues/153) Add command to download the example project workspace
+- [Feat #152](https://github.com/prb28/vscode-amiga-assembly/issues/152) Automatically download binaries
+- [Issue #150](https://github.com/prb28/vscode-amiga-assembly/issues/150) Copper disassemble does not work with winuae 
+- [Feat #149](https://github.com/prb28/vscode-amiga-assembly/issues/149) Select variable view format during debug
+- [Issue #143](https://github.com/prb28/vscode-amiga-assembly/issues/143) spawn vasmm68k_mot ENOENT
+- [Issue #142](https://github.com/prb28/vscode-amiga-assembly/issues/142) Consider register aliases in "List used registers in selection"
+- [Issue #141](https://github.com/prb28/vscode-amiga-assembly/issues/141) If there are any compile/linker errors stop the emulation from running
+- [Feat #140](https://github.com/prb28/vscode-amiga-assembly/issues/140) Right click to add a memory dump in the watch window
+- [Issue #139](https://github.com/prb28/vscode-amiga-assembly/issues/139) Memory dump documentation is wrong
+- [Feat #128](https://github.com/prb28/vscode-amiga-assembly/issues/128) Include files reference/autocomplete
+- [Feat #109](https://github.com/prb28/vscode-amiga-assembly/issues/109) Provide standard vscode tasks 
 ### [0.21.3] - 2021-05-13
 - [Issue #157](https://github.com/prb28/vscode-amiga-assembly/issues/157) Version 0.21.2 : breakpoints in the beginning of the program not hit
 
