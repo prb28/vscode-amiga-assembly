@@ -58,8 +58,8 @@ export class ExpressionDataGenerator {
         let posLine = 0;
         let value = "";
         let type = 'b';
-        let max = Number.MIN_VALUE;
-        let min = Number.MAX_VALUE;
+        let max = 0;
+        let min = 0;
         let signed = false;
         if (this.outputDataType === OutputDataType.WORD) {
             type = 'w';
@@ -77,11 +77,11 @@ export class ExpressionDataGenerator {
                 signed = (v < 0);
             }
             // check validity
-            if ((this.outputDataType === OutputDataType.BYTE) && (v > 255)) {
+            if ((this.outputDataType === OutputDataType.BYTE) && (v > 0xff)) {
                 throw new Error(`Value ${v} does not fit in a byte register`);
-            } else if ((this.outputDataType === OutputDataType.WORD) && (v > 0x8000)) {
+            } else if ((this.outputDataType === OutputDataType.WORD) && (v > 0xffff)) {
                 throw new Error(`Value ${v} does not fit in a word (16bits) register`);
-            } else if ((this.outputDataType === OutputDataType.LONG) && (v > 0x80000000)) {
+            } else if ((this.outputDataType === OutputDataType.LONG) && (v > 0xffffffff)) {
                 throw new Error(`Value ${v} does not fit in a long (32bits) register`);
             }
             if ((this.valuesPerLine > 0) && (posLine >= this.valuesPerLine)) {
@@ -104,11 +104,11 @@ export class ExpressionDataGenerator {
         }
         // check boundaries
         if (signed) {
-            if ((this.outputDataType === OutputDataType.BYTE) && ((max > 0x7f) || (min < -0x7f))) {
+            if ((this.outputDataType === OutputDataType.BYTE) && ((max > 0x7f) || (min < -0x80))) {
                 throw new Error(`The data boundaries ${min} - ${max} does not fit in a signed byte register`);
-            } else if ((this.outputDataType === OutputDataType.WORD) && ((max > 0x7fff) || (min < -0x7fff))) {
+            } else if ((this.outputDataType === OutputDataType.WORD) && ((max > 0x7fff) || (min < -0x8000))) {
                 throw new Error(`The data boundaries ${min} - ${max} does not fit in a signed word (16bits) register`);
-            } else if ((this.outputDataType === OutputDataType.LONG) && ((max > 0x7fffffff) || (min < -0x7fffffff))) {
+            } else if ((this.outputDataType === OutputDataType.LONG) && ((max > 0x7fffffff) || (min < -0x80000000))) {
                 throw new Error(`The data boundaries ${min} - ${max} does not fit in a signed long (32bits) register`);
             }
             value = ExpressionDataGenerator.SIGNED_VALUES_COMMENT + value;
@@ -119,17 +119,17 @@ export class ExpressionDataGenerator {
         let padSize = 0;
         if (n < 0) {
             if (this.outputDataType === OutputDataType.BYTE) {
-                if (n < -0x7f) {
+                if (n < -0x80) {
                     throw (new Error(`Invalid negative number for a byte: ${n}`));
                 }
                 n = (n >>> 0) & 0xff;
             } else if (this.outputDataType === OutputDataType.WORD) {
-                if (n < -0x7fff) {
+                if (n < -0x8000) {
                     throw (new Error(`Invalid negative number for a byte: ${n}`));
                 }
                 n = (n >>> 0) & 0xffff;
             } else {
-                if (n < -0x7fffffff) {
+                if (n < -0x80000000) {
                     throw (new Error(`Invalid negative number for a byte: ${n}`));
                 }
                 n = (n >>> 0);
