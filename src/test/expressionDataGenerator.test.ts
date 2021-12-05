@@ -137,10 +137,10 @@ describe("Expression data generator", function () {
         let expDGen = new ExpressionDataGenerator("x+300", expVar);
         expDGen.setOutputDataType(OutputDataType.BYTE);
         expect(() => expDGen.evalString()).to.throw();
-        expDGen = new ExpressionDataGenerator("x+pow(2,15)", expVar);
+        expDGen = new ExpressionDataGenerator("x+pow(2,16)", expVar);
         expDGen.setOutputDataType(OutputDataType.WORD);
         expect(() => expDGen.evalString()).to.throw();
-        expDGen = new ExpressionDataGenerator("x+pow(2,31)", expVar);
+        expDGen = new ExpressionDataGenerator("x+pow(2,32)", expVar);
         expDGen.setOutputDataType(OutputDataType.LONG);
         expect(() => expDGen.evalString()).to.throw();
     });
@@ -212,7 +212,7 @@ describe("Expression data generator", function () {
                 expect(codeLens.length).to.be.equal(1);
                 const range = codeLens[0].range;
                 expect(range.start).to.be.eql(new Position(0, 0));
-                expect(range.end.line).to.be.eql(16);
+                expect(range.end.line).to.be.eql(17);
                 expect(range.end.character).to.be.greaterThan(29);
                 // resolve
                 const cl = codeLens[0];

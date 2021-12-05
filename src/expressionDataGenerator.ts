@@ -308,12 +308,12 @@ export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
         const text = document.getText();
         let linePos = 0;
         let startPos: vscode.Position | null = null;
-        let lines = text.split('\n');
+        const lines = text.split('\n');
         for (const line of lines) {
             if (line.includes(ExpressionDataGeneratorSerializer.START_KEYWORD)) {
                 startPos = new vscode.Position(linePos, 0);
             } else if (line.includes(ExpressionDataGeneratorSerializer.END_KEYWORD) && startPos) {
-                let newline = lines[linePos + 1] == '' ? 1 : 0;
+                const newline = lines[linePos + 1] == '' ? 1 : 0;
                 const range = new vscode.Range(startPos, new vscode.Position(linePos + newline, line.length));
                 rangesArray.push(range);
             }
