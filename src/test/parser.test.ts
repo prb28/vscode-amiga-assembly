@@ -8,14 +8,16 @@ import { Position, Range } from 'vscode';
 import * as vscode from 'vscode';
 import { DummyTextDocument } from './dummy';
 import { DocumentFormatterConfiguration } from '../formatterConfiguration';
+import { ExtensionState } from '../extension';
 
 // tslint:disable:no-unused-expression
 describe("Parser Tests", function () {
-    before(async function () {
+    before(async () => {
         // activate the extension
         const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
+            ASMLine.init(await ExtensionState.getCurrent().getLanguage());
         }
     });
     context("ASM Line parsing", function () {

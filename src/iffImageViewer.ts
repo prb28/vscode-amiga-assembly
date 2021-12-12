@@ -5,7 +5,6 @@ import * as path from 'path';
  * Manages iff image view webview panels
  */
 export class IFFViewerPanel {
-    public static views = new Map<vscode.WebviewPanel, IFFViewerPanel>();
     public static readonly VIEW_TYPE = 'iffView';
     private static readonly SCRIPTS_PATH = 'webviews/iffviewer';
 
@@ -15,7 +14,7 @@ export class IFFViewerPanel {
     private image: vscode.Uri;
     private animate: boolean;
 
-    public static async create(extensionPath: string, image: vscode.Uri): Promise<void> {
+    public static async create(extensionPath: string, image: vscode.Uri): Promise<[vscode.WebviewPanel, IFFViewerPanel]> {
         const column = vscode.window.activeTextEditor
             ? vscode.window.activeTextEditor.viewColumn
             : undefined;
@@ -43,16 +42,8 @@ export class IFFViewerPanel {
         );
 
         const view = new IFFViewerPanel(panel, extensionPath, image);
-        IFFViewerPanel.views.set(panel, view);
-    }
-
-    public static revive(panel: vscode.WebviewPanel, extensionPath: string, state: any): void {
-        const viewer = IFFViewerPanel.views.get(panel);
-        if (viewer) {
-            viewer.update();
-        } else {
-            IFFViewerPanel.views.set(panel, new IFFViewerPanel(panel, extensionPath, vscode.Uri.parse(state.image)));
-        }
+        await view.update();
+        return [panel, view];
     }
 
     private constructor(panel: vscode.WebviewPanel, extensionPath: string, image: vscode.Uri) {
@@ -81,8 +72,6 @@ export class IFFViewerPanel {
     }
 
     public dispose(): void {
-        IFFViewerPanel.views.delete(this.panel);
-
         // Clean up our resources
         this.panel.dispose();
 
@@ -94,11 +83,11 @@ export class IFFViewerPanel {
         }
     }
 
-    private update() {
+    public async update(): Promise<void> {
         this.panel.title = path.basename(this.image.fsPath);
         this.panel.webview.html = this.getHtmlForWebview();
         const imageUri = this.panel.webview.asWebviewUri(this.image);
-        this.panel.webview.postMessage({ command: 'showImage', image: imageUri.toString(), animate: this.animate });
+        await this.panel.webview.postMessage({ command: 'showImage', image: imageUri.toString(), animate: this.animate });
     }
 
     private getHtmlForWebview() {

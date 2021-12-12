@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
-import { reset, capture, spy, verify, anyString, instance, when, anything, mock, resetCalls, imock } from '@johanblumenberg/ts-mockito';
+import { reset, capture, spy, verify, anyString, instance, when, anything, mock, imock } from '@johanblumenberg/ts-mockito';
 import { ExecutorHelper, ExecutorParser, ICheckResult } from '../execHelper';
 import { ExtensionState } from '../extension';
 import { DummyTextDocument } from './dummy';
@@ -12,21 +12,14 @@ describe("Executor Tests", function () {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..');
     const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
     const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
-    let spiedOutputChannel: vscode.OutputChannel;
     before(async () => {
         // activate the extension
         const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
-        const newFile = vscode.Uri.parse("untitled://./exe.s");
-        return vscode.window.showTextDocument(newFile).then(() => { spiedOutputChannel = spy(ExtensionState.getCurrent().getOutputChannel()); });
-    });
-    after(async () => {
-        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     });
     it("Should execute a command and parse stdout", async () => {
-        resetCalls(spiedOutputChannel);
         const stdoutText = 'My Stdout\ntext';
         const spiedCp = spy(cp);
         const cpMock: cp.ChildProcess = imock();
@@ -49,12 +42,9 @@ describe("Executor Tests", function () {
         verify(mockedDummy.parse(anyString())).once();
         expect(ret[0]).to.be.equal(error);
         expect(capture(mockedDummy.parse).last()[0]).to.be.equal(stdoutText);
-        // The error is in the outputChannel
-        verify(spiedOutputChannel.appendLine(anyString())).atLeast(1);
         reset(spiedCp);
     });
     it("Should execute a command and parse stderr", async () => {
-        resetCalls(spiedOutputChannel);
         const stderrText = 'My Strerr\ntext';
         const spiedCp = spy(cp);
         const cpMock: cp.ChildProcess = imock();
@@ -77,8 +67,6 @@ describe("Executor Tests", function () {
         verify(mockedDummy.parse(anyString())).once();
         expect(ret[0]).to.be.equal(error);
         expect(capture(mockedDummy.parse).last()[0]).to.be.equal(stderrText);
-        // The error is in the outputChannel
-        verify(spiedOutputChannel.appendLine(anyString())).atLeast(1);
     });
     describe("Diagnostics handle", () => {
         let ex: ExecutorHelper;

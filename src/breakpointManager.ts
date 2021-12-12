@@ -1,4 +1,4 @@
-import { Mutex } from "ts-simple-mutex";
+import { Mutex } from "./mutex";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { DebugDisassembledFile, DebugDisassembledManager } from "./debugDisassembled";
 import { DebugInfo } from "./debugInfo";
@@ -27,10 +27,7 @@ export class BreakpointManager {
     /** Temporary breakpoints arrays */
     private temporaryBreakpointArrays = new Array<GdbTemporaryBreakpointArray>();
     /** Mutex to just have one call to gdb */
-    protected mutex = new Mutex({
-        autoUnlockTimeoutMs: 1200,
-        intervalMs: 100,
-    });
+    protected mutex = new Mutex(100, 1200);
     /** Lock for breakpoint management function */
     protected breakpointLock?: () => void;
 

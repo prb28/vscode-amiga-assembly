@@ -1,6 +1,6 @@
 import { Socket } from 'net';
 import { EventEmitter } from 'events';
-import { Mutex } from 'ts-simple-mutex/build/lib/mutex';
+import { Mutex } from './mutex';
 import { GdbAmigaSysThreadIdFsUAE, GdbError, GdbHaltStatus, GdbRegister, GdbSignal, GdbStackFrame, GdbStackPosition, GdbThread, Segment, GdbThreadState, GdbAmigaSysThreadIdWinUAE } from './gdbProxyCore';
 import { GdbBreakpoint } from './breakpointManager';
 import { GdbReceivedDataManager as GdbReceivedDataManager, GdbPacketHandler } from './gdbEvents';
@@ -45,10 +45,7 @@ export class GdbProxy extends EventEmitter {
     /** Flag for the first stop - to install the breakpoints */
     protected firstStop = true;
     /** Mutex to just have one call to gdb */
-    protected mutex = new Mutex({
-        autoUnlockTimeoutMs: 1200,
-        intervalMs: 100,
-    });
+    protected mutex = new Mutex(100, 1200);
     /** vCont commands are supported */
     protected supportVCont = false;
     /** Created threads */

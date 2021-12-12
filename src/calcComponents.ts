@@ -144,7 +144,7 @@ export class CalcComponent {
     /**
      * Applies a formula to selected numerical values and generates edits
      */
-    public async getReplaceValuesForFormula(formula: string, document: TextDocument, selections: Selection[]): Promise<Array<[string, Range]>> {
+    public async getReplaceValuesForFormula(formula: string, document: TextDocument, selections: readonly Selection[]): Promise<Array<[string, Range]>> {
         const numberParser = new NumberParser();
         const replaceValues = new Array<[string, Range]>();
         for (const selection of selections) {

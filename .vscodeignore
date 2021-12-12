@@ -22,7 +22,7 @@ sonar-project.properties
 .scannerwork
 .sonarlint
 *.zip
-out/test/
+out/
 src/
 package-json.lock
 webpack.config.js
@@ -33,3 +33,6 @@ azure-pipelines.yml
 .azure-pipelines
 .nyc_output
 test-result*
+webpack.config.js
+.github
+node_modules

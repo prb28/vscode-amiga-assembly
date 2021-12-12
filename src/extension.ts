@@ -69,6 +69,7 @@ export class ExtensionState {
     private version: string;
     private workspaceRootDir: vscode.Uri | null = null;
     private forcedBuildDir?: FileProxy;
+    private iffViewPanelsMap: Map<vscode.WebviewPanel, IFFViewerPanel>;
 
     private extensionPath: string = path.join(__dirname, "..");
 
@@ -81,6 +82,7 @@ export class ExtensionState {
         }
         winston.add(transport);
         this.version = vscode.extensions.getExtension('prb28.amiga-assembly')?.packageJSON.version;
+        this.iffViewPanelsMap = new Map<vscode.WebviewPanel, IFFViewerPanel>();
     }
     public getLogLevel(): string | undefined {
         return ConfigurationHelper.retrieveStringPropertyInDefaultConf('logLevel');
@@ -298,6 +300,11 @@ export class ExtensionState {
      */
     getExtensionVersion(): string {
         return this.version;
+    }
+
+    /** List of the opened panels */
+    getIffViewPanelsMap(): Map<vscode.WebviewPanel, IFFViewerPanel> {
+        return this.iffViewPanelsMap;
     }
 }
 
@@ -521,14 +528,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     if (vscode.window.registerWebviewPanelSerializer) {
         // Make sure we register a serializer in activation event
         vscode.window.registerWebviewPanelSerializer(IFFViewerPanel.VIEW_TYPE, {
-            async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, wVState: never) {
-                IFFViewerPanel.revive(webviewPanel, context.extensionPath, wVState);
+            async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel) {
+                const view = state.getIffViewPanelsMap().get(webviewPanel);
+                if (view) {
+                    await view.update();
+                }
             }
         });
     }
     context.subscriptions.push(
-        vscode.commands.registerCommand('amiga-assembly.view-iff', (imageUri: vscode.Uri) => {
-            IFFViewerPanel.create(context.extensionPath, imageUri);
+        vscode.commands.registerCommand('amiga-assembly.view-iff', async (imageUri: vscode.Uri) => {
+            const [panel, view] = await IFFViewerPanel.create(context.extensionPath, imageUri);
+            state.getIffViewPanelsMap().set(panel, view);
+            panel.onDidDispose(() => { state.getIffViewPanelsMap().delete(panel) });
         })
     );
     context.subscriptions.push(

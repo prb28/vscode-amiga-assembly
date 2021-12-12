@@ -89,7 +89,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         throw new Error("Reference not found");
     }
 
-    public findUsedRegisters(document: TextDocument, selections: vscode.Selection[]): Array<string> {
+    public findUsedRegisters(document: TextDocument, selections: readonly vscode.Selection[]): Array<string> {
         const foundRegisters = Array<string>();
         for (const selection of selections) {
             if (!selection.isEmpty) {

@@ -99,7 +99,7 @@ export class ExecutorHelper {
     private addKillToCancellationToken(p: cp.ChildProcess, token?: vscode.CancellationToken) {
         if (token) {
             token.onCancellationRequested(() => {
-                if (p) {
+                if (p && p.pid) {
                     this.killTree(p.pid);
                 }
             });

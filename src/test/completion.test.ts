@@ -14,6 +14,7 @@ import { M68kDefinitionHandler } from '../definitionHandler';
 import * as vscode from 'vscode';
 import { M68kCompletionItemProvider } from '../completion';
 import { DocumentationManager } from '../documentation';
+import { ASMLine } from '../parser';
 
 chai.use(chaiAsPromised);
 // tslint:disable:no-unused-expression
@@ -34,6 +35,7 @@ describe("Completion Tests", function () {
         dHnd = state.getDefinitionHandler();
         documentationManager = await state.getDocumentationManager();
         await dHnd.scanFile(Uri.file(MAIN_SOURCE));
+        ASMLine.init(await state.getLanguage());
     });
     describe("Completion api", function () {
         it("Should return no completion on an unknown work", async function () {

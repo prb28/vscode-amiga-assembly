@@ -395,8 +395,6 @@ describe("VASM Tests", function () {
       return compiler.buildWorkspace();
     });
     it("Should clean the workspace", async function () {
-      const state = ExtensionState.getCurrent();
-      const spiedOutputChannel = spy(state.getOutputChannel());
       when(buildDirMock.delete()).thenResolve();
       const fileProxyMock = mock(FileProxy);
       when(fileProxyMock.delete()).thenResolve();
@@ -405,7 +403,6 @@ describe("VASM Tests", function () {
       when(buildDirMock.findFiles(anything(), anything())).thenResolve([file1, file2]);
       await compiler.cleanWorkspace();
       verify(fileProxyMock.delete()).twice();
-      verify(spiedOutputChannel.appendLine(anyString())).thrice();
       reset(fileProxyMock);
     });
     it("Should not get an error when cleaning the workspace and vasm disabled", async function () {

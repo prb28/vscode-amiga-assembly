@@ -11,7 +11,6 @@ import * as fs from 'fs';
 import { spy, verify, when, anything, resetCalls, mock, instance } from '@johanblumenberg/ts-mockito';
 import { ExtensionState } from '../../extension';
 import { Capstone } from '../../capstone';
-import { IFFViewerPanel } from '../../iffImageViewer';
 import { fail } from 'assert';
 import { ConfigurationHelper } from '../../configurationHelper';
 
@@ -26,7 +25,7 @@ describe("Global Extension Tests", function () {
             await ext.activate();
             testFilesPath = path.join(ext.extensionPath, "test_files");
         } else {
-            fail("Extension no loaded");
+            fail("Extension not loaded");
         }
     });
     context("Formatting command", function () {
@@ -141,11 +140,8 @@ describe("Global Extension Tests", function () {
             const uri = vscode.Uri.file(path.join(testFilesPath, imageName));
             await vscode.commands.executeCommand("amiga-assembly.view-iff", uri);
 
-            expect(IFFViewerPanel.views.size).to.be.greaterThan(0);
-            for (const panel of IFFViewerPanel.views.keys()) {
-                expect(panel.title).to.be.equal(imageName);
-                expect(panel.webview.html).to.contain("iff.min.js");
-            }
+            const sz = ExtensionState.getCurrent().getIffViewPanelsMap().size;
+            expect(sz).to.be.greaterThan(0);
         });
     });
 });
