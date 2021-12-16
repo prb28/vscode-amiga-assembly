@@ -27,7 +27,7 @@ export class BreakpointManager {
     /** Temporary breakpoints arrays */
     private temporaryBreakpointArrays = new Array<GdbTemporaryBreakpointArray>();
     /** Mutex to just have one call to gdb */
-    protected mutex = new Mutex(100, 1200);
+    protected mutex = new Mutex(100, 180000);
     /** Lock for breakpoint management function */
     protected breakpointLock?: () => void;
 
@@ -43,6 +43,14 @@ export class BreakpointManager {
 
     public setDebugInfo(debugInfo: DebugInfo): void {
         this.debugInfo = debugInfo;
+    }
+
+    /**
+     * Set the mutex timeout
+     * @param timeout Mutex timeout
+     */
+    public setMutexTimeout(timeout: number): void {
+        this.mutex = new Mutex(100, timeout);
     }
 
     public addPendingBreakpoint(breakpoint: GdbBreakpoint, err?: Error): void {

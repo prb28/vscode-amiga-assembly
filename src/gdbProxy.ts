@@ -45,7 +45,7 @@ export class GdbProxy extends EventEmitter {
     /** Flag for the first stop - to install the breakpoints */
     protected firstStop = true;
     /** Mutex to just have one call to gdb */
-    protected mutex = new Mutex(100, 1200);
+    protected mutex = new Mutex(100, 60000);
     /** vCont commands are supported */
     protected supportVCont = false;
     /** Created threads */
@@ -76,6 +76,14 @@ export class GdbProxy extends EventEmitter {
         this.receivedDataManager = new GdbReceivedDataManager(this.defaultOnDataHandler);
         this.threads = new Map<number, GdbThread>();
         this.threadsNative = new Map<string, GdbThread>();
+    }
+
+    /**
+     * Set the mutex timeout
+     * @param timeout Mutex timeout
+     */
+    public setMutexTimeout(timeout: number): void {
+        this.mutex = new Mutex(100, timeout);
     }
 
     /**

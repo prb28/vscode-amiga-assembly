@@ -59,7 +59,10 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 }
 
 export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
-    // a Mock runtime (or debugger)
+    /** Timeout of the mutex */
+    protected static readonly MUTEX_TIMEOUT = 100000;
+
+    /** a Mock runtime (or debugger) */
     protected variableHandles = new Handles<string>();
 
     /** Proxy to Gdb */
@@ -123,10 +126,12 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
         this.gdbProxy = this.createGdbProxy();
+        this.gdbProxy.setMutexTimeout(FsUAEDebugSession.MUTEX_TIMEOUT);
         this.initProxy();
         this.executor = new ExecutorHelper();
         this.debugDisassembledManager = new DebugDisassembledManager(this.gdbProxy, undefined, this);
         this.breakpointManager = new BreakpointManager(this.gdbProxy, this.debugDisassembledManager);
+        this.breakpointManager.setMutexTimeout(FsUAEDebugSession.MUTEX_TIMEOUT);
     }
 
     /**
@@ -145,11 +150,13 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     public setTestContext(gdbProxy: GdbProxy, executor: ExecutorHelper, capstone: Capstone): void {
         this.executor = executor;
         this.gdbProxy = gdbProxy;
+        this.gdbProxy.setMutexTimeout(1000);
         this.initProxy();
         this.testMode = true;
         this.capstone = capstone;
         this.debugDisassembledManager = new DebugDisassembledManager(gdbProxy, capstone, this);
         this.breakpointManager = new BreakpointManager(this.gdbProxy, this.debugDisassembledManager);
+        this.breakpointManager.setMutexTimeout(1000);
     }
 
     /**
