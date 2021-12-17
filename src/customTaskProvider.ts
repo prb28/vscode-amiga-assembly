@@ -54,7 +54,7 @@ export class AmigaBuildTaskProvider implements TaskProvider {
 			if (isBuildWithADF) {
 				lDefinition.adfgenerator = ADFTools.DEFAULT_BUILD_CONFIGURATION;
 			} else {
-				lDefinition.vasm = VASMCompiler.DEFAULT_BUILD_CONFIGURATION;
+				lDefinition.vasm = { ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION };
 				if (!isCompileTask) {
 					if (isBuildCurrentTask) {
 						lDefinition.vlink = VLINKLinker.DEFAULT_BUILD_CURRENT_FILE_CONFIGURATION;

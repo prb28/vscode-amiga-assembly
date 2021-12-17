@@ -62,7 +62,7 @@ export class VASMCompiler {
     if (editor) {
       const conf = this.getConfiguration("vasm", vasmConf);
       if (this.mayCompile(conf)) {
-        await this.buildDocument(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, editor.document, true, logEmitter);
+        await this.buildDocument({ ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION }, editor.document, true, logEmitter);
       } else {
         throw new Error("VASM compilation is disabled in the configuration");
       }
@@ -79,7 +79,7 @@ export class VASMCompiler {
    * @param logEmitter Emitter listening to the logs
    */
   public async buildDocument(conf: VasmBuildProperties, document: TextDocument, temporaryBuild: boolean, logEmitter?: EventEmitter<string>): Promise<ICheckResult[]> {
-    const [, errors] = await this.buildFile(conf, document.uri, temporaryBuild, undefined, logEmitter);
+    const [, errors] = await this.buildFile(conf, document.uri, temporaryBuild, logEmitter);
     this.processGlobalErrors(document, errors);
     this.executor.handleDiagnosticErrors(document, errors, DiagnosticSeverity.Error);
     if (errors) {
@@ -125,9 +125,9 @@ export class VASMCompiler {
     if (properties) {
       return properties;
     } else if (key === "vasm") {
-      return VASMCompiler.DEFAULT_BUILD_CONFIGURATION;
+      return { ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION };
     } else if (key === "vlink") {
-      return VLINKLinker.DEFAULT_BUILD_CONFIGURATION;
+      return { ...VLINKLinker.DEFAULT_BUILD_CONFIGURATION };
     }
     return properties;
   }
@@ -332,9 +332,9 @@ export class VASMCompiler {
    * @param conf Vasm configurations
    * @param filepathname Path of the file to build
    * @param temporaryBuild If true the ile will go to the temp folder
-   * @param bootblock If true it will build a bootblock 
+   * @param logEmitter Emitter for logging
    */
-  public async buildFile(conf: VasmBuildProperties, fileUri: Uri, temporaryBuild: boolean, bootblock?: boolean, logEmitter?: EventEmitter<string>): Promise<[string | null, ICheckResult[]]> {
+  public async buildFile(conf: VasmBuildProperties, fileUri: Uri, temporaryBuild: boolean, logEmitter?: EventEmitter<string>): Promise<[string | null, ICheckResult[]]> {
     const workspaceRootDir = this.getWorkspaceRootDir();
     let buildDir: FileProxy;
     if (temporaryBuild) {
@@ -373,16 +373,8 @@ export class VASMCompiler {
         } else {
           objFilename = path.join(buildDir.getPath(), filename + ".o");
         }
-        let confArgs: any;
-        if (bootblock) {
-          if (conf.args && (conf.args.length > 0)) {
-            confArgs = conf.args;
-          } else {
-            confArgs = new Array<string>();
-            confArgs.push("-m68000");
-          }
-          confArgs.push("-Fbin");
-        } else {
+        let confArgs = new Array<string>();
+        if (conf.args && (conf.args.length > 0)) {
           confArgs = conf.args;
         }
         const args: Array<string> = confArgs.concat(["-o", objFilename, fileUri.fsPath]);

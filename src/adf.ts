@@ -123,7 +123,9 @@ export class ADFTools {
             if (sourceFullPath) {
                 // Call the build command
                 logEmitter?.fire(`Compiling bootblock from source ${sourceFullPath}\r\n`);
-                const results = await compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, sourceFullPath, true, true);
+                const vasmBuildProperties = { ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION };
+                vasmBuildProperties.args = ["-m68000", "-Fbin"];
+                const results = await compiler.buildFile(vasmBuildProperties, sourceFullPath, true);
                 if (results && results[0]) {
                     const bootBlockDataFilename = results[0];
                     bootBlockFilename = bootBlockDataFilename.replace(".o", ".bb");

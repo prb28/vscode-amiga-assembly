@@ -110,7 +110,7 @@ describe("VASM Tests", function () {
     });
     it("Should call the compiler command", async function () {
       const fileUri = vscode.Uri.file("file1.s");
-      await compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false);
+      await compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false);
       verify(
         executorCompiler.runTool(
           anything(),
@@ -331,7 +331,7 @@ describe("VASM Tests", function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(true);
       const fileUri = vscode.Uri.file("file1.s");
       return compiler
-        .buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false)
+        .buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false)
         .then(() => {
           expect.fail("Should reject");
         })
@@ -344,7 +344,7 @@ describe("VASM Tests", function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);
       when(spiedCompiler.disabledInConf(anything())).thenReturn(false);
       const fileUri = vscode.Uri.file("file1.s");
-      await expect(compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false)).to.be.rejectedWith(
+      await expect(compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false)).to.be.rejectedWith(
         VASMCompiler.CONFIGURE_VASM_ERROR
       );
     });
@@ -352,7 +352,7 @@ describe("VASM Tests", function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(true);
       when(spiedCompiler.disabledInConf(anything())).thenReturn(true);
       const fileUri = vscode.Uri.file("file1.s");
-      await expect(compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false, false)).to.be.fulfilled;
+      await expect(compiler.buildFile(VASMCompiler.DEFAULT_BUILD_CONFIGURATION, fileUri, false)).to.be.fulfilled;
     });
     it("Should return an error on build workspace if the compiler is not configured", async function () {
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);
