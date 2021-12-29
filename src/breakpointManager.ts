@@ -111,8 +111,11 @@ export class BreakpointManager {
                     await this.gdbProxy.setBreakpoint(debugBp);
                     this.breakpoints.push(debugBp);
                 }
-            } else if (debugBp.exceptionMask !== undefined) {
+            } else if (debugBp.exceptionMask !== undefined || (debugBp.size && debugBp.size > 0)) {
                 await this.gdbProxy.setBreakpoint(debugBp);
+                if (debugBp.exceptionMask === undefined) {
+                    this.breakpoints.push(debugBp);
+                }
             } else {
                 throw new Error("Breakpoint info incomplete");
             }
@@ -139,6 +142,32 @@ export class BreakpointManager {
             offset: address,
             temporary: true,
             verified: false
+        };
+    }
+
+    public createDataBreakpoint(address: number, size: number, accessType: string | undefined): GdbBreakpoint {
+        let gdbAccessType: GdbBreakpointAccessType;
+        switch (accessType) {
+            case GdbBreakpointAccessType.READ:
+                gdbAccessType = GdbBreakpointAccessType.READ;
+                break;
+            case GdbBreakpointAccessType.WRITE:
+                gdbAccessType = GdbBreakpointAccessType.WRITE;
+                break;
+            case GdbBreakpointAccessType.READWRITE:
+                gdbAccessType = GdbBreakpointAccessType.READWRITE;
+                break;
+            default:
+                gdbAccessType = GdbBreakpointAccessType.READWRITE;
+                break;
+        }
+        return <GdbBreakpoint>{
+            id: this.nextBreakpointId++,
+            segmentId: undefined,
+            offset: address,
+            verified: false,
+            size: size,
+            accessType: gdbAccessType
         };
     }
 
@@ -248,12 +277,12 @@ export class BreakpointManager {
         return source.path === other.path;
     }
 
-    public async clearBreakpoints(source: DebugProtocol.Source): Promise<void> {
+    public async clearBreakpointsInner(source: DebugProtocol.Source | null, clearDataBreakpoint: boolean): Promise<void> {
         let hasError = false;
         const remainingBreakpoints = new Array<GdbBreakpoint>();
         this.breakpointLock = await this.mutex.capture('breakpointLock');
         for (const bp of this.breakpoints) {
-            if (bp.source && this.isSameSource(bp.source, source)) {
+            if ((source && bp.source && this.isSameSource(bp.source, source) && !clearDataBreakpoint && bp.accessType === undefined) || (clearDataBreakpoint && bp.accessType !== undefined)) {
                 try {
                     await this.gdbProxy.removeBreakpoint(bp);
                 } catch (err) {
@@ -274,6 +303,13 @@ export class BreakpointManager {
         }
     }
 
+    public clearBreakpoints(source: DebugProtocol.Source): Promise<void> {
+        return this.clearBreakpointsInner(source, false);
+    }
+    public clearDataBreakpoints(): Promise<void> {
+        return this.clearBreakpointsInner(null, true);
+    }
+
     public getPendingBreakpoints(): Array<GdbBreakpoint> {
         return this.pendingBreakpoints;
     }
@@ -289,6 +325,19 @@ export interface GdbBreakpoint extends DebugProtocol.Breakpoint {
     exceptionMask?: number;
     /** if true it a temporary breakpoint */
     temporary?: boolean;
+    /** Size of the memory watched */
+    size?: number;
+    /** The access type of the data. */
+    accessType?: GdbBreakpointAccessType;
+}
+
+/**
+ * Values to the access type of data breakpoint
+ */
+export enum GdbBreakpointAccessType {
+    READ = 'read',
+    WRITE = 'write',
+    READWRITE = 'readWrite'
 }
 
 /**

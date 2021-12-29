@@ -83,4 +83,72 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
             this.sendStringErrorResponse(response, "Unknown thread");
         }
     }
+
+    protected async evaluateRequestSetMemoryBreakpoint(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
+        const matches = /z\s*([{}$#0-9a-z_]+)\s*,\s*([0-9a-z_]+)/i.exec(args.expression);
+        if (matches) {
+            const addrStr = matches[1];
+            const size = matches[2];
+            if ((addrStr !== null) && (size !== null) && (size.length > 0)) {
+                try {
+                    // replace the address if it is a variable
+                    //const address = await this.debugExpressionHelper.getAddressFromExpression(addrStr, args.frameId, this);
+                    await this.gdbProxy.waitConnected();
+                    //await this.gdbProxy.setMemoryBreakpoint(address, size);
+                    args.expression = 'z' + addrStr + ',' + size.length.toString(16);
+                    return this.evaluateRequestGetMemory(response, args);
+                } catch (err) {
+                    this.sendStringErrorResponse(response, err.message);
+                }
+            } else {
+                this.sendStringErrorResponse(response, "Invalid memory set expression");
+            }
+        } else {
+            this.sendStringErrorResponse(response, "Expression not recognized");
+        }
+    }
+
+    protected async evaluateRequestRemoveMemoryBreakpoint(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
+        this.sendStringErrorResponse(response, "This option in not yet implemented");
+    }
+
+    protected dataBreakpointInfoRequest(response: DebugProtocol.DataBreakpointInfoResponse, args: DebugProtocol.DataBreakpointInfoArguments): void {
+        if (args.variablesReference && args.name) {
+            const id = this.variableHandles.get(args.variablesReference);
+            if (id !== null && id.startsWith("symbols_")) {
+                response.body = {
+                    dataId: args.name,
+                    description: args.name,
+                    accessTypes: ["read", "write", "readWrite"],
+                    canPersist: false
+                }
+            }
+        }
+        this.sendResponse(response);
+    }
+
+    protected async setDataBreakpointsRequest(response: DebugProtocol.SetDataBreakpointsResponse, args: DebugProtocol.SetDataBreakpointsArguments): Promise<void> {
+        const debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
+        // clear all breakpoints for this file
+        await this.breakpointManager.clearDataBreakpoints();
+        // set and verify breakpoint locations
+        if (args.breakpoints) {
+            for (const reqBp of args.breakpoints) {
+                const value = await this.getVariableValueAsNumber(reqBp.dataId);
+                const debugBp = this.breakpointManager.createDataBreakpoint(value, 4, reqBp.accessType);
+                try {
+                    const modifiedBp = await this.breakpointManager.setBreakpoint(debugBp);
+                    debugBreakPoints.push(modifiedBp);
+                } catch (err) {
+                    debugBreakPoints.push(debugBp);
+                }
+            }
+        }
+        // send back the actual breakpoint positions
+        response.body = {
+            breakpoints: debugBreakPoints
+        };
+        response.success = true;
+        this.sendResponse(response);
+    }
 }

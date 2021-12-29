@@ -1,5 +1,5 @@
 import { GdbAmigaSysThreadIdWinUAE, GdbHaltStatus, GdbRegister, GdbSignal, GdbStackFrame, GdbStackPosition, GdbThread, Segment } from './gdbProxyCore';
-import { GdbBreakpoint } from './breakpointManager';
+import { GdbBreakpoint, GdbBreakpointAccessType } from './breakpointManager';
 import { GdbPacketType } from './gdbPacket';
 import { StringUtils } from './stringUtils';
 import { GdbProxy } from './gdbProxy';
@@ -87,6 +87,8 @@ export class GdbProxyWinUAE extends GdbProxy {
         const segmentId = breakpoint.segmentId;
         const offset = breakpoint.offset;
         const exceptionMask = breakpoint.exceptionMask;
+        const accessType = breakpoint.accessType;
+        const size = breakpoint.size;
         if (!this.socket.writable) {
             throw new Error("The Gdb connection is not opened");
         } else {
@@ -99,6 +101,21 @@ export class GdbProxyWinUAE extends GdbProxy {
                     const expMskHex = GdbProxy.formatNumber(exceptionMask);
                     const expMskHexSz = GdbProxy.formatNumber(expMskHex.length);
                     message = "Z1,0,0;X" + expMskHexSz + "," + expMskHex;
+                } else if (size && size > 0 && accessType) {
+                    let code: number;
+                    switch (accessType) {
+                        case GdbBreakpointAccessType.READ:
+                            code = 2;
+                            break;
+                        case GdbBreakpointAccessType.WRITE:
+                            code = 3;
+                            break;
+                        case GdbBreakpointAccessType.READWRITE:
+                            code = 4;
+                            break;
+                    }
+                    // Data breakpoint
+                    message = `Z${code},${GdbProxy.formatNumber(offset)},${GdbProxy.formatNumber(size)}`;
                 } else {
                     let offsetStr = "";
                     if ((segmentId !== undefined) && (segmentId >= 0)) {
@@ -127,12 +144,31 @@ export class GdbProxyWinUAE extends GdbProxy {
         const segmentId = breakpoint.segmentId;
         const offset = breakpoint.offset;
         const exceptionMask = breakpoint.exceptionMask;
+        const accessType = breakpoint.accessType;
+        const size = breakpoint.size;
         let message: string | undefined = undefined;
         await this.waitConnected();
         if (this.segments && (segmentId !== undefined) && (segmentId < this.segments.length)) {
             message = 'z0,' + GdbProxy.formatNumber(this.toAbsoluteOffset(segmentId, offset));
         } else if (offset > 0) {
-            message = 'z0,' + GdbProxy.formatNumber(offset);
+            if (size && size > 0 && accessType) {
+                let code: number;
+                switch (accessType) {
+                    case GdbBreakpointAccessType.READ:
+                        code = 2;
+                        break;
+                    case GdbBreakpointAccessType.WRITE:
+                        code = 3;
+                        break;
+                    case GdbBreakpointAccessType.READWRITE:
+                        code = 4;
+                        break;
+                }
+                // Data breakpoint
+                message = `z${code},${GdbProxy.formatNumber(offset)}`;
+            } else {
+                message = 'z0,' + GdbProxy.formatNumber(offset);
+            }
         } else if (exceptionMask !== undefined) {
             message = 'z1,' + GdbProxy.formatNumber(exceptionMask);
         } else {

@@ -240,8 +240,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         });
     }
 
-
-
     /**
      * The 'initialize' request is the first request called by the frontend
      * to interrogate the features the debug adapter provides.
@@ -271,6 +269,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
         // Disassemble
         response.body.supportsDisassembleRequest = true;
+
+        // Data breakpoint
+        response.body.supportsDataBreakpoints = true;
 
         // Set expression is accepted - TODO : Try it later
         //response.body.supportsSetExpression = true;
@@ -1055,6 +1056,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
+    protected async evaluateRequestSetMemoryBreakpoint(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
+        this.sendStringErrorResponse(response, "This option in not implemented in FS-UAE");
+    }
+
+    protected async evaluateRequestRemoveMemoryBreakpoint(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
+        this.sendStringErrorResponse(response, "This option in not implemented in FS-UAE");
+    }
+
     protected async evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
         // Evaluate an expression
         const matches = /^([ad][0-7]|pc|sr)$/i.exec(args.expression);
@@ -1073,6 +1082,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.evaluateRequestGetMemory(response, args);
         } else if (args.expression.startsWith('M')) {
             this.evaluateRequestSetMemory(response, args);
+        } else if (args.expression.startsWith('Z')) {
+            this.evaluateRequestSetMemoryBreakpoint(response, args);
+        } else if (args.expression.startsWith('z')) {
+            this.evaluateRequestRemoveMemoryBreakpoint(response, args);
         } else if (this.symbolsMap.has(args.expression)) {
             let format;
             if (args.context === "watch") {
