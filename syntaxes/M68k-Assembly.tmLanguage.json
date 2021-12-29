@@ -96,87 +96,87 @@
     },
     {
       "name": "keyword.other.opcode.cpu.bl.m68k",
-      "match": "(?i)\\b(bchg|bclr|bset|btst)(\\.[bl])?\\b"
+      "match": "(?i)(?<=\\s)(bchg|bclr|bset|btst)(\\.[bl])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.bwl.m68k",
-      "match": "(?i)\\b(lsr|move|tst|moves|wddata|neg|negx|not|or|ori|addq|addi|addx|and|andi|asl|asr|cas|chk2|clr|cmp|cmpi|cmpm|cmp2|eor|eori|rol|ror|roxl|roxr|sub|subi|subq|subx|tbls|tblsn|tblu|tblun|add|lsl)(\\.[bwl])?\\b"
+      "match": "(?i)(?<=\\s)(lsr|move|tst|moves|wddata|neg|negx|not|or|ori|addq|addi|addx|and|andi|asl|asr|cas|chk2|clr|cmp|cmpi|cmpm|cmp2|eor|eori|rol|ror|roxl|roxr|sub|subi|subq|subx|tbls|tblsn|tblu|tblun|add|lsl)(\\.[bwl])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.bwlsdxp.m68k",
-      "match": "(?i)\\b(fsincos|ftst)(\\.[bwlsdxp])?\\b"
+      "match": "(?i)(?<=\\s)(fsincos|ftst)(\\.[bwlsdxp])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.wl.m68k",
-      "match": "(?i)\\b(maaac|mac|traplo|masac|trapne|trapeq|movea|movem|traple|movep|movm|msaac|msac|mssac|muls|mulu|pbbs|pbbc|adda|pblc|pbss|pbls|pbsc|pbas|pbac|pbws|pbwc|pbis|pbic|pbgs|pbgc|pbcs|pbcc|cas2|chk|cmpa|ptrapbs|ptrapbc|ptrapls|ptraplc|ptrapss|ptrapsc|ptrapas|ptrapac|ptrapws|ptrapwc|ptrapis|divs|ptrapic|ptrapgs|divu|ptrapgc|ptrapcs|ptrapcc|ext|fbf|fbeq|fbogt|fboge|fbolt|fbole|fbogl|fbor|fbun|fbueq|fbugt|fbuge|fbult|fbule|fbne|fbt|fbsf|fbseq|fbgt|fbge|fblt|fble|fbgl|fbgle|suba|fbngle|fbngl|fbnle|fbnlt|fbnge|fbngt|fbsne|fbst|tpf|trapt|trapf|traphi|trapls|trapcc|traphs|trapcs|trapge|trapmi|trappl|trapvs|trapvc|traplt|link|trapgt|ftrapf|ftrapeq|ftrapogt|ftrapoge|ftrapolt|ftrapole|ftrapogl|ftrapor|ftrapun|ftrapueq|ftrapugt|ftrapuge|ftrapult|ftrapule|ftrapne|ftrapt|ftrapsf|ftrapseq|ftrapgt|ftrapge|ftraplt|ftraple|ftrapgl|ftrapgle|ftrapngle|ftrapngl|ftrapnle|ftrapnlt|ftrapnge|ftrapngt|ftrapsne|ftrapst)(\\.[wl])?\\b"
+      "match": "(?i)(?<=\\s)(maaac|mac|traplo|masac|trapne|trapeq|movea|movem|traple|movep|movm|msaac|msac|mssac|muls|mulu|pbbs|pbbc|adda|pblc|pbss|pbls|pbsc|pbas|pbac|pbws|pbwc|pbis|pbic|pbgs|pbgc|pbcs|pbcc|cas2|chk|cmpa|ptrapbs|ptrapbc|ptrapls|ptraplc|ptrapss|ptrapsc|ptrapas|ptrapac|ptrapws|ptrapwc|ptrapis|divs|ptrapic|ptrapgs|divu|ptrapgc|ptrapcs|ptrapcc|ext|fbf|fbeq|fbogt|fboge|fbolt|fbole|fbogl|fbor|fbun|fbueq|fbugt|fbuge|fbult|fbule|fbne|fbt|fbsf|fbseq|fbgt|fbge|fblt|fble|fbgl|fbgle|suba|fbngle|fbngl|fbnle|fbnlt|fbnge|fbngt|fbsne|fbst|tpf|trapt|trapf|traphi|trapls|trapcc|traphs|trapcs|trapge|trapmi|trappl|trapvs|trapvc|traplt|link|trapgt|ftrapf|ftrapeq|ftrapogt|ftrapoge|ftrapolt|ftrapole|ftrapogl|ftrapor|ftrapun|ftrapueq|ftrapugt|ftrapuge|ftrapult|ftrapule|ftrapne|ftrapt|ftrapsf|ftrapseq|ftrapgt|ftrapge|ftraplt|ftraple|ftrapgl|ftrapgle|ftrapngle|ftrapngl|ftrapnle|ftrapnlt|ftrapnge|ftrapngt|ftrapsne|ftrapst)(\\.[wl])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.m68k",
-      "match": "(?i)\\b(move16|unlk|unpk|nop|reset|pack|stop|bfchg|pflush|bfclr|pflusha|bfexts|pflushan|bfextu|pflushn|bfffo|pflushr|bfins|pflushs|bfset|ploadr|bftst|ploadw|bgnd|plpar|plpaw|bkpt|callm|prestore|psave|cinvl|cinvp|cinva|cpushl|cpushp|cpusha|ptestr|ptestw|pulse|rtd|rte|rtm|rtr|rts|trap|trapv|fnop|frestore|fsave|halt|illegal|intouch|jmp|jsr|linea|line_a|linef|line_f)\\b"
+      "match": "(?i)(?<=\\s)(move16|unlk|unpk|nop|reset|pack|stop|bfchg|pflush|bfclr|pflusha|bfexts|pflushan|bfextu|pflushn|bfffo|pflushr|bfins|pflushs|bfset|ploadr|bftst|ploadw|bgnd|plpar|plpaw|bkpt|callm|prestore|psave|cinvl|cinvp|cinva|cpushl|cpushp|cpusha|ptestr|ptestw|pulse|rtd|rte|rtm|rtr|rts|trap|trapv|fnop|frestore|fsave|halt|illegal|intouch|jmp|jsr|linea|line_a|linef|line_f)\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.bwls.m68k",
-      "match": "(?i)\\b(bhs|blo|bhi|bls|bcc|bcs|bne|beq|bvc|bvs|bpl|bmi|bge|blt|bgt|ble|bra|bsr|jbhs|jblo|jbhi|jbls|jbcc|jbcs|jbne|jbeq|jbvc|jbvs|jbpl|jbmi|jbge|jblt|jbgt|jble|jbra|jbsr)(\\.[bwls])?\\b"
+      "match": "(?i)(?<=\\s)(bhs|blo|bhi|bls|bcc|bcs|bne|beq|bvc|bvs|bpl|bmi|bge|blt|bgt|ble|bra|bsr|jbhs|jblo|jbhi|jbls|jbcc|jbcs|jbne|jbeq|jbvc|jbvs|jbpl|jbmi|jbge|jblt|jbgt|jble|jbra|jbsr)(\\.[bwls])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.ld.m68k",
-      "match": "(?i)\\b(pmovefd)(\\.[ld])?\\b"
+      "match": "(?i)(?<=\\s)(pmovefd)(\\.[ld])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.l.m68k",
-      "match": "(?i)\\b(mov3q|movclr|movec|moveq|wdebug|pea|bitrev|byterev|divsl|divul|exg|pvalid|rems|extb|remu|sats|ff1|lea)(\\.[l])?\\b"
+      "match": "(?i)(?<=\\s)(mov3q|movclr|movec|moveq|wdebug|pea|bitrev|byterev|divsl|divul|exg|pvalid|rems|extb|remu|sats|ff1|lea)(\\.[l])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.w.m68k",
-      "match": "(?i)\\b(lpstop|pdbbs|pdbbc|pdbls|pdblc|pdbss|pdbsc|pdbas|pdbac|pdbws|pdbwc|pdbis|pdbic|pdbgs|pdbgc|pdbcs|pdbcc|dbt|dbf|dbra|dbhi|dbls|dbcc|dbhs|dbcs|dblo|dbne|dbvs|dbeq|dbpl|dbvc|dbmi|dbge|dblt|dbgt|dble|strldsr|swap|fdbf|fdbeq|fdbogt|fdboge|fdbolt|fdbole|fdbogl|fdbor|fdbun|fdbueq|fdbugt|fdbuge|fdbult|fdbule|fdbne|fdbt|fdbsf|fdbseq|fdbgt|fdbge|fdblt|fdble|fdbgl|fdbgle|fdbngle|fdbngl|fdbnle|fdbnlt|fdbnge|fdbngt|fdbsne|fdbst)(\\.[w])?\\b"
+      "match": "(?i)(?<=\\s)(lpstop|pdbbs|pdbbc|pdbls|pdblc|pdbss|pdbsc|pdbas|pdbac|pdbws|pdbwc|pdbis|pdbic|pdbgs|pdbgc|pdbcs|pdbcc|dbt|dbf|dbra|dbhi|dbls|dbcc|dbhs|dbcs|dblo|dbne|dbvs|dbeq|dbpl|dbvc|dbmi|dbge|dblt|dbgt|dble|strldsr|swap|fdbf|fdbeq|fdbogt|fdboge|fdbolt|fdbole|fdbogl|fdbor|fdbun|fdbueq|fdbugt|fdbuge|fdbult|fdbule|fdbne|fdbt|fdbsf|fdbseq|fdbgt|fdbge|fdblt|fdble|fdbgl|fdbgle|fdbngle|fdbngl|fdbnle|fdbnlt|fdbnge|fdbngt|fdbsne|fdbst)(\\.[w])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.b.m68k",
-      "match": "(?i)\\b(nbcd|abcd|psbs|psbc|psls|pslc|psss|pssc|psas|psac|psws|pswc|psis|psic|psgs|psgc|pscs|pscc|sbcd|st|sf|shi|sls|scc|shs|scs|slo|sne|seq|svc|svs|spl|smi|sge|slt|sgt|sle|tas|fsf|fseq|fsogt|fsoge|fsolt|fsole|fsogl|fsor|fsun|fsueq|fsugt|fsuge|fsult|fsule|fsne|fst|fssf|fsseq|fsgt|fsge|fslt|fsle|fsgl|fsgle|fsngle|fsngl|fsnle|fsnlt|fsnge|fsngt|fssne|fsst)(\\.[b])?\\b"
+      "match": "(?i)(?<=\\s)(nbcd|abcd|psbs|psbc|psls|pslc|psss|pssc|psas|psac|psws|pswc|psis|psic|psgs|psgc|pscs|pscc|sbcd|st|sf|shi|sls|scc|shs|scs|slo|sne|seq|svc|svs|spl|smi|sge|slt|sgt|sle|tas|fsf|fseq|fsogt|fsoge|fsolt|fsole|fsogl|fsor|fsun|fsueq|fsugt|fsuge|fsult|fsule|fsne|fst|fssf|fsseq|fsgt|fsge|fslt|fsle|fsgl|fsgle|fsngle|fsngl|fsnle|fsnlt|fsnge|fsngt|fssne|fsst)(\\.[b])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.bw.m68k",
-      "match": "(?i)\\b(mvs|mvz)(\\.[bw])?\\b"
+      "match": "(?i)(?<=\\s)(mvs|mvz)(\\.[bw])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.bwld.m68k",
-      "match": "(?i)\\b(pmove)(\\.[bwld])?\\b"
+      "match": "(?i)(?<=\\s)(pmove)(\\.[bwld])?\\b"
     },
     {
       "name": "keyword.other.opcode.cpu.ldx.m68k",
-      "match": "(?i)\\b(fmovem)(\\.[ldx])?\\b"
+      "match": "(?i)(?<=\\s)(fmovem)(\\.[ldx])?\\b"
     },
     {
       "name": "keyword.other.opcode.fpu.x.m68k",
-      "match": "(?i)\\b(fmovecr)(\\.[x])?\\b"
+      "match": "(?i)(?<=\\s)(fmovecr)(\\.[x])?\\b"
     },
     {
       "name": "keyword.other.opcode.fpu.bwlsdxp.m68k",
-      "match": "(?i)\\b(fabs|fsabs|fdabs|facos|fadd|fsadd|fdadd|fasin|fatan|fatanh|fcmp|fcos|fcosh|fdiv|fsdiv|fddiv|fetox|fetoxm1|fgetexp|fgetman|fint|fintrz|flog10|flog2|flogn|flognp1|fmod|fmove|fsmove|fdmove|fmul|fsmul|fdmul|fneg|fsneg|fdneg|frem|fscale|fsgldiv|fsglmul|fsin|fsinh|fsqrt|fssqrt|fdsqrt|fsub|fssub|fdsub|ftan|ftanh|ftentox|ftwotox)(\\.[bwlsdxp])?\\b"
+      "match": "(?i)(?<=\\s)(fabs|fsabs|fdabs|facos|fadd|fsadd|fdadd|fasin|fatan|fatanh|fcmp|fcos|fcosh|fdiv|fsdiv|fddiv|fetox|fetoxm1|fgetexp|fgetman|fint|fintrz|flog10|flog2|flogn|flognp1|fmod|fmove|fsmove|fdmove|fmul|fsmul|fdmul|fneg|fsneg|fdneg|frem|fscale|fsgldiv|fsglmul|fsin|fsinh|fsqrt|fssqrt|fdsqrt|fsub|fssub|fdsub|ftan|ftanh|ftentox|ftwotox)(\\.[bwlsdxp])?\\b"
     },
     {
       "name": "keyword.other.opcode.mem.m68k",
-      "match": "(?i)\\b(blk|dc|dcb|ds)(\\.[bdlqswx])?\\b"
+      "match": "(?i)(?<=\\s)(blk|dc|dcb|ds)(\\.[bdlqswx])?\\b"
     },
     {
       "name": "keyword.other.opcode.pc.m68k",
-      "match": "(?i)\\b(dr)(\\.[bwl])?\\b"
+      "match": "(?i)(?<=\\s)(dr)(\\.[bwl])?\\b"
     },
     {
       "name": "keyword.control.import.m68k",
-      "match": "(?i)\\b(include|incdir|incbin)\\b"
+      "match": "(?i)(?<=\\s)(include|incdir|incbin)\\b"
     },
     {
       "name": "keyword.control.section.m68k",
-      "match": "(?i)\\b(section|bss(_[cf])?|cseg|code(_[cf])?|data(_[cf])?|dseg)\\b"
+      "match": "(?i)(?<=\\s)(section|bss(_[cf])?|cseg|code(_[cf])?|data(_[cf])?|dseg)\\b"
     },
     {
       "name": "keyword.control.condition.m68k",
-      "match": "(?i)\\b(if(eq|ne|gt|ge|lt|le|b|nb|c|nc|d|nd|macrod|macrond)|else|end|endif)\\b"
+      "match": "(?i)(?<=\\s)(if(eq|ne|gt|ge|lt|le|b|nb|c|nc|d|nd|macrod|macrond)|else|end|endif)\\b"
     },
     {
       "name": "keyword.control.other.m68k",
-      "match": "(?i)\\b(opt|align|cargs|clrfo|clrso|cnop|comm|comment|echo|einline|end[cmfpr]?|erem|even|fail|fpu|idnt|inline|jumpptr|list|llen|load|machine|mexit|mmu|nolist|nopage|nref|odd|offset|opword|org|output|page|plen|print[tv]|public|record|rem|rept|rorg|rsreset|rsset|set|setfo|setso|spc|text|ttl|weak|xdef|xref)\\b"
+      "match": "(?i)(?<=\\s)(opt|align|cargs|clrfo|clrso|cnop|comm|comment|echo|einline|end[cmfpr]?|erem|even|fail|fpu|idnt|inline|jumpptr|list|llen|load|machine|mexit|mmu|nolist|nopage|nref|odd|offset|opword|org|output|page|plen|print[tv]|public|record|rem|rept|rorg|rsreset|rsset|set|setfo|setso|spc|text|ttl|weak|xdef|xref)\\b"
     },
     {
       "name": "keyword.operator.assignment.m68k",

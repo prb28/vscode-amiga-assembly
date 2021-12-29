@@ -335,6 +335,15 @@ describe("Formatter Tests", function () {
         expect(edits[i++]).to.be.eql(TextEdit.replace(new Range(new Position(4, 18), new Position(4, 22)), " ".repeat(4)));
         expect(edits[i]).to.be.eql(TextEdit.replace(new Range(new Position(4, 0), new Position(4, 8)), " ".repeat(2)));
     });
-
+    it("Should allow opcode names in labels", function () {
+        const f = new M68kFormatter();
+        const document = new DummyTextDocument();
+        document.addLine(".end:");
+        const asmDocument = new ASMDocument();
+        const conf = new DocumentFormatterConfiguration(2, 4, 4, 1, 1, 0, 0, false, 4);
+        asmDocument.parse(document, conf);
+        let edits = f.computeEditsForLine(asmDocument, asmDocument.asmLinesArray[0], conf);
+        expect(edits.length).to.be.equal(0);
+    });
 });
 
