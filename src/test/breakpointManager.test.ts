@@ -190,7 +190,7 @@ describe('Breakpoint Manager', () => {
         bpManager.setSizeForDataId(dataID, 32);
         expect(bpManager.getSizeForDataId(dataID)).to.be.equal(32);
     });
-    it.only('should parse the data ID', async function () {
+    it('should parse the data ID', async function () {
         expect(bpManager.parseDataIdAddress("myvar(0xb)[1]")).to.be.eql(["myvar", "0xb", 11]);
         expect(bpManager.parseDataIdAddress("myvar(10)[1]")).to.be.eql(["myvar", "10", 10]);
         try {
