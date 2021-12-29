@@ -338,7 +338,11 @@ export class BreakpointManager {
 
     public parseDataIdAddress(dataId: string): [string, string, number] {
         const elements = dataId.split(/[()]/);
-        return [elements[0], elements[1], parseInt(elements[1])];
+        if (elements.length > 1) {
+            return [elements[0], elements[1], parseInt(elements[1])];
+        } else {
+            throw new Error("DataId format invalid");
+        }
     }
 
     public getSizeForDataId(dataId: string): number | undefined {

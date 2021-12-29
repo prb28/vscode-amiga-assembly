@@ -170,4 +170,34 @@ describe('Breakpoint Manager', () => {
         await expect(bpManager.sendAllPendingBreakpoint()).to.be.fulfilled;
         expect(bpManager.getPendingBreakpoints().length).to.be.equal(0);
     });
+    it('should populate the data breakpoints response', async function () {
+        let response = <DebugProtocol.DataBreakpointInfoResponse>{};
+        bpManager.populateDataBreakpointInfoResponseBody(response, "myvar", "0x1", false);
+        expect(response.body.dataId).to.be.equal("myvar(0x1)[0]");
+        expect(response.body.description).to.be.equal("myvar(0x1)");
+        expect(response.body.canPersist).to.be.false;
+        expect(response.body.accessTypes).to.be.eql(["read", "write", "readWrite"]);
+        response = <DebugProtocol.DataBreakpointInfoResponse>{};
+        bpManager.populateDataBreakpointInfoResponseBody(response, "myvar", "0x1", true);
+        expect(response.body.dataId).to.be.equal("myvar(0x1)[1]");
+        expect(response.body.description).to.be.equal("0x1");
+        expect(response.body.canPersist).to.be.false;
+        expect(response.body.accessTypes).to.be.eql(["read", "write", "readWrite"]);
+    });
+    it('should store de sizes for the data types', async function () {
+        const dataID = "myDataID";
+        expect(bpManager.getSizeForDataId(dataID)).to.be.undefined;
+        bpManager.setSizeForDataId(dataID, 32);
+        expect(bpManager.getSizeForDataId(dataID)).to.be.equal(32);
+    });
+    it.only('should parse the data ID', async function () {
+        expect(bpManager.parseDataIdAddress("myvar(0xb)[1]")).to.be.eql(["myvar", "0xb", 11]);
+        expect(bpManager.parseDataIdAddress("myvar(10)[1]")).to.be.eql(["myvar", "10", 10]);
+        try {
+            bpManager.parseDataIdAddress("myvar");
+            expect.fail("Exception expected");
+        } catch (err) {
+            //expected
+        }
+    });
 });
