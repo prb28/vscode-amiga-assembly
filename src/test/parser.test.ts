@@ -357,6 +357,14 @@ describe("Parser Tests", function () {
             pos += 5 + 2;
             expect(numbers[4]).to.be.eql(['@-12', new Range(new Position(0, pos), new Position(0, pos + 4))]);
         });
+        it("Should allow opcode names in labels", function () {
+            let asmLine = new ASMLine("end");
+            expect(asmLine.label).to.be.equal('end');
+            expect(asmLine.instruction).to.be.empty
+            asmLine = new ASMLine(".end");
+            expect(asmLine.label).to.be.equal('.end');
+            expect(asmLine.instruction).to.be.empty
+        });
     });
     context("Number parsing", function () {
         it("Should parse a number", function () {

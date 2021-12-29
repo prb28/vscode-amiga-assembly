@@ -30,9 +30,9 @@ describe("Language Tests", function () {
         it("Should get a correct regex from it's name", function () {
             const r: RegExp | null = l.getRegExp("keyword.other.opcode.cpu.bwl.m68k");
             if (r !== null) {
-                expect(r.test("move")).to.be.true;
+                expect(r.test(" move")).to.be.true;
                 // must ignore the case for this keyword
-                expect(r.test("MOVE")).to.be.true;
+                expect(r.test(" MOVE")).to.be.true;
             } else {
                 fail("Regexp not found");
             }
@@ -45,7 +45,7 @@ describe("Language Tests", function () {
         it("Should get a correct list of regex from a regex on it's name", function () {
             const list: Array<RegExp> = l.getAllRegExps(/.*opcode.cpu.*/);
             expect(list.length).to.be.equal(13);
-            expect(list[0].test("bchg.l")).to.be.true;
+            expect(list[0].test(" bchg.l")).to.be.true;
         });
         it("Should get the list of possible extensions for an instruction", function () {
             expect(l.getExtensions('move')).to.be.eql(['b', 'w', 'l']);
