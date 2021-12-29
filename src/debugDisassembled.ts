@@ -9,6 +9,7 @@ import { MemoryLabelsRegistry } from "./customMemoryAddresses";
 import { Uri } from "vscode";
 
 export class DebugDisassembledFile {
+    public static readonly DGBFILE_SCHEME = "disassembly";
     public static readonly DGBFILE_SEG_SEPARATOR = "seg_";
     public static readonly DGBFILE_COPPER_SEPARATOR = "copper_";
     public static readonly DGBFILE_EXTENSION = "dbgasm";
@@ -118,7 +119,7 @@ export class DebugDisassembledFile {
     public toURI(): Uri {
         // Code to replace #, it is not done by the Uri.parse
         const filename = this.toString().replace('#', '%23');
-        return Uri.parse(`disassembly:${filename}`);
+        return Uri.parse(`${DebugDisassembledFile.DGBFILE_SCHEME}:${filename}`);
     }
 
     public static isDebugAsmFile(path: string): boolean {
@@ -237,7 +238,7 @@ export class DebugDisassembledManager {
             }
             dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(`$${newAddress.toString(16)}`).setLength(length);
         }
-        const url = `disassembly:///${dAsmFile}`;
+        const url = `${DebugDisassembledFile.DGBFILE_SCHEME}:///${dAsmFile}`;
         if (lineNumber >= 0) {
             return new StackFrame(stackFrameIndex, stackFrameLabel, new Source(dAsmFile.toString(), url), lineNumber, 1);
         } else {

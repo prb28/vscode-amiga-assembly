@@ -127,7 +127,7 @@ describe("debug disassembled Tests", function () {
                 id: 0,
                 line: 1,
                 name: "my label",
-                source: new Source("0__$a__500.dbgasm", "disassembly:///0__$a__500.dbgasm")
+                source: new Source("0__$a__500.dbgasm", `${DebugDisassembledFile.DGBFILE_SCHEME}:///0__$a__500.${DebugDisassembledFile.DGBFILE_EXTENSION}`)
             });
             stack = await manager.getStackFrame(0, 2, "my label", false);
             expect(stack).to.be.eql(<StackFrame>{
@@ -135,7 +135,7 @@ describe("debug disassembled Tests", function () {
                 id: 0,
                 line: 2,
                 name: "my label",
-                source: new Source("seg_0.dbgasm", "disassembly:///seg_0.dbgasm")
+                source: new Source("seg_0.dbgasm", `${DebugDisassembledFile.DGBFILE_SCHEME}:///seg_0.${DebugDisassembledFile.DGBFILE_EXTENSION}`)
             });
         });
         it("Should generate a no file stack frame on error", async function () {

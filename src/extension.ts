@@ -30,10 +30,11 @@ import { VariableDisplayFormat, VariableDisplayFormatRequest } from './variableF
 import { BinariesManager } from './downloadManager';
 import { ConfigurationHelper } from './configurationHelper';
 import { WorkspaceManager } from './workspaceManager';
+import { DebugDisassembledFile } from './debugDisassembled';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
-export const AMIGA_DEBUG_ASM_MODE: vscode.DocumentFilter = { language: 'amiga-assembly-debug.disassembly', scheme: 'disassembly' };
+export const AMIGA_DEBUG_ASM_MODE: vscode.DocumentFilter = { language: 'amiga-assembly-debug.disassembly', scheme: DebugDisassembledFile.DGBFILE_SCHEME };
 
 class SimpleConsoleTransport extends TransportStream {
     private outputChannel: vscode.OutputChannel;
@@ -523,7 +524,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('winuae', new WinUAEInlineDebugAdapterFactory()));
     winston.info("------> done");
 
-    context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('disassembly', new DisassemblyContentProvider()));
+    context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider(DebugDisassembledFile.DGBFILE_SCHEME, new DisassemblyContentProvider()));
     // IFF view
     if (vscode.window.registerWebviewPanelSerializer) {
         // Make sure we register a serializer in activation event
