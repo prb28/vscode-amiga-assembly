@@ -8,6 +8,11 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
+## New in 1.1
+- Memory read/write/readwrite watch breakpoint on WinUAE
+- Extension compressed with webpack (faster loading time)
+- Bug fixes
+
 ## Breaking change 1.0!
 
 The build system has been reviewed :
@@ -95,6 +100,11 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## New in 1.1
+- Memory read/write/readwrite watch breakpoint on WinUAE
+- Extension compressed with webpack (faster loading time)
+- Bug fixes
+
 ## New in 1.0
 - Build sequence review with output displayed
 - Selection of display format for variables
