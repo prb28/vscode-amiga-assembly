@@ -30,7 +30,7 @@ export class Disassembler {
                 // Code to replace #, it is not done by the Uri.parse
                 address = address.replace('#', '%23');
                 const filename = `${DebugDisassembledFile.DGBFILE_COPPER_SEPARATOR}${address}__3000.${DebugDisassembledFile.DGBFILE_EXTENSION}`;
-                const newFile = Uri.parse(`disassembly:${filename}`);
+                const newFile = Uri.parse(`${DebugDisassembledFile.DGBFILE_SCHEME}:${filename}`);
                 try {
                     await window.showTextDocument(newFile);
                 } catch (err) {
