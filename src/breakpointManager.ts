@@ -30,6 +30,10 @@ export class BreakpointManager {
     protected mutex = new Mutex(100, 180000);
     /** Lock for breakpoint management function */
     protected breakpointLock?: () => void;
+    /** Next Data Id increment */
+    protected nextDataIdIncrement = 0;
+    /** Array to store the size of data watched for a breakpoint ID */
+    protected sizeMap = new Map<string, number>();
 
     public constructor(gdbProxy: GdbProxy, debugDisassembledManager: DebugDisassembledManager) {
         this.gdbProxy = gdbProxy;
@@ -145,7 +149,7 @@ export class BreakpointManager {
         };
     }
 
-    public createDataBreakpoint(address: number, size: number, accessType: string | undefined): GdbBreakpoint {
+    public createDataBreakpoint(address: number, size: number, accessType: string | undefined, message: string | undefined): GdbBreakpoint {
         let gdbAccessType: GdbBreakpointAccessType;
         switch (accessType) {
             case GdbBreakpointAccessType.READ:
@@ -167,7 +171,8 @@ export class BreakpointManager {
             offset: address,
             verified: false,
             size: size,
-            accessType: gdbAccessType
+            accessType: gdbAccessType,
+            message: message
         };
     }
 
@@ -313,6 +318,37 @@ export class BreakpointManager {
     public getPendingBreakpoints(): Array<GdbBreakpoint> {
         return this.pendingBreakpoints;
     }
+
+    public populateDataBreakpointInfoResponseBody(response: DebugProtocol.DataBreakpointInfoResponse, variableName: string, address: string, isRegister: boolean) {
+        const newId = this.nextDataIdIncrement++;
+
+        let variableDisplay;
+        if (isRegister) {
+            variableDisplay = `${address}`;
+        } else {
+            variableDisplay = `${variableName}(${address})`;
+        }
+        response.body = {
+            dataId: `${variableName}(${address})[${newId}]`,
+            description: variableDisplay,
+            accessTypes: ["read", "write", "readWrite"],
+            canPersist: false
+        }
+    }
+
+    public parseDataIdAddress(dataId: string): [string, string, number] {
+        const elements = dataId.split(/[()]/);
+        return [elements[0], elements[1], parseInt(elements[1])];
+    }
+
+    public getSizeForDataId(dataId: string): number | undefined {
+        return this.sizeMap.get(dataId);
+    }
+
+    public setSizeForDataId(dataId: string, size: number) {
+        this.sizeMap.set(dataId, size);
+    }
+
 }
 
 /** Interface for a breakpoint */

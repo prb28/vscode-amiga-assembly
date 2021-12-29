@@ -5,6 +5,8 @@ import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { GdbProxyWinUAE } from './gdbProxyWinUAE';
 import { LaunchRequestArguments, FsUAEDebugSession } from './fsUAEDebug';
 import { GdbProxy } from './gdbProxy';
+import { InputBoxOptions, window } from 'vscode';
+import { VariableFormatter } from './variableFormatter';
 
 
 export class WinUAEDebugSession extends FsUAEDebugSession {
@@ -84,44 +86,22 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
         }
     }
 
-    protected async evaluateRequestSetMemoryBreakpoint(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
-        const matches = /z\s*([{}$#0-9a-z_]+)\s*,\s*([0-9a-z_]+)/i.exec(args.expression);
-        if (matches) {
-            const addrStr = matches[1];
-            const size = matches[2];
-            if ((addrStr !== null) && (size !== null) && (size.length > 0)) {
-                try {
-                    // replace the address if it is a variable
-                    //const address = await this.debugExpressionHelper.getAddressFromExpression(addrStr, args.frameId, this);
-                    await this.gdbProxy.waitConnected();
-                    //await this.gdbProxy.setMemoryBreakpoint(address, size);
-                    args.expression = 'z' + addrStr + ',' + size.length.toString(16);
-                    return this.evaluateRequestGetMemory(response, args);
-                } catch (err) {
-                    this.sendStringErrorResponse(response, err.message);
-                }
-            } else {
-                this.sendStringErrorResponse(response, "Invalid memory set expression");
-            }
-        } else {
-            this.sendStringErrorResponse(response, "Expression not recognized");
+    protected async getVariableAsDisplayed(variableName: string): Promise<string> {
+        const value = await this.getVariableValueAsNumber(variableName);
+        let formatter = this.variableFormatterMap.get(variableName);
+        if (!formatter) {
+            formatter = VariableFormatter.HEXADECIMAL_FORMATTER;
         }
+        return formatter.format(value);
     }
 
-    protected async evaluateRequestRemoveMemoryBreakpoint(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
-        this.sendStringErrorResponse(response, "This option in not yet implemented");
-    }
-
-    protected dataBreakpointInfoRequest(response: DebugProtocol.DataBreakpointInfoResponse, args: DebugProtocol.DataBreakpointInfoArguments): void {
+    protected async dataBreakpointInfoRequest(response: DebugProtocol.DataBreakpointInfoResponse, args: DebugProtocol.DataBreakpointInfoArguments): Promise<void> {
         if (args.variablesReference && args.name) {
             const id = this.variableHandles.get(args.variablesReference);
-            if (id !== null && id.startsWith("symbols_")) {
-                response.body = {
-                    dataId: args.name,
-                    description: args.name,
-                    accessTypes: ["read", "write", "readWrite"],
-                    canPersist: false
-                }
+            if (id !== null && (id.startsWith(WinUAEDebugSession.PREFIX_SYMBOLS) || id.startsWith(WinUAEDebugSession.PREFIX_REGISTERS))) {
+                const variableName = args.name;
+                const displayValue = await this.getVariableAsDisplayed(variableName);
+                this.breakpointManager.populateDataBreakpointInfoResponseBody(response, variableName, displayValue, id.startsWith(WinUAEDebugSession.PREFIX_REGISTERS));
             }
         }
         this.sendResponse(response);
@@ -134,21 +114,41 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
         // set and verify breakpoint locations
         if (args.breakpoints) {
             for (const reqBp of args.breakpoints) {
-                const value = await this.getVariableValueAsNumber(reqBp.dataId);
-                const debugBp = this.breakpointManager.createDataBreakpoint(value, 4, reqBp.accessType);
+                const [variableName, displayValue, value] = this.breakpointManager.parseDataIdAddress(reqBp.dataId);
+                let size = this.breakpointManager.getSizeForDataId(reqBp.dataId);
+                if (!size) {
+                    const sizeStr = await window.showInputBox(<InputBoxOptions>{
+                        prompt: `Enter the size in bytes to watch starting at address '${displayValue}' (variable: '${variableName}')`,
+                        value: "2",
+                        validateInput: (value: string) => {
+                            if (!Number.isInteger(parseInt(value))) {
+                                return "The value must be an integer.";
+                            }
+                            return null;
+                        }
+                    });
+                    if (sizeStr) {
+                        size = parseInt(sizeStr);
+                        this.breakpointManager.setSizeForDataId(reqBp.dataId, size);
+                    }
+                }
+                if (!size) {
+                    size = 2;
+                }
+                const debugBp = this.breakpointManager.createDataBreakpoint(value, size, reqBp.accessType, `${size} bytes watched starting at ${displayValue}`);
                 try {
                     const modifiedBp = await this.breakpointManager.setBreakpoint(debugBp);
                     debugBreakPoints.push(modifiedBp);
                 } catch (err) {
                     debugBreakPoints.push(debugBp);
                 }
+                // send back the actual breakpoint positions
+                response.body = {
+                    breakpoints: debugBreakPoints
+                };
+                response.success = true;
             }
         }
-        // send back the actual breakpoint positions
-        response.body = {
-            breakpoints: debugBreakPoints
-        };
-        response.success = true;
         this.sendResponse(response);
     }
 }

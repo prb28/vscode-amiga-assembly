@@ -59,6 +59,13 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 }
 
 export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
+    /** prefix for register variables */
+    protected static readonly PREFIX_REGISTERS = "registers_";
+    /** prefix for segments variables */
+    protected static readonly PREFIX_SEGMENTS = "segments_";
+    /** prefix for symbols variables */
+    protected static readonly PREFIX_SYMBOLS = "symbols_";
+
     /** Timeout of the mutex */
     protected static readonly MUTEX_TIMEOUT = 100000;
 
@@ -660,9 +667,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
         const frameReference = args.frameId;
         const scopes = new Array<Scope>();
-        scopes.push(<DebugProtocol.Scope>{ name: "Registers", variablesReference: this.variableHandles.create("registers_" + frameReference), presentationHint: "registers", expensive: false });
-        scopes.push(new Scope("Segments", this.variableHandles.create("segments_" + frameReference), true));
-        scopes.push(new Scope("Symbols", this.variableHandles.create("symbols_" + frameReference), true));
+        scopes.push(<DebugProtocol.Scope>{ name: "Registers", variablesReference: this.variableHandles.create(FsUAEDebugSession.PREFIX_REGISTERS + frameReference), presentationHint: "registers", expensive: false });
+        scopes.push(new Scope("Segments", this.variableHandles.create(FsUAEDebugSession.PREFIX_SEGMENTS + frameReference), true));
+        scopes.push(new Scope("Symbols", this.variableHandles.create(FsUAEDebugSession.PREFIX_SYMBOLS + frameReference), true));
 
         response.body = {
             scopes: scopes
@@ -681,7 +688,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             const id = this.variableHandles.get(args.variablesReference);
             await this.gdbProxy.waitConnected();
             if (id !== null) {
-                if (id.startsWith("registers_")) {
+                if (id.startsWith(FsUAEDebugSession.PREFIX_REGISTERS)) {
                     try {
                         //Gets the frameId
                         const frameId = parseInt(id.substring(10));
@@ -729,7 +736,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     } catch (err) {
                         this.sendStringErrorResponse(response, err.message);
                     }
-                } else if (id.startsWith("segments_")) {
+                } else if (id.startsWith(FsUAEDebugSession.PREFIX_SEGMENTS)) {
                     const variablesArray = new Array<DebugProtocol.Variable>();
                     const segments = this.gdbProxy.getSegments();
                     if (segments) {
@@ -755,7 +762,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         response.message = "No Segments found";
                     }
                     this.sendResponse(response);
-                } else if (id.startsWith("symbols_")) {
+                } else if (id.startsWith(FsUAEDebugSession.PREFIX_SYMBOLS)) {
                     const variablesArray = new Array<DebugProtocol.Variable>();
                     for (const entry of Array.from(this.symbolsMap.entries())) {
                         const key = entry[0];
@@ -787,7 +794,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
 
     protected async setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments): Promise<void> {
         const id = this.variableHandles.get(args.variablesReference);
-        if ((id !== null) && (id.startsWith("registers_"))) {
+        if ((id !== null) && (id.startsWith(FsUAEDebugSession.PREFIX_REGISTERS))) {
             try {
                 const newValue = await this.gdbProxy.setRegister(args.name, args.value);
                 response.body = {
@@ -798,7 +805,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 this.sendStringErrorResponse(response, err.message);
             }
         } else {
-            this.sendStringErrorResponse(response, "Illegal variable request");
+            this.sendStringErrorResponse(response, "This variable cannot be set");
         }
     }
 
@@ -1056,14 +1063,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         }
     }
 
-    protected async evaluateRequestSetMemoryBreakpoint(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
-        this.sendStringErrorResponse(response, "This option in not implemented in FS-UAE");
-    }
-
-    protected async evaluateRequestRemoveMemoryBreakpoint(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
-        this.sendStringErrorResponse(response, "This option in not implemented in FS-UAE");
-    }
-
     protected async evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): Promise<void> {
         // Evaluate an expression
         const matches = /^([ad][0-7]|pc|sr)$/i.exec(args.expression);
@@ -1082,10 +1081,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.evaluateRequestGetMemory(response, args);
         } else if (args.expression.startsWith('M')) {
             this.evaluateRequestSetMemory(response, args);
-        } else if (args.expression.startsWith('Z')) {
-            this.evaluateRequestSetMemoryBreakpoint(response, args);
-        } else if (args.expression.startsWith('z')) {
-            this.evaluateRequestRemoveMemoryBreakpoint(response, args);
         } else if (this.symbolsMap.has(args.expression)) {
             let format;
             if (args.context === "watch") {
