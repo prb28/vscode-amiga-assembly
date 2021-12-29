@@ -433,7 +433,12 @@ export class GdbProxyWinUAE extends GdbProxy {
             const regIdx = this.getRegisterIndex(name);
             if (regIdx !== null) {
                 const message = "P" + regIdx.toString(16) + "=" + value;
-                return this.sendPacketString(message, GdbPacketType.OK);
+                const response = await this.sendPacketString(message, null);
+                if (response && response.indexOf("OK") >= 0) {
+                    return value;
+                } else {
+                    throw new Error("Error setting the register value");
+                }
             } else {
                 throw new Error("Invalid register name: " + name);
             }
