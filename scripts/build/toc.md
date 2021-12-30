@@ -3,6 +3,9 @@
 ## Motorola 68000 assembler
 
 @amiga_instructions_replacement@
+## Assembler directives
+
+@amiga_directives_replacement@
 ## Amiga registers
 
 @amiga_registers_replacement@

@@ -113,6 +113,16 @@ describe("Completion Tests", function () {
             const elm = results[0];
             expect(elm.label).to.be.equal("move");
         });
+        it("Should return a completion on a directive", async function () {
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const document = new DummyTextDocument();
+            const position: Position = new Position(0, 4);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine(" sect");
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const elm = results[0];
+            expect(elm.label).to.be.equal("section");
+        });
         it("Should not return a completion on an instruction after .", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();

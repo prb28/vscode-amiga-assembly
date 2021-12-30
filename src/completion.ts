@@ -45,8 +45,9 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                     for (const value of values) {
                         let label = value.name;
                         let kind = vscode.CompletionItemKind.Function;
+                        const isMnemonic = value.type === DocumentationType.INSTRUCTION || value.type === DocumentationType.DIRECTIVE
                         if (isInData) {
-                            if (value.type === DocumentationType.INSTRUCTION) {
+                            if (isMnemonic) {
                                 continue;
                             } else {
                                 if (value.type === DocumentationType.REGISTER) {
@@ -55,7 +56,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                                     label = "_LVO" + label;
                                 }
                             }
-                        } else if (value.type !== DocumentationType.INSTRUCTION) {
+                        } else if (!isMnemonic) {
                             continue;
                         }
                         const completion = new vscode.CompletionItem(label, kind);

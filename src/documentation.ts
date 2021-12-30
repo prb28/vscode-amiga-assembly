@@ -5,6 +5,7 @@ import { Uri } from 'vscode';
 export enum DocumentationType {
     UNKNOWN,
     INSTRUCTION,
+    DIRECTIVE,
     REGISTER,
     FUNCTION
 }
@@ -95,6 +96,48 @@ export class DocumentationInstructionsManager extends DocumentationMDFileFolderM
 }
 
 /**
+ * Class to manage the directives
+ */
+export class DocumentationDirectivesManager extends DocumentationMDFileFolderManager {
+    private directives = new Map<string, DocumentationDirective>();
+
+    constructor(extensionPath: string) {
+        super(extensionPath, "directives");
+    }
+
+    protected loadFile(filename: string): void {
+        let element = filename.replace(".md", "");
+        const filePath = path.join(this.dirPath, filename);
+        const name = element.toUpperCase();
+        const di = new DocumentationDirective(element, this.dirPath, filePath);
+        this.directives.set(name, di);
+    }
+
+    /**
+     * Retrieves an directive by it's name
+     * @param name Name of the directive
+     */
+    public async getDirectiveByName(name: string): Promise<DocumentationDirective | undefined> {
+        const directive = this.directives.get(name);
+        if (directive) {
+            await directive.loadDescription();
+        }
+        return directive;
+    }
+
+    /**
+     * Iterate on all entries by name.
+     */
+    public entriesByName(): IterableIterator<[string, DocumentationDirective]> {
+        return this.directives.entries();
+    }
+
+    public getCount(): number {
+        return this.directives.size;
+    }
+}
+
+/**
  * Class representing an instruction documentation
  */
 export class DocumentationInstruction extends DocumentationElement {
@@ -139,6 +182,13 @@ export class DocumentationInstruction extends DocumentationElement {
             this.description = this.removeImages(contents);
             this.loaded = true;
         }
+    }
+}
+
+export class DocumentationDirective extends DocumentationInstruction {
+    constructor(name: string, parentDir: string, filename: string) {
+        super(name, parentDir, filename);
+        this.type = DocumentationType.DIRECTIVE;
     }
 }
 
@@ -348,11 +398,13 @@ export class DocumentationLibraryFunction extends DocumentationElement {
 export class DocumentationManager {
     private isLoaded = false;
     instructionsManager: DocumentationInstructionsManager;
+    directivesManager: DocumentationDirectivesManager;
     registersManager: DocumentationRegistersManager;
     libraryManager: DocumentationLibraryManager;
     relevantKeywordsMap: Map<string, Array<DocumentationElement>>;
     constructor(extensionPath: string) {
         this.instructionsManager = new DocumentationInstructionsManager(extensionPath);
+        this.directivesManager = new DocumentationDirectivesManager(extensionPath);
         this.registersManager = new DocumentationRegistersManager(extensionPath);
         this.libraryManager = new DocumentationLibraryManager(extensionPath);
         this.relevantKeywordsMap = new Map<string, Array<DocumentationElement>>();
@@ -361,9 +413,13 @@ export class DocumentationManager {
     public async load(): Promise<void> {
         if (!this.isLoaded) {
             await Promise.all([this.instructionsManager.load(),
+            this.directivesManager.load(),
             this.registersManager.load(),
             this.libraryManager.load()]);
             for (const [key, value] of this.instructionsManager.entriesByName()) {
+                this.addRelevantKeywordElements(key, value);
+            }
+            for (const [key, value] of this.directivesManager.entriesByName()) {
                 this.addRelevantKeywordElements(key, value);
             }
             for (const [key, value] of this.registersManager.entriesByName()) {
@@ -389,6 +445,9 @@ export class DocumentationManager {
 
     public getInstruction(instruction: string): Promise<DocumentationInstruction | undefined> {
         return this.instructionsManager.getInstructionByName(instruction.toUpperCase());
+    }
+    public getDirective(directive: string): Promise<DocumentationInstruction | undefined> {
+        return this.directivesManager.getDirectiveByName(directive.toUpperCase());
     }
     public getRegisterByAddress(address: string): Promise<DocumentationRegister | undefined> {
         return this.registersManager.getRegistersByAddress(address);
