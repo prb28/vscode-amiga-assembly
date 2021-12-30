@@ -69,6 +69,17 @@ describe("Completion Tests", function () {
             const elm = results[0];
             expect(elm.label).to.be.equal("INTENAR");
         });
+        it("Should preserve case on completion of a register", async function () {
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const document = new DummyTextDocument();
+            const position: Position = new Position(0, 11);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine(" move.l inten");
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            expect(results).to.not.be.undefined;
+            const elm = results[0];
+            expect(elm.label).to.be.equal("intenar");
+        });
         it("Should return a completion on a variable", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
@@ -113,6 +124,17 @@ describe("Completion Tests", function () {
             const elm = results[0];
             expect(elm.label).to.be.equal("move");
         });
+        it("Should preserve case on completion of an instruction", async function () {
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const document = new DummyTextDocument();
+            const position: Position = new Position(0, 3);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine(" MOV");
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            expect(results.length).to.be.equal(5);
+            const elm = results[0];
+            expect(elm.label).to.be.equal("MOVE");
+        });
         it("Should return a completion on a directive", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
@@ -137,6 +159,16 @@ describe("Completion Tests", function () {
             document.addLine(" move.l");
             results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.be.empty;
+        });
+        it("Should match case of size completions to instruction", async function () {
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const document = new DummyTextDocument();
+            let position = new Position(0, 6);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine(" MOVE.");
+            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const elm = results[0];
+            expect(elm.label).to.be.equal("B");
         });
         it("Should not return completion in a comment", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
