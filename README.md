@@ -11,6 +11,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ## New in 1.1
 - Memory read/write/readwrite watch breakpoint on WinUAE
 - Completion for labels
+- Add documentation for compiler directives
 - Extension compressed with webpack (faster loading time)
 - Bug fixes
 
@@ -92,6 +93,7 @@ The assembly language will be formatted with the standard shortcuts :
 ## New in 1.1
 - Memory read/write/readwrite watch breakpoint on WinUAE
 - Completion for labels
+- Add documentation for compiler directives
 - Extension compressed with webpack (faster loading time)
 - Bug fixes
 
