@@ -430,5 +430,21 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         }
         return values;
     }
+
+    /**
+     * Find all the labels starting by word
+     * @param word Word to search
+     * @return labels found.
+     */
+    findLabelStartingWith(word: string): Map<string, string | undefined> {
+        const values = new Map<string, string | undefined>();
+        const upper = word.toUpperCase();
+        for (const [key, value] of this.labels.entries()) {
+            if (key.toUpperCase().startsWith(upper)) {
+                values.set(key, value.getValue());
+            }
+        }
+        return values;
+    }
 }
 
