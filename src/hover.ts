@@ -32,10 +32,15 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             if (idx > 0) {
                 keyInstruction = keyInstruction.substr(0, idx);
             }
+            console.log({ keyInstruction })
             if (!token.isCancellationRequested) {
-                const hoverInstruction = await this.documentationManager.getInstruction(keyInstruction.toUpperCase());
-                if (hoverInstruction) {
-                    const hoverRendered = this.renderHover(hoverInstruction);
+                const [hoverInstruction, hoverDirective] = await Promise.all([
+                    this.documentationManager.getInstruction(keyInstruction.toUpperCase()),
+                    this.documentationManager.getDirective(keyInstruction.toUpperCase())
+                ]);
+                const hoverElement = hoverInstruction || hoverDirective
+                if (hoverElement) {
+                    const hoverRendered = this.renderHover(hoverElement);
                     return new vscode.Hover(hoverRendered, asmLine.instructionRange);
                 }
             }
