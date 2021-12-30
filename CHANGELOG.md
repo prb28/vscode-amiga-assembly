@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [1.1.0] - 
+- [Feat #181](https://github.com/prb28/vscode-amiga-assembly/pull/181) *grahambates* Provide completion for labels
+- [Issue #179](https://github.com/prb28/vscode-amiga-assembly/issues/179) *grahambates* Labels containing opcodes / control words are formatted incorrect
 - [Issue #178](https://github.com/prb28/vscode-amiga-assembly/issues/178) Create ADF with defined Bootblock not work
 - [Feat #176](https://github.com/prb28/vscode-amiga-assembly/issues/176) Compress the extension with webpack
 - [Pull #173](https://github.com/prb28/vscode-amiga-assembly/pull/173) *dansalvato* Data Generator minor fixes

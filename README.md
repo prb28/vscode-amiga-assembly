@@ -10,6 +10,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 ## New in 1.1
 - Memory read/write/readwrite watch breakpoint on WinUAE
+- Completion for labels
 - Extension compressed with webpack (faster loading time)
 - Bug fixes
 
@@ -24,18 +25,6 @@ The build system has been reviewed :
 - Builds are triggered in a terminal to show the output
 - There is no more the "Build" button in the bottom of the window
 - The *launch.json* parameter `"buildWorkspace": true,` is replaced by `"preLaunchTask": "amigaassembly: build"`
-
-## New in 1.0
-- Build sequence review with output displayed
-- Selection of display format for variables
-- Add a "Run current file" launch configuration
-- Able to change the filename from GENCOP
-- Add command to download the example project workspace
-- Automatically download binaries
-- Right click to add a memory dump in the watch window
-- Include files reference/autocomplete
-- Provide standard vscode tasks 
-- Bug fixes
 
 ### Other features
 ### Run and Debug with FS-UAE or WinUAE
@@ -102,6 +91,7 @@ The assembly language will be formatted with the standard shortcuts :
 ## Release Notes
 ## New in 1.1
 - Memory read/write/readwrite watch breakpoint on WinUAE
+- Completion for labels
 - Extension compressed with webpack (faster loading time)
 - Bug fixes
 
