@@ -80,6 +80,28 @@ describe("Completion Tests", function () {
             const elm = results[0];
             expect(elm.label).to.be.equal("MY_W_VAR");
         });
+        it("Should return a completion on a label", async function () {
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const document = new DummyTextDocument();
+            const position: Position = new Position(0, 7);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine(" jsr Mai");
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            expect(results).to.not.be.undefined;
+            const elm = results[0];
+            expect(elm.label).to.be.equal("Main");
+        });
+        it("Should return a completion on a local label", async function () {
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const document = new DummyTextDocument();
+            const position: Position = new Position(0, 11);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine(" jsr .chkmo");
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            expect(results).to.not.be.undefined;
+            const elm = results[0];
+            expect(elm.label).to.be.equal(".chkmouse");
+        });
         it("Should return a completion on an instruction", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();

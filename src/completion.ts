@@ -17,7 +17,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
     }
     public async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionItem[]> {
         let completions = new Array<vscode.CompletionItem>();
-        const range = document.getWordRangeAtPosition(position);
+        let range = document.getWordRangeAtPosition(position);
         const line = document.lineAt(position.line);
         const text = line.text;
         let lastChar = "";
@@ -26,6 +26,13 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         }
         const asmLine = new ASMLine(text, line);
         if (range) {
+            // Extend range to include leading dot
+            if (line.text.charAt(range.start.character -1) === '.') {
+                range = new vscode.Range(
+                    new vscode.Position(range.start.line, range.start.character - 1),
+                    range.end
+                )
+            }
             const word = document.getText(range);
             const isInComment = (range.intersection(asmLine.commentRange) !== undefined);
             const isInInstruction = (range.intersection(asmLine.instructionRange) !== undefined);
@@ -63,12 +70,24 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                         completions = await this.provideCompletionForIncludes(asmLine, document, position);
                     } else {
                         // In the current symbols
+                        const labels: Map<string, string | undefined> = this.definitionHandler.findLabelStartingWith(word);
+                        for (const [label, value] of labels.entries()) {
+                            if (!labelsAdded.includes(label)) {
+                                const kind = vscode.CompletionItemKind.Function;
+                                const completion = new vscode.CompletionItem(label, kind);
+                                completion.detail = value;
+                                completion.range = { replacing: range, inserting: range }
+                                completions.push(completion);
+                                labelsAdded.push(label);
+                            }
+                        }
                         const variables: Map<string, string | undefined> = this.definitionHandler.findVariableStartingWith(word);
                         for (const [variable, value] of variables.entries()) {
                             if (!labelsAdded.includes(variable)) {
                                 const kind = vscode.CompletionItemKind.Variable;
                                 const completion = new vscode.CompletionItem(variable, kind);
                                 completion.detail = value;
+                                completion.range = { replacing: range, inserting: range }
                                 completions.push(completion);
                             }
                         }
