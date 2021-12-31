@@ -74,6 +74,17 @@ describe("Documentation Tests", function () {
             }
         });
     });
+    context("Hover directive file parsing", function () {
+        it("Should read the file correctly", async function () {
+            const manager = documentationManger.directivesManager;
+            expect(manager.getCount()).to.be.equal(98);
+            let documentation = await manager.getDirectiveByName("SECTION");
+            expect(documentation).to.not.be.undefined;
+            if (documentation) {
+                expect(documentation.name).to.be.equal("section");
+            }
+        });
+    });
     context("Hover register file parsing", function () {
         it("Should read the files correctly", async function () {
             const manager = documentationManger.registersManager;
