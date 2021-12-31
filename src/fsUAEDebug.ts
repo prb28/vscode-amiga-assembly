@@ -60,11 +60,11 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 
 export class FsUAEDebugSession extends DebugSession implements DebugVariableResolver {
     /** prefix for register variables */
-    protected static readonly PREFIX_REGISTERS = "registers_";
+    public static readonly PREFIX_REGISTERS = "registers_";
     /** prefix for segments variables */
-    protected static readonly PREFIX_SEGMENTS = "segments_";
+    public static readonly PREFIX_SEGMENTS = "segments_";
     /** prefix for symbols variables */
-    protected static readonly PREFIX_SYMBOLS = "symbols_";
+    public static readonly PREFIX_SYMBOLS = "symbols_";
 
     /** Timeout of the mutex */
     protected static readonly MUTEX_TIMEOUT = 100000;
@@ -164,6 +164,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.debugDisassembledManager = new DebugDisassembledManager(gdbProxy, capstone, this);
         this.breakpointManager = new BreakpointManager(this.gdbProxy, this.debugDisassembledManager);
         this.breakpointManager.setMutexTimeout(1000);
+    }
+
+    /**
+     * Returns the breakpoint manager (for tests)
+     * @return the breakpoint manager
+     */
+    public getBreakpointManager(): BreakpointManager {
+        return this.breakpointManager;
     }
 
     /**

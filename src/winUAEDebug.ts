@@ -96,9 +96,9 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
     }
 
     protected async dataBreakpointInfoRequest(response: DebugProtocol.DataBreakpointInfoResponse, args: DebugProtocol.DataBreakpointInfoArguments): Promise<void> {
-        if (args.variablesReference && args.name) {
+        if (args.variablesReference !== undefined && args.name) {
             const id = this.variableHandles.get(args.variablesReference);
-            if (id !== null && (id.startsWith(WinUAEDebugSession.PREFIX_SYMBOLS) || id.startsWith(WinUAEDebugSession.PREFIX_REGISTERS))) {
+            if (id && (id.startsWith(WinUAEDebugSession.PREFIX_SYMBOLS) || id.startsWith(WinUAEDebugSession.PREFIX_REGISTERS))) {
                 const variableName = args.name;
                 const displayValue = await this.getVariableAsDisplayed(variableName);
                 this.breakpointManager.populateDataBreakpointInfoResponseBody(response, variableName, displayValue, id.startsWith(WinUAEDebugSession.PREFIX_REGISTERS));
