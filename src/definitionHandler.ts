@@ -436,12 +436,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
      * @param word Word to search
      * @return labels found.
      */
-    findLabelStartingWith(word: string): Map<string, string | undefined> {
-        const values = new Map<string, string | undefined>();
+    findLabelStartingWith(word: string): Map<string, Symbol> {
+        const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
         for (const [key, value] of this.labels.entries()) {
             if (key.toUpperCase().startsWith(upper)) {
-                values.set(key, value.getValue());
+                values.set(key, value);
             }
         }
         return values;

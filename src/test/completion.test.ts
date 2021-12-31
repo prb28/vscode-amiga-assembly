@@ -56,6 +56,7 @@ describe("Completion Tests", function () {
             const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.not.be.undefined;
             const elm = results[0];
+            expect(elm.detail).to.be.equal("lib exec.OldOpenLibrary()");
             expect(elm.label).to.be.equal("OldOpenLibrary");
         });
         it("Should return a completion on a register", async function () {
@@ -67,6 +68,7 @@ describe("Completion Tests", function () {
             const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.not.be.undefined;
             const elm = results[0];
+            expect(elm.detail).to.be.equal("hardware $01C");
             expect(elm.label).to.be.equal("INTENAR");
         });
         it("Should return a completion on a variable", async function () {
@@ -78,6 +80,7 @@ describe("Completion Tests", function () {
             const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.not.be.undefined;
             const elm = results[0];
+            expect(elm.detail).to.be.equal("W/2");
             expect(elm.label).to.be.equal("MY_W_VAR");
         });
         it("Should return a completion on a label", async function () {
@@ -89,6 +92,7 @@ describe("Completion Tests", function () {
             const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.not.be.undefined;
             const elm = results[0];
+            expect(elm.detail).to.be.equal("label tutorial.s:100");
             expect(elm.label).to.be.equal("Main");
         });
         it("Should return a completion on a local label", async function () {
@@ -100,6 +104,7 @@ describe("Completion Tests", function () {
             const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             expect(results).to.not.be.undefined;
             const elm = results[0];
+            expect(elm.detail).to.be.equal("label tutorial.s:127");
             expect(elm.label).to.be.equal(".chkmouse");
         });
         it("Should return a completion on an instruction", async function () {
@@ -112,6 +117,8 @@ describe("Completion Tests", function () {
             expect(results.length).to.be.equal(5);
             const elm = results[0];
             expect(elm.label).to.be.equal("move");
+            expect(elm.detail).to.be.equal("instruction");
+            expect((elm.documentation as vscode.MarkdownString).value).to.contain("# MOVE");
         });
         it("Should return a completion on a directive", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
@@ -122,6 +129,8 @@ describe("Completion Tests", function () {
             const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             const elm = results[0];
             expect(elm.label).to.be.equal("section");
+            expect(elm.detail).to.be.equal("directive");
+            expect((elm.documentation as vscode.MarkdownString).value).to.contain("# SECTION");
         });
         it("Should not return a completion on an instruction after .", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
