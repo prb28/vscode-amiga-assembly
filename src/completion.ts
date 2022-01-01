@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DocumentationManager, DocumentationType } from './documentation';
+import { DocumentationManager, DocumentationType, isDocumentationLazy } from './documentation';
 import { M68kDefinitionHandler } from './definitionHandler';
 import { ASMLine } from './parser';
 import { M68kLanguage } from './language';
@@ -51,15 +51,27 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                                 continue;
                             } else {
                                 if (value.type === DocumentationType.REGISTER) {
+                                    if (word[0] === word[0].toLowerCase()) {
+                                        label = label.toLowerCase()
+                                    }
                                     kind = vscode.CompletionItemKind.Variable;
                                 } else if (word.startsWith("_LVO")) {
                                     label = "_LVO" + label;
                                 }
                             }
-                        } else if (!isMnemonic) {
-                            continue;
+                        } else {
+                            if (!isMnemonic) {
+                                continue;
+                            }
+                            if (word[0] === word[0].toUpperCase()) {
+                                label = label.toUpperCase()
+                            }
+                        }
+                        if (isDocumentationLazy(value)) {
+                            await value.loadDescription();
                         }
                         const completion = new vscode.CompletionItem(label, kind);
+                        completion.detail = value.detail;
                         completion.documentation = new vscode.MarkdownString(value.description);
                         completions.push(completion);
                         labelsAdded.push(label);
@@ -71,12 +83,14 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                         completions = await this.provideCompletionForIncludes(asmLine, document, position);
                     } else {
                         // In the current symbols
-                        const labels: Map<string, string | undefined> = this.definitionHandler.findLabelStartingWith(word);
-                        for (const [label, value] of labels.entries()) {
+                        const labels = this.definitionHandler.findLabelStartingWith(word);
+                        for (const [label, symbol] of labels.entries()) {
                             if (!labelsAdded.includes(label)) {
                                 const kind = vscode.CompletionItemKind.Function;
                                 const completion = new vscode.CompletionItem(label, kind);
-                                completion.detail = value;
+                                const filename = symbol.getFile().getUri().path.split("/").pop();
+                                const line = symbol.getRange().start.line;
+                                completion.detail =  "label " + filename + ":" + line;
                                 completion.range = { replacing: range, inserting: range }
                                 completions.push(completion);
                                 labelsAdded.push(label);
@@ -98,10 +112,12 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         } else if ((lastChar === ".") && asmLine.instructionRange.contains(position.translate(undefined, -1))) {
             const localRange = document.getWordRangeAtPosition(position.translate(undefined, -1));
             const word = document.getText(localRange);
-            const extensions = this.language.getExtensions(word);
+            const extensions = this.language.getExtensions(word.toLowerCase());
+            const isUpper = word === word.toUpperCase();
             if (extensions) {
-                for (const ext of extensions) {
-                    const completion = new vscode.CompletionItem(ext, vscode.CompletionItemKind.Unit);
+                for (let ext of extensions) {
+                    const text = isUpper ? ext.toUpperCase() : ext;
+                    const completion = new vscode.CompletionItem(text, vscode.CompletionItemKind.Unit);
                     completions.push(completion);
                 }
             }
