@@ -12,6 +12,7 @@ export enum DocumentationType {
 export class DocumentationElement {
     name = "";
     description = "";
+    detail = "";
     type: DocumentationType = DocumentationType.UNKNOWN;
 }
 
@@ -137,10 +138,18 @@ export class DocumentationDirectivesManager extends DocumentationMDFileFolderMan
     }
 }
 
+export interface DocumentationLazy {
+    loadDescription(): Promise<void>;
+}
+
+export function isDocumentationLazy (el: any): el is DocumentationLazy {
+    return (el as DocumentationLazy).loadDescription !== undefined;
+}
+
 /**
  * Class representing an instruction documentation
  */
-export class DocumentationInstruction extends DocumentationElement {
+export class DocumentationInstruction extends DocumentationElement implements DocumentationLazy {
     filename: string;
     parentDir: string;
     loaded: boolean;
@@ -156,6 +165,7 @@ export class DocumentationInstruction extends DocumentationElement {
         this.name = name;
         this.filename = filename;
         this.description = "";
+        this.detail = "instruction";
         this.parentDir = parentDir;
         this.type = DocumentationType.INSTRUCTION;
     }
@@ -189,6 +199,7 @@ export class DocumentationDirective extends DocumentationInstruction {
     constructor(name: string, parentDir: string, filename: string) {
         super(name, parentDir, filename);
         this.type = DocumentationType.DIRECTIVE;
+        this.detail = "directive";
     }
 }
 
@@ -258,7 +269,7 @@ export class DocumentationRegistersManager extends DocumentationMDFileFolderMana
 /**
  * Class representing a register
  */
-export class DocumentationRegister extends DocumentationElement {
+export class DocumentationRegister extends DocumentationElement implements DocumentationLazy {
     filename: string;
     loaded: boolean;
     address: string;
@@ -272,6 +283,7 @@ export class DocumentationRegister extends DocumentationElement {
         super();
         this.loaded = false;
         this.address = address;
+        this.detail = "hardware $" + address.replace(/^DFF/, '');
         this.name = name;
         this.filename = filename;
         this.description = "";
@@ -385,6 +397,7 @@ export class DocumentationLibraryFunction extends DocumentationElement {
     constructor(libraryName: string, name: string, description: string, fileProxy: FileProxy) {
         super();
         this.libraryName = libraryName;
+        this.detail = `lib ${libraryName}.${name}()`;
         this.name = name;
         this.description = description;
         this.fileProxy = fileProxy;
