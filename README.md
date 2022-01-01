@@ -9,7 +9,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ![Debug](images/debug.gif)
 
 ## New in 1.1
-- Memory read/write/readwrite watch breakpoint on WinUAE
+- Memory read/write/readwrite watch breakpoint on WinUAE [wiki details](https://github.com/prb28/vscode-amiga-assembly/wiki/Debugging-emulator#add-a-memory-watch-breakpoint-on-winuae)
 - Completion improvements
 - Add documentation for compiler directives
 - Extension compressed with webpack (faster loading time)
