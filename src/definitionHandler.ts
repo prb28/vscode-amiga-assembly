@@ -13,6 +13,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     private referredSymbols = new Map<string, Map<string, Array<Symbol>>>();
     private variables = new Map<string, Symbol>();
     private labels = new Map<string, Symbol>();
+    private macros = new Map<string, Symbol>();
     private sortedVariablesNames = new Array<string>();
 
     public async provideDocumentSymbols(document: TextDocument, token: CancellationToken): Promise<SymbolInformation[]> {
@@ -230,6 +231,8 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         if (file === undefined) {
             file = new SymbolFile(uri);
             this.files.set(uri.fsPath, file);
+        } else {
+            this.clearSymbolsForFile(file);
         }
         if (document) {
             file.readDocument(document);
@@ -271,7 +274,20 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             const s = symbol[i];
             this.labels.set(s.getLabel(), s);
         }
+        symbol = file.getMacros();
+        for (let i = 0; i < symbol.length; i++) {
+            const s = symbol[i];
+            this.macros.set(s.getLabel(), s);
+        }
         return file;
+    }
+
+    public deleteFile(uri: Uri) {
+        let file = this.files.get(uri.fsPath);
+        if (file !== undefined) {
+            this.clearSymbolsForFile(file);
+            this.files.delete(uri.fsPath);
+        }
     }
 
     public getVariableValue(variable: string): string | undefined {
@@ -280,6 +296,22 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             return v.getValue();
         }
         return undefined;
+    }
+
+    private clearSymbolsForFile(file: SymbolFile): void {
+        const symbolMaps = [
+            this.definedSymbols,
+            this.variables,
+            this.labels,
+            this.macros
+        ];
+        symbolMaps.forEach(map => {
+            map.forEach((value, key) => {
+                if (value.getFile() === file) {
+                    map.delete(key);
+                }
+            });
+        });
     }
 
     private evaluateVariableFormula(variable: string): string | undefined {
@@ -440,6 +472,22 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
         for (const [key, value] of this.labels.entries()) {
+            if (key.toUpperCase().startsWith(upper)) {
+                values.set(key, value);
+            }
+        }
+        return values;
+    }
+
+    /**
+     * Find all the macros starting by word
+     * @param word Word to search
+     * @return labels found.
+     */
+    findMacroStartingWith(word: string): Map<string, Symbol> {
+        const values = new Map<string, Symbol>();
+        const upper = word.toUpperCase();
+        for (const [key, value] of this.macros.entries()) {
             if (key.toUpperCase().startsWith(upper)) {
                 values.set(key, value);
             }

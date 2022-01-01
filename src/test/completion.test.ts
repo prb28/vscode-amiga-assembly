@@ -154,6 +154,17 @@ describe("Completion Tests", function () {
             expect(elm.detail).to.be.equal("directive");
             expect((elm.documentation as vscode.MarkdownString).value).to.contain("# SECTION");
         });
+        it("Should return a completion on a macro", async function () {
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const document = new DummyTextDocument();
+            const position: Position = new Position(0, 4);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine(" mac");
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const elm = results.find(e => e.label === "macro1")!;
+            expect(elm).to.not.be.empty;
+            expect(elm.detail).to.be.equal("macro");
+        });
         it("Should not return a completion on an instruction after .", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();

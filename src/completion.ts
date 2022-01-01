@@ -107,6 +107,17 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                             }
                         }
                     }
+                } else {
+                    const macros = this.definitionHandler.findMacroStartingWith(word);
+                    for (const [label] of macros.entries()) {
+                        if (!labelsAdded.includes(label)) {
+                            const kind = vscode.CompletionItemKind.Function;
+                            const completion = new vscode.CompletionItem(label, kind);
+                            completion.detail =  "macro";
+                            completions.push(completion);
+                            labelsAdded.push(label);
+                        }
+                    }
                 }
             }
         } else if ((lastChar === ".") && asmLine.instructionRange.contains(position.translate(undefined, -1))) {

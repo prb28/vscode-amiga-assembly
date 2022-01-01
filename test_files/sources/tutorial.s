@@ -19,7 +19,7 @@
 
            INCDIR     include
            INCLUDE    "hw.i"
- 
+
 ;******************************************************************	
 ;* Constantes
 ;******************************************************************	
@@ -403,3 +403,13 @@ BlankEnd:
            SECTION    MyDemoBSS,BSS_C                                            ; allocation au runtime
 Screen:
            ds.b       BPLSIZE
+
+; <name> MACRO
+macro1   MACRO
+           move.w d0,d1
+           endm
+
+; MACRO <name>
+           MACRO      macro2
+           move.w d0,d1
+           endm
