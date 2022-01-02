@@ -37,4 +37,54 @@ describe("Symbols reader Tests", function () {
         expect(sf.getIncludeDir()).to.be.equal("include");
         expect(sf.getIncludedFiles()[0].getLabel()).to.be.eql("hw.i");
     });
+
+    context("comment docs", () => {
+        const COMMENTS_SOURCE = Path.join(PROJECT_ROOT, 'test_files', 'comment-docs.s');
+        let symbolFile: SymbolFile;
+
+        before(async () => {
+            const sf = new SymbolFile(Uri.file(COMMENTS_SOURCE));
+            symbolFile = await sf.readFile();
+        });
+
+        it("Should parse a label with no comments", () => {
+            const symbol = symbolFile.getLabels().find(l => l.getLabel() === "LabelNone")!;
+            expect(symbol?.getCommentBlock()).to.be.empty;
+        });
+
+        it("Should parse a label with comment on same line", () => {
+            const symbol = symbolFile.getLabels().find(l => l.getLabel() === "LabelSameLine")!;
+            expect(symbol?.getCommentBlock()).to.equal("Same line example");
+        });
+
+        it("Should parse a label with comments before symbol", () => {
+            const symbol = symbolFile.getLabels().find(l => l.getLabel() === "LabelBefore")!;
+            expect(symbol?.getCommentBlock()).to.equal("Before example\n\nLorem ispum dolor\nSit amet");
+        });
+
+        it("Should parse a label with comments after symbol", () => {
+            const symbol = symbolFile.getLabels().find(l => l.getLabel() === "LabelAfter")!;
+            expect(symbol?.getCommentBlock()).to.equal("After example\n\nLorem ispum dolor\nSit amet");
+        });
+
+        it("Should parse a label with comments both before and after symbol", () => {
+            const symbol = symbolFile.getLabels().find(l => l.getLabel() === "LabelBoth")!;
+            expect(symbol?.getCommentBlock()).to.equal("Before/after example\nLorem ispum dolor\nSit amet");
+        });
+
+        it("Should parse a label with star style comments", () => {
+            const symbol = symbolFile.getLabels().find(l => l.getLabel() === "LabelStar")!;
+            expect(symbol?.getCommentBlock()).to.equal("Star example\n\nLorem ispum dolor\nSit amet");
+        });
+
+        it("Should parse a macro with comments", () => {
+            const symbol = symbolFile.getMacros().find(l => l.getLabel() === "MacroExample")!;
+            expect(symbol?.getCommentBlock()).to.equal("Macro example\n\nLorem ispum dolor\nSit amet");
+        });
+
+        it("Should parse a variable with comments", () => {
+            const symbol = symbolFile.getVariables().find(l => l.getLabel() === "VAR_EXAMPLE")!;
+            expect(symbol?.getCommentBlock()).to.equal("Variable example");
+        });
+    });
 });

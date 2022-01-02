@@ -4,6 +4,7 @@ import { ASMLine } from './parser';
 
 export class SymbolFile {
     private uri: Uri;
+    private document: TextDocument | null = null;
     private definedSymbols = new Array<Symbol>();
     private referredSymbols = new Array<Symbol>();
     private variables = new Array<Symbol>();
@@ -27,6 +28,7 @@ export class SymbolFile {
 
     public readDocument(document: TextDocument): void {
         this.clear();
+        this.document = document;
         let lastLabel: Symbol | null = null;
         const labelsBeforeRts = Array<Symbol>();
         for (let i = 0; i < document.lineCount; i++) {
@@ -146,6 +148,9 @@ export class SymbolFile {
     public getIncludedFiles(): Array<Symbol> {
         return this.includedFiles;
     }
+    public getDocument(): TextDocument | null {
+        return this.document;
+    }
 }
 
 export class Symbol {
@@ -154,6 +159,7 @@ export class Symbol {
     private range: Range;
     private value?: string;
     private parent = "";
+    private commentBlock: string | null = null;
     constructor(label: string, file: SymbolFile, range: Range, value?: string) {
         this.label = label;
         this.file = file;
@@ -181,5 +187,39 @@ export class Symbol {
     }
     public setParent(parent: string): void {
         this.parent = parent;
+    }
+    public getCommentBlock(): string {
+        if (this.commentBlock === null) {
+            const commentLines: string[] = [];
+            const doc = this.file.getDocument();
+            if (doc) {
+                const line = this.range.start.line;
+                // Current line comment:
+                const currentLine = doc.lineAt(line).text;
+                const currentLineMatch = currentLine.match(/;\s?(.*)/);
+                if (currentLineMatch) {
+                    commentLines.push(currentLineMatch[1].trim());
+                } else {
+                    // Preceding line comments:
+                    for (let i = line - 1; i >= 0; i--) {
+                        const match = doc.lineAt(i).text.match(/^[;\*]+-*\s?(.*)/);
+                        if (!match) {
+                            break;
+                        }
+                        commentLines.unshift(match[1].trim());
+                    }
+                    // Subsequent line comments:
+                    for (let i = line + 1; i < doc.lineCount; i++) {
+                        const match = doc.lineAt(i).text.match(/^[;\*]+-*\s?(.*)/);
+                        if (!match) {
+                            break;
+                        }
+                        commentLines.push(match[1].trim());
+                    }
+                }
+            }
+            this.commentBlock = commentLines.join("\n").trim();
+        }
+        return this.commentBlock;
     }
 }

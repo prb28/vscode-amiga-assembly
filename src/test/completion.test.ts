@@ -105,6 +105,7 @@ describe("Completion Tests", function () {
             const elm = results[0];
             expect(elm.detail).to.be.equal("W/2");
             expect(elm.label).to.be.equal("MY_W_VAR");
+            expect(elm.documentation).to.be.equal("My W Var");
         });
         it("Should return a completion on a label", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
@@ -117,6 +118,7 @@ describe("Completion Tests", function () {
             const elm = results[0];
             expect(elm.detail).to.be.equal("label tutorial.s:100");
             expect(elm.label).to.be.equal("Main");
+            expect(elm.documentation).to.be.contain("Main - Fonction principale\nFonction principale du traitement\n\nI/O: None");
         });
         it("Should return a completion on a local label in scope", async function () {
             const document = new DummyTextDocument();
@@ -198,6 +200,7 @@ describe("Completion Tests", function () {
             const elm = results.find(e => e.label === "macro1")!;
             expect(elm).to.not.be.empty;
             expect(elm.detail).to.be.equal("macro");
+            expect(elm.documentation).to.contain("<name> MACRO");
         });
         it("Should not return a completion on an instruction after .", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());

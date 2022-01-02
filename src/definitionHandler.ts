@@ -448,16 +448,26 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     /**
+     * Get variable by name
+     * @param name Name of variable
+     * @returns Variable symbol
+     */
+    getVariableByName(name: string): Symbol | undefined {
+        return this.variables.get(name);
+    }
+
+
+    /**
      * Find all the variables starting by word
      * @param word Word to search
      * @return variables found.
      */
-    findVariableStartingWith(word: string): Map<string, string | undefined> {
-        const values = new Map<string, string | undefined>();
+    findVariableStartingWith(word: string): Map<string, Symbol> {
+        const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
         for (const [key, value] of this.variables.entries()) {
             if (key.toUpperCase().startsWith(upper)) {
-                values.set(key, value.getValue());
+                values.set(key, value);
             }
         }
         return values;

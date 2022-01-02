@@ -34,7 +34,7 @@ LOGOMARGIN  equ (W-LOGOW)/2
 LOGOBPL     equ LOGOW/8
 LOGOBWIDTH  equ LOGOBPL*3
 LOGOSTARTV  equ $4c
-MY_W_VAR      = W/2
+MY_W_VAR      = W/2                                                              ; My W Var
 MY_H_VAR      = W*MY_W_VAR/2*(MY_W_VAR)
 ******************************************************************	
 

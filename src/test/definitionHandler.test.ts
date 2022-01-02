@@ -71,8 +71,8 @@ describe("Definition handler Tests", function () {
             it("Should find the variables beginning by a work", async () => {
                 const vars = dHnd.findVariableStartingWith("MY_");
                 expect(vars.size).to.be.equal(2);
-                expect(vars.get("MY_W_VAR")).to.be.equal("W/2");
-                expect(vars.get("MY_H_VAR")).to.be.equal("W*MY_W_VAR/2*(MY_W_VAR)");
+                expect(vars.get("MY_W_VAR")?.getValue()).to.be.equal("W/2");
+                expect(vars.get("MY_H_VAR")?.getValue()).to.be.equal("W*MY_W_VAR/2*(MY_W_VAR)");
             });
         });
         context("Opened document", function () {
