@@ -45,7 +45,7 @@
         "onWebviewPanel:iffView",
         "workspaceContains:**/*.{s,S,asm,ASM}"
     ],
-    "main": "./dist/extension",
+    "main": "./dist/extension.js",
     "contributes": {
         "languages": [
             {
