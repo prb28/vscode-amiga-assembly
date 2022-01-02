@@ -20,6 +20,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
      * @return Hover results
      */
     public async provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | null> {
+        const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
         const configuration = ConfigurationHelper.getDefaultConfiguration(document.uri);
         const numberDisplayFormat = ConfigurationHelper.retrieveStringProperty(configuration, 'hover.numberDisplayFormat', M68kHoverProvider.DEFAULT_NUMBER_DISPLAY_FORMAT);
         // Parse the line
@@ -32,30 +33,50 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             if (idx > 0) {
                 keyInstruction = keyInstruction.substr(0, idx);
             }
-            console.log({ keyInstruction })
             if (!token.isCancellationRequested) {
-                const [hoverInstruction, hoverDirective] = await Promise.all([
+                const [hoverInstruction, hoverDirective, macro] = await Promise.all([
                     this.documentationManager.getInstruction(keyInstruction.toUpperCase()),
-                    this.documentationManager.getDirective(keyInstruction.toUpperCase())
+                    this.documentationManager.getDirective(keyInstruction.toUpperCase()),
+                    definitionHandler.getMacroByName(keyInstruction)
                 ]);
                 const hoverElement = hoverInstruction || hoverDirective
                 if (hoverElement) {
                     const hoverRendered = this.renderHover(hoverElement);
                     return new vscode.Hover(hoverRendered, asmLine.instructionRange);
+                } else if (macro) {
+                    const hoverRendered = new vscode.MarkdownString("macro");
+                    return new vscode.Hover(hoverRendered, asmLine.instructionRange);
                 }
             }
         } else if (asmLine.dataRange && asmLine.dataRange.contains(position)) {
             // get the word
-            const word = document.getWordRangeAtPosition(position);
+            let word = document.getWordRangeAtPosition(position);
             if (word) {
+                // Extend range to include leading dot
+                if (line.text.charAt(word.start.character -1) === '.') {
+                    word = new vscode.Range(
+                        new vscode.Position(word.start.line, word.start.character - 1),
+                        word.end
+                    )
+                }
                 // Text to search in
                 let text = document.getText(word);
                 let rendered = await this.renderWordHover(text.toUpperCase());
                 let renderedLine2 = null;
                 if (!rendered) {
-                    // Translate to get the control character
-                    text = document.getText(word.with(word.start.translate(undefined, -1)));
-                    rendered = this.renderNumberForWord(text, numberDisplayFormat);
+                    const [cpuReg, label] = await Promise.all([
+                        this.documentationManager.getCpuRegister(text.toUpperCase()),
+                        definitionHandler.getLabelByName(text)
+                    ]);
+                    if (cpuReg) {
+                        rendered = new vscode.MarkdownString(cpuReg.detail);
+                    } else if (label) {
+                        rendered = new vscode.MarkdownString("label");
+                    } else {
+                        // Translate to get the control character
+                        text = document.getText(word.with(word.start.translate(undefined, -1)));
+                        rendered = this.renderNumberForWord(text, numberDisplayFormat);
+                    }
                 } else {
                     // Is there a value next to the register ?
                     const elms = asmLine.data.split(",");
@@ -68,7 +89,6 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                         } else if (elm.match(/[$#%@+-/*]([\dA-Z_]+)/i)) {
                             // Try to evaluate a formula
                             // Evaluate the formula value
-                            const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                             try {
                                 const value = await definitionHandler.evaluateFormula(elm);
                                 if (value || value === 0) {

@@ -50,7 +50,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                             if (isMnemonic) {
                                 continue;
                             } else {
-                                if (value.type === DocumentationType.REGISTER) {
+                                if (value.type === DocumentationType.REGISTER || value.type === DocumentationType.CPU_REGISTER) {
                                     if (word[0] === word[0].toLowerCase()) {
                                         label = label.toLowerCase()
                                     }
@@ -105,6 +105,17 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                                 completion.range = { replacing: range, inserting: range }
                                 completions.push(completion);
                             }
+                        }
+                    }
+                } else {
+                    const macros = this.definitionHandler.findMacroStartingWith(word);
+                    for (const [label] of macros.entries()) {
+                        if (!labelsAdded.includes(label)) {
+                            const kind = vscode.CompletionItemKind.Function;
+                            const completion = new vscode.CompletionItem(label, kind);
+                            completion.detail =  "macro";
+                            completions.push(completion);
+                            labelsAdded.push(label);
                         }
                     }
                 }

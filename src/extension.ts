@@ -148,6 +148,8 @@ export class ExtensionState {
                 M68kDefinitionHandler.SOURCE_FILES_GLOB
             );
             this.watcher.onDidChange(ExtensionState.scanFileWatcher);
+            this.watcher.onDidCreate(ExtensionState.scanFileWatcher);
+            this.watcher.onDidDelete(ExtensionState.deleteFileWatcher);
         }
         return this.definitionHandler;
     }
@@ -155,6 +157,12 @@ export class ExtensionState {
         const dHandler = ExtensionState.getCurrent().getDefinitionHandler();
         if (dHandler) {
             dHandler.scanFile(uri);
+        }
+    }
+    public static deleteFileWatcher(uri: vscode.Uri): void {
+        const dHandler = ExtensionState.getCurrent().getDefinitionHandler();
+        if (dHandler) {
+            dHandler.deleteFile(uri);
         }
     }
     public getDataGenerator(): DataGeneratorCodeLensProvider {
