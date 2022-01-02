@@ -182,4 +182,16 @@ export class StringUtils {
         const buffer = Buffer.from(StringUtils.hexToBytes(hexString));
         return buffer.toString('base64');
     }
+
+    /**
+     * Compare two strings.
+     * @param a First string
+     * @param b Second string
+     * @return <0 if a>b, 0 if a=b, >0 if a<b
+     */
+    static compareStringsLowerCase(a: [string, number], b: [string, number]): number {
+        const aL = a[0].toLowerCase();
+        const bL = b[0].toLowerCase();
+        return aL > bL ? 1 : (aL < bL ? -1 : 0);
+    }
 }

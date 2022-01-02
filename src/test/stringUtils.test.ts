@@ -42,4 +42,12 @@ describe("String Utils tests", function () {
         expect(StringUtils.padEnd(str, 5, "X")).to.be.equal("abcXX");
         expect(StringUtils.padStart(str, 5, "X")).to.be.equal("XXabc");
     });
+    it("Should compare two string in lowercase", function () {
+        expect(StringUtils.compareStringsLowerCase(["a", 1], ["b", 2])).to.be.equal(-1);
+        expect(StringUtils.compareStringsLowerCase(["ax", 1], ["ba", 2])).to.be.equal(-1);
+        expect(StringUtils.compareStringsLowerCase(["b", 1], ["A", 2])).to.be.equal(1);
+        expect(StringUtils.compareStringsLowerCase(["zb", 1], ["zA", 2])).to.be.equal(1);
+        expect(StringUtils.compareStringsLowerCase(["a", 213], ["A", 5])).to.be.equal(0);
+        expect(StringUtils.compareStringsLowerCase(["Ab", 213], ["AB", 5])).to.be.equal(0);
+    });
 });

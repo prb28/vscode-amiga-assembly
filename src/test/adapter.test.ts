@@ -581,9 +581,9 @@ describe('Node Debug Adapter', () => {
 			expect(vSegmentsResponse.body.variables[0].value).to.be.equal("0x0000000a {size:10}");
 			expect(vSegmentsResponse.body.variables[0].variablesReference).to.be.equal(0);
 			const vSymbolsResponse = await dc.variablesRequest(<DebugProtocol.VariablesArguments>{ variablesReference: responseScopes.body.scopes[2].variablesReference });
-			expect(vSymbolsResponse.body.variables[0].name).to.be.equal("init");
+			expect(vSymbolsResponse.body.variables[0].name).to.be.equal("checkmouse");
 			expect(vSymbolsResponse.body.variables[0].type).to.be.equal("symbol");
-			expect(vSymbolsResponse.body.variables[0].value).to.be.equal("0x0000000a");
+			expect(vSymbolsResponse.body.variables[0].value).to.be.equal("0x0000015c");
 			expect(vSymbolsResponse.body.variables[0].variablesReference).to.be.equal(0);
 		});
 		it('should retrieve a copper stack', async function () {

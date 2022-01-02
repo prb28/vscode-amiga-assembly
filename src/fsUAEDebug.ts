@@ -772,7 +772,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                     this.sendResponse(response);
                 } else if (id.startsWith(FsUAEDebugSession.PREFIX_SYMBOLS)) {
                     const variablesArray = new Array<DebugProtocol.Variable>();
-                    for (const entry of Array.from(this.symbolsMap.entries())) {
+                    const symbolsList = Array.from(this.symbolsMap.entries()).sort(StringUtils.compareStringsLowerCase);
+                    for (const entry of symbolsList) {
                         const key = entry[0];
                         const value = entry[1];
                         const variableName = key;
