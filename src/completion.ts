@@ -50,7 +50,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                             if (isMnemonic) {
                                 continue;
                             } else {
-                                if (value.type === DocumentationType.REGISTER) {
+                                if (value.type === DocumentationType.REGISTER || value.type === DocumentationType.CPU_REGISTER) {
                                     if (word[0] === word[0].toLowerCase()) {
                                         label = label.toLowerCase()
                                     }

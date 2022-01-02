@@ -468,6 +468,15 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
      * @param word Word to search
      * @return labels found.
      */
+    getLabelByName(name: string): Symbol | undefined {
+        return this.labels.get(name);
+    }
+
+    /**
+     * Find all the labels starting by word
+     * @param word Word to search
+     * @return labels found.
+     */
     findLabelStartingWith(word: string): Map<string, Symbol> {
         const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
