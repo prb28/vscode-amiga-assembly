@@ -8,6 +8,7 @@ export class SymbolFile {
     private referredSymbols = new Array<Symbol>();
     private variables = new Array<Symbol>();
     private labels = new Array<Symbol>();
+    private macros = new Array<Symbol>();
     private subroutines = new Array<string>();
     private dcLabel = new Array<Symbol>();
     private includeDir = "";
@@ -43,16 +44,25 @@ export class SymbolFile {
                     }
                 }
             }
+            const instruct = asmLine.instruction.toLowerCase();
             if (asmLine.label.length > 0) {
                 const label = asmLine.label.replace(":", "");
                 const s = new Symbol(label, this, asmLine.labelRange);
-                this.labels.push(s);
-                lastLabel = s;
+                // Is this actually a macro definition in `<name> macro` syntax?
+                if (instruct.indexOf("macro") === 0) {
+                    this.macros.push(s);
+                } else {
+                    this.labels.push(s);
+                    lastLabel = s;
+                }
+            } else if (instruct.indexOf("macro") === 0) {
+                // Handle ` macro <name>` syntax
+                const s = new Symbol(asmLine.data, this, asmLine.dataRange);
+                this.macros.push(s);
             }
             if (asmLine.variable.length > 0) {
                 this.variables.push(new Symbol(asmLine.variable, this, asmLine.variableRange, asmLine.value));
             }
-            const instruct = asmLine.instruction.toLowerCase();
             if (instruct.indexOf("bsr") >= 0) {
                 this.subroutines.push(asmLine.data);
             } else if ((instruct.indexOf("dc") === 0) || (instruct.indexOf("ds") === 0) || (instruct.indexOf("incbin") === 0)) {
@@ -93,6 +103,7 @@ export class SymbolFile {
         this.referredSymbols = new Array<Symbol>();
         this.variables = new Array<Symbol>();
         this.labels = new Array<Symbol>();
+        this.macros = new Array<Symbol>();
         this.subroutines = new Array<string>();
         this.dcLabel = new Array<Symbol>();
         this.includeDir = "";
@@ -113,6 +124,9 @@ export class SymbolFile {
     }
     public getLabels(): Array<Symbol> {
         return this.labels;
+    }
+    public getMacros(): Array<Symbol> {
+        return this.macros;
     }
     public getSubRoutines(): Array<string> {
         return this.subroutines;

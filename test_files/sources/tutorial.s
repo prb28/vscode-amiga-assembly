@@ -19,10 +19,10 @@
 
            INCDIR     include
            INCLUDE    "hw.i"
- 
-;******************************************************************	
+
+;******************************************************************
 ;* Constantes
-;******************************************************************	
+;******************************************************************
 COPPER_WAIT equ $FFFE
 W           equ 320
 H           equ 256
@@ -403,3 +403,13 @@ BlankEnd:
            SECTION    MyDemoBSS,BSS_C                                            ; allocation au runtime
 Screen:
            ds.b       BPLSIZE
+
+; <name> MACRO
+macro1   MACRO
+           move.w d0,d1
+           endm
+
+; MACRO <name>
+           MACRO      macro2
+           move.w d0,d1
+           endm

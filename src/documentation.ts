@@ -7,6 +7,7 @@ export enum DocumentationType {
     INSTRUCTION,
     DIRECTIVE,
     REGISTER,
+    CPU_REGISTER,
     FUNCTION
 }
 export class DocumentationElement {
@@ -320,6 +321,61 @@ export class DocumentationRegister extends DocumentationElement implements Docum
 }
 
 /**
+ * Class representing a CPU data register
+ */
+export class DocumentationCpuRegister extends DocumentationElement {
+    /**
+     * Constructor
+     * @param name Name
+     */
+    constructor(name: string, detail: string) {
+        super();
+        this.name = name;
+        this.detail = detail;
+        this.description = "";
+        this.type = DocumentationType.CPU_REGISTER;
+    }
+}
+
+
+/**
+ * Class to manage the CPU register documentation
+ */
+export class DocumentationCpuRegistersManager {
+    public registers = new Map<string, DocumentationCpuRegister>();
+
+    constructor() {
+        for (let i = 0; i < 8; i++) {
+            this.registers.set('A' + i, new DocumentationCpuRegister('A' + i, 'address register'));
+            this.registers.set('D' + i, new DocumentationCpuRegister('D' + i, 'data register'));
+            this.registers.set('FP' + i, new DocumentationCpuRegister('FP' + i, 'floating point register'));
+        }
+        this.registers.set('PC', new DocumentationCpuRegister('PC', 'program counter'));
+        this.registers.set('SP', new DocumentationCpuRegister('SP', 'stack pointer'));
+        this.registers.set('VBR', new DocumentationCpuRegister('VBR', 'vector base register'));
+    }
+
+    /**
+     * Retrieves an register by it's name
+     * @param name Name of the instruction
+     */
+    public async getRegisterByName(name: string): Promise<DocumentationCpuRegister | undefined> {
+        return this.registers.get(name);
+    }
+
+    /**
+     * Iterate on all entries by name.
+     */
+    public entriesByName(): IterableIterator<[string, DocumentationCpuRegister]> {
+        return this.registers.entries();
+    }
+
+    public getCount(): number {
+        return this.registers.size;
+    }
+}
+
+/**
  * Class to manage the libraries documentation
  */
 export class DocumentationLibraryManager {
@@ -413,12 +469,14 @@ export class DocumentationManager {
     instructionsManager: DocumentationInstructionsManager;
     directivesManager: DocumentationDirectivesManager;
     registersManager: DocumentationRegistersManager;
+    cpuRegistersManager: DocumentationCpuRegistersManager;
     libraryManager: DocumentationLibraryManager;
     relevantKeywordsMap: Map<string, Array<DocumentationElement>>;
     constructor(extensionPath: string) {
         this.instructionsManager = new DocumentationInstructionsManager(extensionPath);
         this.directivesManager = new DocumentationDirectivesManager(extensionPath);
         this.registersManager = new DocumentationRegistersManager(extensionPath);
+        this.cpuRegistersManager = new DocumentationCpuRegistersManager();
         this.libraryManager = new DocumentationLibraryManager(extensionPath);
         this.relevantKeywordsMap = new Map<string, Array<DocumentationElement>>();
     }
@@ -436,6 +494,9 @@ export class DocumentationManager {
                 this.addRelevantKeywordElements(key, value);
             }
             for (const [key, value] of this.registersManager.entriesByName()) {
+                this.addRelevantKeywordElements(key, value);
+            }
+            for (const [key, value] of this.cpuRegistersManager.entriesByName()) {
                 this.addRelevantKeywordElements(key, value);
             }
             for (const [key, value] of this.libraryManager.functionsByName.entries()) {
@@ -467,6 +528,9 @@ export class DocumentationManager {
     }
     public getRegisterByName(name: string): Promise<DocumentationRegister | undefined> {
         return this.registersManager.getRegistersByName(name);
+    }
+    public getCpuRegister(name: string): Promise<DocumentationCpuRegister | undefined> {
+        return this.cpuRegistersManager.getRegisterByName(name);
     }
     public getFunction(functionName: string): Promise<DocumentationLibraryFunction | undefined> {
         return this.libraryManager.loadDescription(functionName);

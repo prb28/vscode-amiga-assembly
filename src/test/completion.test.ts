@@ -59,7 +59,7 @@ describe("Completion Tests", function () {
             expect(elm.detail).to.be.equal("lib exec.OldOpenLibrary()");
             expect(elm.label).to.be.equal("OldOpenLibrary");
         });
-        it("Should return a completion on a register", async function () {
+        it("Should return a completion on a custom register", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 11);
@@ -81,6 +81,18 @@ describe("Completion Tests", function () {
             expect(results).to.not.be.undefined;
             const elm = results[0];
             expect(elm.label).to.be.equal("intenar");
+        });
+        it("Should return a completion on a cpu register", async function () {
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const document = new DummyTextDocument();
+            const position: Position = new Position(0, 11);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine(" move.l d");
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            expect(results).to.not.be.undefined;
+            const elm = results.find(e => e.label === "d0")!;
+            expect(elm).to.not.be.empty;
+            expect(elm.detail).to.be.equal("data register");
         });
         it("Should return a completion on a variable", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
@@ -153,6 +165,17 @@ describe("Completion Tests", function () {
             expect(elm.label).to.be.equal("section");
             expect(elm.detail).to.be.equal("directive");
             expect((elm.documentation as vscode.MarkdownString).value).to.contain("# SECTION");
+        });
+        it("Should return a completion on a macro", async function () {
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const document = new DummyTextDocument();
+            const position: Position = new Position(0, 4);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine(" mac");
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const elm = results.find(e => e.label === "macro1")!;
+            expect(elm).to.not.be.empty;
+            expect(elm.detail).to.be.equal("macro");
         });
         it("Should not return a completion on an instruction after .", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
