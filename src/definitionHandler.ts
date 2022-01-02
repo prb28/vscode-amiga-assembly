@@ -464,9 +464,9 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     /**
-     * Find all the labels starting by word
-     * @param word Word to search
-     * @return labels found.
+     * Get label by name
+     * @param name Name of label
+     * @returns Label symbol
      */
     getLabelByName(name: string): Symbol | undefined {
         return this.labels.get(name);
@@ -486,6 +486,15 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             }
         }
         return values;
+    }
+
+    /**
+     * Get macro by name
+     * @param name Name of macro
+     * @returns Macro symbol
+     */
+    getMacroByName(name: string): Symbol | undefined {
+        return this.macros.get(name);
     }
 
     /**
