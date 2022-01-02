@@ -26,14 +26,23 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         }
         const asmLine = new ASMLine(text, line);
         if (range) {
-            // Extend range to include leading dot
-            if (line.text.charAt(range.start.character -1) === '.') {
+            let prefix = "";
+            if (line.text.charAt(range.start.character -1) === ".") {
+                // Extend range to include leading dot
                 range = new vscode.Range(
                     new vscode.Position(range.start.line, range.start.character - 1),
                     range.end
-                )
+                );
+                // Find previous global label
+                for (let i = range.start.line; i >= 0; i--) {
+                    const match = document.lineAt(i).text.match(/^(\w+)\b/);
+                    if (match) {
+                        prefix = match[0];
+                        break;
+                    }
+                }
             }
-            const word = document.getText(range);
+            const word = prefix + document.getText(range);
             const isInComment = (range.intersection(asmLine.commentRange) !== undefined);
             const isInInstruction = (range.intersection(asmLine.instructionRange) !== undefined);
             if ((!isInComment) && ((!isInInstruction) || ((lastChar !== ".") && (!asmLine.instruction.includes("."))))) {
@@ -87,7 +96,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                         for (const [label, symbol] of labels.entries()) {
                             if (!labelsAdded.includes(label)) {
                                 const kind = vscode.CompletionItemKind.Function;
-                                const completion = new vscode.CompletionItem(label, kind);
+                                const completion = new vscode.CompletionItem(label.substring(prefix.length), kind);
                                 const filename = symbol.getFile().getUri().path.split("/").pop();
                                 const line = symbol.getRange().start.line;
                                 completion.detail =  "label " + filename + ":" + line;

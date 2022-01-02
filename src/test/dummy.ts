@@ -17,8 +17,7 @@ export class DummyTextDocument implements TextDocument {
     lineCount = 0;
     lines = new Array<TextLine>();
     public addLine(line: string) {
-        const newLine = new DummyTextLine(line);
-        newLine.lineNumber = this.lineCount;
+        const newLine = new DummyTextLine(line, this.lineCount);
         this.lines.push(newLine);
         this.lineCount += 1;
     }
@@ -145,9 +144,10 @@ export class DummyTextLine implements TextLine {
     rangeIncludingLineBreak: Range = new Range(new Position(0, 0), new Position(0, 1));
     firstNonWhitespaceCharacterIndex = 1;
     isEmptyOrWhitespace = false;
-    constructor(text: string) {
+    constructor(text: string, lineNumber: number = 0) {
         this.text = text;
-        this.range = new Range(new Position(0, 0), new Position(0, text.length));
+        this.range = new Range(new Position(lineNumber, 0), new Position(lineNumber, text.length));
+        this.lineNumber = lineNumber;
     }
 }
 

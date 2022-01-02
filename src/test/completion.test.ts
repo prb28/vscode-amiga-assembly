@@ -118,17 +118,39 @@ describe("Completion Tests", function () {
             expect(elm.detail).to.be.equal("label tutorial.s:100");
             expect(elm.label).to.be.equal("Main");
         });
-        it("Should return a completion on a local label", async function () {
-            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+        it("Should return a completion on a local label in scope", async function () {
             const document = new DummyTextDocument();
-            const position: Position = new Position(0, 11);
+            const position: Position = new Position(1, 8);
             const tokenEmitter = new CancellationTokenSource();
-            document.addLine(" jsr .chkmo");
+            document.addLine("Example:");
+            document.addLine(" jsr .examp");
+            document.addLine(".example");
+            const definitionHandler = state.getDefinitionHandler();
+            await definitionHandler.scanFile(document.uri, document);
+            const cp = new M68kCompletionItemProvider(documentationManager, definitionHandler, await state.getLanguage());
+
             const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
-            expect(results).to.not.be.undefined;
-            const elm = results[0];
-            expect(elm.detail).to.be.equal("label tutorial.s:127");
-            expect(elm.label).to.be.equal(".chkmouse");
+            expect(results).to.not.be.empty;
+            const elm = results.find(n => n.label === '.example')!;
+            expect(elm).to.not.be.empty;
+            expect(elm.detail).to.be.equal("label file.s:2");
+            expect(elm.label).to.be.equal(".example");
+        });
+        it("Should not return a completion on a local label out of scope", async function () {
+            const document = new DummyTextDocument();
+            const position: Position = new Position(1, 8);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine("Example:");
+            document.addLine(" jsr .examp");
+            document.addLine("Example2:");
+            document.addLine(".example");
+            const definitionHandler = state.getDefinitionHandler();
+            await definitionHandler.scanFile(document.uri, document);
+            const cp = new M68kCompletionItemProvider(documentationManager, definitionHandler, await state.getLanguage());
+
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const elm = results.find(n => n.label === '.example')!;
+            expect(elm).to.be.undefined;
         });
         it("Should return a completion on an instruction", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());

@@ -51,16 +51,25 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         } else if (asmLine.dataRange && asmLine.dataRange.contains(position)) {
             // get the word
             let word = document.getWordRangeAtPosition(position);
+            let prefix = "";
             if (word) {
-                // Extend range to include leading dot
                 if (line.text.charAt(word.start.character -1) === '.') {
+                    // Extend range to include leading dot
                     word = new vscode.Range(
                         new vscode.Position(word.start.line, word.start.character - 1),
                         word.end
                     )
+                    // Find previous global label
+                    for (let i = word.start.line; i >= 0; i--) {
+                        const match = document.lineAt(i).text.match(/^(\w+)\b/);
+                        if (match) {
+                            prefix = match[0];
+                            break;
+                        }
+                    }
                 }
                 // Text to search in
-                let text = document.getText(word);
+                let text = prefix + document.getText(word);
                 let rendered = await this.renderWordHover(text.toUpperCase());
                 let renderedLine2 = null;
                 if (!rendered) {
