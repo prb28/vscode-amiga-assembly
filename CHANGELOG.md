@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### [1.1.0] - 
+### [1.1.x] - 
+- [Feat #186](https://github.com/prb28/vscode-amiga-assembly/pull/186) *grahambates* Handle local labels correctly
+- [Feat #185](https://github.com/prb28/vscode-amiga-assembly/pull/185) *grahambates* Macro and CPU register completions 
 - [Feat #184](https://github.com/prb28/vscode-amiga-assembly/pull/184) *grahambates* Completion improvements
 - [Feat #183](https://github.com/prb28/vscode-amiga-assembly/pull/183) *grahambates* Preserve case of completions
 - [Feat #182](https://github.com/prb28/vscode-amiga-assembly/pull/182) *grahambates* Add documentation for compiler directives
