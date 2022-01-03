@@ -46,14 +46,20 @@ export class SymbolFile {
             }
             const instruct = asmLine.instruction.toLowerCase();
             if (asmLine.label.length > 0) {
-                const label = asmLine.label.replace(":", "");
+                let label = asmLine.label.replace(":", "");
+                const isLocal = label.indexOf(".") === 0;
+                if (isLocal) {
+                    label = lastLabel?.getLabel() + label;
+                }
                 const s = new Symbol(label, this, asmLine.labelRange);
                 // Is this actually a macro definition in `<name> macro` syntax?
                 if (instruct.indexOf("macro") === 0) {
                     this.macros.push(s);
                 } else {
                     this.labels.push(s);
-                    lastLabel = s;
+                    if (!isLocal) {
+                        lastLabel = s;
+                    }
                 }
             } else if (instruct.indexOf("macro") === 0) {
                 // Handle ` macro <name>` syntax
