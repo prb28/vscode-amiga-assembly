@@ -194,4 +194,23 @@ export class StringUtils {
         const bL = b[0].toLowerCase();
         return aL > bL ? 1 : (aL < bL ? -1 : 0);
     }
+
+    /**
+     * Parse string which may be quoted with single or double quotes.
+     * @param quotedString 
+     * @returns value of string
+     */
+    public static parseQuoted(quotedString: string): string {
+        let start = 0;
+        let end = quotedString.length;
+        const first = quotedString[start];
+        const last = quotedString[quotedString.length - 1];
+        if (first === '"' || first === "'") {
+            start++;
+            if (last === first) {
+                end--;
+            }
+        }
+        return quotedString.substring(start, end);
+    }
 }

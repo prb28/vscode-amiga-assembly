@@ -25,6 +25,10 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
             lastChar = line.text.charAt(position.character - 1);
         }
         const asmLine = new ASMLine(text, line);
+
+        const inst = asmLine.instruction.toLowerCase();
+        const isInclude = inst === "include" || inst === "incbin" || inst === "incdir";
+        
         if (range) {
             let prefix = "";
             if (line.text.charAt(range.start.character -1) === ".") {
@@ -88,7 +92,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                 }
                 if (isInData) {
                     // Look for the include instruction
-                    if (asmLine.instruction.toLowerCase() === "include") {
+                    if (isInclude) {
                         completions = await this.provideCompletionForIncludes(asmLine, document, position);
                     } else {
                         // In the current symbols
@@ -141,73 +145,87 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                     completions.push(completion);
                 }
             }
+        } else if (isInclude) {
+            // Allow completion with no input to list all files
+            completions = await this.provideCompletionForIncludes(asmLine, document, position);
         }
         return completions;
     }
 
-    private async retrieveIncludeDir(documentFile: FileProxy): Promise<FileProxy | undefined> {
-        let includeDir: FileProxy | undefined;
-        if (await documentFile.exists()) {
-            const includeDirInSource = await this.definitionHandler.getIncludeDir(documentFile.getUri());
-            if (includeDirInSource) {
-                let incDirFile = new FileProxy(Uri.file(includeDirInSource));
-                if (await incDirFile.exists() && await incDirFile.isDirectory()) {
-                    includeDir = incDirFile
-                } else {
-                    // May be a relative path to the current
-                    incDirFile = documentFile.getParent().getRelativeFile(includeDirInSource);
-                    if (await incDirFile.exists() && await incDirFile.isDirectory()) {
-                        includeDir = incDirFile
-                    }
-                }
-            }
-        }
-        return includeDir;
-    }
-
-    private async provideCompletionsForFile(asmLine: ASMLine, documentFile: FileProxy, parent: FileProxy, position: vscode.Position, checkAbsolute: boolean): Promise<vscode.CompletionItem[]> {
-        const documentPath = FileProxy.normalize(documentFile.getPath());
+    private async provideCompletionsForFile(asmLine: ASMLine, document: vscode.TextDocument, incDir: FileProxy, position: vscode.Position): Promise<vscode.CompletionItem[]> {
+        const documentPath = FileProxy.normalize(document.fileName);
         const completions = new Array<vscode.CompletionItem>();
+
+        // Extend range for replacement where path component contains word boundaries
+        let range = document.getWordRangeAtPosition(position);
+        const line = document.lineAt(position.line);
+        if (range) {
+            let start = range.start.character;
+            while (start > 0 && !line.text.charAt(start - 1).match(/[\s'"/]/)) {
+                start--;
+            }
+            range = new vscode.Range(
+                new vscode.Position(range.start.line, start),
+                range.end
+            );
+        }
+        
         // filtering the path from the include
         let length = position.character - asmLine.dataRange.start.character;
         let start = 0;
-        if (asmLine.data.startsWith("\"")) {
+        if (asmLine.data.startsWith('"') || asmLine.data.startsWith("'")) {
             start = 1;
             length--;
         }
+
+        let prefix = "";
         let filter: string | undefined;
         if (length > 0) {
             const typedPath = asmLine.data.substr(start, length);
-            // check for an absolute path
-            let newParent = new FileProxy(Uri.file(FileProxy.normalize(typedPath)));
-            if (checkAbsolute && await newParent.exists() && await newParent.isDirectory()) {
-                parent = newParent;
+
+            // Get absolute or relative path
+            const isAbsolute = typedPath.indexOf('/') === 0 || typedPath.charAt(1) === ":";
+            let newParent = isAbsolute
+                ? new FileProxy(Uri.file(FileProxy.normalize(typedPath)))
+                : incDir.getRelativeFile(typedPath);
+
+            if (await newParent.exists() && await newParent.isDirectory()) {
+                // Typed path is a directory:
+                incDir = newParent;
+                // Ensure parent path ends with slash
+                if (!typedPath.endsWith("/")) {
+                    prefix = "/";
+                }
             } else {
-                // check for a relative path
-                newParent = parent.getRelativeFile(typedPath);
-                if (await newParent.exists() && await newParent.isDirectory()) {
-                    parent = newParent;
-                } else {
-                    // check for relative path with filename
-                    const normalizedTypedPath = FileProxy.normalize(typedPath);
-                    const pos = normalizedTypedPath.lastIndexOf("/");
-                    if (pos > 0) {
-                        const subPath = normalizedTypedPath.substr(0, pos);
-                        newParent = parent.getRelativeFile(subPath);
-                        if (await newParent.exists() && await newParent.isDirectory()) {
-                            parent = newParent;
-                            filter = normalizedTypedPath.substr(pos + 1);
-                        } else {
-                            filter = typedPath;
-                        }
+                const normalizedTypedPath = FileProxy.normalize(typedPath);
+                const pos = normalizedTypedPath.lastIndexOf("/");
+                if (pos !== -1) {
+                    // Typed path is a partial filename in a containing directory
+                    const subPath = normalizedTypedPath.substr(0, Math.max(pos, 1));
+                    // Get containing directory
+                    newParent = isAbsolute
+                        ? new FileProxy(Uri.file(FileProxy.normalize(subPath)))
+                        : incDir.getRelativeFile(subPath);
+                    if (await newParent.exists() && await newParent.isDirectory()) {
+                        incDir = newParent;
+                        filter = normalizedTypedPath.substr(pos + 1);
                     } else {
-                        filter = typedPath;
+                        // containing directory doesn't exist
+                        return [];
                     }
+                } else {
+                    // Typed path is partial filename with no containing directory
+                    filter = typedPath;
                 }
             }
         }
-        for (const f of await parent.listFiles()) {
-            if (documentPath !== FileProxy.normalize(f.getPath()) && (!filter || f.getName().startsWith(filter)) && !f.getName().startsWith(".")) {
+
+        // Add completions for matching files in directory
+        for (const f of await incDir.listFiles()) {
+            const isCurrentDoc = documentPath === FileProxy.normalize(f.getPath());
+            const isHiddenFile = f.getName().startsWith(".");
+            const matchesFilter = !filter || f.getName().startsWith(filter);
+            if (!isCurrentDoc && !isHiddenFile && matchesFilter) {
                 // search for the files
                 let kind = vscode.CompletionItemKind.File;
                 let name = f.getName();
@@ -219,6 +237,10 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                 }
                 const completion = new vscode.CompletionItem(name, kind);
                 completion.sortText = sortText;
+                completion.insertText = prefix + name;
+                if (range) {
+                    completion.range = { replacing: range, inserting: range }
+                }
                 completions.push(completion);
             }
         }
@@ -235,13 +257,23 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
 
     private async provideCompletionForIncludes(asmLine: ASMLine, document: vscode.TextDocument, position: vscode.Position): Promise<vscode.CompletionItem[]> {
         let completions = new Array<vscode.CompletionItem>();
-        // current folder of the document
-        const fp = new FileProxy(document.uri);
-        const includeDir: FileProxy | undefined = await this.retrieveIncludeDir(fp);
-        if (includeDir) {
-            completions = await this.provideCompletionsForFile(asmLine, fp, includeDir, position, false);
+        // Root folder of worksapce
+        let rootUri = vscode.workspace.getWorkspaceFolder(document.uri)?.uri
+        if (!rootUri) {
+            // Default to containing folder of file if not in workspace
+            rootUri = new FileProxy(document.uri).getParent().getUri();
+        } 
+        const rootDir = new FileProxy(rootUri);
+        // In root dir:
+        completions = completions.concat(await this.provideCompletionsForFile(asmLine, document, rootDir, position));
+        // In any of the include dirs:
+        for (const [incPath] of this.definitionHandler.getIncludeDirs().entries()) {
+            let incDir = rootDir.getRelativeFile(incPath);
+            if (await incDir.exists() && await incDir.isDirectory()) {
+                const items = await this.provideCompletionsForFile(asmLine, document, incDir, position);
+                completions = completions.concat(items);
+            }
         }
-        completions = completions.concat(await this.provideCompletionsForFile(asmLine, fp, fp.getParent(), position, true));
         return this.cleanAndReorder(completions);
     }
 }

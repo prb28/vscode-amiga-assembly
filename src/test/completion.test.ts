@@ -276,73 +276,149 @@ describe("Completion Tests", function () {
             elm = results[0];
             expect(elm.label.toString().toUpperCase()).to.be.equal("INTENAR");
         });
-        context("Opened document", function () {
-            let sourceDocument: vscode.TextDocument;
-            before(async function () {
-                sourceDocument = await vscode.workspace.openTextDocument(Uri.file(MAIN_SOURCE));
+        context("Include completions", function () {
+            const includeSrc = Path.join(PROJECT_ROOT, 'test_files', 'include-dirs', 'example.s');
+            const token = (new CancellationTokenSource()).token;
+            let completionProvider: M68kCompletionItemProvider;
+            let defHandler: M68kDefinitionHandler;
+            let doc: DummyTextDocument;
+            beforeEach(async function () {
+                defHandler = new M68kDefinitionHandler();
+                completionProvider = new M68kCompletionItemProvider(documentationManager, defHandler, await state.getLanguage());
+                doc = new DummyTextDocument();
+                doc.uri = Uri.file(includeSrc);
             });
-            it("Should return a completion for an include file", async function () {
-                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
-                const position = new Position(20, 23);
-                const tokenEmitter = new CancellationTokenSource();
-                const results = await cp.provideCompletionItems(sourceDocument, position, tokenEmitter.token);
-                expect(results.length).to.be.equal(3);
-                expect(results[0].label).to.be.equal("hardware/");
-                expect(results[1].label).to.be.equal("hw.i");
-                expect(results[2].label).to.be.equal("include/");
+            it("Should return file completions for include", async function () {
+                doc.addLine("  include \"in");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                expect(results).to.have.lengthOf(2);
+                expect(results[0].label).to.be.equal("inc-r1.i");
+                expect(results[1].label).to.be.equal("inc-r2.i");
             });
-            it("Should return a completion for an include file in a directory", async function () {
-                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
-                const document = new DummyTextDocument();
-                document.uri = Uri.file(Path.join(SOURCES_DIR, 'dummy.s'));
-                const tokenEmitter = new CancellationTokenSource();
-                document.addLine("  include \"include/\"");
-                const results = await cp.provideCompletionItems(document, new Position(0, 19), tokenEmitter.token);
-                expect(results.length).to.be.equal(2);
-                expect(results[0].label).to.be.equal("hardware/");
-                expect(results[1].label).to.be.equal("hw.i");
+            it("Should return file completions filtered by prefix", async function () {
+                doc.addLine("  include \"inc-r2");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 18), token);
+                expect(results).to.have.lengthOf(1);
+                expect(results[0].label).to.be.equal("inc-r2.i");
             });
-            it("Should return a completion for an include file filtering the beginning", async function () {
-                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
-                const document = new DummyTextDocument();
-                document.uri = Uri.file(Path.join(SOURCES_DIR, 'dummy.s'));
-                const tokenEmitter = new CancellationTokenSource();
-                document.addLine("  include \"include/\"");
-                let results = await cp.provideCompletionItems(document, new Position(0, 15), tokenEmitter.token);
-                expect(results.length).to.be.equal(1);
-                expect(results[0].label).to.be.equal("include/");
-                document.addLine("  include \"include/hw\"");
-                results = await cp.provideCompletionItems(document, new Position(1, 21), tokenEmitter.token);
-                expect(results.length).to.be.equal(1);
-                expect(results[0].label).to.be.equal("hw.i");
+            it("Should return all file completions for include with no input text", async function () {
+                doc.addLine("  include \"");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                expect(results).to.have.lengthOf(7);
             });
-            it("Should return a completion for an include file with an incdir instruction", async function () {
-                const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
-                const document = new DummyTextDocument();
-                document.uri = Uri.file(MAIN_SOURCE);
-                const tokenEmitter = new CancellationTokenSource();
-                document.addLine("  incdir include");
-                document.addLine("  include \"ha");
-                let results = await cp.provideCompletionItems(document, new Position(1, 14), tokenEmitter.token);
-                expect(results.length).to.be.equal(1);
-                expect(results[0].label).to.be.equal("hardware/");
-                document.addLine("  include \"hardware/cu");
-                results = await cp.provideCompletionItems(document, new Position(2, 23), tokenEmitter.token);
-                expect(results.length).to.be.equal(1);
-                expect(results[0].label).to.be.equal("custom.i");
+            it("Should return all file completions for directory", async function () {
+                doc.addLine("  include \"b-dir/");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 19), token);
+                expect(results).to.have.lengthOf(2);
+                expect(results[0].label).to.be.equal("inc-b1.i");
+                expect(results[1].label).to.be.equal("inc-b2.i");
+            });
+            it("Should return directory completions for include", async function () {
+                doc.addLine("  include \"a-");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                expect(results).to.have.lengthOf(1);
+                expect(results[0].label).to.be.equal("a-dir/");
+            });
+            it("Should return completions for incbin", async function () {
+                doc.addLine("  incbin \"in");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                expect(results).to.have.lengthOf(2);
+            });
+            it("Should return completions for incdir", async function () {
+                doc.addLine("  incdir \"in");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                expect(results).to.have.lengthOf(2);
+            });
+            it("Should return completions with ./ path", async function () {
+                doc.addLine("  include \"./in");
+                await defHandler.scanFile(doc.uri, doc);
+                let results = await completionProvider.provideCompletionItems(doc, new Position(0, 16), token);
+                expect(results).to.have.lengthOf(2);
+            });
+            it("Should return completions with ../ path", async function () {
+                doc.addLine("  include \"../in");
+                await defHandler.scanFile(doc.uri, doc);
+                let results = await completionProvider.provideCompletionItems(doc, new Position(0, 17), token);
+                expect(results).to.have.lengthOf(1);
+                expect(results[0].label).to.be.equal("include-dirs/");
+            });
+            it("Should return a completions with an incdir instruction", async function () {
+                doc.addLine("  incdir \"a-dir\"");
+                doc.addLine("  include \"in");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(1, 14), token);
+                expect(results).to.have.lengthOf(5);
+                expect(results[0].label).to.be.equal("inc-r1.i");
+                expect(results[1].label).to.be.equal("inc-r2.i");
+                expect(results[2].label).to.be.equal("inc-a1.i");
+                expect(results[3].label).to.be.equal("inc-a2.i");
+                expect(results[4].label).to.be.equal("inc-a3.i");
             });
             it("Should return a completion for an include file with an absolute path", async function () {
                 const absPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
                 const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
-                const document = new DummyTextDocument();
-                document.uri = Uri.file(MAIN_SOURCE);
                 const tokenEmitter = new CancellationTokenSource();
-                document.addLine(`  include "${absPath}`);
-                const results = await cp.provideCompletionItems(document, new Position(0, 12 + absPath.length), tokenEmitter.token);
+                doc.addLine(`  include "${absPath}`);
+                const results = await cp.provideCompletionItems(doc, new Position(0, 12 + absPath.length), tokenEmitter.token);
                 expect(results.length).to.be.equal(3);
                 expect(results[0].label).to.be.equal("fs-uae/");
                 expect(results[1].label).to.be.equal("gencop.s");
                 expect(results[2].label).to.be.equal("hello.c");
+            });
+            it("Should return a completions with mutliple incdir instructions", async function () {
+                doc.addLine("  incdir \"a-dir\"");
+                doc.addLine("  incdir \"b-dir\"");
+                doc.addLine("  include \"in");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(2, 14), token);
+                expect(results).to.have.lengthOf(7);
+                expect(results[0].label).to.be.equal("inc-r1.i");
+                expect(results[1].label).to.be.equal("inc-r2.i");
+                expect(results[2].label).to.be.equal("inc-a1.i");
+                expect(results[3].label).to.be.equal("inc-a2.i");
+                expect(results[4].label).to.be.equal("inc-a3.i");
+                expect(results[5].label).to.be.equal("inc-b1.i");
+                expect(results[6].label).to.be.equal("inc-b2.i");
+            });
+            it("Should use incdir instructions in other files", async function () {
+                const otherSrc = Path.join(PROJECT_ROOT, 'test_files', 'include-dirs', 'adds-c-dir.s');
+                await defHandler.scanFile(Uri.file(otherSrc));
+                doc.addLine("  include \"in");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                expect(results).to.have.lengthOf(3);
+                expect(results[0].label).to.be.equal("inc-r1.i");
+                expect(results[1].label).to.be.equal("inc-r2.i");
+                expect(results[2].label).to.be.equal("inc-c1.i");
+            });
+            it("Should handle single quotes", async function () {
+                doc.addLine("  incdir 'a-dir'");
+                doc.addLine("  incdir 'b-dir'");
+                doc.addLine("  include 'in");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(2, 14), token);
+                expect(results).to.have.lengthOf(7);
+            });
+            it("Should handle paths without quotes", async function () {
+                doc.addLine("  incdir a-dir");
+                doc.addLine("  incdir b-dir");
+                doc.addLine("  include in");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(2, 13), token);
+                expect(results).to.have.lengthOf(7);
+            });
+            it("Should adjust start for path segments contianing word boundaries", async function () {
+                doc.addLine("  include \"inc-r");
+                await defHandler.scanFile(doc.uri, doc);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 16), token);
+                expect((results[0].range as any).inserting.start.character).to.equal(10);
             });
         });
     });

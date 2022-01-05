@@ -19,10 +19,10 @@ describe("Symbols reader Tests", function () {
         const variables = symbolFile.getVariables();
         const labels = symbolFile.getLabels();
         const macros = symbolFile.getMacros();
-        expect(definedSymbols.length).to.be.equal(60);
+        expect(definedSymbols.length).to.be.equal(61);
         const referedSymbols = symbolFile.getReferredSymbols();
         expect(referedSymbols.length).to.be.equal(318);
-        const firstDefined = definedSymbols[1];
+        const firstDefined = definedSymbols[2];
         expect(firstDefined.getLabel()).to.be.equal("COPPER_WAIT");
         let count = 0;
         for (let i = 0; i < referedSymbols.length; i++) {
@@ -34,7 +34,7 @@ describe("Symbols reader Tests", function () {
         expect(variables.length).to.be.equal(18);
         expect(labels.length).to.be.equal(40);
         expect(macros.length).to.be.equal(2);
-        expect(sf.getIncludeDir()).to.be.equal("include");
+        expect(sf.getIncludeDirs()[0].getLabel()).to.be.eql("include");
         expect(sf.getIncludedFiles()[0].getLabel()).to.be.eql("hw.i");
     });
 });

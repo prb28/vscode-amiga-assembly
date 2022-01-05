@@ -50,4 +50,23 @@ describe("String Utils tests", function () {
         expect(StringUtils.compareStringsLowerCase(["a", 213], ["A", 5])).to.be.equal(0);
         expect(StringUtils.compareStringsLowerCase(["Ab", 213], ["AB", 5])).to.be.equal(0);
     });
+    describe("#parseQuoted()", function () {
+        it("Should remove double quotes", function () {
+            expect(StringUtils.parseQuoted('"example"')).to.be.equal("example");
+        });
+        it("Should remove single quotes", function () {
+            expect(StringUtils.parseQuoted("'example'")).to.be.equal("example");
+        });
+        it("Should remove unbalanced quotes", function () {
+            expect(StringUtils.parseQuoted('"example')).to.be.equal("example");
+            expect(StringUtils.parseQuoted("'example")).to.be.equal("example");
+        });
+        it("Should leave unquoted strings as-is", function () {
+            expect(StringUtils.parseQuoted("example")).to.be.equal("example");
+        })
+        it("Should leave quote symbols within string", function () {
+            expect(StringUtils.parseQuoted('"example\'s"')).to.be.equal("example's");
+            expect(StringUtils.parseQuoted("'example\"s'")).to.be.equal('example"s');
+        });
+    });
 });

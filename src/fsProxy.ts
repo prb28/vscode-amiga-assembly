@@ -214,7 +214,11 @@ export class FileProxy {
         if (normalizedRelativePath.indexOf(currentUriPath) === 0) {
             return new FileProxy(Uri.file(normalizedRelativePath), this.useDirectAccess);
         } else {
-            return new FileProxy(Uri.file(`${currentUriPath}/${normalizedRelativePath}`), this.useDirectAccess);
+            let prefix = currentUriPath;
+            if (!prefix.endsWith("/")) {
+                prefix += "/";
+            }
+            return new FileProxy(Uri.file(prefix + normalizedRelativePath), this.useDirectAccess);
         }
     }
 
