@@ -288,6 +288,18 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             const s = symbol[i];
             this.includeDirs.set(s.getLabel(), s);
         }
+
+        // Scan any new included files
+        const currentFile = new FileProxy(file.getUri());
+        for (const symbol of file.getIncludedFiles()) {
+            const includedFile = await this.resolveIncludedFile(currentFile, symbol.getLabel());
+            if (includedFile && !this.files.has(includedFile.getPath())) {
+                if (await includedFile.exists() && await includedFile.isFile()) {
+                    await this.scanFile(includedFile.getUri());
+                }
+            }
+        }
+
         return file;
     }
 
