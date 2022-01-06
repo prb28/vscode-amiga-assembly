@@ -4,7 +4,6 @@ import { M68kDefinitionHandler } from './definitionHandler';
 import { ASMLine } from './parser';
 import { M68kLanguage } from './language';
 import { FileProxy } from './fsProxy';
-import { Uri } from 'vscode';
 
 export class M68kCompletionItemProvider implements vscode.CompletionItemProvider {
     documentationManager: DocumentationManager;
@@ -184,10 +183,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
             const typedPath = asmLine.data.substr(start, length);
 
             // Get absolute or relative path
-            const isAbsolute = typedPath.indexOf('/') === 0 || typedPath.charAt(1) === ":";
-            let newParent = isAbsolute
-                ? new FileProxy(Uri.file(FileProxy.normalize(typedPath)))
-                : incDir.getRelativeFile(typedPath);
+            let newParent = incDir.getRelativeFile(typedPath);
 
             if (await newParent.exists() && await newParent.isDirectory()) {
                 // Typed path is a directory:
@@ -203,9 +199,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                     // Typed path is a partial filename in a containing directory
                     const subPath = normalizedTypedPath.substr(0, Math.max(pos, 1));
                     // Get containing directory
-                    newParent = isAbsolute
-                        ? new FileProxy(Uri.file(FileProxy.normalize(subPath)))
-                        : incDir.getRelativeFile(subPath);
+                    newParent = incDir.getRelativeFile(subPath);
                     if (await newParent.exists() && await newParent.isDirectory()) {
                         incDir = newParent;
                         filter = normalizedTypedPath.substr(pos + 1);
