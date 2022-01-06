@@ -152,6 +152,19 @@ describe("Completion Tests", function () {
             const elm = results.find(n => n.label === '.example')!;
             expect(elm).to.be.undefined;
         });
+        it("Should not return prefixed local labels", async function () {
+            const document = new DummyTextDocument();
+            const position: Position = new Position(2, 10);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine("Example:");
+            document.addLine(".example");
+            document.addLine(" jsr Exampl");
+            const definitionHandler = state.getDefinitionHandler();
+            await definitionHandler.scanFile(document.uri, document);
+            const cp = new M68kCompletionItemProvider(documentationManager, definitionHandler, await state.getLanguage());
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            expect(results).to.have.lengthOf(1);
+        });
         it("Should return a completion on an instruction", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
