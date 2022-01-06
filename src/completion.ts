@@ -94,9 +94,11 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                         // In the current symbols
                         const labels = this.definitionHandler.findLabelStartingWith(word);
                         for (const [label, symbol] of labels.entries()) {
-                            if (!labelsAdded.includes(label)) {
+                            const unPrefixed = label.substring(prefix.length);
+                            const isLocalFQ = unPrefixed.match(/.\./);
+                            if (!labelsAdded.includes(label) && !isLocalFQ) {
                                 const kind = vscode.CompletionItemKind.Function;
-                                const completion = new vscode.CompletionItem(label.substring(prefix.length), kind);
+                                const completion = new vscode.CompletionItem(unPrefixed, kind);
                                 const filename = symbol.getFile().getUri().path.split("/").pop();
                                 const line = symbol.getRange().start.line;
                                 completion.detail =  "label " + filename + ":" + line;
