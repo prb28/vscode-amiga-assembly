@@ -44,8 +44,16 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     const hoverRendered = this.renderHover(hoverElement);
                     return new vscode.Hover(hoverRendered, asmLine.instructionRange);
                 } else if (macro) {
-                    const hoverRendered = new vscode.MarkdownString("macro");
-                    return new vscode.Hover(hoverRendered, asmLine.instructionRange);
+                    const info = new vscode.MarkdownString();
+                    info.appendCodeblock("(macro) " + macro.getLabel());
+                    const contents = [info];
+                    const description = macro.getCommentBlock();
+                    if (description) {
+                        const renderedLine2 = new vscode.MarkdownString();
+                        renderedLine2.appendText(description);
+                        contents.push(renderedLine2);
+                    }
+                    return new vscode.Hover(contents, asmLine.instructionRange);
                 }
             }
         } else if (asmLine.dataRange && asmLine.dataRange.contains(position)) {
@@ -80,7 +88,16 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     if (cpuReg) {
                         rendered = new vscode.MarkdownString(cpuReg.detail);
                     } else if (label) {
-                        rendered = new vscode.MarkdownString("label");
+                        const info = new vscode.MarkdownString();
+                        info.appendCodeblock("(label) " + label.getLabel());
+                        const description = label.getCommentBlock();
+                        if (description) {
+                            rendered = new vscode.MarkdownString();
+                            rendered.appendText(description);
+                            renderedLine2 = info;
+                        } else {
+                            rendered = info
+                        }
                     } else {
                         // Translate to get the control character
                         text = document.getText(word.with(word.start.translate(undefined, -1)));
@@ -128,7 +145,15 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                             const value = await definitionHandler.evaluateVariable(variable);
                             const renderedNumber = this.renderNumber(value, numberDisplayFormat);
                             if (renderedNumber) {
-                                return new vscode.Hover(renderedNumber);
+                                const variable = definitionHandler.getVariableByName(document.getText(word));
+                                const description = variable?.getCommentBlock();
+                                if (description) {
+                                    rendered = new vscode.MarkdownString();
+                                    rendered.appendText(description);
+                                    return new vscode.Hover([renderedNumber, rendered]);
+                                } else {
+                                    return new vscode.Hover(renderedNumber);
+                                }
                             }
                         } catch (err) {
                             // nothing to do

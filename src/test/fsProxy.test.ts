@@ -176,7 +176,7 @@ describe("FsProxy test", function () {
         const include = "**/*.s";
         const exclude = "**/hw-exp.s";
         const files = await f.findFiles(include, exclude);
-        expect(files.length).to.be.equal(10);
+        expect(files.length).to.be.equal(9);
         let foundWrongFile = false;
         for (const fProxy of files) {
             if (fProxy.getUri().fsPath.indexOf("hw-exp.s") > 0) {
