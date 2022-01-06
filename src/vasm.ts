@@ -62,7 +62,7 @@ export class VASMCompiler {
     if (editor) {
       const conf = this.getConfiguration("vasm", vasmConf);
       if (this.mayCompile(conf)) {
-        await this.buildDocument({ ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION }, editor.document, true, logEmitter);
+        await this.buildDocument({ ...conf }, editor.document, true, logEmitter);
       } else {
         throw new Error("VASM compilation is disabled in the configuration");
       }
