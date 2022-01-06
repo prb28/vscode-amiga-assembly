@@ -204,18 +204,13 @@ export class FileProxy {
 
     /**
      * Creates a file with a relative path to the current uri
-     * @param relativePath relative path to be added
+     * @param filePath relative path to be added
      * @return A new file to the relative path
      */
-    public getRelativeFile(relativePath: string): FileProxy {
-        const normalizedRelativePath = FileProxy.normalize(relativePath);
-        const currentUriPath = FileProxy.normalize(this.uri.fsPath);
-        // Does the current uri contains child path ?
-        if (normalizedRelativePath.indexOf(currentUriPath) === 0) {
-            return new FileProxy(Uri.file(normalizedRelativePath), this.useDirectAccess);
-        } else {
-            return new FileProxy(Uri.file(`${currentUriPath}/${normalizedRelativePath}`), this.useDirectAccess);
-        }
+    public getRelativeFile(filePath: string): FileProxy {
+        const resolvedPath = path.resolve(this.uri.fsPath, filePath);
+        const normalizedPath = FileProxy.normalize(resolvedPath);
+        return new FileProxy(Uri.file(normalizedPath));
     }
 
     /**

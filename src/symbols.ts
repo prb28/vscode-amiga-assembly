@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { Range, Uri, workspace, TextDocument } from 'vscode';
 import { ASMLine } from './parser';
+import { StringUtils } from './stringUtils';
 
 export class SymbolFile {
     private uri: Uri;
@@ -11,7 +12,7 @@ export class SymbolFile {
     private macros = new Array<Symbol>();
     private subroutines = new Array<string>();
     private dcLabel = new Array<Symbol>();
-    private includeDir = "";
+    private includeDirs = new Array<Symbol>();
     private includedFiles = new Array<Symbol>();
 
     constructor(uri: Uri) {
@@ -80,9 +81,11 @@ export class SymbolFile {
                     labelsBeforeRts.push(lastLabel);
                 }
             } else if (instruct === "incdir") {
-                this.includeDir = asmLine.data.replace(/"/g, '');
+                const includeSymbol = new Symbol(StringUtils.parseQuoted(asmLine.data), this, asmLine.dataRange);
+                this.includeDirs.push(includeSymbol);
+                this.definedSymbols.push(includeSymbol);
             } else if (instruct === "include") {
-                const includeSymbol = new Symbol(asmLine.data.replace(/"/g, ''), this, asmLine.dataRange);
+                const includeSymbol = new Symbol(StringUtils.parseQuoted(asmLine.data), this, asmLine.dataRange);
                 this.includedFiles.push(includeSymbol);
                 this.definedSymbols.push(includeSymbol);
             }
@@ -112,7 +115,7 @@ export class SymbolFile {
         this.macros = new Array<Symbol>();
         this.subroutines = new Array<string>();
         this.dcLabel = new Array<Symbol>();
-        this.includeDir = "";
+        this.includeDirs = new Array<Symbol>();
         this.includedFiles = new Array<Symbol>();
     }
 
@@ -140,8 +143,8 @@ export class SymbolFile {
     public getDcLabels(): Array<Symbol> {
         return this.dcLabel;
     }
-    public getIncludeDir(): string {
-        return this.includeDir;
+    public getIncludeDirs(): Array<Symbol> {
+        return this.includeDirs;
     }
     public getIncludedFiles(): Array<Symbol> {
         return this.includedFiles;

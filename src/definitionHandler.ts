@@ -5,6 +5,7 @@ import { SymbolFile, Symbol } from './symbols';
 import { Calc } from './calc';
 import { ASMLine } from './parser';
 import { FileProxy } from './fsProxy';
+import { StringUtils } from './stringUtils';
 
 export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvider, DocumentSymbolProvider {
     static readonly SOURCE_FILES_GLOB = "**/*.{asm,s,i,ASM,S,I}";
@@ -14,6 +15,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     private variables = new Map<string, Symbol>();
     private labels = new Map<string, Symbol>();
     private macros = new Map<string, Symbol>();
+    private includeDirs = new Map<string, Symbol>();
     private sortedVariablesNames = new Array<string>();
 
     public async provideDocumentSymbols(document: TextDocument, token: CancellationToken): Promise<SymbolInformation[]> {
@@ -60,11 +62,13 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         const line = document.lineAt(position.line).text;
         const asmLine = new ASMLine(line);
         if (asmLine.instruction.toLowerCase() === "include") {
-            const data = asmLine.data.replace(/"/g, '');
+            const data = StringUtils.parseQuoted(asmLine.data);
             const s = this.definedSymbols.get(data);
             if (s !== undefined) {
-                const includedFileProxy = await this.resolveIncludedFile(new FileProxy(s.getFile().getUri()), s.getLabel(), await this.getIncludeDir(s.getFile().getUri()));
-                return new Location(includedFileProxy.getUri(), s.getRange());
+                const includedFileProxy = await this.resolveIncludedFile(new FileProxy(s.getFile().getUri()), s.getLabel());
+                if (includedFileProxy) {
+                    return new Location(includedFileProxy.getUri(), s.getRange());
+                }
             }
         }
         throw new Error("Definition not found");
@@ -279,6 +283,23 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             const s = symbol[i];
             this.macros.set(s.getLabel(), s);
         }
+        symbol = file.getIncludeDirs();
+        for (let i = 0; i < symbol.length; i++) {
+            const s = symbol[i];
+            this.includeDirs.set(s.getLabel(), s);
+        }
+
+        // Scan any new included files
+        const currentFile = new FileProxy(file.getUri());
+        for (const symbol of file.getIncludedFiles()) {
+            const includedFile = await this.resolveIncludedFile(currentFile, symbol.getLabel());
+            if (includedFile && !this.files.has(includedFile.getPath())) {
+                if (await includedFile.exists() && await includedFile.isFile()) {
+                    await this.scanFile(includedFile.getUri());
+                }
+            }
+        }
+
         return file;
     }
 
@@ -303,7 +324,8 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             this.definedSymbols,
             this.variables,
             this.labels,
-            this.macros
+            this.macros,
+            this.includeDirs
         ];
         symbolMaps.forEach(map => {
             map.forEach((value, key) => {
@@ -387,36 +409,26 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
      * Resolves an included file
      * @param currentPath Path of the current file
      * @param filename Filename to include
-     * @param includesPath includes patj=h
      * @returns Resolved file
      */
-    private async resolveIncludedFile(currentPath: FileProxy, filename: string, includesPath: string | null): Promise<FileProxy> {
-        let fp = new FileProxy(Uri.file(filename));
+    private async resolveIncludedFile(currentPath: FileProxy, filename: string): Promise<FileProxy|null> {
+        const rootUri = vscode.workspace.getWorkspaceFolder(currentPath.getUri())?.uri;
+        const root = rootUri ? new FileProxy(rootUri) : currentPath.getParent();
+        // Relative to root
+        let fp = root.getRelativeFile(filename);
         if (await fp.exists()) {
             return fp;
-        } else {
-            const parent = currentPath.getParent();
-            fp = parent.getRelativeFile(filename);
+        }
+        // Relative to each include dir
+        for (const [includePath] of this.includeDirs.entries()) {
+            const includeDir = root.getRelativeFile(includePath);
+            fp = includeDir.getRelativeFile(filename);
             if (await fp.exists()) {
                 return fp;
-            } else if (includesPath && includesPath.length > 0) {
-                const relativePath = includesPath + "/" + filename;
-                fp = new FileProxy(Uri.file(relativePath));
-                if (await fp.exists()) {
-                    return fp;
-                } else {
-                    fp = parent.getRelativeFile(relativePath);
-                    if (await fp.exists()) {
-                        return fp;
-                    } else {
-                        return new FileProxy(Uri.file(filename));
-                    }
-                }
-            } else {
-                return new FileProxy(Uri.file(filename));
-            }
-        }
-
+            } 
+        } 
+        // Could not resolve file
+        return null;
     }
 
     /**
@@ -425,26 +437,14 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     public async getIncludedFiles(uri: Uri): Promise<Array<string>> {
         const symbolFile = await this.scanFile(uri);
         const returnedFilenames = new Array<string>();
-        const includeDir = symbolFile.getIncludeDir();
+        const current = new FileProxy(uri);
         for (const fn of symbolFile.getIncludedFiles()) {
-            const current = new FileProxy(uri);
-            const fp = await this.resolveIncludedFile(current, fn.getLabel(), includeDir);
-            returnedFilenames.push(FileProxy.normalize(fp.getPath()));
+            const fp = await this.resolveIncludedFile(current, fn.getLabel());
+            if (fp) {
+                returnedFilenames.push(FileProxy.normalize(fp.getPath()));
+            }
         }
         return returnedFilenames;
-    }
-
-    /**
-     * Retrieves the include dir of a file
-     * @return included dir or null
-     */
-    public async getIncludeDir(uri: Uri): Promise<string | null> {
-        const symbolFile = await this.scanFile(uri);
-        const includeDir = symbolFile.getIncludeDir();
-        if (includeDir.length <= 0) {
-            return null;
-        }
-        return includeDir;
     }
 
     /**
@@ -511,6 +511,14 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             }
         }
         return values;
+    }
+
+    /**
+     * Get all include directories
+     * @returns include dir symbols
+     */
+    getIncludeDirs(): Map<string, Symbol> {
+        return this.includeDirs;
     }
 }
 
