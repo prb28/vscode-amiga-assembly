@@ -211,9 +211,22 @@ describe("Completion Tests", function () {
             document.addLine(" mac");
             const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
             const elm = results.find(e => e.label === "macro1")!;
-            expect(elm).to.not.be.empty;
+            expect(elm).to.not.be.undefined;
             expect(elm.detail).to.be.equal("macro");
             expect(elm.documentation).to.contain("<name> MACRO");
+        });
+        it("Should return a completion on a xref", async function () {
+            const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
+            const document = new DummyTextDocument();
+            const position: Position = new Position(1, 10);
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine(" xref MyXref");
+            document.addLine(" bsr MyXre");
+            await dHnd.scanFile(document.uri, document);
+            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const elm = results.find(e => e.label === "MyXref")!;
+            expect(elm).to.not.be.undefined;
+            expect(elm.detail).to.be.equal("xref");
         });
         it("Should not return a completion on an instruction after .", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());

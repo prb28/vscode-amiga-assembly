@@ -19,7 +19,7 @@ describe("Symbols reader Tests", function () {
         const variables = symbolFile.getVariables();
         const labels = symbolFile.getLabels();
         const macros = symbolFile.getMacros();
-        expect(definedSymbols.length).to.be.equal(61);
+        expect(definedSymbols.length).to.be.equal(63);
         const referedSymbols = symbolFile.getReferredSymbols();
         expect(referedSymbols.length).to.be.equal(318);
         const firstDefined = definedSymbols[2];

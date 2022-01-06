@@ -111,6 +111,16 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                                 labelsAdded.push(label);
                             }
                         }
+                        const xrefs = this.definitionHandler.findXrefStartingWith(word);
+                        for (const [xref] of xrefs.entries()) {
+                            if (!labelsAdded.includes(xref)) {
+                                const kind = vscode.CompletionItemKind.Function;
+                                const completion = new vscode.CompletionItem(xref, kind);
+                                completion.detail =  "xref";
+                                completions.push(completion);
+                                labelsAdded.push(xref);
+                            }
+                        }
                         const variables = this.definitionHandler.findVariableStartingWith(word);
                         for (const [variable, symbol] of variables.entries()) {
                             if (!labelsAdded.includes(variable)) {

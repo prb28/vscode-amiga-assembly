@@ -11,6 +11,7 @@ export class SymbolFile {
     private variables = new Array<Symbol>();
     private labels = new Array<Symbol>();
     private macros = new Array<Symbol>();
+    private xrefs = new Array<Symbol>();
     private subroutines = new Array<string>();
     private dcLabel = new Array<Symbol>();
     private includeDirs = new Array<Symbol>();
@@ -58,16 +59,22 @@ export class SymbolFile {
                 // Is this actually a macro definition in `<name> macro` syntax?
                 if (instruct.indexOf("macro") === 0) {
                     this.macros.push(s);
+                    this.definedSymbols.push(s);
                 } else {
                     this.labels.push(s);
                     if (!isLocal) {
                         lastLabel = s;
                     }
                 }
+            } else if (instruct.indexOf("xref") === 0) {
+                const s = new Symbol(asmLine.data, this, asmLine.dataRange);
+                this.xrefs.push(s);
+                this.definedSymbols.push(s);
             } else if (instruct.indexOf("macro") === 0) {
                 // Handle ` macro <name>` syntax
                 const s = new Symbol(asmLine.data, this, asmLine.dataRange);
                 this.macros.push(s);
+                this.definedSymbols.push(s);
             }
             if (asmLine.variable.length > 0) {
                 this.variables.push(new Symbol(asmLine.variable, this, asmLine.variableRange, asmLine.value));
@@ -115,6 +122,7 @@ export class SymbolFile {
         this.variables = new Array<Symbol>();
         this.labels = new Array<Symbol>();
         this.macros = new Array<Symbol>();
+        this.xrefs = new Array<Symbol>();
         this.subroutines = new Array<string>();
         this.dcLabel = new Array<Symbol>();
         this.includeDirs = new Array<Symbol>();
@@ -138,6 +146,9 @@ export class SymbolFile {
     }
     public getMacros(): Array<Symbol> {
         return this.macros;
+    }
+    public getXrefs(): Array<Symbol> {
+        return this.xrefs;
     }
     public getSubRoutines(): Array<string> {
         return this.subroutines;
