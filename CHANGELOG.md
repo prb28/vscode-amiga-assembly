@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [1.1.x] - 
+- [Fix #190](https://github.com/prb28/vscode-amiga-assembly/pull/190) *grahambates* Don't complete prefixed local labels
+- [Feat #189](https://github.com/prb28/vscode-amiga-assembly/pull/189) *grahambates* Extract docs from comments
+- [Feat #187](https://github.com/prb28/vscode-amiga-assembly/pull/187) *grahambates* Improve include path completions
 - [Feat #186](https://github.com/prb28/vscode-amiga-assembly/pull/186) *grahambates* Handle local labels correctly
 - [Feat #185](https://github.com/prb28/vscode-amiga-assembly/pull/185) *grahambates* Macro and CPU register completions 
 - [Feat #184](https://github.com/prb28/vscode-amiga-assembly/pull/184) *grahambates* Completion improvements
