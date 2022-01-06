@@ -304,7 +304,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     public deleteFile(uri: Uri) {
-        let file = this.files.get(uri.fsPath);
+        const file = this.files.get(uri.fsPath);
         if (file !== undefined) {
             this.clearSymbolsForFile(file);
             this.files.delete(uri.fsPath);
@@ -411,7 +411,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
      * @param filename Filename to include
      * @returns Resolved file
      */
-    private async resolveIncludedFile(currentPath: FileProxy, filename: string): Promise<FileProxy|null> {
+    private async resolveIncludedFile(currentPath: FileProxy, filename: string): Promise<FileProxy | null> {
         const rootUri = vscode.workspace.getWorkspaceFolder(currentPath.getUri())?.uri;
         const root = rootUri ? new FileProxy(rootUri) : currentPath.getParent();
         // Relative to root
@@ -425,8 +425,8 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             fp = includeDir.getRelativeFile(filename);
             if (await fp.exists()) {
                 return fp;
-            } 
-        } 
+            }
+        }
         // Could not resolve file
         return null;
     }
@@ -448,16 +448,25 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     /**
+     * Get variable by name
+     * @param name Name of variable
+     * @returns Variable symbol
+     */
+    getVariableByName(name: string): Symbol | undefined {
+        return this.variables.get(name);
+    }
+
+    /**
      * Find all the variables starting by word
      * @param word Word to search
      * @return variables found.
      */
-    findVariableStartingWith(word: string): Map<string, string | undefined> {
-        const values = new Map<string, string | undefined>();
+    findVariableStartingWith(word: string): Map<string, Symbol> {
+        const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
         for (const [key, value] of this.variables.entries()) {
             if (key.toUpperCase().startsWith(upper)) {
-                values.set(key, value.getValue());
+                values.set(key, value);
             }
         }
         return values;

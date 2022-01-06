@@ -105,17 +105,19 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                                 const filename = symbol.getFile().getUri().path.split("/").pop();
                                 const line = symbol.getRange().start.line;
                                 completion.detail =  "label " + filename + ":" + line;
+                                completion.documentation = symbol.getCommentBlock();
                                 completion.range = { replacing: range, inserting: range }
                                 completions.push(completion);
                                 labelsAdded.push(label);
                             }
                         }
-                        const variables: Map<string, string | undefined> = this.definitionHandler.findVariableStartingWith(word);
-                        for (const [variable, value] of variables.entries()) {
+                        const variables = this.definitionHandler.findVariableStartingWith(word);
+                        for (const [variable, symbol] of variables.entries()) {
                             if (!labelsAdded.includes(variable)) {
                                 const kind = vscode.CompletionItemKind.Variable;
                                 const completion = new vscode.CompletionItem(variable, kind);
-                                completion.detail = value;
+                                completion.detail = symbol.getValue();
+                                completion.documentation = symbol.getCommentBlock();
                                 completion.range = { replacing: range, inserting: range }
                                 completions.push(completion);
                             }
@@ -123,13 +125,13 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                     }
                 } else {
                     const macros = this.definitionHandler.findMacroStartingWith(word);
-                    for (const [label] of macros.entries()) {
+                    for (const [label, symbol] of macros.entries()) {
                         if (!labelsAdded.includes(label)) {
                             const kind = vscode.CompletionItemKind.Function;
                             const completion = new vscode.CompletionItem(label, kind);
                             completion.detail =  "macro";
+                            completion.documentation = symbol.getCommentBlock();
                             completions.push(completion);
-                            labelsAdded.push(label);
                         }
                     }
                 }
