@@ -32,13 +32,27 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             for (let i = 0; i < symbols.length; i++) {
                 const symbol = symbols[i];
                 let symbolKind = vscode.SymbolKind.Function;
-                if (symbolFile.getSubRoutines().indexOf(symbol.getLabel()) >= 0) {
+                let isLocal = symbol.getLabel().includes(".");
+                let label = symbol.getLabel().replace(/.+\./, ".");
+                if (symbolFile.getSubRoutines().indexOf(label) >= 0) {
                     symbolKind = vscode.SymbolKind.Class;
                 } else if (symbolFile.getDcLabels().indexOf(symbol) >= 0) {
                     symbolKind = vscode.SymbolKind.Variable;
                 }
-                if (symbol.getLabel()) {
-                    results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
+                if (label) {
+                    // Extend range to next label:
+                    let nextLabel: Symbol | null = null;
+                    for (let j = i + 1; j < symbols.length; j++) {
+                        const l = symbols[j];
+                        // Next global label unless current label is local
+                        if (isLocal || !l.getLabel().includes(".")) {
+                            nextLabel = l;
+                            break;
+                        }
+                    }
+                    const end = nextLabel?.getRange().start ?? document.lineAt(document.lineCount -1).range.end;
+                    const range = new Range(symbol.getRange().start, end);
+                    results.push(new SymbolInformation(label, symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), range)));
                 }
             }
             symbols = symbolFile.getMacros();
