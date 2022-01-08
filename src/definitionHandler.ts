@@ -16,6 +16,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     private labels = new Map<string, Symbol>();
     private macros = new Map<string, Symbol>();
     private includeDirs = new Map<string, Symbol>();
+    private xrefs = new Map<string, Symbol>();
     private sortedVariablesNames = new Array<string>();
 
     public async provideDocumentSymbols(document: TextDocument, token: CancellationToken): Promise<SymbolInformation[]> {
@@ -39,6 +40,18 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 if (symbol.getLabel()) {
                     results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
                 }
+            }
+            symbols = symbolFile.getMacros();
+            for (let i = 0; i < symbols.length; i++) {
+                const symbol = symbols[i];
+                let symbolKind = vscode.SymbolKind.Function;
+                results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
+            }
+            symbols = symbolFile.getXrefs();
+            for (let i = 0; i < symbols.length; i++) {
+                let symbolKind = vscode.SymbolKind.Function;
+                const symbol = symbols[i];
+                results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
             }
             const includedFiles = symbolFile.getIncludedFiles();
             for (const includedFile of includedFiles) {
@@ -288,6 +301,11 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             const s = symbol[i];
             this.includeDirs.set(s.getLabel(), s);
         }
+        symbol = file.getXrefs();
+        for (let i = 0; i < symbol.length; i++) {
+            const s = symbol[i];
+            this.xrefs.set(s.getLabel(), s);
+        }
 
         // Scan any new included files
         const currentFile = new FileProxy(file.getUri());
@@ -299,7 +317,6 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 }
             }
         }
-
         return file;
     }
 
@@ -490,6 +507,31 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
         for (const [key, value] of this.labels.entries()) {
+            if (key.toUpperCase().startsWith(upper)) {
+                values.set(key, value);
+            }
+        }
+        return values;
+    }
+
+    /**
+     * Get xref by name
+     * @param name Name of label
+     * @returns Xref symbol
+     */
+    getXrefByName(name: string): Symbol | undefined {
+        return this.xrefs.get(name);
+    }
+
+    /**
+     * Find all the xrefs starting by word
+     * @param word Word to search
+     * @return xrefs found.
+     */
+    findXrefStartingWith(word: string): Map<string, Symbol> {
+        const values = new Map<string, Symbol>();
+        const upper = word.toUpperCase();
+        for (const [key, value] of this.xrefs.entries()) {
             if (key.toUpperCase().startsWith(upper)) {
                 values.set(key, value);
             }

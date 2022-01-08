@@ -81,16 +81,18 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 let rendered = await this.renderWordHover(text.toUpperCase());
                 let renderedLine2 = null;
                 if (!rendered) {
-                    const [cpuReg, label] = await Promise.all([
+                    const [cpuReg, label, xref] = await Promise.all([
                         this.documentationManager.getCpuRegister(text.toUpperCase()),
-                        definitionHandler.getLabelByName(text)
+                        definitionHandler.getLabelByName(text),
+                        definitionHandler.getXrefByName(text)
                     ]);
                     if (cpuReg) {
                         rendered = new vscode.MarkdownString(cpuReg.detail);
-                    } else if (label) {
+                    } else if (label || xref) {
+                        const symbol = label || xref;
                         const info = new vscode.MarkdownString();
-                        info.appendCodeblock("(label) " + label.getLabel());
-                        const description = label.getCommentBlock();
+                        info.appendCodeblock("(label) " + symbol!.getLabel());
+                        const description = symbol!.getCommentBlock();
                         if (description) {
                             rendered = new vscode.MarkdownString();
                             rendered.appendText(description);
