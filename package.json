@@ -42,6 +42,7 @@
         "onCommand:amiga-assembly.view-iff",
         "onCommand:amiga-assembly.download-binaries",
         "onCommand:amiga-assembly.create-example-workspace",
+        "onCommand:amiga-assembly.clear-data-breakpoints-storage",
         "onWebviewPanel:iffView",
         "workspaceContains:**/*.{s,S,asm,ASM}"
     ],
@@ -325,6 +326,10 @@
             {
                 "command": "amiga-assembly.create-example-workspace",
                 "title": "Amiga Assembly: Create example workspace"
+            },
+            {
+                "command": "amiga-assembly.clear-data-breakpoints-storage",
+                "title": "Amiga Assembly: Clear storage of data breakpoints"
             }
         ],
         "breakpoints": [

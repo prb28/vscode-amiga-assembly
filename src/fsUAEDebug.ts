@@ -69,6 +69,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     /** Timeout of the mutex */
     protected static readonly MUTEX_TIMEOUT = 100000;
 
+    /** breakpoint event handler set */
+    protected static BREAKPOINT_EVENT_SET = false;
+
     /** a Mock runtime (or debugger) */
     protected variableHandles = new Handles<string>();
 
@@ -139,6 +142,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         this.debugDisassembledManager = new DebugDisassembledManager(this.gdbProxy, undefined, this);
         this.breakpointManager = new BreakpointManager(this.gdbProxy, this.debugDisassembledManager);
         this.breakpointManager.setMutexTimeout(FsUAEDebugSession.MUTEX_TIMEOUT);
+        // event handler to clean data breakpoints
+        if (!FsUAEDebugSession.BREAKPOINT_EVENT_SET) {
+            vscode.debug.onDidChangeBreakpoints(BreakpointManager.onDidChangeBreakpoints);
+            FsUAEDebugSession.BREAKPOINT_EVENT_SET = true;
+        }
     }
 
     /**

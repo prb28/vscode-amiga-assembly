@@ -31,6 +31,7 @@ import { BinariesManager } from './downloadManager';
 import { ConfigurationHelper } from './configurationHelper';
 import { WorkspaceManager } from './workspaceManager';
 import { DebugDisassembledFile } from './debugDisassembled';
+import { BreakpointManager } from './breakpointManager';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
@@ -594,6 +595,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
                     vscode.window.showErrorMessage(error.message);
                 }
             }
+        })
+    );
+    state.setExtensionContext(context);
+    // clearing the data breakpoints storage
+    context.subscriptions.push(
+        vscode.commands.registerCommand('amiga-assembly.clear-data-breakpoints-storage', async () => {
+            BreakpointManager.removeStoredDataBreakpointsList();
         })
     );
     state.setExtensionContext(context);

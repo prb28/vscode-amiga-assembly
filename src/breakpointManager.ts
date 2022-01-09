@@ -1,14 +1,23 @@
 import { Mutex } from "./mutex";
-import { DebugProtocol } from "vscode-debugprotocol";
+import { BreakpointsChangeEvent } from 'vscode';
+import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugDisassembledFile, DebugDisassembledManager } from "./debugDisassembled";
 import { DebugInfo } from "./debugInfo";
 import { GdbProxy } from "./gdbProxy";
+import { ExtensionState } from "./extension";
+import winston = require('winston');
 
 /**
  * Class to contact the fs-UAE GDB server.
  */
 export class BreakpointManager {
-    // Default selection mask for exception : each bit is a exception code
+    /** Storage prefix for keys*/
+    static readonly STORAGE_PREFIX = "amiga.assembly";
+    /** Storage prefix for keys*/
+    static readonly STORAGE_DATA_LIST = `${BreakpointManager.STORAGE_PREFIX}.dataBreakpointsList`;
+    /** List of stored breakpoints */
+    private static storedDataBreakpointsList?: Array<string>;
+    /** Default selection mask for exception : each bit is a exception code */
     static readonly DEFAULT_EXCEPTION_MASK = 0b111100;
     /** exception mask */
     private exceptionMask = BreakpointManager.DEFAULT_EXCEPTION_MASK;
@@ -30,10 +39,6 @@ export class BreakpointManager {
     protected mutex = new Mutex(100, 180000);
     /** Lock for breakpoint management function */
     protected breakpointLock?: () => void;
-    /** Next Data Id increment */
-    protected nextDataIdIncrement = 0;
-    /** Array to store the size of data watched for a breakpoint ID */
-    protected sizeMap = new Map<string, number>();
 
     public constructor(gdbProxy: GdbProxy, debugDisassembledManager: DebugDisassembledManager) {
         this.gdbProxy = gdbProxy;
@@ -105,7 +110,7 @@ export class BreakpointManager {
                             throw new Error("Segment offset not resolved");
                         }
                     } else {
-                        throw new Error("Debug information not resolved retrieved");
+                        throw new Error("Debug information not retrieved");
                     }
                 } else {
                     const name = <string>debugBp.source.name;
@@ -115,7 +120,7 @@ export class BreakpointManager {
                     await this.gdbProxy.setBreakpoint(debugBp);
                     this.breakpoints.push(debugBp);
                 }
-            } else if (debugBp.exceptionMask !== undefined || (debugBp.size && debugBp.size > 0)) {
+            } else if (debugBp.exceptionMask !== undefined || (debugBp.size && debugBp.size > 0 && this.gdbProxy.isConnected())) {
                 await this.gdbProxy.setBreakpoint(debugBp);
                 if (debugBp.exceptionMask === undefined) {
                     this.breakpoints.push(debugBp);
@@ -172,7 +177,8 @@ export class BreakpointManager {
             verified: false,
             size: size,
             accessType: gdbAccessType,
-            message: message
+            message: message,
+            defaultMessage: message,
         };
     }
 
@@ -320,8 +326,6 @@ export class BreakpointManager {
     }
 
     public populateDataBreakpointInfoResponseBody(response: DebugProtocol.DataBreakpointInfoResponse, variableName: string, address: string, isRegister: boolean) {
-        const newId = this.nextDataIdIncrement++;
-
         let variableDisplay;
         if (isRegister) {
             variableDisplay = `${address}`;
@@ -329,10 +333,10 @@ export class BreakpointManager {
             variableDisplay = `${variableName}(${address})`;
         }
         response.body = {
-            dataId: `${variableName}(${address})[${newId}]`,
+            dataId: `${variableName}(${address})`,
             description: variableDisplay,
             accessTypes: ["read", "write", "readWrite"],
-            canPersist: false
+            canPersist: true
         }
     }
 
@@ -345,14 +349,99 @@ export class BreakpointManager {
         }
     }
 
-    public getSizeForDataId(dataId: string): number | undefined {
-        return this.sizeMap.get(dataId);
+    public static loadStoredDataBreakpoints() {
+        if (!BreakpointManager.storedDataBreakpointsList) {
+            BreakpointManager.storedDataBreakpointsList = ExtensionState.getCurrent().getExtensionContext()?.workspaceState.get<Array<string>>(BreakpointManager.STORAGE_DATA_LIST);
+            if (!BreakpointManager.storedDataBreakpointsList) {
+                BreakpointManager.storedDataBreakpointsList = new Array<string>();
+            }
+            winston.info("[BreakpointManager] Loading data breakpoints keys");
+            for (const k of BreakpointManager.storedDataBreakpointsList) {
+                winston.info(`[BreakpointManager] index breakpoint : ${k}`);
+            }
+        }
     }
 
-    public setSizeForDataId(dataId: string, size: number) {
-        this.sizeMap.set(dataId, size);
+    private static saveStoredDataBreakpoints(list: Array<string>) {
+        ExtensionState.getCurrent().getExtensionContext()?.workspaceState.update(BreakpointManager.STORAGE_DATA_LIST, list);
+        winston.info("[BreakpointManager] Saving data breakpoints keys");
+        for (const k of list) {
+            winston.info(`[BreakpointManager] index breakpoint : ${k}`);
+        }
     }
 
+    public static addStoredDataBreakpoints(id: string) {
+        if (!BreakpointManager.storedDataBreakpointsList) {
+            BreakpointManager.storedDataBreakpointsList = new Array<string>();
+        }
+        if (!BreakpointManager.storedDataBreakpointsList.includes(id)) {
+            BreakpointManager.storedDataBreakpointsList.push(id);
+        }
+        BreakpointManager.saveStoredDataBreakpoints(BreakpointManager.storedDataBreakpointsList);
+    }
+
+    public static removeStoredDataBreakpoints(id: string) {
+        if (BreakpointManager.storedDataBreakpointsList) {
+            BreakpointManager.storedDataBreakpointsList = BreakpointManager.storedDataBreakpointsList?.filter(k => k !== id);
+            BreakpointManager.saveStoredDataBreakpoints(BreakpointManager.storedDataBreakpointsList);
+        }
+    }
+
+    public static removeStoredDataBreakpointsList() {
+        BreakpointManager.loadStoredDataBreakpoints();
+        if (BreakpointManager.storedDataBreakpointsList) {
+            for (const id of BreakpointManager.storedDataBreakpointsList) {
+                BreakpointManager.removeSizeForDataBreakpoint(id, true);
+            }
+            ExtensionState.getCurrent().getExtensionContext()?.workspaceState.update(BreakpointManager.STORAGE_DATA_LIST, undefined);
+            BreakpointManager.storedDataBreakpointsList = new Array<string>();
+        }
+    }
+
+    public static getSizeForDataBreakpoint(bpId: string): number | undefined {
+        const id = BreakpointManager.getDataBreakpointStorageId(bpId);
+        const size = ExtensionState.getCurrent().getExtensionContext()?.workspaceState.get<number>(id);
+        winston.info(`[BreakpointManager] GET size of DataBreakpoint id: ${id}=${size}`);
+        return size;
+    }
+    public static getDataBreakpointStorageId(id: string): string {
+        if (id.startsWith(BreakpointManager.STORAGE_PREFIX)) {
+            return id;
+        }
+        return `${BreakpointManager.STORAGE_PREFIX}.${id}`
+    }
+
+    public static setSizeForDataBreakpoint(bpId: string, size: number) {
+        const id = BreakpointManager.getDataBreakpointStorageId(bpId);
+        winston.info(`[BreakpointManager] SET size of DataBreakpoint id: ${id}=${size}`);
+        ExtensionState.getCurrent().getExtensionContext()?.workspaceState.update(id, size);
+        BreakpointManager.addStoredDataBreakpoints(id);
+    }
+
+    public static removeSizeForDataBreakpoint(bpId: string, skipStoringList?: boolean) {
+        const id = BreakpointManager.getDataBreakpointStorageId(bpId);
+        winston.info(`[BreakpointManager] Removing DataBreakpoint id: ${id}`);
+        ExtensionState.getCurrent().getExtensionContext()?.workspaceState.update(id, undefined);
+        if (!skipStoringList) {
+            BreakpointManager.removeStoredDataBreakpoints(id);
+        }
+    }
+
+    public static getStoredDataBreakpointsList(): Array<string> | undefined {
+        return BreakpointManager.storedDataBreakpointsList;
+    }
+
+    private static instanceOfDataBreakpoint(object: any): object is DebugProtocol.DataBreakpoint {
+        return 'dataId' in object;
+    }
+
+    public static onDidChangeBreakpoints(event: BreakpointsChangeEvent) {
+        for (const bp of event.removed) {
+            if (BreakpointManager.instanceOfDataBreakpoint(bp)) {
+                BreakpointManager.removeSizeForDataBreakpoint(bp.dataId);
+            }
+        }
+    }
 }
 
 /** Interface for a breakpoint */
@@ -369,6 +458,8 @@ export interface GdbBreakpoint extends DebugProtocol.Breakpoint {
     size?: number;
     /** The access type of the data. */
     accessType?: GdbBreakpointAccessType;
+    /** default message for the breakpoint */
+    defaultMessage: string | undefined;
 }
 
 /**

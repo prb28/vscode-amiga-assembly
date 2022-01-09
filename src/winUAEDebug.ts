@@ -7,6 +7,7 @@ import { LaunchRequestArguments, FsUAEDebugSession } from './fsUAEDebug';
 import { GdbProxy } from './gdbProxy';
 import { InputBoxOptions, window } from 'vscode';
 import { VariableFormatter } from './variableFormatter';
+import { BreakpointManager } from './breakpointManager';
 
 
 export class WinUAEDebugSession extends FsUAEDebugSession {
@@ -27,12 +28,13 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
                     // Loads the program
                     this.sendEvent(new OutputEvent(`Starting program: ${args.program}`));
                     await this.gdbProxy.initProgram(args.stopOnEntry);
-                    await this.gdbProxy.sendAllPendingBreakpoints();
                     const thread = this.gdbProxy.getCurrentCpuThread();
                     if (thread) {
                         if (args.stopOnEntry) {
                             await this.gdbProxy.stepIn(thread);
+                            await this.gdbProxy.sendAllPendingBreakpoints();
                         } else {
+                            await this.gdbProxy.sendAllPendingBreakpoints();
                             await this.gdbProxy.continueExecution(thread);
                         }
                         this.sendResponse(response);
@@ -115,7 +117,7 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
         if (args.breakpoints) {
             for (const reqBp of args.breakpoints) {
                 const [variableName, displayValue, value] = this.breakpointManager.parseDataIdAddress(reqBp.dataId);
-                let size = this.breakpointManager.getSizeForDataId(reqBp.dataId);
+                let size = BreakpointManager.getSizeForDataBreakpoint(reqBp.dataId);
                 if (!size) {
                     const sizeStr = await window.showInputBox(<InputBoxOptions>{
                         prompt: `Enter the size in bytes to watch starting at address '${displayValue}' (variable: '${variableName}')`,
@@ -129,7 +131,7 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
                     });
                     if (sizeStr) {
                         size = parseInt(sizeStr);
-                        this.breakpointManager.setSizeForDataId(reqBp.dataId, size);
+                        BreakpointManager.setSizeForDataBreakpoint(reqBp.dataId, size);
                     }
                 }
                 if (!size) {
@@ -142,12 +144,12 @@ export class WinUAEDebugSession extends FsUAEDebugSession {
                 } catch (err) {
                     debugBreakPoints.push(debugBp);
                 }
-                // send back the actual breakpoint positions
-                response.body = {
-                    breakpoints: debugBreakPoints
-                };
-                response.success = true;
             }
+            // send back the actual breakpoint positions
+            response.body = {
+                breakpoints: debugBreakPoints
+            };
+            response.success = true;
         }
         this.sendResponse(response);
     }

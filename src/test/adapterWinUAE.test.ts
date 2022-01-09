@@ -12,6 +12,8 @@ import { Capstone } from '../capstone';
 import { ExtensionState } from '../extension';
 import { WinUAEDebugSession } from '../winUAEDebug';
 import { expect } from 'chai';
+import { BreakpointManager } from '../breakpointManager';
+import { fail } from 'assert';
 
 describe('Node Debug Adapter for WinUAE', () => {
 	const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
@@ -476,22 +478,26 @@ describe('Node Debug Adapter for WinUAE', () => {
 				}
 			}
 			const response = await dc.dataBreakpointInfoRequest(dArgs);
-			expect(response.body.dataId).to.be.equal("a0(0x0000000a)[0]");
+			expect(response.body.dataId).to.be.equal("a0(0x0000000a)");
 			expect(response.body.description).to.be.equal("0x0000000a");
-			expect(response.body.canPersist).to.be.equal(false);
+			expect(response.body.canPersist).to.be.equal(true);
 			expect(response.body.accessTypes).to.be.eql(["read", "write", "readWrite"]);
 			// set size to skip the interactive popup
-			this.session.getBreakpointManager().setSizeForDataId(response.body.dataId, 2);
-			await Promise.all([
-				dc.setDataBreakpointsRequest(<DebugProtocol.SetDataBreakpointsArguments>{
-					breakpoints: [{
-						dataId: response.body.dataId,
-						accessType: "read",
-					}]
-				}),
-				dc.continueRequest(<DebugProtocol.ContinueArguments>{ threadId: th.getId() }),
-				dc.assertStoppedLocation('breakpoint', { line: 33 }),
-			]);
+			if (response.body.dataId) {
+				BreakpointManager.setSizeForDataBreakpoint(response.body.dataId, 2);
+				await Promise.all([
+					dc.setDataBreakpointsRequest(<DebugProtocol.SetDataBreakpointsArguments>{
+						breakpoints: [{
+							dataId: response.body.dataId,
+							accessType: "read",
+						}]
+					}),
+					dc.continueRequest(<DebugProtocol.ContinueArguments>{ threadId: th.getId() }),
+					dc.assertStoppedLocation('breakpoint', { line: 33 }),
+				]);
+			} else {
+				fail("dataId is null");
+			}
 		});
 	});
 });

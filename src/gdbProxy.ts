@@ -106,6 +106,14 @@ export class GdbProxy extends EventEmitter {
     }
 
     /**
+     * Checks if the debugger connected.
+     * @return true if it is connected
+     */
+    public isConnected(): boolean {
+        return this.connected;
+    }
+
+    /**
      * Function to connect to the server
      * @param host Server host
      * @param port Server socket port
@@ -400,7 +408,7 @@ export class GdbProxy extends EventEmitter {
                 await this.waitConnected();
                 await this.sendPacketString(message, GdbPacketType.OK);
                 breakpoint.verified = true;
-                breakpoint.message = undefined;
+                breakpoint.message = breakpoint.defaultMessage;
                 this.sendEvent("breakpointValidated", breakpoint);
             } else {
                 throw new Error("Invalid breakpoint offset");

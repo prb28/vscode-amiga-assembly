@@ -127,6 +127,7 @@ export class GdbProxyWinUAE extends GdbProxy {
                 }
                 await this.sendPacketString(message, GdbPacketType.OK);
                 breakpoint.verified = true;
+                breakpoint.message = breakpoint.defaultMessage;
                 this.sendEvent("breakpointValidated", breakpoint);
             } else {
                 throw new Error("Invalid breakpoint offset");

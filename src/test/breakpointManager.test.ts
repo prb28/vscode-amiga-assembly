@@ -7,6 +7,7 @@ import { DebugInfo } from '../debugInfo';
 import * as chaiAsPromised from 'chai-as-promised';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import * as chai from 'chai';
+import * as vscode from 'vscode';
 chai.use(chaiAsPromised);
 
 describe('Breakpoint Manager', () => {
@@ -19,6 +20,14 @@ describe('Breakpoint Manager', () => {
     let mockedGdbProxy: GdbProxy;
     let mockedDebugDisassembledManager: DebugDisassembledManager;
     let mockedDebugInfo: DebugInfo;
+    before(async function () {
+        // activate the extension
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
+    });
+
     beforeEach(function () {
         mockedGdbProxy = mock(GdbProxy);
         mockedDebugDisassembledManager = mock(DebugDisassembledManager);
@@ -173,26 +182,45 @@ describe('Breakpoint Manager', () => {
     it('should populate the data breakpoints response', async function () {
         let response = <DebugProtocol.DataBreakpointInfoResponse>{};
         bpManager.populateDataBreakpointInfoResponseBody(response, "myvar", "0x1", false);
-        expect(response.body.dataId).to.be.equal("myvar(0x1)[0]");
+        expect(response.body.dataId).to.be.equal("myvar(0x1)");
         expect(response.body.description).to.be.equal("myvar(0x1)");
-        expect(response.body.canPersist).to.be.false;
+        expect(response.body.canPersist).to.be.true;
         expect(response.body.accessTypes).to.be.eql(["read", "write", "readWrite"]);
         response = <DebugProtocol.DataBreakpointInfoResponse>{};
         bpManager.populateDataBreakpointInfoResponseBody(response, "myvar", "0x1", true);
-        expect(response.body.dataId).to.be.equal("myvar(0x1)[1]");
+        expect(response.body.dataId).to.be.equal("myvar(0x1)");
         expect(response.body.description).to.be.equal("0x1");
-        expect(response.body.canPersist).to.be.false;
+        expect(response.body.canPersist).to.be.true;
         expect(response.body.accessTypes).to.be.eql(["read", "write", "readWrite"]);
     });
     it('should store de sizes for the data types', async function () {
         const dataID = "myDataID";
-        expect(bpManager.getSizeForDataId(dataID)).to.be.undefined;
-        bpManager.setSizeForDataId(dataID, 32);
-        expect(bpManager.getSizeForDataId(dataID)).to.be.equal(32);
+        //cleaning
+        BreakpointManager.removeStoredDataBreakpointsList();
+        BreakpointManager.removeSizeForDataBreakpoint(dataID);
+        expect(BreakpointManager.getSizeForDataBreakpoint(dataID)).to.be.undefined;
+        expect(BreakpointManager.getStoredDataBreakpointsList()).to.be.eql([]);
+        // updating
+        BreakpointManager.setSizeForDataBreakpoint(dataID, 32);
+        //checking
+        const id = BreakpointManager.getDataBreakpointStorageId(dataID);
+        expect(BreakpointManager.getStoredDataBreakpointsList()).to.be.eql([id]);
+        expect(BreakpointManager.getSizeForDataBreakpoint(dataID)).to.be.equal(32);
+        //removing
+        BreakpointManager.removeSizeForDataBreakpoint(dataID);
+        expect(BreakpointManager.getStoredDataBreakpointsList()).to.be.eql([]);
+        expect(BreakpointManager.getSizeForDataBreakpoint(dataID)).to.be.undefined;
+        //cleaning
+        BreakpointManager.setSizeForDataBreakpoint(dataID, 32);
+        BreakpointManager.removeStoredDataBreakpointsList();
+        expect(BreakpointManager.getSizeForDataBreakpoint(dataID)).to.be.undefined;
+        expect(BreakpointManager.getStoredDataBreakpointsList()).to.be.eql([]);
+        BreakpointManager.loadStoredDataBreakpoints();
+        expect(BreakpointManager.getStoredDataBreakpointsList()).to.be.eql([]);
     });
     it('should parse the data ID', async function () {
-        expect(bpManager.parseDataIdAddress("myvar(0xb)[1]")).to.be.eql(["myvar", "0xb", 11]);
-        expect(bpManager.parseDataIdAddress("myvar(10)[1]")).to.be.eql(["myvar", "10", 10]);
+        expect(bpManager.parseDataIdAddress("myvar(0xb)")).to.be.eql(["myvar", "0xb", 11]);
+        expect(bpManager.parseDataIdAddress("myvar(10)")).to.be.eql(["myvar", "10", 10]);
         try {
             bpManager.parseDataIdAddress("myvar");
             expect.fail("Exception expected");
