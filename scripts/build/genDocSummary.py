@@ -29,11 +29,12 @@ def process_libs(libs_path):
             md += "| Function | Description |\n|:---|:---|\n"
             for f in os.listdir(parent):
                 if (not f.startswith('_')):
-                    fname = f.replace(".md", "")
+                    fname = f
                     filepathname = os.path.join(parent, f)
                     fileurl = "libs/%s/%s" % (dir, fname)
                     description = read_description(filepathname)
-                    md += "|[%s](%s)|%s|\n" % (fname, fileurl, description)
+                    md += "|[%s](%s)|%s|\n" % (fname.replace(".md",
+                                                             ""), fileurl, description)
     return md
 
 
@@ -97,6 +98,7 @@ def process_directives(directives_path):
             md += "|[%s](%s)|%s|\n" % (name, fileurl, description)
     return md
 
+
 def create_toc(dest_path, instructions_md, libs_md, registers_md, directives_md):
     # Load the reference
     contents = ""
@@ -106,7 +108,8 @@ def create_toc(dest_path, instructions_md, libs_md, registers_md, directives_md)
         "@amiga_instructions_replacement@", instructions_md)
     contents = contents.replace("@amiga_registers_replacement@", registers_md)
     contents = contents.replace("@amiga_libs_replacement@", libs_md)
-    contents = contents.replace("@amiga_directives_replacement@", directives_md)
+    contents = contents.replace(
+        "@amiga_directives_replacement@", directives_md)
     with open(os.path.join(dest_path, "toc.md"), "w", encoding="utf-8") as destination:
         destination.write(contents)
 
