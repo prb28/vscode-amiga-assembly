@@ -12,7 +12,7 @@ FindTask -- find a task with the given name or find oneself
     struct Task *FindTask(STRPTR);
 
 ```
-Links: [Task](_008E) 
+Links: [Task](_008E.md) 
 
 **FUNCTION**
 

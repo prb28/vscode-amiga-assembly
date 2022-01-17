@@ -20,7 +20,7 @@ name will be null-terminated.  NOTE: if the volume is not mounted,
 the system will request it (unless of course you set pr_WindowPtr to
 -1).  If the volume is not mounted or inserted, it will return an
 error.  If the lock passed in is NULL, &#034;SYS:&#034; will be returned. If
-the buffer is too short, an error will be returned, and [IoErr](IoErr) will
+the buffer is too short, an error will be returned, and [IoErr](IoErr.md) will
 return ERROR_LINE_TOO_LONG.
 
 **INPUTS**
@@ -38,4 +38,4 @@ lock.
 
 **SEE ALSO**
 
-[NameFromFH](NameFromFH), [Lock](Lock)
+[NameFromFH](NameFromFH.md), [Lock](Lock.md)

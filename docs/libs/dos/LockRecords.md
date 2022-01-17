@@ -12,7 +12,7 @@ LockRecords -- Lock a series of records (V36)
     BOOL LockRecords(struct RecordLock *,ULONG)
 
 ```
-Links: [RecordLock](_0063) 
+Links: [RecordLock](_0063.md) 
 
 **FUNCTION**
 
@@ -22,20 +22,20 @@ The wait is applied to each attempt to lock each record in the list.
 It is recommended that you always lock a set of records in the same
 order to reduce possibilities of deadlock.
 
-The array of [RecordLock](_0063) structures is terminated by an entry with
+The array of [RecordLock](_0063.md) structures is terminated by an entry with
 rec_FH of NULL.
 
 **INPUTS**
 
-record_array - [List](_007D) of records to be locked
+record_array - [List](_007D.md) of records to be locked
 timeout      - Timeout interval.  0 is legal
 
 RESULT
 success      - Success or failure
 
 BUGS
-See [LockRecord](LockRecord)
+See [LockRecord](LockRecord.md)
 
 **SEE ALSO**
 
-[LockRecord](LockRecord), [UnLockRecord](UnLockRecord), [UnLockRecords](UnLockRecords)
+[LockRecord](LockRecord.md), [UnLockRecord](UnLockRecord.md), [UnLockRecords](UnLockRecords.md)

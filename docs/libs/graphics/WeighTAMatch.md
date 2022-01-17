@@ -13,7 +13,7 @@ WeighTAMatch -- Get a measure of how well two fonts match. (V36)
          struct TagItem *);
 
 ```
-Links: [TTextAttr](_00A8) [TextAttr](_00A8) [TagItem](_012E) 
+Links: [TTextAttr](_00A8.md) [TextAttr](_00A8.md) [TagItem](_012E.md) 
 
 **FUNCTION**
 
@@ -43,4 +43,4 @@ match.  A zero weight is an unsuitable match.
 
 **SEE ALSO**
 
-[OpenFont](OpenFont)
+[OpenFont](OpenFont.md)

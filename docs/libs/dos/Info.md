@@ -12,7 +12,7 @@ Info -- Returns information about the disk
     BOOL Info(BPTR, struct InfoData *)
 
 ```
-Links: [InfoData](_0068) 
+Links: [InfoData](_0068.md) 
 
 **FUNCTION**
 
@@ -24,7 +24,7 @@ number of free blocks and any soft errors.
 **INPUTS**
 
 lock           - BCPL pointer to a lock
-parameterBlock - pointer to an [InfoData](_0068) structure
+parameterBlock - pointer to an [InfoData](_0068.md) structure
 (longword aligned)
 
 **RESULTS**
@@ -32,4 +32,4 @@ parameterBlock - pointer to an [InfoData](_0068) structure
 success - boolean
 
 SPECIAL NOTE:
-Note that [InfoData](_0068) structure must be longword aligned.
+Note that [InfoData](_0068.md) structure must be longword aligned.

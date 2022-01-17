@@ -15,8 +15,8 @@ Flush -- Flushes buffers for a buffered filehandle (V36)
 **FUNCTION**
 
 Flushes any pending buffered writes to the filehandle.  All buffered
-writes will also be flushed on [Close](Close).  If the filehandle was being
-used for input, it drops the buffer, and tries to [Seek](Seek) back to the
+writes will also be flushed on [Close](Close.md).  If the filehandle was being
+used for input, it drops the buffer, and tries to [Seek](Seek.md) back to the
 last read position  (so subsequent reads or writes will occur at the
 expected position in the file).
 
@@ -34,4 +34,4 @@ release).
 
 **SEE ALSO**
 
-FputC(), [FGetC](FGetC), [UnGetC](UnGetC), [Seek](Seek), [Close](Close)
+FputC(), [FGetC](FGetC.md), [UnGetC](UnGetC.md), [Seek](Seek.md), [Close](Close.md)

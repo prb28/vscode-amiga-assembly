@@ -1,7 +1,7 @@
 
 **NAME**
 
-BltBitMap -- Move a rectangular region of bits in a [BitMap](_00A6).
+BltBitMap -- Move a rectangular region of bits in a [BitMap](_00A6.md).
 
 **SYNOPSIS**
 
@@ -15,15 +15,15 @@ BltBitMap -- Move a rectangular region of bits in a [BitMap](_00A6).
         WORD, WORD, WORD, WORD, UBYTE, UBYTE, UWORD *);
 
 ```
-Links: [BitMap](_00A6) [BitMap](_00A6) 
+Links: [BitMap](_00A6.md) [BitMap](_00A6.md) 
 
 **FUNCTION**
 
 Perform non-destructive blits to move a rectangle from one
-area in a [BitMap](_00A6) to another area, which can be on a different
-[BitMap](_00A6).
+area in a [BitMap](_00A6.md) to another area, which can be on a different
+[BitMap](_00A6.md).
 This blit is assumed to be friendly: no error conditions (e.g.
-a rectangle outside the [BitMap](_00A6) bounds) are tested or reported.
+a rectangle outside the [BitMap](_00A6.md) bounds) are tested or reported.
 
 **INPUTS**
 
@@ -31,7 +31,7 @@ SrcBitMap, DstBitMap - the BitMap(s) containing the
 rectangles
 - the planes copied from the source to the destination are
 only those whose plane numbers are identical and less
-than the minimum Depth of either [BitMap](_00A6) and whose Mask
+than the minimum Depth of either [BitMap](_00A6.md) and whose Mask
 bit for that plane is non-zero.
 - as a special case, if a plane pointer in the SrcBitMap
 is zero, it acts as a pointer to a plane of all zeros, and
@@ -79,4 +79,4 @@ o   This function may use the blitter.
 
 **SEE ALSO**
 
-[ClipBlit](ClipBlit)  [graphics/gfx.h](_00A6)  [hardware/blit.h](_00CC)
+[ClipBlit](ClipBlit.md)  [graphics/gfx.h](_00A6.md)  [hardware/blit.h](_00CC.md)

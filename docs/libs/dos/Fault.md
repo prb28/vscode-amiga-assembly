@@ -19,7 +19,7 @@ The header is prepended to the text of the error message, followed
 by a colon.  Puts a null-terminated string for the error message into
 the buffer.  By convention, error messages should be no longer than 80
 characters (+1 for termination), and preferably no more than 60.
-The value returned by [IoErr](IoErr) is set to the code passed in.  If there
+The value returned by [IoErr](IoErr.md) is set to the code passed in.  If there
 is no message for the error code, the message will be &#034;Error code
 &#060;number&#062;n&#034;.
 
@@ -35,4 +35,4 @@ success - Success/failure code.
 
 **SEE ALSO**
 
-[IoErr](IoErr), [SetIoErr](SetIoErr), [PrintFault](PrintFault)
+[IoErr](IoErr.md), [SetIoErr](SetIoErr.md), [PrintFault](PrintFault.md)

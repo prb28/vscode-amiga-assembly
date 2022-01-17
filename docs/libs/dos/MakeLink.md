@@ -21,7 +21,7 @@ non-zero otherwise.
 
 Soft-links are resolved at access time by a combination of the
 filesystem (by returning ERROR_IS_SOFT_LINK to dos), and by
-Dos (using [ReadLink](ReadLink) to resolve any links that are hit).
+Dos (using [ReadLink](ReadLink.md) to resolve any links that are hit).
 
 Hard-links are resolved by the filesystem in question.  A series
 of hard-links to a file are all equivalent to the file itself.
@@ -43,4 +43,4 @@ fixed for V37.
 
 **SEE ALSO**
 
-[ReadLink](ReadLink), [Open](Open), [Lock](Lock)
+[ReadLink](ReadLink.md), [Open](Open.md), [Lock](Lock.md)

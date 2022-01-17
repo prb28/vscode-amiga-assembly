@@ -13,7 +13,7 @@ ActivateWindow -- Activate an Intuition window.
     /* returns LONG in V36 and higher */
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -31,7 +31,7 @@ by the user.
 
 **INPUTS**
 
-[Window](_00D4) = a pointer to a [Window](_00D4) structure
+[Window](_00D4.md) = a pointer to a [Window](_00D4.md) structure
 
 RESULT
 V35 and before: None.
@@ -44,4 +44,4 @@ action queue.
 
 **SEE ALSO**
 
-[OpenWindow](OpenWindow), and the WFLG_ACTIVATE window flag
+[OpenWindow](OpenWindow.md), and the WFLG_ACTIVATE window flag

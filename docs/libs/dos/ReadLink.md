@@ -12,7 +12,7 @@ ReadLink -- Reads the path for a soft filesystem link (V36)
     BOOL ReadLink( struct MsgPort *, BPTR, STRPTR, STRPTR, ULONG)
 
 ```
-Links: [MsgPort](_0099) 
+Links: [MsgPort](_0099.md) 
 
 **FUNCTION**
 
@@ -20,7 +20,7 @@ ReadLink() takes a lock/name pair (usually from a failed attempt
 to use them to access an object with packets), and asks the
 filesystem to find the softlink and fill buffer with the modified
 path string.  You then start the resolution process again by
-calling [GetDeviceProc](GetDeviceProc) with the new string from ReadLink().
+calling [GetDeviceProc](GetDeviceProc.md) with the new string from ReadLink().
 
 Soft-links are resolved at access time by a combination of the
 filesystem (by returning ERROR_IS_SOFT_LINK to dos), and by
@@ -43,4 +43,4 @@ fixed for V37.
 
 **SEE ALSO**
 
-[MakeLink](MakeLink), [Open](Open), [Lock](Lock), [GetDeviceProc](GetDeviceProc)
+[MakeLink](MakeLink.md), [Open](Open.md), [Lock](Lock.md), [GetDeviceProc](GetDeviceProc.md)

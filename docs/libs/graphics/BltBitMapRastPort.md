@@ -15,7 +15,7 @@ BltBitMapRastPort -- Blit from source bitmap to destination rastport.
           WORD, WORD, UBYTE);
 
 ```
-Links: [BitMap](_00A6) [RastPort](_00AF) 
+Links: [BitMap](_00A6.md) [RastPort](_00AF.md) 
 
 **FUNCTION**
 
@@ -41,4 +41,4 @@ BUGS
 
 **SEE ALSO**
 
-[BltMaskBitMapRastPort](BltMaskBitMapRastPort) [graphics/gfx.h](_00A6) [graphics/rastport.h](_00AF)
+[BltMaskBitMapRastPort](BltMaskBitMapRastPort.md) [graphics/gfx.h](_00A6.md) [graphics/rastport.h](_00AF.md)

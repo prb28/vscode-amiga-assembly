@@ -12,7 +12,7 @@ RemSemaphore -- remove a signal semaphore from the system
     void RemSemaphore(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_0082) 
+Links: [SignalSemaphore](_0082.md) 
 
 **FUNCTION**
 
@@ -26,4 +26,4 @@ signalSemaphore -- an initialized signal semaphore structure
 
 **SEE ALSO**
 
-[AddSemaphore](AddSemaphore), [FindSemaphore](FindSemaphore)
+[AddSemaphore](AddSemaphore.md), [FindSemaphore](FindSemaphore.md)

@@ -12,7 +12,7 @@ MoveWindow -- Ask Intuition to move a window.
     VOID MoveWindow( struct Window *, WORD, WORD );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -32,13 +32,13 @@ completed.
 
 New for V36: Intuition now will do validity checking on the final
 position.  To send absolute movements, or to move and size a
-window in one step, use [ChangeWindowBox](ChangeWindowBox).
+window in one step, use [ChangeWindowBox](ChangeWindowBox.md).
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the structure of the [Window](_00D4) to be moved
-DeltaX = how far to move the [Window](_00D4) on the x-axis
-DeltaY = how far to move the [Window](_00D4) on the y-axis
+[Window](_00D4.md) = pointer to the structure of the [Window](_00D4.md) to be moved
+DeltaX = how far to move the [Window](_00D4.md) on the x-axis
+DeltaY = how far to move the [Window](_00D4.md) on the y-axis
 
 RESULT
 None
@@ -47,4 +47,4 @@ BUGS
 
 **SEE ALSO**
 
-[ChangeWindowBox](ChangeWindowBox), [SizeWindow](SizeWindow), [WindowToFront](WindowToFront), [WindowToBack](WindowToBack)
+[ChangeWindowBox](ChangeWindowBox.md), [SizeWindow](SizeWindow.md), [WindowToFront](WindowToFront.md), [WindowToBack](WindowToBack.md)

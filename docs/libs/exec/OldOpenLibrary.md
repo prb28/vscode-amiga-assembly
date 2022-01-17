@@ -1,7 +1,7 @@
 
 **NAME**
 
-OldOpenLibrary -- obsolete [OpenLibrary](OpenLibrary)
+OldOpenLibrary -- obsolete [OpenLibrary](OpenLibrary.md)
 
 **SYNOPSIS**
 
@@ -12,12 +12,12 @@ OldOpenLibrary -- obsolete [OpenLibrary](OpenLibrary)
     struct Library *OldOpenLibrary(APTR);
 
 ```
-Links: [Library](_009C) 
+Links: [Library](_009C.md) 
 
 **FUNCTION**
 
 The 1.0 release of the Amiga system had an incorrect version of
-[OpenLibrary](OpenLibrary) that did not check the version number during the
+[OpenLibrary](OpenLibrary.md) that did not check the version number during the
 library open.  This obsolete function is provided so that object
 code compiled using a 1.0 system will still run.
 
@@ -33,4 +33,4 @@ library - a library pointer for a successful open, else zero
 
 **SEE ALSO**
 
-[CloseLibrary](CloseLibrary)
+[CloseLibrary](CloseLibrary.md)

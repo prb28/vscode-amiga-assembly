@@ -12,7 +12,7 @@ AddTask -- add a task to the system
     APTR AddTask(struct Task *, APTR, APTR);
 
 ```
-Links: [Task](_008E) 
+Links: [Task](_008E.md) 
 
 **FUNCTION**
 
@@ -41,11 +41,11 @@ use this space for passing the task its initial arguments.
 A task's initial registers are set to zero (except the PC).
 
 The TC_MEMENTRY field of the task structure may be extended by
-the user to hold additional MemLists (as returned by [AllocEntry](AllocEntry)).
-These will be automatically be deallocated at [RemTask](RemTask) time.
+the user to hold additional MemLists (as returned by [AllocEntry](AllocEntry.md)).
+These will be automatically be deallocated at [RemTask](RemTask.md) time.
 If the code you have used to start the task has already added
-something to the MEMENTRY list, simply use [AddHead](AddHead) to add your
-new MemLists in.  If no initialization has been done, a [NewList](_0161) will
+something to the MEMENTRY list, simply use [AddHead](AddHead.md) to add your
+new MemLists in.  If no initialization has been done, a [NewList](_0161.md) will
 need to be performed.
 
 **INPUTS**
@@ -67,9 +67,9 @@ task.  Old code need not check this.
 
 Tasks are a low-level building block, and are unable to call
 dos.library, or any system function that might call dos.library.
-See the AmigaDOS [CreateProc](../dos/CreateProc) for information on Processes.
+See the AmigaDOS [CreateProc](../dos/CreateProc.md) for information on Processes.
 
 **SEE ALSO**
 
-[RemTask](RemTask), [FindTask](FindTask), [amiga.lib/CreateTask](_014A), [dos/CreateProc](../dos/CreateProc),
-[amiga.lib/NewList](_0161)
+[RemTask](RemTask.md), [FindTask](FindTask.md), [amiga.lib/CreateTask](_014A.md), [dos/CreateProc](../dos/CreateProc.md),
+[amiga.lib/NewList](_0161.md)

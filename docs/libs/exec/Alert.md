@@ -54,4 +54,4 @@ Much more needs to be said about this function and its implications.
 
 **SEE ALSO**
 
-[exec/alerts.h](_007F)
+[exec/alerts.h](_007F.md)

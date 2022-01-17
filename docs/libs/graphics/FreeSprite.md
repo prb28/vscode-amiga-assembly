@@ -29,11 +29,11 @@ pick - number in range of 0-7
 
 **RESULTS**
 
-sprite made available for subsequent callers of [GetSprite](GetSprite)
+sprite made available for subsequent callers of [GetSprite](GetSprite.md)
 as well as use by Virtual Sprite Machine.
 
 BUGS
 
 **SEE ALSO**
 
-[GetSprite](GetSprite) [ChangeSprite](ChangeSprite) [MoveSprite](MoveSprite) [graphics/sprite.h](_00C5)
+[GetSprite](GetSprite.md) [ChangeSprite](ChangeSprite.md) [MoveSprite](MoveSprite.md) [graphics/sprite.h](_00C5.md)

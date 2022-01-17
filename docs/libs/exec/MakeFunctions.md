@@ -14,7 +14,7 @@ MakeFunctions -- construct a function jump table
 ```
 **FUNCTION**
 
-A low level function used by [MakeLibrary](MakeLibrary) to build jump tables of
+A low level function used by [MakeLibrary](MakeLibrary.md) to build jump tables of
 the type used by libraries, devices and resources.  It allows the
 table to be built anywhere in memory, and can be used both for
 initialization and replacement. This function also supports function
@@ -45,4 +45,4 @@ tableSize - size of the new table in bytes (for LIB_NEGSIZE).
 
 **SEE ALSO**
 
-[exec/MakeLibrary](MakeLibrary)
+[exec/MakeLibrary](MakeLibrary.md)

@@ -16,13 +16,13 @@ AssignAdd -- Adds a lock to an assign for multi-directory assigns (V36)
 
 Adds a lock to an assign, making or adding to a multi-directory
 assign.  Note that this only will succeed on an assign created with
-[AssignLock](AssignLock), or an assign created with [AssignLate](AssignLate) which has been
+[AssignLock](AssignLock.md), or an assign created with [AssignLate](AssignLate.md) which has been
 resolved (converted into a AssignLock()-assign).
 
 NOTE: you should not use the lock in any way after making this call
 successfully.  It becomes the part of the assign, and will be unlocked
 by the system when the assign is removed.  If you need to keep the
-lock, pass a lock from [DupLock](DupLock) to [AssignLock](AssignLock).
+lock, pass a lock from [DupLock](DupLock.md) to [AssignLock](AssignLock.md).
 
 **INPUTS**
 
@@ -35,5 +35,5 @@ unlocked.
 
 **SEE ALSO**
 
-[Lock](Lock), [AssignLock](AssignLock), [AssignPath](AssignPath), [AssignLate](AssignLate), [DupLock](DupLock),
-[RemAssignList](RemAssignList)
+[Lock](Lock.md), [AssignLock](AssignLock.md), [AssignPath](AssignPath.md), [AssignLate](AssignLate.md), [DupLock](DupLock.md),
+[RemAssignList](RemAssignList.md)

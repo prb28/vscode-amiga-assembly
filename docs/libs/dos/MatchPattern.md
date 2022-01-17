@@ -15,7 +15,7 @@ MatchPattern --  Checks for a pattern match with a string (V36)
 **FUNCTION**
 
 Checks for a pattern match with a string.  The pattern must be a
-tokenized string output by [ParsePattern](ParsePattern).  This routine is
+tokenized string output by [ParsePattern](ParsePattern.md).  This routine is
 case-sensitive.
 
 NOTE: this routine is highly recursive.  You must have at least
@@ -25,14 +25,14 @@ That's _currently_ enough for about 100 levels deep of #, (, ~, etc.
 
 **INPUTS**
 
-pat - Special pattern string to match as returned by [ParsePattern](ParsePattern)
+pat - Special pattern string to match as returned by [ParsePattern](ParsePattern.md)
 str - String to match against given pattern
 
 RESULT
 match - success or failure of pattern match.  On failure,
-[IoErr](IoErr) will return 0 or ERROR_TOO_MANY_LEVELS (starting
+[IoErr](IoErr.md) will return 0 or ERROR_TOO_MANY_LEVELS (starting
 with V37 - before that there was no stack checking).
 
 **SEE ALSO**
 
-[ParsePattern](ParsePattern), [MatchPatternNoCase](MatchPatternNoCase), [MatchFirst](MatchFirst), [MatchNext](MatchNext)
+[ParsePattern](ParsePattern.md), [MatchPatternNoCase](MatchPatternNoCase.md), [MatchFirst](MatchFirst.md), [MatchNext](MatchNext.md)

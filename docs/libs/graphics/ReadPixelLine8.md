@@ -15,23 +15,23 @@ right for count pixels. (V36)
          UBYTE *, struct RastPort * );
 
 ```
-Links: [RastPort](_00AF) [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) [RastPort](_00AF.md) 
 
 **FUNCTION**
 
 For each pixel in a rectangular region, combine the bits from each
-of the bit-planes used to describe a particular [RastPort](_00AF) into the pen
+of the bit-planes used to describe a particular [RastPort](_00AF.md) into the pen
 number selector which that bit combination normally forms for the
 system hardware selection of pixel color.
 
 **INPUTS**
 
-rp     - pointer to a [RastPort](_00AF) structure
-(x,y)  - a point in the [RastPort](_00AF)
+rp     - pointer to a [RastPort](_00AF.md) structure
+(x,y)  - a point in the [RastPort](_00AF.md)
 width  - count of horizontal pixels to read
 array -  pointer to an array of UBYTEs from which to fetch the pixel
 data allocate at least (((width+15)&#062;&#062;4)&#060;&#060;4) bytes.
-temprp - temporary rastport (copy of rp with [Layer](_00A1) set == NULL,
+temprp - temporary rastport (copy of rp with [Layer](_00A1.md) set == NULL,
 temporary memory allocated for
 temprp-&#062;BitMap with Rows set == 1,
 temprp-&#062;BytesPerRow == (((width+15)&#062;&#062;4)&#060;&#060;1),
@@ -50,4 +50,4 @@ BUGS
 
 **SEE ALSO**
 
-[ReadPixel](ReadPixel)  [graphics/rastport.h](_00AF)
+[ReadPixel](ReadPixel.md)  [graphics/rastport.h](_00AF.md)

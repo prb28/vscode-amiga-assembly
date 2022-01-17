@@ -12,7 +12,7 @@ CloseWindow -- Close an Intuition window.
     VOID CloseWindow( struct Window * );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -27,9 +27,9 @@ will try to make use of a linked list (the queue) which contains free
 memory (the old messages).  This will give you big problems.
 See the code fragment CloseWindowSafely(), below.
 
-NOTE:  If you have added a [Menu](_00D4) strip to this [Window](_00D4) (via
-a call to [SetMenuStrip](SetMenuStrip)) you must be sure to remove that [Menu](_00D4) strip
-(via a call to [ClearMenuStrip](ClearMenuStrip)) before closing your [Window](_00D4).
+NOTE:  If you have added a [Menu](_00D4.md) strip to this [Window](_00D4.md) (via
+a call to [SetMenuStrip](SetMenuStrip.md)) you must be sure to remove that [Menu](_00D4.md) strip
+(via a call to [ClearMenuStrip](ClearMenuStrip.md)) before closing your [Window](_00D4.md).
 
 NOTE: This function may block until it is safe to de-link and free
 your window.  Your program may thus be suspended while the user
@@ -43,7 +43,7 @@ was pre-arranged (see OpenScreen).
 
 **INPUTS**
 
-[Window](_00D4) = a pointer to a [Window](_00D4) structure
+[Window](_00D4.md) = a pointer to a [Window](_00D4.md) structure
 
 RESULT
 None
@@ -52,7 +52,7 @@ BUGS
 
 **SEE ALSO**
 
-[OpenWindow](OpenWindow), [OpenScreen](OpenScreen), [CloseScreen](CloseScreen)
+[OpenWindow](OpenWindow.md), [OpenScreen](OpenScreen.md), [CloseScreen](CloseScreen.md)
 
 EXAMPLE
 /*  CloseWindowSafely */
@@ -73,7 +73,7 @@ EXAMPLE
 #include &#034;intuition/intuition.h&#034;
 
 CloseWindowSafely( win )
-struct [Window](_00D4) *win;
+struct [Window](_00D4.md) *win;
 {
 /* we forbid here to keep out of race conditions with Intuition */
 Forbid();
@@ -102,13 +102,13 @@ CloseWindow( win );
 *  of a message after we have replied it)
 */
 StripIntuiMessages( mp, win )
-struct [MsgPort](_0099) *mp;
-struct [Window](_00D4) *win;
+struct [MsgPort](_0099.md) *mp;
+struct [Window](_00D4.md) *win;
 {
-struct [IntuiMessage](_00D4) *msg;
-struct [Node](_0091) *succ;
+struct [IntuiMessage](_00D4.md) *msg;
+struct [Node](_0091.md) *succ;
 
-msg = (struct [IntuiMessage](_00D4) *) mp-&#062;mp_MsgList.lh_Head;
+msg = (struct [IntuiMessage](_00D4.md) *) mp-&#062;mp_MsgList.lh_Head;
 
 while( succ =  msg-&#062;ExecMessage.mn_Node.ln_Succ ) {
 
@@ -122,6 +122,6 @@ Remove( msg );
 ReplyMsg( msg );
 }
 
-msg = (struct [IntuiMessage](_00D4) *) succ;
+msg = (struct [IntuiMessage](_00D4.md) *) succ;
 }
 }

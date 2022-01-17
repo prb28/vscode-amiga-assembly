@@ -35,4 +35,4 @@ also wrong.
 
 **SEE ALSO**
 
-[Open](Open), [Close](Close), [Lock](Lock), [UnLock](UnLock)
+[Open](Open.md), [Close](Close.md), [Lock](Lock.md), [UnLock](UnLock.md)

@@ -53,4 +53,4 @@ SetExcept($1374,$1074)
 
 **SEE ALSO**
 
-[Signal](Signal), [SetSignal](SetSignal)
+[Signal](Signal.md), [SetSignal](SetSignal.md)

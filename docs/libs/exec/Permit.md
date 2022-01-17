@@ -14,13 +14,13 @@ Permit -- permit task rescheduling.
 **FUNCTION**
 
 Allow other tasks to be scheduled to run by the dispatcher, after a
-matching [Forbid](Forbid) has been executed.
+matching [Forbid](Forbid.md) has been executed.
 
 **RESULTS**
 
 Other tasks will be rescheduled as they are ready to run. In order
 to restore normal task rescheduling, the programmer must execute
-exactly one call to Permit() for every call to [Forbid](Forbid).
+exactly one call to Permit() for every call to [Forbid](Forbid.md).
 
 NOTE
 This call is guaranteed to preserve all registers.

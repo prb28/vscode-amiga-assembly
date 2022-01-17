@@ -13,7 +13,7 @@ OnGadget -- Enable the specified gadget.
             struct Requester * );
 
 ```
-Links: [Gadget](_00D4) [Window](_00D4) [Requester](_00D4) [Gadget](_00D4) [Window](_00D4) [Requester](_00D4) 
+Links: [Gadget](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) [Gadget](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) 
 
 **FUNCTION**
 
@@ -39,14 +39,14 @@ end of the gadget list if gadget is in a window.
 If you want to improve on this behavior, you may perform the
 equivalent operation yourself: remove a gadget or gadgets,
 change the state of their GFLG_DISABLED flag, replace the
-gadgets using [AddGList](AddGList), and selectively call [RefreshGList](RefreshGList).
+gadgets using [AddGList](AddGList.md), and selectively call [RefreshGList](RefreshGList.md).
 
 **INPUTS**
 
-[Gadget](_00D4) = pointer to the gadget that you want disabled
-[Window](_00D4) = pointer to a window structure containing the gadget or
+[Gadget](_00D4.md) = pointer to the gadget that you want disabled
+[Window](_00D4.md) = pointer to a window structure containing the gadget or
 containing the requester which contains the gadget
-[Requester](_00D4) = pointer to a requester (may by NULL if this isn't
+[Requester](_00D4.md) = pointer to a requester (may by NULL if this isn't
 a requester gadget (i.e. GTYP_REQGADGET is not set)).
 
 RESULT

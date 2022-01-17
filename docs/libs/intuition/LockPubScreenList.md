@@ -12,20 +12,20 @@ LockPubScreenList -- Prevent changes to the system list. (V36)
     struct List *LockPubScreenList( VOID );
 
 ```
-Links: [List](_007D) [List](_007D) 
+Links: [List](_007D.md) [List](_007D.md) 
 
 **FUNCTION**
 
 Arbitrates access to public screen list while you quickly
 make a copy of it for display to the user.
 
-Note that this is intended only for the Public [Screen](_00DD) Manager
+Note that this is intended only for the Public [Screen](_00DD.md) Manager
 program.
 
 NOTES
-The nodes on the list are [PubScreenNode](_00DD) structures.
+The nodes on the list are [PubScreenNode](_00DD.md) structures.
 Act quickly while holding this lock.  The restrictions
-on [LockIBase](LockIBase) apply here as well.
+on [LockIBase](LockIBase.md) apply here as well.
 
 **INPUTS**
 
@@ -38,4 +38,4 @@ BUGS
 
 **SEE ALSO**
 
-[OpenScreen](OpenScreen), Intuition V36 update documentation
+[OpenScreen](OpenScreen.md), Intuition V36 update documentation

@@ -15,17 +15,17 @@ RemakeDisplay -- Remake the entire Intuition display.
 
 This is the big one.
 
-This procedure remakes the entire [View](_00B8) structure for the
-Intuition display.  It does the equivalent of [MakeScreen](MakeScreen) for
+This procedure remakes the entire [View](_00B8.md) structure for the
+Intuition display.  It does the equivalent of [MakeScreen](MakeScreen.md) for
 every screen in the system, and then it calls the internal
-equivalent of [RethinkDisplay](RethinkDisplay).
+equivalent of [RethinkDisplay](RethinkDisplay.md).
 
 WARNING:  This routine can take many milliseconds to run, so
 do not use it lightly.
 
-Calling [MakeScreen](MakeScreen) followed by [RethinkDisplay](RethinkDisplay) is typically
+Calling [MakeScreen](MakeScreen.md) followed by [RethinkDisplay](RethinkDisplay.md) is typically
 a more efficient method for affecting changes to a single
-screen's [ViewPort](_00B8).
+screen's [ViewPort](_00B8.md).
 
 **INPUTS**
 
@@ -38,5 +38,5 @@ BUGS
 
 **SEE ALSO**
 
-[MakeScreen](MakeScreen), [RethinkDisplay](RethinkDisplay), [graphics.library/MakeVPort](../graphics/MakeVPort)
-[graphics.library/MrgCop](../graphics/MrgCop), [graphics.library/LoadView](../graphics/LoadView)
+[MakeScreen](MakeScreen.md), [RethinkDisplay](RethinkDisplay.md), [graphics.library/MakeVPort](../graphics/MakeVPort.md)
+[graphics.library/MrgCop](../graphics/MrgCop.md), [graphics.library/LoadView](../graphics/LoadView.md)

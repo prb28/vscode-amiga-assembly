@@ -12,7 +12,7 @@ StartNotify -- Starts notification on a file or directory (V36)
     BOOL StartNotify(struct NotifyRequest *)
 
 ```
-Links: [NotifyRequest](_006E) 
+Links: [NotifyRequest](_006E.md) 
 
 **FUNCTION**
 
@@ -24,7 +24,7 @@ particular, most network filesystems won't support it.
 
 **INPUTS**
 
-notifystructure - A filled-in [NotifyRequest](_006E) structure
+notifystructure - A filled-in [NotifyRequest](_006E.md) structure
 
 RESULT
 success - Success/failure of request
@@ -35,4 +35,4 @@ V36 ram handler (ram:) does.  This has been fixed for V37.
 
 **SEE ALSO**
 
-[EndNotify](EndNotify), [&#060;dos/notify.h&#062;](_006E)
+[EndNotify](EndNotify.md), [&#060;dos/notify.h&#062;](_006E.md)

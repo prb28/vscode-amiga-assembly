@@ -13,7 +13,7 @@ RefreshGadgets -- Refresh (redraw) the gadget display.
             struct Requester * );
 
 ```
-Links: [Window](_00D4) [Requester](_00D4) [Gadget](_00D4) [Window](_00D4) [Requester](_00D4) 
+Links: [Window](_00D4.md) [Requester](_00D4.md) [Gadget](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) 
 
 **FUNCTION**
 
@@ -25,7 +25,7 @@ gadget, or which contains the requester that contains the gadget
 The requester parameter must only be valid if the gadget has the
 GTYP_REQGADGET flag set, a requirement for all requester gadgets.
 
-The Pointer argument points to a [Window](_00D4) structure.
+The Pointer argument points to a [Window](_00D4.md) structure.
 
 The two main reasons why you might want to use this routine are:
 first, that you've modified the imagery of the gadgets in your
@@ -35,29 +35,29 @@ trashed the gadgetry of your display, this routine will refresh
 the imagery for you.
 
 Note that to modify the imagery of a gadget, you must first remove
-that gadget from the window's gadget list, using [RemoveGadget](RemoveGadget) (or
+that gadget from the window's gadget list, using [RemoveGadget](RemoveGadget.md) (or
 RemoveGList()).  After changing the image, border, text (including
 text for a string gadget), the gadget is replaced in the gadget list
-(using [AddGadget](AddGadget) or [AddGList](AddGList)).  Adding gadgets does not cause
-them to be displayed (refreshed), so this function, or [RefreshGList](RefreshGList)
+(using [AddGadget](AddGadget.md) or [AddGList](AddGList.md)).  Adding gadgets does not cause
+them to be displayed (refreshed), so this function, or [RefreshGList](RefreshGList.md)
 is typically called.
 
 A common technique is to set or reset the GFLG_SELECTED flag of a
 Boolean gadget and then call RefreshGadgets() to see it displayed
 highlighted if and only if GFLG_SELECTED is set.  If you wish to do
-this and be completely proper, you must [RemoveGadget](RemoveGadget), change the
-GFLG_SELECTED flag, [AddGadget](AddGadget), and RefreshGadgets(), or the
+this and be completely proper, you must [RemoveGadget](RemoveGadget.md), change the
+GFLG_SELECTED flag, [AddGadget](AddGadget.md), and RefreshGadgets(), or the
 equivalent.
 
 The gadgets argument can be a copy of the FirstGadget variable in
-the [Window](_00D4) structure that you want refreshed:
+the [Window](_00D4.md) structure that you want refreshed:
 the effect of this will be that all gadgets will be redrawn.
 However, you can selectively refresh just some of the gadgets
 by starting the refresh part-way into the list:  for instance,
 redrawing your window non-GTYP_GZZGADGET gadgets only, which you've
 conveniently grouped at the end of your gadget list.
 
-Even more control is available using the [RefreshGList](RefreshGList) routine which
+Even more control is available using the [RefreshGList](RefreshGList.md) routine which
 enables you to refresh a single gadget, or number of your choice.
 
 NOTE:  It's never safe to tinker with the gadget list yourself.  Don't
@@ -68,8 +68,8 @@ the usual way.
 
 Gadgets = pointer to the first in the list of gadgets wanting
 refreshment
-[Window](_00D4) = pointer to the window containing the gadget or its requester
-[Requester](_00D4) = pointer to a requester (ignored if gadget is not attached
+[Window](_00D4.md) = pointer to the window containing the gadget or its requester
+[Requester](_00D4.md) = pointer to a requester (ignored if gadget is not attached
 to a requester).
 
 RESULT
@@ -79,4 +79,4 @@ BUGS
 
 **SEE ALSO**
 
-[RefreshGList](RefreshGList), [RemoveGadget](RemoveGadget), [RemoveGList](RemoveGList), [AddGadget](AddGadget), [AddGList](AddGList)
+[RefreshGList](RefreshGList.md), [RemoveGadget](RemoveGadget.md), [RemoveGList](RemoveGList.md), [AddGadget](AddGadget.md), [AddGList](AddGList.md)

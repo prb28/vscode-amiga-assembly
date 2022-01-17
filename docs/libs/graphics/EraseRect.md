@@ -14,17 +14,17 @@ BackFill hook. (V36)
     void EraseRect(struct RastPort *, SHORT, SHORT, SHORT, SHORT);
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
 Fill the rectangular region specified by the parameters with the
 BackFill hook. If non-layered, the rectangular region specified by
-the parameters is cleared. If layered the Layer-&#062;BackFill [Hook](_012D) is used.
+the parameters is cleared. If layered the Layer-&#062;BackFill [Hook](_012D.md) is used.
 
 **INPUTS**
 
-rp      - pointer to a [RastPort](_00AF) structure
+rp      - pointer to a [RastPort](_00AF.md) structure
 xmin    - x coordinate of the upper left corner of the region to fill.
 ymin    - y coordinate of the upper left corner of the region to fill.
 xmax    - x coordinate of the lower right corner of the region to fill.
@@ -38,4 +38,4 @@ The following relation MUST be true:
 
 **SEE ALSO**
 
-[graphics/rastport.h](_00AF) [graphics/clip.h](_00A1)
+[graphics/rastport.h](_00AF.md) [graphics/clip.h](_00A1.md)

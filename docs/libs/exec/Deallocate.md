@@ -12,7 +12,7 @@ Deallocate -- deallocate a block of memory
     void Deallocate(struct MemHeader *,APTR,ULONG);
 
 ```
-Links: [MemHeader](_0089) 
+Links: [MemHeader](_0089.md) 
 
 **FUNCTION**
 
@@ -24,11 +24,11 @@ must be an even multiple of the memory chunk size (currently 8
 bytes).
 
 This function can even be used to add a new free region to an
-existing [MemHeader](_0089), however the extent pointers in the [MemHeader](_0089)
+existing [MemHeader](_0089.md), however the extent pointers in the [MemHeader](_0089.md)
 will no longer be valid.
 
 If memoryBlock is not on a block boundary (MEM_BLOCKSIZE) then it
-will be rounded down in a manner compatible with [Allocate](Allocate).  Note
+will be rounded down in a manner compatible with [Allocate](Allocate.md).  Note
 that this will work correctly with all the memory allocation
 functions, but may cause surprises if one is freeing only part of a
 region.  The size of the block will be rounded up, so the freed
@@ -43,4 +43,4 @@ happens.
 
 **SEE ALSO**
 
-Allocate, [exec/memory.h](_0089)
+Allocate, [exec/memory.h](_0089.md)

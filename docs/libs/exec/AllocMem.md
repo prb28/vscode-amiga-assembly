@@ -135,4 +135,4 @@ ERROR_NO_FREE_STORE if the memory allocation fails.
 
 **SEE ALSO**
 
-[FreeMem](FreeMem)
+[FreeMem](FreeMem.md)

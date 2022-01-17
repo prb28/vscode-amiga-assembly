@@ -36,4 +36,4 @@ If the address is not in known RAM, zero is returned.
 
 **SEE ALSO**
 
-[AllocMem](AllocMem)
+[AllocMem](AllocMem.md)

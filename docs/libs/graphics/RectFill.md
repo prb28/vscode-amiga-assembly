@@ -1,7 +1,7 @@
 
 **NAME**
 
-RectFill -- Fill a rectangular region in a [RastPort](_00AF).
+RectFill -- Fill a rectangular region in a [RastPort](_00AF.md).
 
 **SYNOPSIS**
 
@@ -13,7 +13,7 @@ RectFill -- Fill a rectangular region in a [RastPort](_00AF).
     void RectFill( struct RastPort *, SHORT, SHORT, SHORT, SHORT );
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
@@ -25,7 +25,7 @@ color, taking into account the drawing mode.
 
 **INPUTS**
 
-rp - pointer to a [RastPort](_00AF) structure
+rp - pointer to a [RastPort](_00AF.md) structure
 (xmin,ymin) (xmax,ymax) are the coordinates of the upper
 left corner and the lower right corner, respectively, of the
 rectangle.
@@ -39,4 +39,4 @@ Complement mode with FgPen complements all bitplanes.
 
 **SEE ALSO**
 
-[AreaEnd](AreaEnd) [graphics/rastport.h](_00AF)
+[AreaEnd](AreaEnd.md) [graphics/rastport.h](_00AF.md)

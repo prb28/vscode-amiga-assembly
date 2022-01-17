@@ -25,4 +25,4 @@ lock - Lock on parent directory of the filehandle or NULL for failure.
 
 **SEE ALSO**
 
-Parent(), [Lock](Lock), [UnLock](UnLock) [DupLockFromFH](DupLockFromFH)
+Parent(), [Lock](Lock.md), [UnLock](UnLock.md) [DupLockFromFH](DupLockFromFH.md)

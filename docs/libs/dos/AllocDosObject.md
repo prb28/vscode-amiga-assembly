@@ -21,7 +21,7 @@ AllocDosObject -- Creates a dos object (V36)
     void *AllocDosObjectTags(ULONG, ULONG, ...)
 
 ```
-Links: [TagItem](_012E) [TagItem](_012E) 
+Links: [TagItem](_012E.md) [TagItem](_012E.md) 
 
 **FUNCTION**
 
@@ -39,4 +39,4 @@ packet - pointer to the object or NULL
 
 **SEE ALSO**
 
-[FreeDosObject](FreeDosObject), [&#060;dos/dostags.h&#062;](_006D), [&#060;dos/dos.h&#062;](_0068)
+[FreeDosObject](FreeDosObject.md), [&#060;dos/dostags.h&#062;](_006D.md), [&#060;dos/dos.h&#062;](_0068.md)

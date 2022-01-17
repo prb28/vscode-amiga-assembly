@@ -43,4 +43,4 @@ are available, this function returns -1.
 
 **SEE ALSO**
 
-[FreeSignal](FreeSignal)
+[FreeSignal](FreeSignal.md)

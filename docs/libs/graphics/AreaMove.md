@@ -14,20 +14,20 @@ shape in the vector list.
     LONG AreaMove( struct RastPort *, SHORT, SHORT );
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
 Close  the last polygon and start another polygon
 at  (x,y). Add the necessary  points  to  vector
 buffer. Closing a polygon may result in the generation
-of another [AreaDraw](AreaDraw) to close previous polygon.
-[Remember](_00D4) to have an initialized [AreaInfo](_00AF) structure attached
-to the [RastPort](_00AF).
+of another [AreaDraw](AreaDraw.md) to close previous polygon.
+[Remember](_00D4.md) to have an initialized [AreaInfo](_00AF.md) structure attached
+to the [RastPort](_00AF.md).
 
 **INPUTS**
 
-rp  - points to a [RastPort](_00AF) structure
+rp  - points to a [RastPort](_00AF.md) structure
 x,y - positions in the raster
 
 RETURNS
@@ -38,4 +38,4 @@ BUGS
 
 **SEE ALSO**
 
-[InitArea](InitArea) [AreaDraw](AreaDraw) [AreaEllipse](AreaEllipse) [AreaEnd](AreaEnd) [graphics/rastport.h](_00AF)
+[InitArea](InitArea.md) [AreaDraw](AreaDraw.md) [AreaEllipse](AreaEllipse.md) [AreaEnd](AreaEnd.md) [graphics/rastport.h](_00AF.md)

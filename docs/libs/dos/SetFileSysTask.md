@@ -12,7 +12,7 @@ SetFileSysTask -- Sets the default filesystem for the process (V36)
     struct MsgPort *SetFileSysTask(struct MsgPort *)
 
 ```
-Links: [MsgPort](_0099) [MsgPort](_0099) 
+Links: [MsgPort](_0099.md) [MsgPort](_0099.md) 
 
 **FUNCTION**
 
@@ -28,4 +28,4 @@ oldport - The previous FileSysTask value
 
 **SEE ALSO**
 
-[GetFileSysTask](GetFileSysTask), [Open](Open)
+[GetFileSysTask](GetFileSysTask.md), [Open](Open.md)

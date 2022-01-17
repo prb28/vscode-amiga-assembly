@@ -12,7 +12,7 @@ FindSemaphore -- find a given system signal semaphore
     struct SignalSemaphore *FindSemaphore(STRPTR);
 
 ```
-Links: [SignalSemaphore](_0082) 
+Links: [SignalSemaphore](_0082.md) 
 
 **FUNCTION**
 

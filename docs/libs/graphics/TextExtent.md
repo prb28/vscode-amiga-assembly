@@ -1,7 +1,7 @@
 
 **NAME**
 
-[TextExtent](_00A8) -- Determine raster extent of text data. (V36)
+[TextExtent](_00A8.md) -- Determine raster extent of text data. (V36)
 
 **SYNOPSIS**
 
@@ -13,17 +13,17 @@
          struct TextExtent *);
 
 ```
-Links: [RastPort](_00AF) [TextExtent](_00A8) 
+Links: [RastPort](_00AF.md) [TextExtent](_00A8.md) 
 
 **FUNCTION**
 
 This function determines a more complete metric of the space
-that a text string would render into than the [TextLength](TextLength)
+that a text string would render into than the [TextLength](TextLength.md)
 function.
 
 **INPUTS**
 
-rp     - a pointer to the [RastPort](_00AF) which describes where the
+rp     - a pointer to the [RastPort](_00AF.md) which describes where the
 text attributes reside.
 string - the address of the string to determine the length of.
 count  - the number of characters in the string.
@@ -33,7 +33,7 @@ textExtent - a structure to hold the result.
 **RESULTS**
 
 textExtent is filled in as follows:
-te_Width  - same as [TextLength](TextLength) result: the rp_cp_x
+te_Width  - same as [TextLength](TextLength.md) result: the rp_cp_x
 advance that rendering this text would cause.
 te_Height - same as tf_YSize.  The height of the
 font.
@@ -51,5 +51,5 @@ the rectanangle this would render into.
 
 **SEE ALSO**
 
-[TextLength](TextLength)  [Text](Text)  [TextFit](TextFit)
-[graphics/text.h](_00A8)  [graphics/rastport.h](_00AF)
+[TextLength](TextLength.md)  [Text](Text.md)  [TextFit](TextFit.md)
+[graphics/text.h](_00A8.md)  [graphics/rastport.h](_00AF.md)

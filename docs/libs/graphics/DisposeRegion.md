@@ -13,19 +13,19 @@ memory pool.
     void DisposeRegion( struct Region * );
 
 ```
-Links: [Region](_00B7) 
+Links: [Region](_00B7.md) 
 
 **FUNCTION**
 
-Free all RegionRectangles for this [Region](_00B7) then
-free the [Region](_00B7) itself.
+Free all RegionRectangles for this [Region](_00B7.md) then
+free the [Region](_00B7.md) itself.
 
 **INPUTS**
 
-region - pointer to [Region](_00B7) structure
+region - pointer to [Region](_00B7.md) structure
 
 BUGS
 
 **SEE ALSO**
 
-[NewRegion](NewRegion) [graphics/regions.h](_00B7)
+[NewRegion](NewRegion.md) [graphics/regions.h](_00B7.md)

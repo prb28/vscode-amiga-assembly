@@ -1,7 +1,7 @@
 
 **NAME**
 
-ScalerDiv -- Get the scaling result that [BitMapScale](BitMapScale) would. (V36)
+ScalerDiv -- Get the scaling result that [BitMapScale](BitMapScale.md) would. (V36)
 
 **SYNOPSIS**
 
@@ -16,9 +16,9 @@ ScalerDiv -- Get the scaling result that [BitMapScale](BitMapScale) would. (V36)
 
 Calculate the expression (factor*numerator/denominator) such
 that the result is the same as the width of the destination
-result of [BitMapScale](BitMapScale) when the factor here is the width of
+result of [BitMapScale](BitMapScale.md) when the factor here is the width of
 the source, and the numerator and denominator are the
-XDestFactor and XSrcFactor for [BitMapScale](BitMapScale).
+XDestFactor and XSrcFactor for [BitMapScale](BitMapScale.md).
 
 **INPUTS**
 

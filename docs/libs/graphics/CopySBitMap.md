@@ -1,8 +1,8 @@
 
 **NAME**
 
-CopySBitMap --   Syncronize [Layer](_00A1) window with contents of
-Super [BitMap](_00A6)
+CopySBitMap --   Syncronize [Layer](_00A1.md) window with contents of
+Super [BitMap](_00A6.md)
 
 **SYNOPSIS**
 
@@ -13,23 +13,23 @@ Super [BitMap](_00A6)
     void CopySBitMap(struct Layer *);
 
 ```
-Links: [Layer](_00A1) 
+Links: [Layer](_00A1.md) 
 
 **FUNCTION**
 
-This is the inverse of [SyncSBitMap](SyncSBitMap).
-Copy all bits from SuperBitMap to [Layer](_00A1) bounds.
+This is the inverse of [SyncSBitMap](SyncSBitMap.md).
+Copy all bits from SuperBitMap to [Layer](_00A1.md) bounds.
 This is used for those functions that do not
-want to deal with the [ClipRect](_00A1) structures but do want
-to be able to work with a SuperBitMap [Layer](_00A1).
+want to deal with the [ClipRect](_00A1.md) structures but do want
+to be able to work with a SuperBitMap [Layer](_00A1.md).
 
 **INPUTS**
 
-layer - pointer to a SuperBitMap [Layer](_00A1)
-The [Layer](_00A1) must already be locked by the caller.
+layer - pointer to a SuperBitMap [Layer](_00A1.md)
+The [Layer](_00A1.md) must already be locked by the caller.
 
 BUGS
 
 **SEE ALSO**
 
-[LockLayerRom](LockLayerRom) [SyncSBitMap](SyncSBitMap)
+[LockLayerRom](LockLayerRom.md) [SyncSBitMap](SyncSBitMap.md)

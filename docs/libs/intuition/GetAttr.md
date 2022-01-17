@@ -19,7 +19,7 @@ attribute.
 
 You always pass the address of a long variable, which will
 receive the same value that would be passed to SetAttrs() in
-the ti_Data portion of a [TagItem](_012E) element.  See the documentation
+the ti_Data portion of a [TagItem](_012E.md) element.  See the documentation
 for the class for exceptions to this general rule.
 
 Not all attributes will respond to this function.  Those that
@@ -42,6 +42,6 @@ BUGS
 
 **SEE ALSO**
 
-[NewObject](NewObject), [DisposeObject](DisposeObject), SetAttrs(), [MakeClass](MakeClass),
+[NewObject](NewObject.md), [DisposeObject](DisposeObject.md), SetAttrs(), [MakeClass](MakeClass.md),
 Document &#034;Basic Object-Oriented Programming System for Intuition&#034;
 and the &#034;boopsi Class Reference&#034; document.

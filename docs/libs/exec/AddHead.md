@@ -12,7 +12,7 @@ AddHead -- insert node at the head of a list
     void AddHead(struct List *, struct Node *)
 
 ```
-Links: [List](_007D) [Node](_0091) 
+Links: [List](_007D.md) [Node](_0091.md) 
 
 **FUNCTION**
 
@@ -32,4 +32,4 @@ node - the node to insert at head
 
 **SEE ALSO**
 
-[AddTail](AddTail), [Enqueue](Enqueue), Insert, Remove, [RemHead](RemHead), [RemTail](RemTail)
+[AddTail](AddTail.md), [Enqueue](Enqueue.md), Insert, Remove, [RemHead](RemHead.md), [RemTail](RemTail.md)

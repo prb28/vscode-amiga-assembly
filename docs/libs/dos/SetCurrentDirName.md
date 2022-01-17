@@ -31,4 +31,4 @@ This clips to a fixed (1.3 compatible) size.
 
 **SEE ALSO**
 
-[GetCurrentDirName](GetCurrentDirName)
+[GetCurrentDirName](GetCurrentDirName.md)

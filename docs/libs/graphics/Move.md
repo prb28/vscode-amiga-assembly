@@ -12,18 +12,18 @@ Move -- Move graphics pen position.
     void Move( struct RastPort *, SHORT, SHORT );
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
 Move graphics pen position to (x,y) relative to upper left (0,0)
-of [RastPort](_00AF). This sets the starting point for subsequent [Draw](Draw)
-and [Text](Text) calls.
+of [RastPort](_00AF.md). This sets the starting point for subsequent [Draw](Draw.md)
+and [Text](Text.md) calls.
 
 **INPUTS**
 
-rp - pointer to a [RastPort](_00AF) structure
-x,y - point in the [RastPort](_00AF)
+rp - pointer to a [RastPort](_00AF.md) structure
+x,y - point in the [RastPort](_00AF.md)
 
 **RESULTS**
 
@@ -32,4 +32,4 @@ BUGS
 
 **SEE ALSO**
 
-Draw [graphics/rastport.h](_00AF)
+Draw [graphics/rastport.h](_00AF.md)

@@ -12,7 +12,7 @@ SetPointer -- Specify a pointer sprite image for a window.
     VOID SetPointer( struct Window *, UWORD *, WORD, WORD, WORD, WORD );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -36,7 +36,7 @@ will be over the mouse position.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the window to receive this pointer definition
+[Window](_00D4.md) = pointer to the window to receive this pointer definition
 Pointer = pointer to the data definition of a sprite
 Height = the height of the pointer
 Width = the width of the sprite (must be less than or equal to sixteen)
@@ -50,5 +50,5 @@ BUGS
 
 **SEE ALSO**
 
-[ClearPointer](ClearPointer), Intuition Reference Manual or Amiga Rom
+[ClearPointer](ClearPointer.md), Intuition Reference Manual or Amiga Rom
 Kernel Manual

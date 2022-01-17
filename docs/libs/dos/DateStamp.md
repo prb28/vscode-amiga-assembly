@@ -1,7 +1,7 @@
 
 **NAME**
 
-[DateStamp](_0068) -- Obtain the date and time in internal format
+[DateStamp](_0068.md) -- Obtain the date and time in internal format
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@
     struct DateStamp *DateStamp(struct DateStamp *)
 
 ```
-Links: [DateStamp](_0068) [DateStamp](_0068) 
+Links: [DateStamp](_0068.md) [DateStamp](_0068.md) 
 
 **FUNCTION**
 
@@ -30,7 +30,7 @@ Time is measured from Jan 1, 1978.
 
 **INPUTS**
 
-ds - pointer a struct [DateStamp](_0068)
+ds - pointer a struct [DateStamp](_0068.md)
 
 **RESULTS**
 
@@ -39,4 +39,4 @@ compabability).
 
 **SEE ALSO**
 
-[DateToStr](DateToStr), [StrToDate](StrToDate), [SetFileDate](SetFileDate), [CompareDates](CompareDates)
+[DateToStr](DateToStr.md), [StrToDate](StrToDate.md), [SetFileDate](SetFileDate.md), [CompareDates](CompareDates.md)

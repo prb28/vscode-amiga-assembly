@@ -13,7 +13,7 @@ with second region, leaving result in second region
     BOOL XorRegionRegion( struct Region *, struct Region * );
 
 ```
-Links: [Region](_00B7) [Region](_00B7) 
+Links: [Region](_00B7.md) [Region](_00B7.md) 
 
 **FUNCTION**
 
@@ -22,8 +22,8 @@ region2 then remove that from the new region.
 
 **INPUTS**
 
-region1      = pointer to [Region](_00B7) structure
-region2      = pointer to [Region](_00B7) structure
+region1      = pointer to [Region](_00B7.md) structure
+region2      = pointer to [Region](_00B7.md) structure
 
 **RESULTS**
 

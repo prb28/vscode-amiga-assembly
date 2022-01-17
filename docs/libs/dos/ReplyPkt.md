@@ -12,7 +12,7 @@ ReplyPkt -- replies a packet to the person who sent it to you (V36)
     void ReplyPkt(struct DosPacket *, LONG, LONG)
 
 ```
-Links: [DosPacket](_0078) 
+Links: [DosPacket](_0078.md) 
 
 **FUNCTION**
 
@@ -30,4 +30,4 @@ result2 - secondary result
 
 **SEE ALSO**
 
-[DoPkt](DoPkt), [SendPkt](SendPkt), [WaitPkt](WaitPkt), [IoErr](IoErr)
+[DoPkt](DoPkt.md), [SendPkt](SendPkt.md), [WaitPkt](WaitPkt.md), [IoErr](IoErr.md)

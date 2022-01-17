@@ -12,7 +12,7 @@ SetConsoleTask -- Sets the default console for the process (V36)
     struct MsgPort *SetConsoleTask(struct MsgPort *)
 
 ```
-Links: [MsgPort](_0099) [MsgPort](_0099) 
+Links: [MsgPort](_0099.md) [MsgPort](_0099.md) 
 
 **FUNCTION**
 
@@ -28,4 +28,4 @@ oldport - The previous ConsoleTask value.
 
 **SEE ALSO**
 
-[GetConsoleTask](GetConsoleTask), [Open](Open)
+[GetConsoleTask](GetConsoleTask.md), [Open](Open.md)

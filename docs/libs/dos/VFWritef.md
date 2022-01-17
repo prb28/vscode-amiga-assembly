@@ -52,4 +52,4 @@ system as of V37 have it typed as VOID.
 
 **SEE ALSO**
 
-[VFPrintf](VFPrintf), [VFPrintf](VFPrintf), [FPutC](FPutC)
+[VFPrintf](VFPrintf.md), [VFPrintf](VFPrintf.md), [FPutC](FPutC.md)

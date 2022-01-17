@@ -23,7 +23,7 @@ Errors are indicated by a value of -1.
 
 Note: this is an unbuffered routine (the request is passed directly
 to the filesystem.)  Buffered I/O is more efficient for small
-reads and writes; see [FPutC](FPutC).
+reads and writes; see [FPutC](FPutC.md).
 
 **INPUTS**
 
@@ -37,4 +37,4 @@ returnedLength - integer
 
 **SEE ALSO**
 
-[Read](Read), [Seek](Seek), [Open](Open), [Close](Close), [FPutC](FPutC)
+[Read](Read.md), [Seek](Seek.md), [Open](Open.md), [Close](Close.md), [FPutC](FPutC.md)

@@ -44,4 +44,4 @@ As a side effect, this function clears all caches.
 
 **SEE ALSO**
 
-exec/execbase.i, [CacheClearU](CacheClearU), [CacheClearE](CacheClearE)
+exec/execbase.i, [CacheClearU](CacheClearU.md), [CacheClearE](CacheClearE.md)

@@ -12,25 +12,25 @@ AllocEntry -- allocate many regions of memory
     struct MemList *AllocEntry(struct MemList *);
 
 ```
-Links: [MemList](_0089) [MemList](_0089) 
+Links: [MemList](_0089.md) [MemList](_0089.md) 
 
 **FUNCTION**
 
 This function takes a memList structure and allocates enough memory
-to hold the required memory as well as a [MemList](_0089) structure to keep
+to hold the required memory as well as a [MemList](_0089.md) structure to keep
 track of it.
 
-These [MemList](_0089) structures may be linked together in a task control
+These [MemList](_0089.md) structures may be linked together in a task control
 block to keep track of the total memory usage of this task. (See
 the description of TC_MEMENTRY under RemTask).
 
 **INPUTS**
 
-memList -- A [MemList](_0089) structure filled in with [MemEntry](_0089) structures.
+memList -- A [MemList](_0089.md) structure filled in with [MemEntry](_0089.md) structures.
 
 **RESULTS**
 
-memList -- A different [MemList](_0089) filled in with the actual memory
+memList -- A different [MemList](_0089.md) filled in with the actual memory
 allocated in the me_Addr field, and their sizes in me_Length.
 If enough memory cannot be obtained, then the requirements of
 the allocation that failed is returned and bit 31 is set.
@@ -72,4 +72,4 @@ Workbench disks.
 
 **SEE ALSO**
 
-[exec/memory.h](_0089)
+[exec/memory.h](_0089.md)

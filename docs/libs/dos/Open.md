@@ -19,7 +19,7 @@ accessMode is MODE_OLDFILE, an existing file is opened for reading
 or writing. If the value is MODE_NEWFILE, a new file is created for
 writing. MODE_READWRITE opens a file with an shared lock, but
 creates it if it didn't exist.  Open types are documented in the
-[&#060;dos/dos.h&#062;](_0068) or [&#060;libraries/dos.h&#062;](_0108) include file.
+[&#060;dos/dos.h&#062;](_0068.md) or [&#060;libraries/dos.h&#062;](_0108.md) include file.
 
 The 'name' can be a filename (optionally prefaced by a device
 name), a simple device such as NIL:, a window specification such as
@@ -29,7 +29,7 @@ should be used instead.
 
 If the file cannot be opened for any reason, the value returned
 will be zero, and a secondary error code will be available by
-calling the routine [IoErr](IoErr).
+calling the routine [IoErr](IoErr.md).
 
 **INPUTS**
 
@@ -42,4 +42,4 @@ file - BCPL pointer to a file handle
 
 **SEE ALSO**
 
-[Close](Close), [ChangeMode](ChangeMode), [NameFromFH](NameFromFH), [ParentOfFH](ParentOfFH), [ExamineFH](ExamineFH)
+[Close](Close.md), [ChangeMode](ChangeMode.md), [NameFromFH](NameFromFH.md), [ParentOfFH](ParentOfFH.md), [ExamineFH](ExamineFH.md)

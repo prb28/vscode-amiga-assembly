@@ -12,7 +12,7 @@ ViewPortAddress -- Return the address of a window's viewport.
     struct ViewPort *ViewPortAddress( struct Window * );
 
 ```
-Links: [ViewPort](_00B8) [Window](_00D4) [ViewPort](_00B8) [Window](_00D4) 
+Links: [ViewPort](_00B8.md) [Window](_00D4.md) [ViewPort](_00B8.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -27,10 +27,10 @@ open, which is ensured by keeping your window open.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the window for which you want the viewport address
+[Window](_00D4.md) = pointer to the window for which you want the viewport address
 
 RESULT
-Returns the address of the Intuition [ViewPort](_00B8) structure for
+Returns the address of the Intuition [ViewPort](_00B8.md) structure for
 your window's screen .
 
 BUGS

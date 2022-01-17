@@ -12,7 +12,7 @@ SetMenuStrip -- Attach a menu strip to a window.
     BOOL SetMenuStrip( struct Window *, struct Menu * );
 
 ```
-Links: [Window](_00D4) [Menu](_00D4) [Window](_00D4) [Menu](_00D4) 
+Links: [Window](_00D4.md) [Menu](_00D4.md) [Window](_00D4.md) [Menu](_00D4.md) 
 
 **FUNCTION**
 
@@ -29,19 +29,19 @@ in the simplest case, where you will have just one menu strip for
 the lifetime of your window, you should always clear the menu strip
 before closing the window.  If you already have a menu strip attached
 to this window, the correct procedure for changing to a new menu
-strip involves calling [ClearMenuStrip](ClearMenuStrip) to clear the old first.
+strip involves calling [ClearMenuStrip](ClearMenuStrip.md) to clear the old first.
 
 The sequence of events should be:
-- [OpenWindow](OpenWindow)
+- [OpenWindow](OpenWindow.md)
 - zero or more iterations of:
 - SetMenuStrip()
-- [ClearMenuStrip](ClearMenuStrip)
-- [CloseWindow](CloseWindow)
+- [ClearMenuStrip](ClearMenuStrip.md)
+- [CloseWindow](CloseWindow.md)
 
 **INPUTS**
 
-[Window](_00D4) = pointer to a [Window](_00D4) structure
-[Menu](_00D4) = pointer to the first menu in the menu strip
+[Window](_00D4.md) = pointer to a [Window](_00D4.md) structure
+[Menu](_00D4.md) = pointer to the first menu in the menu strip
 
 RESULT
 TRUE if there were no problems.  TRUE always, since this routine
@@ -51,4 +51,4 @@ BUGS
 
 **SEE ALSO**
 
-[ClearMenuStrip](ClearMenuStrip), [ResetMenuStrip](ResetMenuStrip)
+[ClearMenuStrip](ClearMenuStrip.md), [ResetMenuStrip](ResetMenuStrip.md)

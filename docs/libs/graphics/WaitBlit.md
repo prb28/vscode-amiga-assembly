@@ -16,9 +16,9 @@ with anything else.
 
 WaitBlit returns when the blitter is idle. This function should
 normally only be used when dealing with the blitter in a
-synchronous manner, such as when using [OwnBlitter](OwnBlitter) and [DisownBlitter](DisownBlitter).
-WaitBlit does not wait for all blits queued up using [QBlit](QBlit) or
-[QBSBlit](QBSBlit). You should call WaitBlit if you are just about to modify or
+synchronous manner, such as when using [OwnBlitter](OwnBlitter.md) and [DisownBlitter](DisownBlitter.md).
+WaitBlit does not wait for all blits queued up using [QBlit](QBlit.md) or
+[QBSBlit](QBSBlit.md). You should call WaitBlit if you are just about to modify or
 free some memory that the blitter may be using.
 
 **INPUTS**
@@ -66,4 +66,4 @@ written its final word of desination data.
 
 **SEE ALSO**
 
-[OwnBlitter](OwnBlitter) [DisownBlitter](DisownBlitter) [hardware/blit.h](_00CC)
+[OwnBlitter](OwnBlitter.md) [DisownBlitter](DisownBlitter.md) [hardware/blit.h](_00CC.md)

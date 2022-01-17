@@ -33,9 +33,9 @@ len - Number of bytes to read, must be &#062; 0.
 
 RESULT
 buffer - Pointer to buffer passed in, or NULL for immediate EOF or for
-an error.  If NULL is returnd for an EOF, [IoErr](IoErr) will return
+an error.  If NULL is returnd for an EOF, [IoErr](IoErr.md) will return
 0.
 
 **SEE ALSO**
 
-[FRead](FRead), [FPuts](FPuts), [FGetC](FGetC)
+[FRead](FRead.md), [FPuts](FPuts.md), [FGetC](FGetC.md)

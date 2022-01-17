@@ -18,7 +18,7 @@ If dirty data cache lines are present, push them to memory first.
 
 Caches must be cleared after *any* operation that could cause
 invalid or stale data.  The most common cases are DMA and modifying
-instructions using the processor.  See the [CacheClearE](CacheClearE) autodoc
+instructions using the processor.  See the [CacheClearE](CacheClearE.md) autodoc
 for a more complete description.
 
 Some examples of when the cache needs clearing:
@@ -30,4 +30,4 @@ Loading code from disk
 
 **SEE ALSO**
 
-exec/execbase.i, [CacheControl](CacheControl), [CacheClearE](CacheClearE)
+exec/execbase.i, [CacheControl](CacheControl.md), [CacheClearE](CacheClearE.md)

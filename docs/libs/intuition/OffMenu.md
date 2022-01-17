@@ -12,7 +12,7 @@ OffMenu -- Disable the given menu or menu item.
     VOID OffMenu( struct Window *, UWORD );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -22,7 +22,7 @@ which is described in the Intuition Reference Manual.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the window
+[Window](_00D4.md) = pointer to the window
 MenuNumber = the menu piece to be disabled
 
 RESULT
@@ -32,4 +32,4 @@ BUGS
 
 **SEE ALSO**
 
-[OnMenu](OnMenu), [ResetMenuStrip](ResetMenuStrip)
+[OnMenu](OnMenu.md), [ResetMenuStrip](ResetMenuStrip.md)

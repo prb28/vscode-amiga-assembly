@@ -22,22 +22,22 @@ Specifically, and omitting many internal details, the operation
 consists of this:
 
 Determine which ViewPorts are invisible and set their VP_HIDE
-[ViewPort](_00B8) Mode flag. VP_HIDE flags are also set for screens that
+[ViewPort](_00B8.md) Mode flag. VP_HIDE flags are also set for screens that
 may not be simultaneously displayed with the frontmost (V36).
 
 If a change to a viewport height, or changing interlace or
-monitor scan rates require, [MakeVPort](../graphics/MakeVPort) is called for specific
+monitor scan rates require, [MakeVPort](../graphics/MakeVPort.md) is called for specific
 screen viewports.  After this phase, the intermediate Copper lists
 for each screen's viewport are correctly set up.
 
-[MrgCop](../graphics/MrgCop) and [LoadView](../graphics/LoadView) are then called to get these Copper lists
+[MrgCop](../graphics/MrgCop.md) and [LoadView](../graphics/LoadView.md) are then called to get these Copper lists
 in action, thus establishing the new state of the Intuition
 display.
 
-You may perform a [MakeScreen](MakeScreen) on your [Custom](_00CD) [Screen](_00DD) before calling
+You may perform a [MakeScreen](MakeScreen.md) on your [Custom](_00CD.md) [Screen](_00DD.md) before calling
 this routine.  The results will be incorporated in the new display, but
-changing the INTERLACE [ViewPort](_00B8) mode for one screens must be reflected
-in the Intuition [View](_00B8), which is left to Intuition.
+changing the INTERLACE [ViewPort](_00B8.md) mode for one screens must be reflected
+in the Intuition [View](_00B8.md), which is left to Intuition.
 
 WARNING:  This routine can take several milliseconds to run, so
 do not use it lightly.
@@ -62,5 +62,5 @@ for by setting the viewport DHeight field to 0 for hidden screens.
 
 **SEE ALSO**
 
-[RemakeDisplay](RemakeDisplay), [graphics.library/MakeVPort](../graphics/MakeVPort),
-[graphics.library/MrgCop](../graphics/MrgCop), [graphics.library/LoadView](../graphics/LoadView), [MakeScreen](MakeScreen)
+[RemakeDisplay](RemakeDisplay.md), [graphics.library/MakeVPort](../graphics/MakeVPort.md),
+[graphics.library/MrgCop](../graphics/MrgCop.md), [graphics.library/LoadView](../graphics/LoadView.md), [MakeScreen](MakeScreen.md)

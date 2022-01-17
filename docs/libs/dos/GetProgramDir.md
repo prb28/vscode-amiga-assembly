@@ -31,4 +31,4 @@ return currentdir if NULL.
 
 **SEE ALSO**
 
-[SetProgramDir](SetProgramDir), [Open](Open)
+[SetProgramDir](SetProgramDir.md), [Open](Open.md)

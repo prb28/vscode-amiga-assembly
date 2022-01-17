@@ -46,4 +46,4 @@ the first 8 bytes of anything you AllocAbs.
 
 **SEE ALSO**
 
-[AllocMem](AllocMem), [FreeMem](FreeMem)
+[AllocMem](AllocMem.md), [FreeMem](FreeMem.md)

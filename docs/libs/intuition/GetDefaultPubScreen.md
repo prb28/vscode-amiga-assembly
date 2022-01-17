@@ -15,7 +15,7 @@ GetDefaultPubScreen -- Get name of default public screen. (V36)
 **FUNCTION**
 
 Provides the name of the current default public screen.
-Only anticipated use is for Public [Screen](_00DD) Manager utilities,
+Only anticipated use is for Public [Screen](_00DD.md) Manager utilities,
 since it is easy to open a visitor window on the default
 public screen without specifying the name.
 
@@ -34,7 +34,7 @@ this pointer is not ensured; the screen could be closed
 at any time.  The *ONLY* legitimate use we can see for
 this return value is to compare for identity with the pointer
 to a public screen you either have a window open in, or
-a lock on using [LockPubScreen](LockPubScreen), to determine if that
+a lock on using [LockPubScreen](LockPubScreen.md), to determine if that
 screen is in fact the default screen.
 
 BUGS
@@ -42,4 +42,4 @@ The function prototype does not reflect the return value.
 
 **SEE ALSO**
 
-[SetDefaultPubScreen](SetDefaultPubScreen), [OpenWindow](OpenWindow)
+[SetDefaultPubScreen](SetDefaultPubScreen.md), [OpenWindow](OpenWindow.md)

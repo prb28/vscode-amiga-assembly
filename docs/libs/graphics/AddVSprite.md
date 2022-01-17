@@ -1,7 +1,7 @@
 
 **NAME**
 
-AddVSprite -- Add a [VSprite](_00C3) to the current gel list.
+AddVSprite -- Add a [VSprite](_00C3.md) to the current gel list.
 
 **SYNOPSIS**
 
@@ -12,17 +12,17 @@ AddVSprite -- Add a [VSprite](_00C3) to the current gel list.
     void AddVSprite(struct VSprite *, struct RastPort *);
 
 ```
-Links: [VSprite](_00C3) [RastPort](_00AF) 
+Links: [VSprite](_00C3.md) [RastPort](_00AF.md) 
 
 **FUNCTION**
 
-Sets up the system [VSprite](_00C3) flags
-Links this [VSprite](_00C3) into the current gel list using its Y,X
+Sets up the system [VSprite](_00C3.md) flags
+Links this [VSprite](_00C3.md) into the current gel list using its Y,X
 
 **INPUTS**
 
-vs = pointer to the [VSprite](_00C3) structure to be added to the gel list
-rp = pointer to a [RastPort](_00AF) structure
+vs = pointer to the [VSprite](_00C3.md) structure to be added to the gel list
+rp = pointer to a [RastPort](_00AF.md) structure
 
 RESULT
 
@@ -30,4 +30,4 @@ BUGS
 
 **SEE ALSO**
 
-[InitGels](InitGels)  [graphics/rastport.h](_00AF)  [graphics/gels.h](_00C3)
+[InitGels](InitGels.md)  [graphics/rastport.h](_00AF.md)  [graphics/gels.h](_00C3.md)

@@ -12,7 +12,7 @@ SetTaskPri -- get and set the priority of a task
     BYTE SetTaskPri(struct Task *,LONG);
 
 ```
-Links: [Task](_008E) 
+Links: [Task](_008E.md) 
 
 **FUNCTION**
 

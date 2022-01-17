@@ -13,7 +13,7 @@ this viewport.
     void WaitBOVP( struct ViewPort * );
 
 ```
-Links: [ViewPort](_00B8) 
+Links: [ViewPort](_00B8.md) 
 
 **FUNCTION**
 
@@ -21,7 +21,7 @@ Returns when the vertical beam has reached the bottom of this viewport
 
 **INPUTS**
 
-vp - pointer to [ViewPort](_00B8) structure
+vp - pointer to [ViewPort](_00B8.md) structure
 
 RESULT
 This function will return sometime after the beam gets beyond
@@ -32,8 +32,8 @@ what would be expected in a lightly loaded system.
 BUGS
 Horrors! This function currently busy waits waiting for the
 beam to get to the right place.  It should use the copper
-interrupt to trigger and send signals like [WaitTOF](WaitTOF) does.
+interrupt to trigger and send signals like [WaitTOF](WaitTOF.md) does.
 
 **SEE ALSO**
 
-[WaitTOF](WaitTOF) [VBeamPos](VBeamPos)
+[WaitTOF](WaitTOF.md) [VBeamPos](VBeamPos.md)

@@ -26,7 +26,7 @@ NULL result returned.
 
 If the module is correctly loaded then the output will be a pointer
 at the beginning of the list of blocks. Loaded code is unloaded via
-a call to [UnLoadSeg](UnLoadSeg).
+a call to [UnLoadSeg](UnLoadSeg.md).
 
 **INPUTS**
 
@@ -38,5 +38,5 @@ seglist - BCPL pointer to a seglist
 
 **SEE ALSO**
 
-[UnLoadSeg](UnLoadSeg), [InternalLoadSeg](InternalLoadSeg), [InternalUnLoadSeg](InternalUnLoadSeg), [CreateProc](CreateProc),
-[CreateNewProc](CreateNewProc), [NewLoadSeg](NewLoadSeg).
+[UnLoadSeg](UnLoadSeg.md), [InternalLoadSeg](InternalLoadSeg.md), [InternalUnLoadSeg](InternalUnLoadSeg.md), [CreateProc](CreateProc.md),
+[CreateNewProc](CreateNewProc.md), [NewLoadSeg](NewLoadSeg.md).

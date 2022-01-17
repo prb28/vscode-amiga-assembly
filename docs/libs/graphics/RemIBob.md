@@ -1,7 +1,7 @@
 
 **NAME**
 
-RemIBob -- Immediately remove a [Bob](_00C3) from the gel list and the [RastPort](_00AF).
+RemIBob -- Immediately remove a [Bob](_00C3.md) from the gel list and the [RastPort](_00AF.md).
 
 **SYNOPSIS**
 
@@ -12,18 +12,18 @@ RemIBob -- Immediately remove a [Bob](_00C3) from the gel list and the [RastPort
     void RemIBob(struct Bob *, struct RastPort *, struct ViewPort *);
 
 ```
-Links: [Bob](_00C3) [RastPort](_00AF) [ViewPort](_00B8) 
+Links: [Bob](_00C3.md) [RastPort](_00AF.md) [ViewPort](_00B8.md) 
 
 **FUNCTION**
 
-Removes a [Bob](_00C3) immediately by uncoupling it from the gel list and
-erases it from the [RastPort](_00AF).
+Removes a [Bob](_00C3.md) immediately by uncoupling it from the gel list and
+erases it from the [RastPort](_00AF.md).
 
 **INPUTS**
 
-bob = pointer to the [Bob](_00C3) to be removed
-rp  = pointer to the [RastPort](_00AF) if the [Bob](_00C3) is to be erased
-vp  = pointer to the [ViewPort](_00B8) for beam-synchronizing
+bob = pointer to the [Bob](_00C3.md) to be removed
+rp  = pointer to the [RastPort](_00AF.md) if the [Bob](_00C3.md) is to be erased
+vp  = pointer to the [ViewPort](_00B8.md) for beam-synchronizing
 
 RESULT
 
@@ -31,4 +31,4 @@ BUGS
 
 **SEE ALSO**
 
-[InitGels](InitGels)  [RemVSprite](RemVSprite)  [graphics/gels.h](_00C3)
+[InitGels](InitGels.md)  [RemVSprite](RemVSprite.md)  [graphics/gels.h](_00C3.md)

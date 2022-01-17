@@ -12,7 +12,7 @@ RemLibrary -- remove a library from the system
     void RemLibrary(struct Library *);
 
 ```
-Links: [Library](_009C) 
+Links: [Library](_009C.md) 
 
 **FUNCTION**
 
@@ -22,20 +22,20 @@ it is busy or currently open. This is not typically called by user
 code.
 
 There are certain, limited circumstances where it may be
-appropriate to attempt to specifically flush a certain [Library](_009C).
+appropriate to attempt to specifically flush a certain [Library](_009C.md).
 Example:
 
 /* Attempts to flush the named library out of memory. */
-#include [&#060;exec/types.h&#062;](_0096)
-#include [&#060;exec/execbase.h&#062;](_009E)
+#include [&#060;exec/types.h&#062;](_0096.md)
+#include [&#060;exec/execbase.h&#062;](_009E.md)
 
 void FlushLibrary(name)
 STRPTR name;
 {
-struct [Library](_009C) *result;
+struct [Library](_009C.md) *result;
 
 Forbid();
-if(result=(struct [Library](_009C) *)FindName(&#038;SysBase-&#062;LibList,name))
+if(result=(struct [Library](_009C.md) *)FindName(&#038;SysBase-&#062;LibList,name))
 RemLibrary(result);
 Permit();
 }

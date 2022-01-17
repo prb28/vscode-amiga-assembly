@@ -17,7 +17,7 @@ SetAttrs -- Varargs stub for SetAttrsA(). (V36)
     ULONG SetAttrs( APTR, ULONG, ... );
 
 ```
-Links: [TagItem](_012E) 
+Links: [TagItem](_012E.md) 
 
 **FUNCTION**
 
@@ -31,7 +31,7 @@ or requesters.  For those objects, use SetGadgetAttrs().
 **INPUTS**
 
 Object = abstract pointer to a boopsi object.
-TagList = array of [TagItem](_012E) structures with attribute/value pairs.
+TagList = array of [TagItem](_012E.md) structures with attribute/value pairs.
 
 RESULT
 The object does whatever it wants with the attributes you provide.
@@ -39,13 +39,13 @@ The return value tends to be non-zero if the changes would require
 refreshing gadget imagery, if the object is a gadget.
 
 NOTES
-This function invokes the OM_SET method with a NULL [GadgetInfo](_00D2)
+This function invokes the OM_SET method with a NULL [GadgetInfo](_00D2.md)
 parameter.
 
 BUGS
 
 **SEE ALSO**
 
-[NewObject](NewObject), [DisposeObject](DisposeObject), [GetAttr](GetAttr), [MakeClass](MakeClass),
+[NewObject](NewObject.md), [DisposeObject](DisposeObject.md), [GetAttr](GetAttr.md), [MakeClass](MakeClass.md),
 Document &#034;Basic Object-Oriented Programming System for Intuition&#034;
 and the &#034;boopsi Class Reference&#034; document.

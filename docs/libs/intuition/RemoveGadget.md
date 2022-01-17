@@ -12,7 +12,7 @@ RemoveGadget -- Remove a gadget from a window.
     UWORD RemoveGadget( struct Window *, struct Gadget * );
 
 ```
-Links: [Window](_00D4) [Gadget](_00D4) [Window](_00D4) [Gadget](_00D4) 
+Links: [Window](_00D4.md) [Gadget](_00D4.md) [Window](_00D4.md) [Gadget](_00D4.md) 
 
 **FUNCTION**
 
@@ -35,9 +35,9 @@ the gadget.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the window containing the gadget or the requester
+[Window](_00D4.md) = pointer to the window containing the gadget or the requester
 containing the gadget to be removed.
-[Gadget](_00D4) = pointer to the gadget to be removed.  The gadget itself
+[Gadget](_00D4.md) = pointer to the gadget to be removed.  The gadget itself
 describes whether this is a gadget that should be removed from the
 window or some requester.
 
@@ -50,4 +50,4 @@ BUGS
 
 **SEE ALSO**
 
-[AddGadget](AddGadget), [AddGList](AddGList), [RemoveGList](RemoveGList)
+[AddGadget](AddGadget.md), [AddGList](AddGList.md), [RemoveGList](RemoveGList.md)

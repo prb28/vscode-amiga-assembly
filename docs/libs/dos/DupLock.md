@@ -33,4 +33,4 @@ newLock - BCPL pointer to a lock
 
 **SEE ALSO**
 
-[Lock](Lock), [UnLock](UnLock), [DupLockFromFH](DupLockFromFH), [ParentOfFH](ParentOfFH)
+[Lock](Lock.md), [UnLock](UnLock.md), [DupLockFromFH](DupLockFromFH.md), [ParentOfFH](ParentOfFH.md)

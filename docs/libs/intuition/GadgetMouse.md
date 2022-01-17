@@ -12,7 +12,7 @@ GadgetMouse -- Calculate gadget-relative mouse position. (V36)
     VOID GadgetMouse( struct GadgetInfo *, WORD * );
 
 ```
-Links: [Gadget](_00D4) [GadgetInfo](_00D2) 
+Links: [Gadget](_00D4.md) [GadgetInfo](_00D2.md) 
 
 **FUNCTION**
 
@@ -35,7 +35,7 @@ them.
 
 **INPUTS**
 
-GInfo = A pointer to a [GadgetInfo](_00D2) structure as passed to the
+GInfo = A pointer to a [GadgetInfo](_00D2.md) structure as passed to the
 custom gadget hook routine.
 MousePoint = address of two WORDS, or a pointer to a structure of
 type Point.

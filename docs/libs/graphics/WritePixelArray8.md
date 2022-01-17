@@ -3,7 +3,7 @@
 
 WritePixelArray8 -- write the pen number value of a rectangular array
 of pixels starting at a specified x,y location and continuing
-through to another x,y location within a certain [RastPort](_00AF). (V36)
+through to another x,y location within a certain [RastPort](_00AF.md). (V36)
 
 **SYNOPSIS**
 
@@ -15,7 +15,7 @@ through to another x,y location within a certain [RastPort](_00AF). (V36)
          UWORD, UWORD, UBYTE *, struct  RastPort *);
 
 ```
-Links: [RastPort](_00AF) [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) [RastPort](_00AF.md) 
 
 **FUNCTION**
 
@@ -25,13 +25,13 @@ a particular rastport.
 
 **INPUTS**
 
-rp     -  pointer to a [RastPort](_00AF) structure
-(xstart,ystart) -  starting point in the [RastPort](_00AF)
-(xstop,ystop)   -  stopping point in the [RastPort](_00AF)
+rp     -  pointer to a [RastPort](_00AF.md) structure
+(xstart,ystart) -  starting point in the [RastPort](_00AF.md)
+(xstop,ystop)   -  stopping point in the [RastPort](_00AF.md)
 array  - pointer to an array of UBYTEs from which to fetch the
 pixel data. Allocate at least
 ((((width+15)&#062;&#062;4)&#060;&#060;4)*(ystop-ystart+1)) bytes.
-temprp - temporary rastport (copy of rp with [Layer](_00A1) set == NULL,
+temprp - temporary rastport (copy of rp with [Layer](_00A1.md) set == NULL,
 temporary memory allocated for
 temprp-&#062;BitMap with Rows set == 1,
 temprp-&#062;BytesPerRow == (((width+15)&#062;&#062;4)&#060;&#060;1),
@@ -50,4 +50,4 @@ BUGS
 
 **SEE ALSO**
 
-[WritePixel](WritePixel)  [graphics/rastport.h](_00AF)
+[WritePixel](WritePixel.md)  [graphics/rastport.h](_00AF.md)

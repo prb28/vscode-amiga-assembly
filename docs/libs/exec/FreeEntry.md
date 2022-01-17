@@ -11,7 +11,7 @@ FreeEntry -- free many regions of memory
     void FreeEntry(struct MemList *);
 
 ```
-Links: [MemList](_0089) 
+Links: [MemList](_0089.md) 
 
 **FUNCTION**
 
@@ -20,9 +20,9 @@ and frees all the entries.
 
 **INPUTS**
 
-memList -- pointer to structure filled in with [MemEntry](_0089)
+memList -- pointer to structure filled in with [MemEntry](_0089.md)
 structures
 
 **SEE ALSO**
 
-[AllocEntry](AllocEntry)
+[AllocEntry](AllocEntry.md)

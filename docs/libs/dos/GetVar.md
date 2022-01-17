@@ -38,13 +38,13 @@ to try to get a global environment variable.
 
 RESULT
 len -   Size of environment variable.  -1 indicates that the
-variable was not defined (if [IoErr](IoErr) returns
+variable was not defined (if [IoErr](IoErr.md) returns
 ERROR_OBJECT_NOT_FOUND - it returns ERROR_BAD_NUMBER if
 you specify a size of 0).  If the value would overflow
 the user buffer, the buffer is truncated.  The buffer
 returned is null-terminated (even if GVF_BINARY_VAR is
 used).  The number of characters put in the buffer (not
-including '0') is returned, and [IoErr](IoErr) will return the
+including '0') is returned, and [IoErr](IoErr.md) will return the
 the size of the variable.
 
 BUGS
@@ -52,8 +52,8 @@ LV_VAR is the only type that can be global.
 Under V36, we documented (and it returned) the size of the variable,
 not the number of characters transferred.  For V37 this was changed
 to the number of characters put in the buffer, and the total size
-of the variable is put in [IoErr](IoErr).
+of the variable is put in [IoErr](IoErr.md).
 
 **SEE ALSO**
 
-[SetVar](SetVar), [DeleteVar](DeleteVar), [FindVar](FindVar), [&#060;dos/var.h&#062;](_0073)
+[SetVar](SetVar.md), [DeleteVar](DeleteVar.md), [FindVar](FindVar.md), [&#060;dos/var.h&#062;](_0073.md)

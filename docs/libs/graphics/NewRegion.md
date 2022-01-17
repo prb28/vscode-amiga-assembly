@@ -12,11 +12,11 @@ NewRegion -- Get an empty region.
     struct Region *NewRegion();
 
 ```
-Links: [Region](_00B7) 
+Links: [Region](_00B7.md) 
 
 **FUNCTION**
 
-Create a [Region](_00B7) structure, initialize it to empty, and return
+Create a [Region](_00B7.md) structure, initialize it to empty, and return
 a pointer it.
 
 **RESULTS**
@@ -32,4 +32,4 @@ BUGS
 
 **SEE ALSO**
 
-[graphics/regions.h](_00B7)
+[graphics/regions.h](_00B7.md)

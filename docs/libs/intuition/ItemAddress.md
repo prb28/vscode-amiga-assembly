@@ -1,7 +1,7 @@
 
 **NAME**
 
-ItemAddress -- Returns the address of the specified [MenuItem](_00D4).
+ItemAddress -- Returns the address of the specified [MenuItem](_00D4.md).
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@ ItemAddress -- Returns the address of the specified [MenuItem](_00D4).
     struct MenuItem *ItemAddress( struct Menu *, UWORD );
 
 ```
-Links: [MenuItem](_00D4) [Menu](_00D4) 
+Links: [MenuItem](_00D4.md) [Menu](_00D4.md) 
 
 **FUNCTION**
 

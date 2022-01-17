@@ -12,7 +12,7 @@ AddDevice -- add a device to the system
     void AddDevice(struct Device *);
 
 ```
-Links: [Device](_0087) 
+Links: [Device](_0087.md) 
 
 **FUNCTION**
 
@@ -26,4 +26,4 @@ device - pointer to a properly initialized device node
 
 **SEE ALSO**
 
-[RemDevice](RemDevice), [OpenDevice](OpenDevice), [CloseDevice](_04CC), [MakeLibrary](MakeLibrary)
+[RemDevice](RemDevice.md), [OpenDevice](OpenDevice.md), [CloseDevice](_04CC.md), [MakeLibrary](MakeLibrary.md)

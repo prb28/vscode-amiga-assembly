@@ -31,4 +31,4 @@ were backwards.
 
 **SEE ALSO**
 
-[ReadArgs](ReadArgs), [ReadItem](ReadItem), [FreeArgs](FreeArgs)
+[ReadArgs](ReadArgs.md), [ReadItem](ReadItem.md), [FreeArgs](FreeArgs.md)

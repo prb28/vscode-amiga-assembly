@@ -16,7 +16,7 @@ NameFromFH -- Get the name of an open filehandle (V36)
 
 Returns a fully qualified path for the filehandle.  This routine is
 guaranteed not to write more than len characters into the buffer.  The
-name will be null-terminated.  See [NameFromLock](NameFromLock) for more information.
+name will be null-terminated.  See [NameFromLock](NameFromLock.md) for more information.
 
 **INPUTS**
 
@@ -29,4 +29,4 @@ success - Success/failure indicator.
 
 **SEE ALSO**
 
-[NameFromLock](NameFromLock)
+[NameFromLock](NameFromLock.md)

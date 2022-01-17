@@ -19,21 +19,21 @@ BuildEasyRequest -- Varargs stub for BuildEasyRequestArgs(). (V36)
             struct EasyStruct *, ULONG, APTR, ... );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) [EasyStruct](_00D4) [Window](_00D4) [Window](_00D4) [EasyStruct](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) [EasyStruct](_00D4.md) [Window](_00D4.md) [Window](_00D4.md) [EasyStruct](_00D4.md) 
 
 **FUNCTION**
 
-This function is to EasyRequest() as [BuildSysRequest](BuildSysRequest) is to
+This function is to EasyRequest() as [BuildSysRequest](BuildSysRequest.md) is to
 AutoRequest(): it returns a pointer to the system requester
 window.  The input from that window can then be processed
 under application control.
 
 It is recommended that this processing be done with
-[SysReqHandler](SysReqHandler), so that future enhancement to the
+[SysReqHandler](SysReqHandler.md), so that future enhancement to the
 processing will be enjoyed.
 
 After you have determined that the requester is satisfied or
-cancelled, you must free this requester using [FreeSysRequest](FreeSysRequest).
+cancelled, you must free this requester using [FreeSysRequest](FreeSysRequest.md).
 
 Please see the autodoc for EasyRequest().
 
@@ -42,9 +42,9 @@ sufficient stack space for the function to complete.
 
 **INPUTS**
 
-[Window](_00D4) = reference window for requester: determines the
+[Window](_00D4.md) = reference window for requester: determines the
 requester window title and screen.
-easyStruct = pointer to [EasyStruct](_00D4) structure, as described
+easyStruct = pointer to [EasyStruct](_00D4.md) structure, as described
 in the EasyRequest() autodocs.
 IDCMP = (NOT A POINTER) provided application specific IDCMP
 flags for the system requester window.
@@ -64,9 +64,9 @@ returned.
 
 BUGS
 Does not put up alternative alert.
-See also BUGS listed for [EasyRequestArgs](EasyRequestArgs).
+See also BUGS listed for [EasyRequestArgs](EasyRequestArgs.md).
 
 **SEE ALSO**
 
-[EasyRequestArgs](EasyRequestArgs), [FreeSysRequest](FreeSysRequest), [SysReqHandler](SysReqHandler),
-[BuildSysRequest](BuildSysRequest), [AutoRequest](AutoRequest)
+[EasyRequestArgs](EasyRequestArgs.md), [FreeSysRequest](FreeSysRequest.md), [SysReqHandler](SysReqHandler.md),
+[BuildSysRequest](BuildSysRequest.md), [AutoRequest](AutoRequest.md)

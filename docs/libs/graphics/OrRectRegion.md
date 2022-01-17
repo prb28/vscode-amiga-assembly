@@ -13,7 +13,7 @@ with region, leaving result in region.
     BOOL OrRectRegion( struct Region *, struct Rectangle * );
 
 ```
-Links: [Region](_00B7) [Rectangle](_00A6) 
+Links: [Region](_00B7.md) [Rectangle](_00A6.md) 
 
 **FUNCTION**
 
@@ -22,8 +22,8 @@ that portion to the region.
 
 **INPUTS**
 
-region - pointer to [Region](_00B7) structure
-rectangle - pointer to [Rectangle](_00A6) structure
+region - pointer to [Region](_00B7.md) structure
+rectangle - pointer to [Rectangle](_00A6.md) structure
 
 **RESULTS**
 
@@ -34,4 +34,4 @@ BUGS
 
 **SEE ALSO**
 
-[AndRectRegion](AndRectRegion) [OrRegionRegion](OrRegionRegion) [graphics/regions.h](_00B7)
+[AndRectRegion](AndRectRegion.md) [OrRegionRegion](OrRegionRegion.md) [graphics/regions.h](_00B7.md)

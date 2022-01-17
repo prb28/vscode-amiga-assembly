@@ -36,11 +36,11 @@ the end of the double-click time period you are considering
 
 RESULT
 If the difference between the supplied timestamp values is within the
-double-click time range in the current set of [Preferences](_00D5), this
+double-click time range in the current set of [Preferences](_00D5.md), this
 function returns TRUE, else it returns FALSE
 
 BUGS
 
 **SEE ALSO**
 
-[CurrentTime](CurrentTime)
+[CurrentTime](CurrentTime.md)

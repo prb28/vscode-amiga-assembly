@@ -12,7 +12,7 @@ RemPort -- remove a message port from the system
     void RemPort(struct MsgPort *);
 
 ```
-Links: [MsgPort](_0099) 
+Links: [MsgPort](_0099.md) 
 
 **FUNCTION**
 
@@ -26,4 +26,4 @@ port - pointer to a message port
 
 **SEE ALSO**
 
-[AddPort](AddPort), [FindPort](FindPort)
+[AddPort](AddPort.md), [FindPort](FindPort.md)

@@ -12,7 +12,7 @@ AddIntServer -- add an interrupt server to a system server chain
     void AddIntServer(ULONG, struct Interrupt *);
 
 ```
-Links: [Interrupt](_008C) 
+Links: [Interrupt](_008C.md) 
 
 **FUNCTION**
 
@@ -48,7 +48,7 @@ intNum - the Paula interrupt bit number (0 through 14). Processor
 level seven interrupts (NMI) are encoded as intNum 15.
 The PORTS, COPER, VERTB, EXTER and NMI interrupts are
 set up as server chains.
-interrupt - pointer to an [Interrupt](_008C) structure.
+interrupt - pointer to an [Interrupt](_008C.md) structure.
 By convention, the LN_NAME of the interrupt structure must
 point a descriptive string so that other users may
 identify who currently has control of the interrupt.
@@ -68,4 +68,4 @@ compensate for this by providing the expected value ($DFF000).
 
 **SEE ALSO**
 
-[RemIntServer](RemIntServer), [SetIntVector](SetIntVector), hardware/intbits.i,exec/interrupts.i
+[RemIntServer](RemIntServer.md), [SetIntVector](SetIntVector.md), hardware/intbits.i,exec/interrupts.i

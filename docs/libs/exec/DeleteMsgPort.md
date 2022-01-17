@@ -1,7 +1,7 @@
 
 **NAME**
 
-DeleteMsgPort - Free a message port created by [CreateMsgPort](CreateMsgPort)  (V36)
+DeleteMsgPort - Free a message port created by [CreateMsgPort](CreateMsgPort.md)  (V36)
 
 **SYNOPSIS**
 
@@ -12,11 +12,11 @@ DeleteMsgPort - Free a message port created by [CreateMsgPort](CreateMsgPort)  (
     void DeleteMsgPort(struct MsgPort *);
 
 ```
-Links: [MsgPort](_0099) 
+Links: [MsgPort](_0099.md) 
 
 **FUNCTION**
 
-Frees a message port created by [CreateMsgPort](CreateMsgPort).  All messages that
+Frees a message port created by [CreateMsgPort](CreateMsgPort.md).  All messages that
 may have been attached to this port must have already been
 replied to.
 
@@ -26,4 +26,4 @@ msgPort - A message port.  NULL for no action.
 
 **SEE ALSO**
 
-[CreateMsgPort](CreateMsgPort), [amiga.lib/DeletePort](_0153)
+[CreateMsgPort](CreateMsgPort.md), [amiga.lib/DeletePort](_0153.md)

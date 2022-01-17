@@ -31,4 +31,4 @@ success - boolean
 
 **SEE ALSO**
 
-[Examine](Examine), [ExNext](ExNext), [SetProtection](SetProtection)
+[Examine](Examine.md), [ExNext](ExNext.md), [SetProtection](SetProtection.md)

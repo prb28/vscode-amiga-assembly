@@ -12,13 +12,13 @@ ObtainSemaphoreList -- get a list of semaphores.
     void ObtainSemaphoreList(struct List *);
 
 ```
-Links: [List](_007D) 
+Links: [List](_007D.md) 
 
 **FUNCTION**
 
-[Signal](Signal) semaphores may be linked together into a list. This function
+[Signal](Signal.md) semaphores may be linked together into a list. This function
 takes a list of these semaphores and attempts to lock all of them at
-once. This call is preferable to applying [ObtainSemaphore](ObtainSemaphore) to each
+once. This call is preferable to applying [ObtainSemaphore](ObtainSemaphore.md) to each
 element in the list because it attempts to lock all the elements
 simultaneously, and won't deadlock if someone is attempting to lock
 in some other order.
@@ -30,7 +30,7 @@ used before someone attempts to lock the semaphore list via
 ObtainSemaphoreList().
 
 Note that deadlocks may result if this call is used AND someone
-attempts to use [ObtainSemaphore](ObtainSemaphore) to lock more than one semaphore on
+attempts to use [ObtainSemaphore](ObtainSemaphore.md) to lock more than one semaphore on
 the list.  If you wish to lock more than semaphore (but not all of
 them) then you should obtain the higher level lock (see above)
 
@@ -39,4 +39,4 @@ list -- a list of signal semaphores
 
 **SEE ALSO**
 
-[InitSemaphore](InitSemaphore), [ReleaseSemaphoreList](ReleaseSemaphoreList)
+[InitSemaphore](InitSemaphore.md), [ReleaseSemaphoreList](ReleaseSemaphoreList.md)

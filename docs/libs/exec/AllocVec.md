@@ -14,10 +14,10 @@ AllocVec -- allocate memory and keep track of the size  (V36)
 ```
 **FUNCTION**
 
-This function works identically to [AllocMem](AllocMem), but tracks the size
+This function works identically to [AllocMem](AllocMem.md), but tracks the size
 of the allocation.
 
-See the [AllocMem](AllocMem) documentation for details.
+See the [AllocMem](AllocMem.md) documentation for details.
 
 **WARNING**
 
@@ -27,4 +27,4 @@ been filled.
 
 **SEE ALSO**
 
-[FreeVec](FreeVec), [AllocMem](AllocMem)
+[FreeVec](FreeVec.md), [AllocMem](AllocMem.md)

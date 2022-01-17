@@ -29,4 +29,4 @@ result - Flag to indicate if device is a file system
 
 **SEE ALSO**
 
-[Lock](Lock)
+[Lock](Lock.md)

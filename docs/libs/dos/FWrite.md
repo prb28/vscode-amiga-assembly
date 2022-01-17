@@ -31,9 +31,9 @@ count - Number of _blocks_ written.  On an error, the number of
 blocks actually written is returned.
 
 BUGS
-Doesn't clear [IoErr](IoErr) before starting.  If you want to find out
+Doesn't clear [IoErr](IoErr.md) before starting.  If you want to find out
 about errors, use SetIoErr(0L) before calling.
 
 **SEE ALSO**
 
-[FPutC](FPutC), [FRead](FRead), [FPuts](FPuts)
+[FPutC](FPutC.md), [FRead](FRead.md), [FPuts](FPuts.md)

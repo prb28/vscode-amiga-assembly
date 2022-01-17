@@ -12,7 +12,7 @@ ScreenToBack -- Send the specified screen to the back of the display.
     VOID ScreenToBack( struct Screen * );
 
 ```
-Links: [Screen](_00DD) [Screen](_00DD) 
+Links: [Screen](_00DD.md) [Screen](_00DD.md) 
 
 **FUNCTION**
 
@@ -20,7 +20,7 @@ Sends the specified screen to the back of the display.
 
 **INPUTS**
 
-[Screen](_00DD) = pointer to a [Screen](_00DD) structure
+[Screen](_00DD.md) = pointer to a [Screen](_00DD.md) structure
 
 RESULT
 None
@@ -29,4 +29,4 @@ BUGS
 
 **SEE ALSO**
 
-[ScreenToFront](ScreenToFront)
+[ScreenToFront](ScreenToFront.md)

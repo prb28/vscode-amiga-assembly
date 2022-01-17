@@ -13,7 +13,7 @@ AreaDraw -- Add a point to a list of end points for areafill.
     ULONG AreaDraw( struct RastPort *, SHORT, SHORT);
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
@@ -22,7 +22,7 @@ Add point to the vector buffer.
 
 **INPUTS**
 
-rp      - points to a [RastPort](_00AF) structure.
+rp      - points to a [RastPort](_00AF.md) structure.
 x,y     - are coordinates of a point in the raster.
 
 RESULT
@@ -33,4 +33,4 @@ BUGS
 
 **SEE ALSO**
 
-[AreaMove](AreaMove) [InitArea](InitArea) [AreaEnd](AreaEnd) [graphics/rastport.h](_00AF)
+[AreaMove](AreaMove.md) [InitArea](InitArea.md) [AreaEnd](AreaEnd.md) [graphics/rastport.h](_00AF.md)

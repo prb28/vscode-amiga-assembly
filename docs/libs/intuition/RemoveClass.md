@@ -21,7 +21,7 @@ already removed.
 
 **INPUTS**
 
-ClassPtr = pointer to *public* class created by [MakeClass](MakeClass),
+ClassPtr = pointer to *public* class created by [MakeClass](MakeClass.md),
 may be NULL.
 
 RESULT
@@ -33,6 +33,6 @@ BUGS
 
 **SEE ALSO**
 
-[MakeClass](MakeClass), [FreeClass](FreeClass), [AddClass](AddClass)
+[MakeClass](MakeClass.md), [FreeClass](FreeClass.md), [AddClass](AddClass.md)
 Document &#034;Basic Object-Oriented Programming System for Intuition&#034;
 and the &#034;boopsi Class Reference&#034; document.

@@ -12,7 +12,7 @@ OpenLibrary -- gain access to a library
     struct Library *OpenLibrary(STRPTR, ULONG);
 
 ```
-Links: [Library](_009C) 
+Links: [Library](_009C.md) 
 
 **FUNCTION**
 
@@ -22,7 +22,7 @@ if the library version is greater than or equal to the requested
 version, then the open will succeed.
 
 The device may exist in memory, or on disk; this is transparent to
-the [OpenDevice](OpenDevice) caller.  Only Processes are allowed to call
+the [OpenDevice](OpenDevice.md) caller.  Only Processes are allowed to call
 OpenLibrary (since OpenLibrary may in turn call dos.library).
 
 A full path name for the library name is legitimate.  For example
@@ -39,7 +39,7 @@ started.
 As of V36 tasks can safely call OpenLibrary, though DOS may open
 system requesters (e.g., asking the user to insert the Workbench
 disk if LIBS: is not online).  You must call this function from a
-DOS [Process](_0078) if you want to turn off DOS requesters.
+DOS [Process](_0078.md) if you want to turn off DOS requesters.
 
 **INPUTS**
 
@@ -65,4 +65,4 @@ match the version number of the library, or V36 may fail to load it.
 
 **SEE ALSO**
 
-[CloseLibrary](CloseLibrary)
+[CloseLibrary](CloseLibrary.md)

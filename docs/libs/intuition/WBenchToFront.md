@@ -14,7 +14,7 @@ WBenchToFront -- Bring the Workbench screen in front of all screens.
 ```
 **FUNCTION**
 
-Causes the Workbench [Screen](_00DD), if it's currently opened, to come to
+Causes the Workbench [Screen](_00DD.md), if it's currently opened, to come to
 the foreground.  This does not 'move' the screen up or down, instead
 only affects the depth-arrangement of the screen.
 
@@ -30,4 +30,4 @@ BUGS
 
 **SEE ALSO**
 
-[WBenchToBack](WBenchToBack), [ScreenToBack](ScreenToBack)
+[WBenchToBack](WBenchToBack.md), [ScreenToBack](ScreenToBack.md)

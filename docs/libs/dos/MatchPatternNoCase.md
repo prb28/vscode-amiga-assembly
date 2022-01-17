@@ -15,7 +15,7 @@ MatchPatternNoCase --  Checks for a pattern match with a string (V37)
 **FUNCTION**
 
 Checks for a pattern match with a string.  The pattern must be a
-tokenized string output by [ParsePatternNoCase](ParsePatternNoCase).  This routine is
+tokenized string output by [ParsePatternNoCase](ParsePatternNoCase.md).  This routine is
 case-insensitive.
 
 NOTE: this routine is highly recursive.  You must have at least
@@ -26,14 +26,14 @@ That's _currently_ enough for about 100 levels deep of #, (, ~, etc.
 **INPUTS**
 
 pat - Special pattern string to match as returned by
-[ParsePatternNoCase](ParsePatternNoCase)
+[ParsePatternNoCase](ParsePatternNoCase.md)
 str - String to match against given pattern
 
 RESULT
 match - success or failure of pattern match.  On failure,
-[IoErr](IoErr) will return 0 or ERROR_TOO_MANY_LEVELS (starting
+[IoErr](IoErr.md) will return 0 or ERROR_TOO_MANY_LEVELS (starting
 with V37 - before that there was no stack checking).
 
 **SEE ALSO**
 
-[ParsePatternNoCase](ParsePatternNoCase), [MatchPattern](MatchPattern), [MatchFirst](MatchFirst), [MatchNext](MatchNext)
+[ParsePatternNoCase](ParsePatternNoCase.md), [MatchPattern](MatchPattern.md), [MatchFirst](MatchFirst.md), [MatchNext](MatchNext.md)

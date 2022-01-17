@@ -12,11 +12,11 @@ ObtainSemaphore -- gain exclusive access to a semaphore
     void ObtainSemaphore(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_0082) 
+Links: [SignalSemaphore](_0082.md) 
 
 **FUNCTION**
 
-[Signal](Signal) semaphores are used to gain exclusive access to an object.
+[Signal](Signal.md) semaphores are used to gain exclusive access to an object.
 ObtainSemaphore is the call used to gain this access.  If another
 user currently has the semaphore locked the call will block until
 the object is available.
@@ -25,14 +25,14 @@ If the current task already has locked the semaphore and attempts to
 lock it again the call will still succeed.  A &#034;nesting count&#034; is
 incremented each time the current owning task of the semaphore calls
 ObtainSemaphore().  This counter is decremented each time
-[ReleaseSemaphore](ReleaseSemaphore) is called.  When the counter returns to zero the
+[ReleaseSemaphore](ReleaseSemaphore.md) is called.  When the counter returns to zero the
 semaphore is actually released, and the next waiting task is called.
 
 A queue of waiting tasks is maintained on the stacks of the waiting
 tasks.  Each will be called in turn as soon as the current task
 releases the semaphore.
 
-[Signal](Signal) Semaphores are different than <a href="../Includes_and_Autodocs_2._guide/node0389.html">Procure()/Vacate() semaphores.
+[Signal](Signal.md) Semaphores are different than <a href="../Includes_and_Autodocs_2._guide/node0389.html">Procure()/Vacate() semaphores.
 The former requires less CPU time, especially if the semaphore is
 not currently locked.  They require very little set up and user
 thought.  The latter flavor of semaphore make no assumptions about
@@ -51,5 +51,5 @@ Until V37, this function could destroy A0.
 
 **SEE ALSO**
 
-[ObtainSemaphoreShared](ObtainSemaphoreShared), [InitSemaphore](InitSemaphore), [ReleaseSemaphore](ReleaseSemaphore),
-[AttemptSemaphore](AttemptSemaphore), [ObtainSemaphoreList](ObtainSemaphoreList)
+[ObtainSemaphoreShared](ObtainSemaphoreShared.md), [InitSemaphore](InitSemaphore.md), [ReleaseSemaphore](ReleaseSemaphore.md),
+[AttemptSemaphore](AttemptSemaphore.md), [ObtainSemaphoreList](ObtainSemaphoreList.md)

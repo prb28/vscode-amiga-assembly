@@ -12,19 +12,19 @@ ChangeWindowBox -- Change window position and dimensions. (V36)
     VOID ChangeWindowBox( struct Window *, WORD, WORD, WORD, WORD );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
 Makes simultaneous changes in window position and dimensions,
 in absolute (not relative) coordinates.
 
-Like [MoveWindow](MoveWindow) and [SizeWindow](SizeWindow), the effect of this function
+Like [MoveWindow](MoveWindow.md) and [SizeWindow](SizeWindow.md), the effect of this function
 is deferred until the next input comes along.  Unlike these
 functions, ChangeWindowBox() specifies absolute window position
 and dimensions, not relative.  This makes for more reliable
 results considering that the action is deferred, so this
-function is typically preferable to [MoveWindow](MoveWindow) and [SizeWindow](SizeWindow)
+function is typically preferable to [MoveWindow](MoveWindow.md) and [SizeWindow](SizeWindow.md)
 paired.
 
 You can detect that this operation has completed by receiving
@@ -39,7 +39,7 @@ values.
 
 **INPUTS**
 
-[Window](_00D4) = the window to change position/dimension
+[Window](_00D4.md) = the window to change position/dimension
 Left, Top, Width, Height = new position and dimensions
 
 RESULT
@@ -51,5 +51,5 @@ BUGS
 
 **SEE ALSO**
 
-[MoveWindow](MoveWindow), [SizeWindow](SizeWindow), [ZipWindow](ZipWindow),
-[layers.library/MoveSizeLayer](../layers/MoveSizeLayer)
+[MoveWindow](MoveWindow.md), [SizeWindow](SizeWindow.md), [ZipWindow](ZipWindow.md),
+[layers.library/MoveSizeLayer](../layers/MoveSizeLayer.md)

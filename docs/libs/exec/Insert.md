@@ -12,13 +12,13 @@ Insert -- insert a node into a list
     void Insert(struct List *, struct Node *, struct Node *);
 
 ```
-Links: [List](_007D) [Node](_0091) [Node](_0091) 
+Links: [List](_007D.md) [Node](_0091.md) [Node](_0091.md) 
 
 **FUNCTION**
 
 Insert a node into a doubly linked list AFTER a given node
 position.  Insertion at the head of a list is possible by passing a
-zero value for listNode, though the [AddHead](AddHead) function is slightly
+zero value for listNode, though the [AddHead](AddHead.md) function is slightly
 faster for that special case.
 
 **WARNING**
@@ -34,4 +34,4 @@ listNode - the node after which to insert
 
 **SEE ALSO**
 
-[AddHead](AddHead), [AddTail](AddTail), [Enqueue](Enqueue), [RemHead](RemHead), Remove, [RemTail](RemTail)
+[AddHead](AddHead.md), [AddTail](AddTail.md), [Enqueue](Enqueue.md), [RemHead](RemHead.md), Remove, [RemTail](RemTail.md)

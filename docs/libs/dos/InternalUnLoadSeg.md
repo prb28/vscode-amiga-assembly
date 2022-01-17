@@ -1,7 +1,7 @@
 
 **NAME**
 
-InternalUnLoadSeg -- Unloads a seglist loaded with [InternalLoadSeg](InternalLoadSeg)
+InternalUnLoadSeg -- Unloads a seglist loaded with [InternalLoadSeg](InternalLoadSeg.md)
 (V36)
 
 **SYNOPSIS**
@@ -16,7 +16,7 @@ InternalUnLoadSeg -- Unloads a seglist loaded with [InternalLoadSeg](InternalLoa
 **FUNCTION**
 
 Unloads a seglist using freefunc to free segments.  Freefunc is called
-as for [InternalLoadSeg](InternalLoadSeg).  NOTE: will call [Close](Close) for overlaid
+as for [InternalLoadSeg](InternalLoadSeg.md).  NOTE: will call [Close](Close.md) for overlaid
 seglists.
 
 **INPUTS**
@@ -33,4 +33,4 @@ Really should use tags
 
 **SEE ALSO**
 
-[LoadSeg](LoadSeg), [UnLoadSeg](UnLoadSeg), [InternalLoadSeg](InternalLoadSeg), NewUnLoadSeg(), [Close](Close)
+[LoadSeg](LoadSeg.md), [UnLoadSeg](UnLoadSeg.md), [InternalLoadSeg](InternalLoadSeg.md), NewUnLoadSeg(), [Close](Close.md)

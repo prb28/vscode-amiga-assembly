@@ -15,7 +15,7 @@ BuildSysRequest -- Build and display a system requester.
             struct IntuiText *, struct IntuiText *, ULONG, WORD, WORD );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) [Window](_00D4) [IntuiText](_00D4) [IntuiText](_00D4) [IntuiText](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) [Window](_00D4.md) [IntuiText](_00D4.md) [IntuiText](_00D4.md) [IntuiText](_00D4.md) 
 
 **FUNCTION**
 
@@ -28,10 +28,10 @@ ports to detect the user's response to your requester, which response
 may include either selecting one of the gadgets or causing some other
 event to be noticed by Intuition (like IDCMP_DISKINSERTED, for
 instance).  After the requester is satisfied, you should call the
-[FreeSysRequest](FreeSysRequest) procedure to remove the requester and free up
+[FreeSysRequest](FreeSysRequest.md) procedure to remove the requester and free up
 any allocated memory.
 
-See the autodoc for [SysReqHandler](SysReqHandler) for more information on the
+See the autodoc for [SysReqHandler](SysReqHandler.md) for more information on the
 how to handle the IntuiMessages this window will receive.
 
 The requester used by this function has the NOISYREQ flag bit set,
@@ -39,7 +39,7 @@ which means that the set of IDCMPFlags that may be used here
 include IDCMP_RAWKEY, IDCMP_MOUSEBUTTONS, and others.
 
 In release previous to V36, if the requester could not be built,
-this function would try to call [DisplayAlert](DisplayAlert) with the same
+this function would try to call [DisplayAlert](DisplayAlert.md) with the same
 information, with more or less favorable results.  In V36,
 the requesters themselves require less memory (SIMPLEREQ), but
 there is no alert attempt.
@@ -60,12 +60,12 @@ will appear on the default public screen, which is not always
 the Workbench.
 
 The text arguments are used to construct the display.  Each is a
-pointer to an instance of the structure [IntuiText](_00D4).
+pointer to an instance of the structure [IntuiText](_00D4.md).
 
 The BodyText argument should be used to describe the nature of
-the requester.  As usual with [IntuiText](_00D4) data, you may link several
+the requester.  As usual with [IntuiText](_00D4.md) data, you may link several
 lines of text together, and the text may be placed in various
-locations in the requester.  This [IntuiText](_00D4) pointer will be stored
+locations in the requester.  This [IntuiText](_00D4.md) pointer will be stored
 in the ReqText variable of the new requester.
 
 The PosText argument describes the text that you want associated
@@ -73,7 +73,7 @@ with the user choice of &#034;Yes,  TRUE,  Retry,  Good.&#034;  If the requester
 is successfully opened, this text will be rendered in a gadget in
 the lower-left of the requester, which gadget will have the
 GadgetID field set to TRUE.  If the requester cannot be opened and
-the [DisplayAlert](DisplayAlert) mechanism is used, this text will be rendered in
+the [DisplayAlert](DisplayAlert.md) mechanism is used, this text will be rendered in
 the lower-left corner of the alert display with additional text
 specifying that the left mouse button will select this choice.  This
 pointer can be set to NULL, which specifies that there is no TRUE
@@ -84,7 +84,7 @@ with the user choice of &#034;No,  FALSE,  Cancel,  Bad.&#034;  If the requester
 is successfully opened, this text will be rendered in a gadget in
 the lower-right of the requester, which gadget will have the
 GadgetID field set to FALSE.  If the requester cannot be opened and
-the [DisplayAlert](DisplayAlert) mechanism is used, this text will be rendered in
+the [DisplayAlert](DisplayAlert.md) mechanism is used, this text will be rendered in
 the lower-right corner of the alert display with additional text
 specifying that the right mouse button will select this choice.  This
 pointer cannot be set to NULL.  There must always be a way for the
@@ -107,7 +107,7 @@ These hard-coded constants are not very resolution or font
 sensitive, but V36 will override them to provide more modern
 layout.
 
-New for V36, linked lists of [IntuiText](_00D4) are not correctly supported
+New for V36, linked lists of [IntuiText](_00D4.md) are not correctly supported
 for gadget labels.
 
 The width and height values describe the size of the requester.  All
@@ -127,45 +127,45 @@ back behind.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to a [Window](_00D4) structure
-BodyText = pointer to an [IntuiText](_00D4) structure
-PosText = pointer to an [IntuiText](_00D4) structure
-NegText = pointer to an [IntuiText](_00D4) structure
+[Window](_00D4.md) = pointer to a [Window](_00D4.md) structure
+BodyText = pointer to an [IntuiText](_00D4.md) structure
+PosText = pointer to an [IntuiText](_00D4.md) structure
+NegText = pointer to an [IntuiText](_00D4.md) structure
 IDCMPFlags = the IDCMP flags you want used for the initialization of
 the IDCMP of the window containing this requester
 Width, Height = the size required to render your requester
 
 NOTE for V36: the width and height you pass are ignored, as
-are some of the parameters of your [IntuiText](_00D4), so that Intuition
+are some of the parameters of your [IntuiText](_00D4.md), so that Intuition
 can make the Requesters real nice for the new look.
 
 RESULT
 If the requester was successfully created, the value
 returned by this procedure is a pointer to the window in which the
 requester is rendered.  If the requester could not be created,
-this routine might have called [DisplayAlert](DisplayAlert) before returning
+this routine might have called [DisplayAlert](DisplayAlert.md) before returning
 (it depends on the version) and will pass back TRUE if the user
 pressed the left mouse button and FALSE if the user pressed the
 right mouse button.   If the version of Intuition doesn't
-call [DisplayAlert](DisplayAlert), or if it does, and there's not enough
+call [DisplayAlert](DisplayAlert.md), or if it does, and there's not enough
 memory for the alert, the value of FALSE is returned.
 
 BUGS
-This procedure currently opens a window in the [Screen](_00DD) which
+This procedure currently opens a window in the [Screen](_00DD.md) which
 contains the window which is passed as a parameter, or the
 default public screen, if that parameter is NULL.  Although
 not as originally envisioned, this will probably always be the
 behavior of this function.
 
-[DisplayAlert](DisplayAlert) is not called in version V36.
+[DisplayAlert](DisplayAlert.md) is not called in version V36.
 
 It's almost impossible to make complete, correct account
 of different system fonts, window border dimensions, and
-screen resolution to get the layout of a System [Requester](_00D4)
+screen resolution to get the layout of a System [Requester](_00D4.md)
 just right using this routine.  For V36, we recommend the
 automatic layout implemented in BuildEasyRequest and EasyRequest.
 
 **SEE ALSO**
 
-[FreeSysRequest](FreeSysRequest), [DisplayAlert](DisplayAlert), [ModifyIDCMP](ModifyIDCMP), [exec.library/Wait](../exec/Wait),
-[Request](Request), [AutoRequest](AutoRequest), EasyRequest(), [BuildEasyRequestArgs](BuildEasyRequestArgs)
+[FreeSysRequest](FreeSysRequest.md), [DisplayAlert](DisplayAlert.md), [ModifyIDCMP](ModifyIDCMP.md), [exec.library/Wait](../exec/Wait.md),
+[Request](Request.md), [AutoRequest](AutoRequest.md), EasyRequest(), [BuildEasyRequestArgs](BuildEasyRequestArgs.md)

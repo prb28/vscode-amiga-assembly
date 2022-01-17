@@ -12,7 +12,7 @@ InitSemaphore -- initialize a signal semaphore
     void InitSemaphore(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_0082) 
+Links: [SignalSemaphore](_0082.md) 
 
 **FUNCTION**
 
@@ -22,11 +22,11 @@ pointers and the semaphore counters.
 
 Semaphores are often used to protect critical data structures
 or hardware that can only be accessed by one task at a time.
-After initialization, the address of the [SignalSemaphore](_0082) may be
+After initialization, the address of the [SignalSemaphore](_0082.md) may be
 made available to any number of tasks.  Typically a task will
-try to [ObtainSemaphore](ObtainSemaphore), passing this address in.  If no other
+try to [ObtainSemaphore](ObtainSemaphore.md), passing this address in.  If no other
 task owns the semaphore, then the call will lock and return
-quickly.  If more tasks try to [ObtainSemaphore](ObtainSemaphore), they will
+quickly.  If more tasks try to [ObtainSemaphore](ObtainSemaphore.md), they will
 be put to sleep.  When the owner of the semaphore releases
 it, the next waiter in turn will be woken up.
 
@@ -42,5 +42,5 @@ set to zero before the call)
 
 **SEE ALSO**
 
-[ObtainSemaphore](ObtainSemaphore), [ObtainSemaphoreShared](ObtainSemaphoreShared), [AttemptSemaphore](AttemptSemaphore),
-[ReleaseSemaphore](ReleaseSemaphore), [exec/semaphores.h](_0082)
+[ObtainSemaphore](ObtainSemaphore.md), [ObtainSemaphoreShared](ObtainSemaphoreShared.md), [AttemptSemaphore](AttemptSemaphore.md),
+[ReleaseSemaphore](ReleaseSemaphore.md), [exec/semaphores.h](_0082.md)

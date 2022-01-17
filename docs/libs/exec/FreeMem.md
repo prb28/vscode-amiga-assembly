@@ -33,4 +33,4 @@ the system memory chunk size)
 
 **SEE ALSO**
 
-[AllocMem](AllocMem)
+[AllocMem](AllocMem.md)

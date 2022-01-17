@@ -1,7 +1,7 @@
 
 **NAME**
 
-GetRGB4 -- Inquire value of entry in [ColorMap](_00B8).
+GetRGB4 -- Inquire value of entry in [ColorMap](_00B8.md).
 
 **SYNOPSIS**
 
@@ -12,15 +12,15 @@ GetRGB4 -- Inquire value of entry in [ColorMap](_00B8).
     ULONG GetRGB4(struct ColorMap *, LONG);
 
 ```
-Links: [ColorMap](_00B8) 
+Links: [ColorMap](_00B8.md) 
 
 **FUNCTION**
 
-Read and format a value from the [ColorMap](_00B8).
+Read and format a value from the [ColorMap](_00B8.md).
 
 **INPUTS**
 
-colormap - pointer to [ColorMap](_00B8) structure
+colormap - pointer to [ColorMap](_00B8.md) structure
 entry - index into colormap
 
 RESULT
@@ -28,11 +28,11 @@ returns -1 if no valid entry
 return UWORD RGB value 4 bits per gun right justified
 
 NOTE
-Intuition's [DisplayBeep](../intuition/DisplayBeep) changes color 0. Reading Color 0 during a
-[DisplayBeep](../intuition/DisplayBeep) will lead to incorrect results.
+Intuition's [DisplayBeep](../intuition/DisplayBeep.md) changes color 0. Reading Color 0 during a
+[DisplayBeep](../intuition/DisplayBeep.md) will lead to incorrect results.
 
 BUGS
 
 **SEE ALSO**
 
-[SetRGB4](SetRGB4) [LoadRGB4](LoadRGB4) [GetColorMap](GetColorMap) [FreeColorMap](FreeColorMap) [graphics/view.h](_00B8)
+[SetRGB4](SetRGB4.md) [LoadRGB4](LoadRGB4.md) [GetColorMap](GetColorMap.md) [FreeColorMap](FreeColorMap.md) [graphics/view.h](_00B8.md)

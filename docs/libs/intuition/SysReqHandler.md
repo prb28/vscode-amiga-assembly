@@ -12,20 +12,20 @@ SysReqHandler -- Handle system requester input. (V36)
     LONG SysReqHandler( struct Window *, ULONG *, BOOL );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
-Handles input for a window returned by either [BuildSysRequest](BuildSysRequest)
+Handles input for a window returned by either [BuildSysRequest](BuildSysRequest.md)
 or BuildEasyRequest().  These functions with SysReqHandler()
-you can perform an &#034;asynchronous&#034; EasyRequest() or [AutoRequest](AutoRequest).
+you can perform an &#034;asynchronous&#034; EasyRequest() or [AutoRequest](AutoRequest.md).
 That is to say, you can perform other processing while you
 wait for the requester to be satisfied.
 
 Each time this function is called, it will process all
 IDCMPMessages that the window has received.  If the parameter
 'WaitInput' is non-zero, SysReqHandler() will wait for input
-(by calling [WaitPort](../exec/WaitPort)) if there are no IDCMP messages.
+(by calling [WaitPort](../exec/WaitPort.md)) if there are no IDCMP messages.
 
 SysReqHandler() returns the same values as EasyRequest(): A gadget
 ID greater than equal to 0, and  -1 if one of the other IDCMP
@@ -36,7 +36,7 @@ does not satisfy the requester.  In this case, you might
 perform some processing and call SysReqHandler() again.
 
 Note: this function does NOT terminate the system request.
-Not only must you call [FreeSysRequest](FreeSysRequest) to eliminate the request,
+Not only must you call [FreeSysRequest](FreeSysRequest.md) to eliminate the request,
 but you may also continue processing after an event which would
 normally terminate a normal call to EasyRequest().
 
@@ -54,7 +54,7 @@ EXAMPLE
 Request a volume, but don't remove the requester when the
 user inserts the wrong disk:
 
-struct [EasyStruct](_00D4) volumeES = {
+struct [EasyStruct](_00D4.md) volumeES = {
 sizeof (struct EasyStruct),
 0,
 &#034;Volume Request&#034;,
@@ -66,7 +66,7 @@ Volume *
 getVolume( volname )
 UBYTE   *volname;
 {
-struct [Window](_00D4)       *window;
+struct [Window](_00D4.md)       *window;
 Volume              *volume = NULL;
 Volume              *findVolume();
 int                 retval;
@@ -88,14 +88,14 @@ return ( volume );
 
 **INPUTS**
 
-[Window](_00D4) = [Window](_00D4) pointer returned from [BuildSysRequest](BuildSysRequest) or
+[Window](_00D4.md) = [Window](_00D4.md) pointer returned from [BuildSysRequest](BuildSysRequest.md) or
 BuildEasyRequest().  Those functions can also return
 values '0' or '1', and these values may also be
 passed to SysReqHandler(), which will immediately
 return the same value.
 
 IDCMPFlagsPtr = If you passed application specific IDCMP
-flags to [BuildSysRequest](BuildSysRequest) or BuildEasyRequest(),
+flags to [BuildSysRequest](BuildSysRequest.md) or BuildEasyRequest(),
 SysReqHandler() will return -1 if that IDCMP message
 is received.  If IDCMPFlagsPtr is non-null, it
 points to a ULONG where the IDCMP class received
@@ -134,4 +134,4 @@ BUGS
 
 **SEE ALSO**
 
-[exec.library/WaitPort](../exec/WaitPort)
+[exec.library/WaitPort](../exec/WaitPort.md)

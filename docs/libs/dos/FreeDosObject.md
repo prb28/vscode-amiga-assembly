@@ -1,7 +1,7 @@
 
 **NAME**
 
-FreeDosObject -- Frees an object allocated by [AllocDosObject](AllocDosObject) (V36)
+FreeDosObject -- Frees an object allocated by [AllocDosObject](AllocDosObject.md) (V36)
 
 **SYNOPSIS**
 
@@ -14,14 +14,14 @@ FreeDosObject -- Frees an object allocated by [AllocDosObject](AllocDosObject) (
 ```
 **FUNCTION**
 
-Frees an object allocated by [AllocDosObject](AllocDosObject).  Do NOT call for
+Frees an object allocated by [AllocDosObject](AllocDosObject.md).  Do NOT call for
 objects allocated in any other way.
 
 **INPUTS**
 
-type - type passed to [AllocDosObject](AllocDosObject)
-ptr  - ptr returned by [AllocDosObject](AllocDosObject)
+type - type passed to [AllocDosObject](AllocDosObject.md)
+ptr  - ptr returned by [AllocDosObject](AllocDosObject.md)
 
 **SEE ALSO**
 
-[AllocDosObject](AllocDosObject), [&#060;dos/dos.h&#062;](_0068)
+[AllocDosObject](AllocDosObject.md), [&#060;dos/dos.h&#062;](_0068.md)

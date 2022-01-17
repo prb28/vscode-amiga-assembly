@@ -13,7 +13,7 @@ with region, leaving result in region
     BOOL XorRectRegion( struct Region *, struct Rectangle * );
 
 ```
-Links: [Region](_00B7) [Rectangle](_00A6) 
+Links: [Region](_00B7.md) [Rectangle](_00A6.md) 
 
 **FUNCTION**
 
@@ -24,8 +24,8 @@ in the region.
 
 **INPUTS**
 
-region - pointer to [Region](_00B7) structure
-rectangle - pointer to [Rectangle](_00A6) structure
+region - pointer to [Region](_00B7.md) structure
+rectangle - pointer to [Rectangle](_00A6.md) structure
 
 **RESULTS**
 
@@ -36,4 +36,4 @@ BUGS
 
 **SEE ALSO**
 
-[OrRegionRegion](OrRegionRegion) [AndRegionRegion](AndRegionRegion) [graphics/regions.h](_00B7)
+[OrRegionRegion](OrRegionRegion.md) [AndRegionRegion](AndRegionRegion.md) [graphics/regions.h](_00B7.md)

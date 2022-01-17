@@ -12,13 +12,13 @@ UnlockPubScreen -- Release lock on a public screen. (V36)
     VOID UnlockPubScreen( UBYTE *, struct Screen * );
 
 ```
-Links: [Screen](_00DD) 
+Links: [Screen](_00DD.md) 
 
 **FUNCTION**
 
-Releases lock gotten by [LockPubScreen](LockPubScreen).
+Releases lock gotten by [LockPubScreen](LockPubScreen.md).
 It is best to identify the locked public screen by
-the pointer returned from [LockPubScreen](LockPubScreen).  To do this,
+the pointer returned from [LockPubScreen](LockPubScreen.md).  To do this,
 supply a NULL 'Name' pointer and the screen pointer.
 
 In rare circumstances where it would be more convenient to pass
@@ -30,11 +30,11 @@ a non-NULL pointer to the public screen name string, the
 Name = pointer to name of public screen.  If Name is NULL,
 then argument 'Screen' is used as a direct pointer to
 a public screen.
-[Screen](_00DD) = pointer to a public screen.  Used only if Name
+[Screen](_00DD.md) = pointer to a public screen.  Used only if Name
 is NULL.  This pointer MUST have been returned
-by [LockPubScreen](LockPubScreen).
+by [LockPubScreen](LockPubScreen.md).
 It is safe to call UnlockPubScreen() with NULL Name
-and [Screen](_00DD) (the function will have no effect).
+and [Screen](_00DD.md) (the function will have no effect).
 
 RESULT
 
@@ -42,4 +42,4 @@ BUGS
 
 **SEE ALSO**
 
-[LockPubScreen](LockPubScreen)
+[LockPubScreen](LockPubScreen.md)

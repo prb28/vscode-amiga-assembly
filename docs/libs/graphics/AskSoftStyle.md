@@ -12,18 +12,18 @@ AskSoftStyle -- Get the soft style bits of the current font.
     ULONG AskSoftStyle(struct RastPort *);
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
 This function returns those style bits of the current font
 that are not intrinsic in the font itself, but
 algorithmically generated.  These are the bits that are
-valid to set in the enable mask for [SetSoftStyle](SetSoftStyle).
+valid to set in the enable mask for [SetSoftStyle](SetSoftStyle.md).
 
 **INPUTS**
 
-rp - the [RastPort](_00AF) from which the font and style    are extracted.
+rp - the [RastPort](_00AF.md) from which the font and style    are extracted.
 
 **RESULTS**
 
@@ -34,4 +34,4 @@ BUGS
 
 **SEE ALSO**
 
-[SetSoftStyle](SetSoftStyle)  [graphics/text.h](_00A8)
+[SetSoftStyle](SetSoftStyle.md)  [graphics/text.h](_00A8.md)

@@ -1,4 +1,5 @@
-# EORI - EOR immediate
+# EORI - Exclusive-OR immediate
+
 ## Operation
 [destination] ← \<literal\> ⊕ [destination]
 
@@ -23,7 +24,7 @@ EOR the immediate data with the contents of the destination operand. Store the r
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |✓||✓|✓|✓|✓|✓|✓|✓||||
 
-# EORI to CCR EOR immediate to CCR
+# EORI to CCR - Exclusive-OR immediate to CCR
 
 ## Operation
 [CCR] ← \<literal\> ⊕ [CCR]
@@ -52,7 +53,7 @@ Z:= toggled if bit 2 of data = 1; unchanged otherwise<br/>
 V:= toggled if bit 1 of data = 1; unchanged otherwise<br/>
 C:= toggled if bit 0 of data = 1; unchanged otherwise<br/>
 
-# EORI to SR EOR immediate to status register
+# EORI to SR - Exclusive-OR immediate to status register
 
 ## Operation
 IF [S] = 1<br/>

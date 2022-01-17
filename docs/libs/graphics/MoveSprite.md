@@ -12,7 +12,7 @@ MoveSprite -- Move sprite to a point relative to top of viewport.
     void MoveSprite(struct ViewPort *,struct SimpleSprite *, WORD, WORD);
 
 ```
-Links: [ViewPort](_00B8) [SimpleSprite](_00C5) 
+Links: [ViewPort](_00B8.md) [SimpleSprite](_00C5.md) 
 
 **FUNCTION**
 
@@ -20,9 +20,9 @@ Move sprite image to new place on display.
 
 **INPUTS**
 
-vp - pointer to [ViewPort](_00B8) structure
-if vp = 0, sprite is positioned relative to [View](_00B8).
-sprite - pointer to [SimpleSprite](_00C5) structure
+vp - pointer to [ViewPort](_00B8.md) structure
+if vp = 0, sprite is positioned relative to [View](_00B8.md).
+sprite - pointer to [SimpleSprite](_00C5.md) structure
 (x,y)  - new position relative to top of viewport or view.
 
 **RESULTS**
@@ -39,4 +39,4 @@ the viewport or view.
 
 **SEE ALSO**
 
-[FreeSprite](FreeSprite)  [ChangeSprite](ChangeSprite)  [GetSprite](GetSprite)  [graphics/sprite.h](_00C5)
+[FreeSprite](FreeSprite.md)  [ChangeSprite](ChangeSprite.md)  [GetSprite](GetSprite.md)  [graphics/sprite.h](_00C5.md)

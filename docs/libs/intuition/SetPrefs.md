@@ -12,7 +12,7 @@ SetPrefs -- Set Intuition preferences data.
     struct Preferences *SetPrefs( struct Preferences *, LONG, BOOL );
 
 ```
-Links: [Preferences](_00D5) [Preferences](_00D5) 
+Links: [Preferences](_00D5.md) [Preferences](_00D5.md) 
 
 **FUNCTION**
 
@@ -24,18 +24,18 @@ The 'Inform' parameter, if TRUE, indicates that an IDCMP_NEWPREFS
 message is to be sent to all windows that have the IDCMP_NEWPREFS
 IDCMPFlag set.
 
-It is legal to set a partial copy of the [Preferences](_00D5) structure.
+It is legal to set a partial copy of the [Preferences](_00D5.md) structure.
 The most frequently changed values are grouped at the beginning
-of the [Preferences](_00D5) structure.
+of the [Preferences](_00D5.md) structure.
 
 New for V36:  A new and more extensible method for supplying
-[Preferences](_00D5) has been introduced in V36, and relies on file
+[Preferences](_00D5.md) has been introduced in V36, and relies on file
 system notification.  The Intuition preferences items rely
 also on the IPrefs program.  Certain elements of the
-[Preferences](_00D5) structure have been superceded by this new method.
+[Preferences](_00D5.md) structure have been superceded by this new method.
 Pointer changes submitted through SetPrefs() are only heeded
 until the first time IPrefs informs Intuition of a V36-style
-pointer.ilbm preferences file.  The [Preferences](_00D5) FontHeight and
+pointer.ilbm preferences file.  The [Preferences](_00D5.md) FontHeight and
 LaceWB fields are respected only from the system-configuration
 file, and never thereafter.  As well, the view centering and
 size apply only to the default monitor, and not to such modes
@@ -52,9 +52,9 @@ setting propagated to all windows.
 
 NOTES
 Unless you are responding to a user's explicit request to
-change [Preferences](_00D5) (for example, you are writing a [Preferences](_00D5)
+change [Preferences](_00D5.md) (for example, you are writing a [Preferences](_00D5.md)
 editor), you should probably avoid using this function.
-The user's [Preferences](_00D5) should be respected, not overridden.
+The user's [Preferences](_00D5.md) should be respected, not overridden.
 
 RESULT
 Returns your parameter PrefBuffer.
@@ -63,4 +63,4 @@ BUGS
 
 **SEE ALSO**
 
-[GetDefPrefs](GetDefPrefs), [GetPrefs](GetPrefs)
+[GetDefPrefs](GetDefPrefs.md), [GetPrefs](GetPrefs.md)

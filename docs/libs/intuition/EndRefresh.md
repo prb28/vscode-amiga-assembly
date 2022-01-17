@@ -12,12 +12,12 @@ EndRefresh -- End the optimized refresh state of the window.
     VOID EndRefresh( struct Window *, BOOL );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
 This function gets you out of the special refresh state of your
-window.  It is called following a call to [BeginRefresh](BeginRefresh), which
+window.  It is called following a call to [BeginRefresh](BeginRefresh.md), which
 routine puts you into the special refresh state.  While your window
 is in the refresh state, the only rendering that will be wrought in
 your window will be to those areas which were recently revealed and
@@ -39,16 +39,16 @@ with a Complete argument of TRUE.
 
 WARNING:  Passing this function the value of FALSE has its
 pitfalls.  Please see the several caveats in the autodoc for
-[BeginRefresh](BeginRefresh).
+[BeginRefresh](BeginRefresh.md).
 
 For your information, this routine calls the Layers library function
-[EndUpdate](_0396), unlocks your layers (calls [UnlockLayerRom](../graphics/UnlockLayerRom)), clears
-the LAYERREFRESH bit in your [Layer](_00A1) Flags, and clears the
+[EndUpdate](_0396.md), unlocks your layers (calls [UnlockLayerRom](../graphics/UnlockLayerRom.md)), clears
+the LAYERREFRESH bit in your [Layer](_00A1.md) Flags, and clears the
 WFLG_WINDOWREFRESH bit in your window Flags.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the window currently in optimized-refresh mode
+[Window](_00D4.md) = pointer to the window currently in optimized-refresh mode
 Complete = Boolean TRUE or FALSE describing whether or not this
 window is completely refreshed
 
@@ -59,5 +59,5 @@ BUGS
 
 **SEE ALSO**
 
-[BeginRefresh](BeginRefresh), [layers.library/EndUpdate](../layers/EndUpdate),
-[graphics.library/UnlockLayerRom](../graphics/UnlockLayerRom)
+[BeginRefresh](BeginRefresh.md), [layers.library/EndUpdate](../layers/EndUpdate.md),
+[graphics.library/UnlockLayerRom](../graphics/UnlockLayerRom.md)

@@ -31,9 +31,9 @@ count - Number of _blocks_ read, or 0 for EOF.  On an error, the
 number of blocks actually read is returned.
 
 BUGS
-Doesn't clear [IoErr](IoErr) before starting.  If you want to find out
+Doesn't clear [IoErr](IoErr.md) before starting.  If you want to find out
 about errors, use SetIoErr(0L) before calling.
 
 **SEE ALSO**
 
-[FGetC](FGetC), [FWrite](FWrite), [FGets](FGets)
+[FGetC](FGetC.md), [FWrite](FWrite.md), [FGets](FGets.md)

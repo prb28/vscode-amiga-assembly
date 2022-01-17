@@ -14,13 +14,13 @@ Enable -- permit system interrupts to resume.
 **FUNCTION**
 
 Allow system interrupts to again occur normally, after a matching
-[Disable](Disable) has been executed.
+[Disable](Disable.md) has been executed.
 
 **RESULTS**
 
-[Interrupt](_008C) processing is restored to normal operation. The
+[Interrupt](_008C.md) processing is restored to normal operation. The
 programmer must execute exactly one call to Enable() for every call
-to [Disable](Disable).
+to [Disable](Disable.md).
 
 NOTE
 This call is guaranteed to preserve all registers.

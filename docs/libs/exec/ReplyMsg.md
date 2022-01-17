@@ -12,7 +12,7 @@ ReplyMsg -- put a message to its reply port
     void ReplyMsg(struct Message *);
 
 ```
-Links: [Message](_0099) 
+Links: [Message](_0099.md) 
 
 **FUNCTION**
 
@@ -34,4 +34,4 @@ feature only with extreeme care).
 
 **SEE ALSO**
 
-[GetMsg](GetMsg), [PutMsg](PutMsg), [exec/ports.h](_0099)
+[GetMsg](GetMsg.md), [PutMsg](PutMsg.md), [exec/ports.h](_0099.md)

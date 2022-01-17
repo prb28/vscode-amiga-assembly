@@ -14,12 +14,12 @@ QBSBlit -- Synchronize the blitter request with the video beam.
     void QBSBlit( struct bltnode * );
 
 ```
-Links: [bltnode](_00CC) 
+Links: [bltnode](_00CC.md) 
 
 **FUNCTION**
 
 Call a user routine for use of the blitter, enqueued separately from
-the [QBlit](QBlit) queue.  Calls the user routine contained in the blit
+the [QBlit](QBlit.md) queue.  Calls the user routine contained in the blit
 structure when the video beam is located at a specified position
 onscreen.   Useful when you are trying to blit into a visible part
 of the screen and wish to perform the data move while the beam is
@@ -47,4 +47,4 @@ some interdependencies with the beam syncing.
 
 **SEE ALSO**
 
-[QBlit](QBlit) [hardware/blit.h](_00CC)
+[QBlit](QBlit.md) [hardware/blit.h](_00CC.md)

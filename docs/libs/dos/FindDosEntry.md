@@ -1,7 +1,7 @@
 
 **NAME**
 
-FindDosEntry -- Finds a specific Dos [List](_007D) entry (V36)
+FindDosEntry -- Finds a specific Dos [List](_007D.md) entry (V36)
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@ FindDosEntry -- Finds a specific Dos [List](_007D) entry (V36)
     struct DosList *FindDosEntry(struct DosList *,STRPTR,ULONG)
 
 ```
-Links: [DosList](_0078) [DosList](_0078) 
+Links: [DosList](_0078.md) [DosList](_0078.md) 
 
 **FUNCTION**
 
@@ -25,7 +25,7 @@ made to dlist after unlocking.
 dlist    - The device entry to start with.
 name     - Name of device entry (without ':') to locate.
 flags    - Search control flags.  Use the flags you passed to
-[LockDosList](LockDosList), or a subset of them.  LDF_READ/LDF_WRITE are
+[LockDosList](LockDosList.md), or a subset of them.  LDF_READ/LDF_WRITE are
 not required for this call.
 
 RESULT
@@ -33,5 +33,5 @@ newdlist - The device entry or NULL
 
 **SEE ALSO**
 
-[AddDosEntry](AddDosEntry), [RemDosEntry](RemDosEntry), [NextDosEntry](NextDosEntry), [LockDosList](LockDosList),
-[MakeDosEntry](MakeDosEntry), [FreeDosEntry](FreeDosEntry)
+[AddDosEntry](AddDosEntry.md), [RemDosEntry](RemDosEntry.md), [NextDosEntry](NextDosEntry.md), [LockDosList](LockDosList.md),
+[MakeDosEntry](MakeDosEntry.md), [FreeDosEntry](FreeDosEntry.md)

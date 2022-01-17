@@ -1,4 +1,4 @@
-# CHK  - Check register against bounds
+# CHK - Check register against bounds
 
 ## Operation
 IF [Dn] < 0 OR [Dn] > [\<ea\>] THEN TRAP

@@ -1,7 +1,7 @@
 
 **NAME**
 
-GetDisplayInfoData -- query [DisplayInfo](_00BD) Record parameters (V36)
+GetDisplayInfoData -- query [DisplayInfo](_00BD.md) Record parameters (V36)
 
 **SYNOPSIS**
 
@@ -42,5 +42,5 @@ BUGS
 
 **SEE ALSO**
 
-[FindDisplayInfo](FindDisplayInfo), [NextDisplayInfo](NextDisplayInfo)
-[graphics/displayinfo.h](_00BD)
+[FindDisplayInfo](FindDisplayInfo.md), [NextDisplayInfo](NextDisplayInfo.md)
+[graphics/displayinfo.h](_00BD.md)

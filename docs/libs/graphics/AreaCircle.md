@@ -13,16 +13,16 @@ AreaCircle -- add a circle to areainfo list for areafill.
     ULONG AreaCircle(struct RastPort *, WORD, WORD, UWORD);
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
 Add circle to the vector buffer. It will be drawn to the rastport when
-[AreaEnd](AreaEnd) is executed.
+[AreaEnd](AreaEnd.md) is executed.
 
 **INPUTS**
 
-rp       - pointer to a [RastPort](_00AF) structure
+rp       - pointer to a [RastPort](_00AF.md) structure
 
 cx, cy   - the coordinates of the center of the desired circle.
 
@@ -39,5 +39,5 @@ AreaEllipse(rp,cx,cy,radius,radius).
 
 **SEE ALSO**
 
-[AreaMove](AreaMove) [AreaDraw](AreaDraw) AreaCircle() [InitArea](InitArea) [AreaEnd](AreaEnd)
-[graphics/rastport.h](_00AF) [graphics/gfxmacros.h](_00B6)
+[AreaMove](AreaMove.md) [AreaDraw](AreaDraw.md) AreaCircle() [InitArea](InitArea.md) [AreaEnd](AreaEnd.md)
+[graphics/rastport.h](_00AF.md) [graphics/gfxmacros.h](_00B6.md)

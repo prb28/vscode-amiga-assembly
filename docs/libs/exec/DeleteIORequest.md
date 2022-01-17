@@ -1,7 +1,7 @@
 
 **NAME**
 
-DeleteIORequest() - Free a request made by [CreateIORequest](CreateIORequest)  (V36)
+DeleteIORequest() - Free a request made by [CreateIORequest](CreateIORequest.md)  (V36)
 
 **SYNOPSIS**
 
@@ -12,18 +12,18 @@ DeleteIORequest() - Free a request made by [CreateIORequest](CreateIORequest)  (
     void DeleteIORequest(struct IORequest *);
 
 ```
-Links: [IORequest](_0094) 
+Links: [IORequest](_0094.md) 
 
 **FUNCTION**
 
-Frees up an IO request as allocated by [CreateIORequest](CreateIORequest).
+Frees up an IO request as allocated by [CreateIORequest](CreateIORequest.md).
 
 **INPUTS**
 
-ioReq - A pointer to the [IORequest](_0094) block to be freed, or NULL.
+ioReq - A pointer to the [IORequest](_0094.md) block to be freed, or NULL.
 This function uses the mn_Length field to determine how
 much memory to free.
 
 **SEE ALSO**
 
-[CreateIORequest](CreateIORequest), [amiga.lib/DeleteExtIO](_0152)
+[CreateIORequest](CreateIORequest.md), [amiga.lib/DeleteExtIO](_0152.md)

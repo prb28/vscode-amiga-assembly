@@ -13,7 +13,7 @@ UnlockPubScreenList -- Release public screen list semaphore. (V36)
 ```
 **FUNCTION**
 
-Releases lock gotten by [LockPubScreenList](LockPubScreenList).
+Releases lock gotten by [LockPubScreenList](LockPubScreenList.md).
 
 **INPUTS**
 
@@ -26,4 +26,4 @@ BUGS
 
 **SEE ALSO**
 
-[LockPubScreenList](LockPubScreenList)
+[LockPubScreenList](LockPubScreenList.md)

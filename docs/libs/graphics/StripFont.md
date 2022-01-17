@@ -11,4 +11,4 @@ StripFont -- remove the tf_Extension from a font (V36)
 
     VOID StripFont(struct TextFont *);
 ```
-Links: [TextFont](_00A8) 
+Links: [TextFont](_00A8.md) 

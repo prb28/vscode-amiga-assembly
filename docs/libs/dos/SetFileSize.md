@@ -36,4 +36,4 @@ newsize - position of new end-of-file or -1 for error.
 
 **SEE ALSO**
 
-[Seek](Seek)
+[Seek](Seek.md)

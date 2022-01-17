@@ -12,7 +12,7 @@ InitResident - initialize resident module
     APTR InitResident(struct Resident *,ULONG);
 
 ```
-Links: [Resident](_00A0) 
+Links: [Resident](_00A0.md) 
 
 **FUNCTION**
 
@@ -24,7 +24,7 @@ Once the validity of the ROMTag is verified, the RT_INIT pointer
 is jumped to  with the following registers:
 D0 = 0
 A0 = segList
-A6 = [ExecBase](_009E)
+A6 = [ExecBase](_009E.md)
 
 **INPUTS**
 
@@ -43,26 +43,26 @@ AUTOINIT FEATURE
 An automatic method of library/device base and vector table
 initialization is also provided by InitResident().  The initial code
 hunk of the library or device should contain &#034;MOVEQ #-1,d0; RTS;&#034;.
-Following that must be an initialized [Resident](_00A0) structure with
+Following that must be an initialized [Resident](_00A0.md) structure with
 RTF_AUTOINIT set in rt_Flags, and an rt_Init pointer which points
 to four longwords.  These four longwords will be used in a call
 to MakeLibrary();
 
 - The size of your library/device base structure including initial
-[Library](_009C) or [Device](_0087) structure.
+[Library](_009C.md) or [Device](_0087.md) structure.
 
 - A pointer to a longword table of standard, then library
 specific function offsets, terminated with -1L.
 (short format offsets are also acceptable)
 
-- Pointer to data table in [exec/InitStruct](InitStruct) format for
-initialization of [Library](_009C) or [Device](_0087) structure.
+- Pointer to data table in [exec/InitStruct](InitStruct.md) format for
+initialization of [Library](_009C.md) or [Device](_0087.md) structure.
 
 - Pointer to library initialization function, or NULL.
 Calling sequence:
 D0 = library base
 A0 = segList
-A6 = [ExecBase](_009E)
+A6 = [ExecBase](_009E.md)
 This function must return in D0 the library/device base to be
 linked into the library/device list.  If the initialization
 function fails, the device memory must be manually deallocated,
@@ -70,4 +70,4 @@ then NULL returned in D0.
 
 **SEE ALSO**
 
-exec/resident.i, [FindResident](FindResident)
+exec/resident.i, [FindResident](FindResident.md)

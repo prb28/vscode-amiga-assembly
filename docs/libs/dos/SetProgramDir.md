@@ -1,7 +1,7 @@
 
 **NAME**
 
-SetProgramDir -- Sets the directory returned by [GetProgramDir](GetProgramDir) (V36)
+SetProgramDir -- Sets the directory returned by [GetProgramDir](GetProgramDir.md) (V36)
 
 **SYNOPSIS**
 
@@ -17,7 +17,7 @@ SetProgramDir -- Sets the directory returned by [GetProgramDir](GetProgramDir) (
 Sets a shared lock on the directory the program was loaded from.
 This can be used for a program to find data files, etc, that are
 stored with the program, or to find the program file itself.  NULL
-is a valid input.  This can be accessed via [GetProgramDir](GetProgramDir) or
+is a valid input.  This can be accessed via [GetProgramDir](GetProgramDir.md) or
 by using paths relative to PROGDIR:.
 
 **INPUTS**
@@ -29,4 +29,4 @@ oldlock - The previous ProgramDir.
 
 **SEE ALSO**
 
-[GetProgramDir](GetProgramDir), [Open](Open)
+[GetProgramDir](GetProgramDir.md), [Open](Open.md)

@@ -25,8 +25,8 @@ delay.
 
 CAUTION
 This function cannot be called while in supervisor mode or
-interrupts!  This function will break the action of a [Forbid](Forbid) or
-[Disable](Disable) call.
+interrupts!  This function will break the action of a [Forbid](Forbid.md) or
+[Disable](Disable.md) call.
 
 INPUT
 signalSet - The set of signals for which to wait.

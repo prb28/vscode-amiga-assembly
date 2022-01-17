@@ -12,21 +12,21 @@ mode for areafills.
     void SetOPen( struct RastPort *, UBYTE );
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
 This is implemented as a c-macro.
 Pen is the pen number that will be used to draw a border
-around an areafill during [AreaEnd](AreaEnd).
+around an areafill during [AreaEnd](AreaEnd.md).
 
 **INPUTS**
 
-rp = pointer to [RastPort](_00AF) structure
+rp = pointer to [RastPort](_00AF.md) structure
 pen = number  between 0-255
 
 BUGS
 
 **SEE ALSO**
 
-[AreaEnd](AreaEnd) [graphics/gfxmacros.h](_00B6) [graphics/rastport.h](_00AF)
+[AreaEnd](AreaEnd.md) [graphics/gfxmacros.h](_00B6.md) [graphics/rastport.h](_00AF.md)

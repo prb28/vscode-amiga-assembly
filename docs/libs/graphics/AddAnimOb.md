@@ -1,7 +1,7 @@
 
 **NAME**
 
-AddAnimOb  --  Add an [AnimOb](_00C3) to the linked list of AnimObs.
+AddAnimOb  --  Add an [AnimOb](_00C3.md) to the linked list of AnimObs.
 
 **SYNOPSIS**
 
@@ -12,21 +12,21 @@ AddAnimOb  --  Add an [AnimOb](_00C3) to the linked list of AnimObs.
     void AddAnimOb(struct AnimOb *,struct AnimOb **, struct RastPort *);
 
 ```
-Links: [AnimOb](_00C3) [AnimOb](_00C3) [RastPort](_00AF) 
+Links: [AnimOb](_00C3.md) [AnimOb](_00C3.md) [RastPort](_00AF.md) 
 
 **FUNCTION**
 
-Links this [AnimOb](_00C3) into the current list pointed to by animKey.
+Links this [AnimOb](_00C3.md) into the current list pointed to by animKey.
 Initializes all the Timers of the AnimOb's components.
-Calls [AddBob](AddBob) with each component's [Bob](_00C3).
-rp-&#062;GelsInfo must point to an initialized [GelsInfo](_00AF) structure.
+Calls [AddBob](AddBob.md) with each component's [Bob](_00C3.md).
+rp-&#062;GelsInfo must point to an initialized [GelsInfo](_00AF.md) structure.
 
 **INPUTS**
 
-anOb  = pointer to the [AnimOb](_00C3) structure to be added to the list
-anKey = address of a pointer to the first [AnimOb](_00C3) in the list
+anOb  = pointer to the [AnimOb](_00C3.md) structure to be added to the list
+anKey = address of a pointer to the first [AnimOb](_00C3.md) in the list
 (anKey = NULL if there are no AnimObs in the list so far)
-rp    = pointer to a valid [RastPort](_00AF)
+rp    = pointer to a valid [RastPort](_00AF.md)
 
 RESULT
 
@@ -34,4 +34,4 @@ BUGS
 
 **SEE ALSO**
 
-[Animate](Animate) [graphics/rastport.h](_00AF) [graphics/gels.h](_00C3)
+[Animate](Animate.md) [graphics/rastport.h](_00AF.md) [graphics/gels.h](_00C3.md)

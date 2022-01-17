@@ -25,7 +25,7 @@ then only the buffering mode will be changed.
 
 fh   - Filehandle
 buff - buffer pointer for buffered I/O
-type - buffering mode (see [&#060;dos/stdio.h&#062;](_006B))
+type - buffering mode (see [&#060;dos/stdio.h&#062;](_006B.md))
 size - size of buffer for buffered I/O (sizes less than 208 bytes
 will be ignored).
 
@@ -37,5 +37,5 @@ Not implemented yet, always returns 0.
 
 **SEE ALSO**
 
-FputC(), [FGetC](FGetC), [UnGetC](UnGetC), [Flush](Flush), [FRead](FRead), [FWrite](FWrite), [FGets](FGets),
-[FPuts](FPuts).
+FputC(), [FGetC](FGetC.md), [UnGetC](UnGetC.md), [Flush](Flush.md), [FRead](FRead.md), [FWrite](FWrite.md), [FGets](FGets.md),
+[FPuts](FPuts.md).

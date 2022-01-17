@@ -1,7 +1,7 @@
 
 **NAME**
 
-FreeSysRequest -- Free resources gotten by a call to [BuildSysRequest](BuildSysRequest).
+FreeSysRequest -- Free resources gotten by a call to [BuildSysRequest](BuildSysRequest.md).
 
 **SYNOPSIS**
 
@@ -12,12 +12,12 @@ FreeSysRequest -- Free resources gotten by a call to [BuildSysRequest](BuildSysR
     VOID FreeSysRequest( struct Window * );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
 This routine frees up all memory allocated by a successful call to
-the [BuildSysRequest](BuildSysRequest) procedure.  If [BuildSysRequest](BuildSysRequest) returned a
+the [BuildSysRequest](BuildSysRequest.md) procedure.  If [BuildSysRequest](BuildSysRequest.md) returned a
 pointer to a window, then you are able to wait on the message port
 of that window to detect an event which satisfies the requester.
 When you want to remove the requester, you call this procedure.  It
@@ -31,8 +31,8 @@ requesters gotten using BuildEasyRequest().
 
 **INPUTS**
 
-[Window](_00D4) = value of the window pointer returned by a successful call to
-the [BuildSysRequest](BuildSysRequest) procedure
+[Window](_00D4.md) = value of the window pointer returned by a successful call to
+the [BuildSysRequest](BuildSysRequest.md) procedure
 
 RESULT
 None
@@ -41,4 +41,4 @@ BUGS
 
 **SEE ALSO**
 
-[BuildSysRequest](BuildSysRequest), [AutoRequest](AutoRequest), [CloseWindow](CloseWindow)
+[BuildSysRequest](BuildSysRequest.md), [AutoRequest](AutoRequest.md), [CloseWindow](CloseWindow.md)

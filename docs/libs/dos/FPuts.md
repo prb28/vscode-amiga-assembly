@@ -29,4 +29,4 @@ most other Dos functions, which return success.
 
 **SEE ALSO**
 
-[FGets](FGets), [FPutC](FPutC), [FWrite](FWrite), [PutStr](PutStr)
+[FGets](FGets.md), [FPutC](FPutC.md), [FWrite](FWrite.md), [PutStr](PutStr.md)

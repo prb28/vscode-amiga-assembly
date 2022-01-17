@@ -12,7 +12,7 @@ CompareDates -- Compares two datestamps (V36)
     LONG CompareDates(struct DateStamp *,struct DateStamp *)
 
 ```
-Links: [DateStamp](_0068) [DateStamp](_0068) 
+Links: [DateStamp](_0068.md) [DateStamp](_0068.md) 
 
 **FUNCTION**
 
@@ -29,4 +29,4 @@ result -  &#060;0, 0, or &#062;0 based on comparison of two date stamps
 
 **SEE ALSO**
 
-[DateStamp](DateStamp), [DateToStr](DateToStr), [StrToDate](StrToDate)
+[DateStamp](DateStamp.md), [DateToStr](DateToStr.md), [StrToDate](StrToDate.md)

@@ -14,8 +14,8 @@ Forbid -- forbid task rescheduling.
 **FUNCTION**
 
 Prevents other tasks from being scheduled to run by the dispatcher,
-until a matching [Permit](Permit) is executed, or this task is scheduled to
-[Wait](Wait).  Interrupts are NOT disabled.
+until a matching [Permit](Permit.md) is executed, or this task is scheduled to
+[Wait](Wait.md).  Interrupts are NOT disabled.
 
 DO NOT USE THIS CALL WITHOUT GOOD JUSTIFICATION.  THIS CALL IS
 DANGEROUS!
@@ -28,12 +28,12 @@ tasks may be scheduled.  Upon return from the wait state, the original
 task will continue to run without disturbing the Forbid().
 
 Calls to Forbid() nest. In order to restore normal task rescheduling,
-the programmer must execute exactly one call to [Permit](Permit) for every
+the programmer must execute exactly one call to [Permit](Permit.md) for every
 call to Forbid().
 
 **WARNING**
 
-In the event of a task entering a [Wait](Wait) after a Forbid(), the system
+In the event of a task entering a [Wait](Wait.md) after a Forbid(), the system
 &#034;breaks&#034; the forbidden state and runs normally until the task which
 called Forbid() is rescheduled.  If caution is not taken, this can
 cause subtle bugs, since any device or DOS call will (in effect)
@@ -48,4 +48,4 @@ This call is guaranteed to preserve all registers.
 
 **SEE ALSO**
 
-Permit, Disable, [ObtainSemaphore](ObtainSemaphore), [ObtainSemaphoreShared](ObtainSemaphoreShared)
+Permit, Disable, [ObtainSemaphore](ObtainSemaphore.md), [ObtainSemaphoreShared](ObtainSemaphoreShared.md)

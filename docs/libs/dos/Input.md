@@ -24,4 +24,4 @@ file - BCPL pointer to a file handle
 
 **SEE ALSO**
 
-[Output](Output), [SelectInput](SelectInput)
+[Output](Output.md), [SelectInput](SelectInput.md)

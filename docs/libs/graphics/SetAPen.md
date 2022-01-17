@@ -1,7 +1,7 @@
 
 **NAME**
 
-SetAPen -- Set the primary pen for a [RastPort](_00AF).
+SetAPen -- Set the primary pen for a [RastPort](_00AF.md).
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@ SetAPen -- Set the primary pen for a [RastPort](_00AF).
     void SetAPen( struct RastPort *, UBYTE );
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
@@ -20,15 +20,15 @@ Set the primary drawing pen for lines, fills, and text.
 
 **INPUTS**
 
-rp - pointer to [RastPort](_00AF) structure.
+rp - pointer to [RastPort](_00AF.md) structure.
 pen - (0-255)
 
 RESULT
-Changes the minterms in the [RastPort](_00AF) to reflect new primary pen.
+Changes the minterms in the [RastPort](_00AF.md) to reflect new primary pen.
 Sets line drawer to restart pattern.
 
 BUGS
 
 **SEE ALSO**
 
-[SetBPen](SetBPen) [graphics/rastport.h](_00AF)
+[SetBPen](SetBPen.md) [graphics/rastport.h](_00AF.md)

@@ -35,4 +35,4 @@ earlier versions, it can crash the machine.
 
 **SEE ALSO**
 
-[Lock](Lock), [Open](Open)
+[Lock](Lock.md), [Open](Open.md)

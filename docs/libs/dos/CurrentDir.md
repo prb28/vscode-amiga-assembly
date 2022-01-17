@@ -20,7 +20,7 @@ the current directory.  The old current directory lock is returned.
 A value of zero is a valid result here, this 0 lock represents the
 root of file system that you booted from.
 
-Any call that has to [Open](Open) or [Lock](Lock) files (etc) requires that
+Any call that has to [Open](Open.md) or [Lock](Lock.md) files (etc) requires that
 the current directory be a valid lock or 0.
 
 **INPUTS**
@@ -33,4 +33,4 @@ oldLock - BCPL pointer to a lock
 
 **SEE ALSO**
 
-[Lock](Lock), [UnLock](UnLock), [Open](Open), [DupLock](DupLock)
+[Lock](Lock.md), [UnLock](UnLock.md), [Open](Open.md), [DupLock](DupLock.md)

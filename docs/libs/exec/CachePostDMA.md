@@ -17,7 +17,7 @@ CachePostDMA - Take actions after to hardware DMA  (V37)
 Take all appropriate steps after Direct Memory Access (DMA).  This
 function is primarily intended for writers of DMA device drivers.  The
 action will depend on the CPU type installed, caching modes, and the
-state of any Memory Management [Unit](_0087) (MMU) activity.
+state of any Memory Management [Unit](_0087.md) (MMU) activity.
 
 As implemented
 68000 - Do nothing
@@ -33,8 +33,8 @@ doing nothing.
 
 **INPUTS**
 
-address - Same as initially passed to [CachePreDMA](CachePreDMA)
-length  - Same as initially passed to [CachePreDMA](CachePreDMA)
+address - Same as initially passed to [CachePreDMA](CachePreDMA.md)
+length  - Same as initially passed to [CachePreDMA](CachePreDMA.md)
 flags   - Values:
 DMA_NoModify - If the area was not modified (and
 thus there is no reason to flush the cache) set
@@ -42,4 +42,4 @@ this bit.
 
 **SEE ALSO**
 
-exec/execbase.i, [CachePreDMA](CachePreDMA), [CacheClearU](CacheClearU), [CacheClearE](CacheClearE)
+exec/execbase.i, [CachePreDMA](CachePreDMA.md), [CacheClearU](CacheClearU.md), [CacheClearE](CacheClearE.md)

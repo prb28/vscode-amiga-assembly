@@ -46,7 +46,7 @@ EndCLI command.
 Under V37, if an input filehandle is passed, and it's either
 interactive or a NIL: filehandle, the pr_ConsoleTask of the new
 process will be set to that filehandle's process (the same applies
-to [SystemTagList](SystemTagList)).
+to [SystemTagList](SystemTagList.md)).
 
 For this command to work the program Run must be present in C: in
 versions before V36 (except that in 1.3.2 and any later 1.3 versions,
@@ -65,4 +65,4 @@ in finding and starting the specified program.  Note this
 is NOT the return code of the command(s).
 **SEE ALSO**
 
-[SystemTagList](SystemTagList), NewShell, EndCLI, Run
+[SystemTagList](SystemTagList.md), NewShell, EndCLI, Run

@@ -1,7 +1,7 @@
 
 **NAME**
 
-LockIBase -- Invoke semaphore arbitration of [IntuitionBase](_00DC).
+LockIBase -- Invoke semaphore arbitration of [IntuitionBase](_00DC.md).
 
 **SYNOPSIS**
 
@@ -15,19 +15,19 @@ LockIBase -- Invoke semaphore arbitration of [IntuitionBase](_00DC).
 **FUNCTION**
 
 Grabs Intuition internal semaphore so that caller may examine
-[IntuitionBase](_00DC) safely.  This function is not a magic &#034;fix all my
+[IntuitionBase](_00DC.md) safely.  This function is not a magic &#034;fix all my
 race conditions&#034; panacea.
 
 The idea here is that you can get the locks Intuition needs before
-such [IntuitionBase](_00DC) fields as ActiveWindow and FirstScreen are
+such [IntuitionBase](_00DC.md) fields as ActiveWindow and FirstScreen are
 changed, or linked lists of windows and screens are changed.
 
 Do Not Get Tricky with this entry point, and do not hold these locks
 for long, as all Intuition input processing will wait for you to
-surrender the lock by a call to [UnlockIBase](UnlockIBase).
+surrender the lock by a call to [UnlockIBase](UnlockIBase.md).
 
 NOTE WELL: A call to this function MUST be paired with a subsequent
-call to [UnlockIBase](UnlockIBase), and soon, please.
+call to [UnlockIBase](UnlockIBase.md), and soon, please.
 
 NOTE WELL: Do not call any Intuition functions (nor any graphics,
 layers, dos, or other high-level system function) while
@@ -41,7 +41,7 @@ forseeable uses of this function, which will let you examine active
 fields and linked lists of screens and windows with safety.
 
 RESULT
-Returns another ULONG which should be passed to [UnlockIBase](UnlockIBase) to
+Returns another ULONG which should be passed to [UnlockIBase](UnlockIBase.md) to
 surrender the lock gotten by this call.
 
 BUGS
@@ -50,5 +50,5 @@ such as layer or LayerInfo locks.
 
 **SEE ALSO**
 
-[UnlockIBase](UnlockIBase), [layers.library/LockLayerInfo](../layers/LockLayerInfo),
-[exec.library/ObtainSemaphore](../exec/ObtainSemaphore)
+[UnlockIBase](UnlockIBase.md), [layers.library/LockLayerInfo](../layers/LockLayerInfo.md),
+[exec.library/ObtainSemaphore](../exec/ObtainSemaphore.md)

@@ -57,4 +57,4 @@ handler.
 
 **SEE ALSO**
 
-[FreeTrap](FreeTrap)
+[FreeTrap](FreeTrap.md)

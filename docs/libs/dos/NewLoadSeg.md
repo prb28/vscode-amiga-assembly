@@ -1,7 +1,7 @@
 
 **NAME**
 
-NewLoadSeg -- Improved version of [LoadSeg](LoadSeg) for stacksizes (V36)
+NewLoadSeg -- Improved version of [LoadSeg](LoadSeg.md) for stacksizes (V36)
 
 **SYNOPSIS**
 
@@ -21,19 +21,19 @@ NewLoadSeg -- Improved version of [LoadSeg](LoadSeg) for stacksizes (V36)
     BPTR NewLoadSegTags(STRPTR, ...)
 
 ```
-Links: [TagItem](_012E) [TagItem](_012E) 
+Links: [TagItem](_012E.md) [TagItem](_012E.md) 
 
 **FUNCTION**
 
-Does a [LoadSeg](LoadSeg) on a file, and takes additional actions based on the
+Does a [LoadSeg](LoadSeg.md) on a file, and takes additional actions based on the
 tags supplied.
 
 Clears unused portions of Code and Data hunks (as well as BSS hunks).
-(This also applies to [InternalLoadSeg](InternalLoadSeg) and [LoadSeg](LoadSeg)).
+(This also applies to [InternalLoadSeg](InternalLoadSeg.md) and [LoadSeg](LoadSeg.md)).
 
 NOTE to overlay users: NewLoadSeg() does NOT return seglist in
-both D0 and D1, as [LoadSeg](LoadSeg) does.  The current ovs.asm uses [LoadSeg](LoadSeg),
-and assumes returns are in D1.  We will support this for [LoadSeg](LoadSeg)
+both D0 and D1, as [LoadSeg](LoadSeg.md) does.  The current ovs.asm uses [LoadSeg](LoadSeg.md),
+and assumes returns are in D1.  We will support this for [LoadSeg](LoadSeg.md)
 ONLY.
 
 **INPUTS**
@@ -49,4 +49,4 @@ No tags are currently defined.
 
 **SEE ALSO**
 
-[LoadSeg](LoadSeg), [UnLoadSeg](UnLoadSeg), [InternalLoadSeg](InternalLoadSeg), [InternalUnLoadSeg](InternalUnLoadSeg)
+[LoadSeg](LoadSeg.md), [UnLoadSeg](UnLoadSeg.md), [InternalLoadSeg](InternalLoadSeg.md), [InternalUnLoadSeg](InternalUnLoadSeg.md)

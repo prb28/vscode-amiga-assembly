@@ -30,4 +30,4 @@ BUGS
 
 **SEE ALSO**
 
-[WBenchToFront](WBenchToFront), [ScreenToFront](ScreenToFront)
+[WBenchToFront](WBenchToFront.md), [ScreenToFront](ScreenToFront.md)

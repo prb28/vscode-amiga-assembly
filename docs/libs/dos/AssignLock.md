@@ -23,7 +23,7 @@ failure code is returned.
 NOTE: you should not use the lock in any way after making this call
 successfully.  It becomes the assign, and will be unlocked by the
 system when the assign is removed.  If you need to keep the lock,
-pass a lock from [DupLock](DupLock) to AssignLock().
+pass a lock from [DupLock](DupLock.md) to AssignLock().
 
 **INPUTS**
 
@@ -36,5 +36,5 @@ unlocked.
 
 **SEE ALSO**
 
-[Lock](Lock), [AssignAdd](AssignAdd), [AssignPath](AssignPath), [AssignLate](AssignLate), [DupLock](DupLock),
-[RemAssignList](RemAssignList)
+[Lock](Lock.md), [AssignAdd](AssignAdd.md), [AssignPath](AssignPath.md), [AssignLate](AssignLate.md), [DupLock](DupLock.md),
+[RemAssignList](RemAssignList.md)

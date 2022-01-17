@@ -12,7 +12,7 @@ SetMouseQueue -- Change limit on pending mouse messages. (V36)
     LONG SetMouseQueue( struct Window *, UWORD );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -21,7 +21,7 @@ to be outstanding for your window.
 
 **INPUTS**
 
-[Window](_00D4) = your window
+[Window](_00D4.md) = your window
 QueueLength = the new value of outstanding mouse movement messages
 you wish to allow.
 
@@ -35,4 +35,4 @@ BUGS
 
 **SEE ALSO**
 
-[OpenWindow](OpenWindow)
+[OpenWindow](OpenWindow.md)

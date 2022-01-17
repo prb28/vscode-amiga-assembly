@@ -13,7 +13,7 @@ with second region, leaving result in second region
     BOOL OrRegionRegion( struct Region *, struct Region * );
 
 ```
-Links: [Region](_00B7) [Region](_00B7) 
+Links: [Region](_00B7.md) [Region](_00B7.md) 
 
 **FUNCTION**
 
@@ -22,8 +22,8 @@ that portion to the region2
 
 **INPUTS**
 
-region1 - pointer to [Region](_00B7) structure
-region2 - pointer to [Region](_00B7) structure
+region1 - pointer to [Region](_00B7.md) structure
+region2 - pointer to [Region](_00B7.md) structure
 
 **RESULTS**
 
@@ -34,4 +34,4 @@ BUGS
 
 **SEE ALSO**
 
-[OrRectRegion](OrRectRegion) [graphics/regions.h](_00B7)
+[OrRectRegion](OrRectRegion.md) [graphics/regions.h](_00B7.md)

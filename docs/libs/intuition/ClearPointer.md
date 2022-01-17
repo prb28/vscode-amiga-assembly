@@ -12,7 +12,7 @@ ClearPointer -- Clear the mouse pointer definition from a window.
     VOID ClearPointer( struct Window * );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -22,12 +22,12 @@ one the default Intuition pointer will be the pointer displayed
 to the user.  If your window is the active one when this routine
 is called, the change will take place immediately.
 
-[Custom](_00CD) definitions of the mouse pointer which this function clears
-are installed by a call to [SetPointer](SetPointer).
+[Custom](_00CD.md) definitions of the mouse pointer which this function clears
+are installed by a call to [SetPointer](SetPointer.md).
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the window to be cleared of its pointer definition
+[Window](_00D4.md) = pointer to the window to be cleared of its pointer definition
 
 RESULT
 None
@@ -36,4 +36,4 @@ BUGS
 
 **SEE ALSO**
 
-[SetPointer](SetPointer)
+[SetPointer](SetPointer.md)

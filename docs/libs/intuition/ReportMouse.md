@@ -42,7 +42,7 @@ SPECIAL NOTE
     or else bracket the operation between Forbid()/Permit().
 
 ```
-Links: [Window](_00D4) [Window](_00D4) [Window](_00D4) [Forbid()/Permit()](../exec/Permit) 
+Links: [Window](_00D4.md) [Window](_00D4.md) [Window](_00D4.md) [Forbid()/Permit()](../exec/Permit) 
 
 **FUNCTION**
 
@@ -64,7 +64,7 @@ selected will change the state of the window's WFLG_REPORTMOUSE flag,
 but will have no effect on any gadget that may be subsequently
 selected. (This is all fixed in V36.)
 
-The ReportMouse() function is first performed when [OpenWindow](OpenWindow)
+The ReportMouse() function is first performed when [OpenWindow](OpenWindow.md)
 is first called; if the flag WFLG_REPORTMOUSE is included among
 the options, then all mouse-movement events are reported
 to the opening task and will continue to be reported
@@ -79,7 +79,7 @@ IDCMPFlag.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to a [Window](_00D4) structure associated with this request
+[Window](_00D4.md) = pointer to a [Window](_00D4.md) structure associated with this request
 Boolean = TRUE or FALSE value specifying whether to turn this
 function on or off
 

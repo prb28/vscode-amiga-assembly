@@ -12,12 +12,12 @@ Allocate - allocate a block of memory
     void *Allocate(struct MemHeader *, ULONG);
 
 ```
-Links: [MemHeader](_0089) 
+Links: [MemHeader](_0089.md) 
 
 **FUNCTION**
 
 This function is used to allocate blocks of memory from a given
-private free memory pool (as specified by a [MemHeader](_0089) and its
+private free memory pool (as specified by a [MemHeader](_0089.md) and its
 memory chunk list).  Allocate will return the first free block that
 is greater than or equal to the requested size.
 
@@ -28,7 +28,7 @@ bytes.  A request for 8 bytes will use up exactly 8 bytes.  A
 request for 7 bytes will also use up exactly 8 bytes.).
 
 This function can be used to manage an application's internal data
-memory.  Note that no arbitration of the [MemHeader](_0089) and associated
+memory.  Note that no arbitration of the [MemHeader](_0089.md) and associated
 free chunk list is done.  You must be the owner before calling
 Allocate.
 
@@ -43,26 +43,26 @@ If there are no free regions large enough to satisfy the
 request, return zero.
 
 EXAMPLE
-#include [&#060;exec/types.h&#062;](_0096)
-#include [&#060;exec/memory.h&#062;](_0089)
+#include [&#060;exec/types.h&#062;](_0096.md)
+#include [&#060;exec/memory.h&#062;](_0089.md)
 void *AllocMem();
 #define BLOCKSIZE 4096L /* Or whatever you want */
 
 void main()
 {
-struct [MemHeader](_0089) *mh;
-struct [MemChunk](_0089)  *mc;
+struct [MemHeader](_0089.md) *mh;
+struct [MemChunk](_0089.md)  *mc;
 APTR   block1;
 APTR   block2;
 
-/* Get the [MemHeader](_0089) needed to keep track of our new block */
-mh = (struct [MemHeader](_0089) *)
+/* Get the [MemHeader](_0089.md) needed to keep track of our new block */
+mh = (struct [MemHeader](_0089.md) *)
 AllocMem((long)sizeof(struct MemHeader), MEMF_CLEAR );
 if( !mh )
 exit(10);
 
-/* Get the actual block the above [MemHeader](_0089) will manage */
-mc = (struct [MemChunk](_0089) *)AllocMem( BLOCKSIZE, 0L );
+/* Get the actual block the above [MemHeader](_0089.md) will manage */
+mc = (struct [MemChunk](_0089.md) *)AllocMem( BLOCKSIZE, 0L );
 if( !mc )
 {
 FreeMem( mh, (long)sizeof(struct MemHeader) ); exit(10);
@@ -94,4 +94,4 @@ AN_MemCorrupt, $01000005.
 
 **SEE ALSO**
 
-Deallocate, [exec/memory.h](_0089)
+Deallocate, [exec/memory.h](_0089.md)

@@ -35,4 +35,4 @@ BUGS
 
 **SEE ALSO**
 
-[timer.device/TR_GETSYSTIME](_04FE)
+[timer.device/TR_GETSYSTIME](_04FE.md)

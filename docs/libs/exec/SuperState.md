@@ -28,4 +28,4 @@ is already in supervisor mode, oldSysStack is zero.
 
 **SEE ALSO**
 
-[UserState/Supervisor](Supervisor)
+[UserState/Supervisor](Supervisor.md)

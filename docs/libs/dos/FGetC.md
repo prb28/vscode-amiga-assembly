@@ -16,7 +16,7 @@ FGetC -- Read a character from the specified input (buffered) (V36)
 
 Reads the next character from the input stream.  A -1 is
 returned when EOF or an error is encountered.  This call is buffered.
-Use [Flush](Flush) between buffered and unbuffered I/O on a filehandle.
+Use [Flush](Flush.md) between buffered and unbuffered I/O on a filehandle.
 
 **INPUTS**
 
@@ -32,4 +32,4 @@ handler again each time (unless UnGetC(fh,-1) was called).
 
 **SEE ALSO**
 
-[FPutC](FPutC), [UnGetC](UnGetC), [Flush](Flush)
+[FPutC](FPutC.md), [UnGetC](UnGetC.md), [Flush](Flush.md)

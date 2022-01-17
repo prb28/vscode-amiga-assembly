@@ -12,7 +12,7 @@ Signal -- signal a task
     void Signal(struct Task *,ULONG);
 
 ```
-Links: [Task](_008E) 
+Links: [Task](_008E.md) 
 
 **FUNCTION**
 
@@ -24,7 +24,7 @@ for possible later use. A signal may be sent to a task regardless
 of whether its running, ready, or waiting.
 
 This function is considered &#034;low level&#034;.  Its main purpose is to
-support multiple higher level functions like [PutMsg](PutMsg).
+support multiple higher level functions like [PutMsg](PutMsg.md).
 
 This function is safe to call from interrupts.
 
@@ -34,4 +34,4 @@ signals - the signals to be sent
 
 **SEE ALSO**
 
-Wait, [SetSignal](SetSignal)
+Wait, [SetSignal](SetSignal.md)

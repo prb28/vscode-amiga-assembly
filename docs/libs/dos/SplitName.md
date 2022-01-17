@@ -42,4 +42,4 @@ newpos    - New position for next call to splitname.  -1 for last one.
 
 **SEE ALSO**
 
-[FilePart](FilePart), [PathPart](PathPart), [AddPart](AddPart)
+[FilePart](FilePart.md), [PathPart](PathPart.md), [AddPart](AddPart.md)

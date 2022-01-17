@@ -16,7 +16,7 @@ NextObject -- iterate through the object on an Exec list. (V36)
 
 This function is for boopsi class implementors only.
 
-When you collect a set of boopsi objects on an Exec [List](_007D)
+When you collect a set of boopsi objects on an Exec [List](_007D.md)
 structure by invoking their OM_ADDMEMBER method, you
 can (only) retrieve them by iterations of this function.
 
@@ -52,6 +52,6 @@ BUGS
 
 **SEE ALSO**
 
-[DisposeObject](DisposeObject), SetAttrs(), [GetAttr](GetAttr), [MakeClass](MakeClass),
+[DisposeObject](DisposeObject.md), SetAttrs(), [GetAttr](GetAttr.md), [MakeClass](MakeClass.md),
 Document &#034;Basic Object-Oriented Programming System for Intuition&#034;
 and the &#034;boopsi Class Reference&#034; document.

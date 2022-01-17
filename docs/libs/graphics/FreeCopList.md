@@ -12,7 +12,7 @@ FreeCopList -- deallocate intermediate copper list
     void FreeCopList( struct CopList *);
 
 ```
-Links: [CopList](_00AD) 
+Links: [CopList](_00AD.md) 
 
 **FUNCTION**
 
@@ -20,7 +20,7 @@ Deallocate all memory associated with this copper list.
 
 **INPUTS**
 
-coplist  - pointer to structure [CopList](_00AD)
+coplist  - pointer to structure [CopList](_00AD.md)
 
 **RESULTS**
 
@@ -30,4 +30,4 @@ BUGS
 
 **SEE ALSO**
 
-[graphics/copper.h](_00AD)
+[graphics/copper.h](_00AD.md)

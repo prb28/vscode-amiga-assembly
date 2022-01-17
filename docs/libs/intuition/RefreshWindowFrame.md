@@ -12,7 +12,7 @@ RefreshWindowFrame -- Ask Intuition to redraw your window border.
     VOID RefreshWindowFrame( struct Window * );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -25,7 +25,7 @@ corruption.
 
 **INPUTS**
 
-[Window](_00D4) = a pointer to a [Window](_00D4) structure
+[Window](_00D4.md) = a pointer to a [Window](_00D4.md) structure
 
 RESULT
 None

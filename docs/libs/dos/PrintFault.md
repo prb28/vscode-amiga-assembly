@@ -15,9 +15,9 @@ PrintFault -- Returns the text associated with a DOS error code (V36)
 **FUNCTION**
 
 This routine obtains the error message text for the given error code.
-This is similar to the [Fault](Fault) function, except that the output is
+This is similar to the [Fault](Fault.md) function, except that the output is
 written to the default output channel with buffered output.
-The value returned by [IoErr](IoErr) is set to the code passed in.
+The value returned by [IoErr](IoErr.md) is set to the code passed in.
 
 **INPUTS**
 
@@ -29,4 +29,4 @@ success - Success/failure code.
 
 **SEE ALSO**
 
-[IoErr](IoErr), [Fault](Fault), [SetIoErr](SetIoErr), [Output](Output), [FPuts](FPuts)
+[IoErr](IoErr.md), [Fault](Fault.md), [SetIoErr](SetIoErr.md), [Output](Output.md), [FPuts](FPuts.md)

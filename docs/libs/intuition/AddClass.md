@@ -17,11 +17,11 @@ AddClass -- Make a public class available (V36)
 Adds a public boopsi class to the internal list of classes available
 for public consumption.
 
-You must call this function after you call [MakeClass](MakeClass).
+You must call this function after you call [MakeClass](MakeClass.md).
 
 **INPUTS**
 
-Class = pointer returned by [MakeClass](MakeClass)
+Class = pointer returned by [MakeClass](MakeClass.md)
 
 RESULT
 Nothing returned.
@@ -38,6 +38,6 @@ names can be used for public classes, and there is no
 
 **SEE ALSO**
 
-[MakeClass](MakeClass), [FreeClass](FreeClass), [RemoveClass](RemoveClass)
+[MakeClass](MakeClass.md), [FreeClass](FreeClass.md), [RemoveClass](RemoveClass.md)
 Document &#034;Basic Object-Oriented Programming System for Intuition&#034;
 and the &#034;boopsi Class Reference&#034; document.

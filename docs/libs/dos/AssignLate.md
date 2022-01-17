@@ -19,7 +19,7 @@ name.  The path (a string) would be attached to the node.  When
 the name is referenced (Open(&#034;FOO:xyzzy&#034;...), the string will be used
 to determine where to set the assign to, and if the directory can be
 locked, the assign will act from that point on as if it had been
-created by [AssignLock](AssignLock).
+created by [AssignLock](AssignLock.md).
 
 A major advantage is assigning things to unmounted volumes, which
 will be requested upon access (useful in startup sequences).
@@ -34,4 +34,4 @@ success - Success/failure indicator of the operation
 
 **SEE ALSO**
 
-[Lock](Lock), [AssignAdd](AssignAdd), [AssignPath](AssignPath), [AssignLock](AssignLock),
+[Lock](Lock.md), [AssignAdd](AssignAdd.md), [AssignPath](AssignPath.md), [AssignLock](AssignLock.md),

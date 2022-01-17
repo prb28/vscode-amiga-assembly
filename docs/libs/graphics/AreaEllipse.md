@@ -13,16 +13,16 @@ AreaEllipse -- add a ellipse to areainfo list for areafill.
     LONG AreaEllipse( struct RastPort *, SHORT, SHORT, SHORT, SHORT)
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
-Add an ellipse to the vector buffer. It will be draw when [AreaEnd](AreaEnd) is
+Add an ellipse to the vector buffer. It will be draw when [AreaEnd](AreaEnd.md) is
 called.
 
 **INPUTS**
 
-rp - pointer to a [RastPort](_00AF) structure
+rp - pointer to a [RastPort](_00AF.md) structure
 cx - x coordinate of the centerpoint relative to the rastport.
 cy - y coordinate of the centerpoint relative to the rastport.
 a  - the horizontal radius of the ellipse (note: a must be &#062; 0)
@@ -34,5 +34,5 @@ vector list
 
 **SEE ALSO**
 
-[AreaMove](AreaMove) [AreaDraw](AreaDraw) [AreaCircle](AreaCircle) [InitArea](InitArea) [AreaEnd](AreaEnd)
-[graphics/rastport.h](_00AF)
+[AreaMove](AreaMove.md) [AreaDraw](AreaDraw.md) [AreaCircle](AreaCircle.md) [InitArea](InitArea.md) [AreaEnd](AreaEnd.md)
+[graphics/rastport.h](_00AF.md)

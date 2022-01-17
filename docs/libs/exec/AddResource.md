@@ -20,7 +20,7 @@ at this time.
 
 Resources currently have no system-imposed structure, however they
 must start with a standard named node (LN_SIZE), and should with
-a standard [Library](_009C) node (LIB_SIZE).
+a standard [Library](_009C.md) node (LIB_SIZE).
 
 **INPUTS**
 
@@ -28,4 +28,4 @@ resource - pointer an initialized resource node
 
 **SEE ALSO**
 
-[RemResource](RemResource), [OpenResource](OpenResource), [MakeLibrary](MakeLibrary)
+[RemResource](RemResource.md), [OpenResource](OpenResource.md), [MakeLibrary](MakeLibrary.md)

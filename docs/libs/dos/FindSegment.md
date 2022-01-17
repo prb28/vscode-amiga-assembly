@@ -12,7 +12,7 @@ FindSegment - Finds a segment on the resident list (V36)
     struct Segment *FindSegment(STRPTR, struct Segment *, LONG)
 
 ```
-Links: [Segment](_0078) [Segment](_0078) 
+Links: [Segment](_0078.md) [Segment](_0078.md) 
 
 **FUNCTION**
 
@@ -20,7 +20,7 @@ Finds a segment on the Dos resident list by name and type, starting
 at the segment AFTER 'start', or at the beginning if start is NULL.
 If system is zero, it will only return nodes with a seg_UC of 0
 or more.  It does NOT increment the seg_UC, and it does NOT do any
-locking of the list.  You must [Forbid](../exec/Forbid) lock the list to use this
+locking of the list.  You must [Forbid](../exec/Forbid.md) lock the list to use this
 call.
 
 To use an entry you have found, you must: if the seg_UC is 0 or more,
@@ -46,4 +46,4 @@ segment - the segment found or NULL
 
 **SEE ALSO**
 
-[AddSegment](AddSegment), [RemSegment](RemSegment), [Forbid](../exec/Forbid)
+[AddSegment](AddSegment.md), [RemSegment](RemSegment.md), [Forbid](../exec/Forbid.md)

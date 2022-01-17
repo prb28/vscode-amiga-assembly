@@ -19,7 +19,7 @@ SetGadgetAttrs -- Varargs stub for SetGadgetAttrsA(). (V36)
             struct Requester *, ULONG, ... );
 
 ```
-Links: [Gadget](_00D4) [Window](_00D4) [Requester](_00D4) [Gadget](_00D4) [Window](_00D4) [Requester](_00D4) [TagItem](_012E) [Gadget](_00D4) [Window](_00D4) [Requester](_00D4) [Gadget](_00D4) [Window](_00D4) [Requester](_00D4) 
+Links: [Gadget](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) [Gadget](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) [TagItem](_012E.md) [Gadget](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) [Gadget](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) 
 
 **FUNCTION**
 
@@ -39,11 +39,11 @@ specify NULL for the 'Window' and 'Requester' parameters.
 
 **INPUTS**
 
-[Gadget](_00D4) = abstract pointer to a boopsi gadget
-[Window](_00D4) = window gadget has been added to using [AddGList](AddGList) or
-[AddGadget](AddGadget)
-[Requester](_00D4) = for REQGADGETs, requester containing the gadget
-TagList = array of [TagItem](_012E) structures with attribute/value pairs.
+[Gadget](_00D4.md) = abstract pointer to a boopsi gadget
+[Window](_00D4.md) = window gadget has been added to using [AddGList](AddGList.md) or
+[AddGadget](AddGadget.md)
+[Requester](_00D4.md) = for REQGADGETs, requester containing the gadget
+TagList = array of [TagItem](_012E.md) structures with attribute/value pairs.
 
 RESULT
 The object does whatever it wants with the attributes you provide,
@@ -53,7 +53,7 @@ The return value tends to be non-zero if the changes would require
 refreshing gadget imagery, if the object is a gadget.
 
 NOTES
-This function invokes the OM_SET method with a [GadgetInfo](_00D2)
+This function invokes the OM_SET method with a [GadgetInfo](_00D2.md)
 derived from the 'Window' and 'Requester' pointers.
 
 BUGS
@@ -64,6 +64,6 @@ and refreshing must be mutually re-entrant.
 
 **SEE ALSO**
 
-[NewObject](NewObject), [DisposeObject](DisposeObject), [GetAttr](GetAttr), [MakeClass](MakeClass),
+[NewObject](NewObject.md), [DisposeObject](DisposeObject.md), [GetAttr](GetAttr.md), [MakeClass](MakeClass.md),
 Document &#034;Basic Object-Oriented Programming System for Intuition&#034;
 and the &#034;boopsi Class Reference&#034; document.

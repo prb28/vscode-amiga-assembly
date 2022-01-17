@@ -12,16 +12,16 @@ ReleaseSemaphore -- make signal semaphore available to others
     void ReleaseSemaphore(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_0082) 
+Links: [SignalSemaphore](_0082.md) 
 
 **FUNCTION**
 
-ReleaseSemaphore() is the inverse of [ObtainSemaphore](ObtainSemaphore). It makes
+ReleaseSemaphore() is the inverse of [ObtainSemaphore](ObtainSemaphore.md). It makes
 the semaphore lockable to other users.  If tasks are waiting for
 the semaphore and this this task is done with the semaphore then
 the next waiting task is signalled.
 
-Each [ObtainSemaphore](ObtainSemaphore) call must be balanced by exactly one
+Each [ObtainSemaphore](ObtainSemaphore.md) call must be balanced by exactly one
 ReleaseSemaphore() call.  This is because there is a nesting count
 maintained in the semaphore of the number of times that the current
 task has locked the semaphore. The semaphore is not released to
@@ -39,4 +39,4 @@ This call is guaranteed to preserve all registers.
 
 **SEE ALSO**
 
-[InitSemaphore](InitSemaphore), [ObtainSemaphore](ObtainSemaphore), [ObtainSemaphoreShared](ObtainSemaphoreShared)
+[InitSemaphore](InitSemaphore.md), [ObtainSemaphore](ObtainSemaphore.md), [ObtainSemaphoreShared](ObtainSemaphoreShared.md)

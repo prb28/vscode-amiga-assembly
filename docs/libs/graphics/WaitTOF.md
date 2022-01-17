@@ -30,4 +30,4 @@ BUGS
 
 **SEE ALSO**
 
-[exec.library/Wait](../exec/Wait) [exec.library/Signal](../exec/Signal)
+[exec.library/Wait](../exec/Wait.md) [exec.library/Signal](../exec/Signal.md)

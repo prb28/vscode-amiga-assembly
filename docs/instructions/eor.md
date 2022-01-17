@@ -1,4 +1,4 @@
-# EOR - Exclusive OR logical
+# EOR - Exclusive-OR logical
 
 ## Operation
 [destination] ← [source] ⊕ [destination]

@@ -16,7 +16,7 @@ UserState -- return to user state with user stack
 
 Return to user state with user stack, from supervisor state with
 user stack.  This function is normally used in conjunction with the
-[SuperState](SuperState) function above.
+[SuperState](SuperState.md) function above.
 
 This function must not be called from the user state.
 
@@ -28,4 +28,4 @@ This function is broken in V33/34 Kickstart.  Fixed in V1.31 setpatch.
 
 **SEE ALSO**
 
-[SuperState/Supervisor](Supervisor)
+[SuperState/Supervisor](Supervisor.md)

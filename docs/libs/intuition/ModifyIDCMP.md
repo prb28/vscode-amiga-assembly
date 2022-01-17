@@ -13,12 +13,12 @@ ModifyIDCMP -- Modify the state of a window's IDCMPFlags.
     /* returns BOOL in V37 and greater */
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
 This routine modifies the state of your window's IDCMP (Intuition
-Direct Communication [Message](_0099) Port).  The state is modified to reflect
+Direct Communication [Message](_0099.md) Port).  The state is modified to reflect
 your desires as described by the flag bits in the value IDCMPFlags.
 
 The four actions that might be taken are:
@@ -36,7 +36,7 @@ IDCMPFlags argument is zero, this says that you want
 Intuition to close the ports, free the buffers and free
 your signal bit.  You MUST be the same task that was active
 when this signal bit was allocated (either by ModifyIDCMP()
-or [OpenWindow](OpenWindow) ).
+or [OpenWindow](OpenWindow.md) ).
 - if the IDCMP for the given window is opened, and the IDCMPFlags
 argument is not zero, this means that you want to change the
 state of which events will be broadcast to you through the IDCMP
@@ -52,22 +52,22 @@ IDCMPFlags == NULL, Intuition will deallocate only the Intuition
 side of the port.
 
 This allows you to use a port that you already have allocated:
-- [OpenWindow](OpenWindow) with IDCMPFlags equal to NULL (open no ports)
+- [OpenWindow](OpenWindow.md) with IDCMPFlags equal to NULL (open no ports)
 - set the UserPort variable of your window to any valid port of your
 own choosing
 - call ModifyIDCMP with IDCMPFlags set to what you want
 - then, to clean up later, set UserPort equal to NULL before calling
-[CloseWindow](CloseWindow) (leave IDCMPFlags alone)  BUT FIRST: you must make
+[CloseWindow](CloseWindow.md) (leave IDCMPFlags alone)  BUT FIRST: you must make
 sure that no messages sent your window are queued at the port,
 since they will be returned to the memory free pool.
 
 For an example of how to close a window with a shared IDCMP,
-see the description for [CloseWindow](CloseWindow).
+see the description for [CloseWindow](CloseWindow.md).
 
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the [Window](_00D4) structure containing the IDCMP ports
+[Window](_00D4.md) = pointer to the [Window](_00D4.md) structure containing the IDCMP ports
 IDCMPFlags = the flag bits describing the new desired state of the
 IDCMP
 
@@ -81,4 +81,4 @@ BUGS
 
 **SEE ALSO**
 
-[OpenWindow](OpenWindow), [CloseWindow](CloseWindow)
+[OpenWindow](OpenWindow.md), [CloseWindow](CloseWindow.md)

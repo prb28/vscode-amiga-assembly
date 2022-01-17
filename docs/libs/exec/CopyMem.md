@@ -35,4 +35,4 @@ zero bytes
 
 **SEE ALSO**
 
-[CopyMemQuick](CopyMemQuick)
+[CopyMemQuick](CopyMemQuick.md)

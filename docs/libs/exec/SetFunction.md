@@ -12,7 +12,7 @@ SetFunction -- change a function vector in a library
     APTR SetFunction(struct Library *,LONG,APTR);
 
 ```
-Links: [Library](_009C) 
+Links: [Library](_009C.md) 
 
 **FUNCTION**
 
@@ -28,8 +28,8 @@ interrupts, you are obligated to provide your own arbitration.
 
 NOTE
 SetFunction cannot be used on non-standard libraries like pre-V36
-dos.library.  Here you must manually [Forbid](Forbid), preserve all 6
-original bytes, set the new vector, [SumLibrary](SumLibrary), then [Permit](Permit).
+dos.library.  Here you must manually [Forbid](Forbid.md), preserve all 6
+original bytes, set the new vector, [SumLibrary](SumLibrary.md), then [Permit](Permit.md).
 
 **INPUTS**
 

@@ -27,4 +27,4 @@ lock - Obtained lock or NULL for failure
 
 **SEE ALSO**
 
-[DupLock](DupLock), [Lock](Lock), [UnLock](UnLock)
+[DupLock](DupLock.md), [Lock](Lock.md), [UnLock](UnLock.md)

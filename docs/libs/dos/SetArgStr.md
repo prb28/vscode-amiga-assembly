@@ -26,4 +26,4 @@ oldptr - the previous argument string
 
 **SEE ALSO**
 
-[GetArgStr](GetArgStr), [RunCommand](RunCommand)
+[GetArgStr](GetArgStr.md), [RunCommand](RunCommand.md)

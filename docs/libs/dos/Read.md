@@ -14,7 +14,7 @@ Read -- Read bytes of data from a file
 ```
 **FUNCTION**
 
-Data can be copied using a combination of Read() and [Write](Write).
+Data can be copied using a combination of Read() and [Write](Write.md).
 Read() reads bytes of information from an opened file (represented
 here by the argument 'file') into the buffer given. The argument
 'length' is the length of the buffer given.
@@ -28,7 +28,7 @@ value of -1.
 
 Note: this is an unbuffered routine (the request is passed directly
 to the filesystem.)  Buffered I/O is more efficient for small
-reads and writes; see [FGetC](FGetC).
+reads and writes; see [FGetC](FGetC.md).
 
 **INPUTS**
 
@@ -42,4 +42,4 @@ actualLength - integer
 
 **SEE ALSO**
 
-[Open](Open), [Close](Close), [Write](Write), [Seek](Seek), [FGetC](FGetC)
+[Open](Open.md), [Close](Close.md), [Write](Write.md), [Seek](Seek.md), [FGetC](FGetC.md)

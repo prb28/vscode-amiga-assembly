@@ -27,17 +27,17 @@ Superclasses can be public or private.  You provide a name/ID
 for your class if it is to be a public class (but you must
 have registered your class name and your attribute ID's with
 Commodore before you do this!).  For a public class, you would
-also call [AddClass](AddClass) to make it available after you have
+also call [AddClass](AddClass.md) to make it available after you have
 finished your initialization.
 
 Returns pointer to an IClass data structure for your
-class.  You then initialize the [Hook](_012D) cl_Dispatcher for
+class.  You then initialize the [Hook](_012D.md) cl_Dispatcher for
 your class methods code.  You can also set up special data
 shared by all objects in your class, and point cl_UserData at it.
-The last step for public classes is to call [AddClass](AddClass).
+The last step for public classes is to call [AddClass](AddClass.md).
 
 You dispose of a class created by this function by calling
-[FreeClass](FreeClass).
+[FreeClass](FreeClass.md).
 
 **INPUTS**
 
@@ -88,7 +88,7 @@ SUPERCLASSID, NULL,  /* superclass is public */
 sizeof (struct MyInstanceData),
 0 ))
 {
-/* initialize the cl_Dispatcher [Hook](_012D)       */
+/* initialize the cl_Dispatcher [Hook](_012D.md)       */
 cl-&#062;cl_Dispatcher.h_Entry = hookEntry;
 cl-&#062;cl_Dispatcher.h_SubEntry = myDispatcher;
 cl-&#062;cl_Dispatcher.h_Data = (VOID *) 0xFACE; /* unused */
@@ -104,6 +104,6 @@ used blindly should be APTR, or struct IClass for class implementors.
 
 **SEE ALSO**
 
-[FreeClass](FreeClass), [AddClass](AddClass), [RemoveClass](RemoveClass), [NewObject](NewObject),
+[FreeClass](FreeClass.md), [AddClass](AddClass.md), [RemoveClass](RemoveClass.md), [NewObject](NewObject.md),
 Document &#034;Basic Object-Oriented Programming System for Intuition&#034;
 and the &#034;boopsi Class Reference&#034; document.

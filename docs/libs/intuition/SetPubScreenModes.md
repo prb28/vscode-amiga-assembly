@@ -31,4 +31,4 @@ BUGS
 
 **SEE ALSO**
 
-[OpenScreen](OpenScreen), Intuition V36 update documentation
+[OpenScreen](OpenScreen.md), Intuition V36 update documentation

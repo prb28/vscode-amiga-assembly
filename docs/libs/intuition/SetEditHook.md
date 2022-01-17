@@ -12,7 +12,7 @@ SetEditHook -- Set global processing for string gadgets. (V36)
     struct Hook *SetEditHook( struct Hook * );
 
 ```
-Links: [Hook](_012D) [Hook](_012D) [Hook](_012D) 
+Links: [Hook](_012D.md) [Hook](_012D.md) [Hook](_012D.md) 
 
 **FUNCTION**
 
@@ -23,7 +23,7 @@ this in a commercial product until further notice.
 
 **INPUTS**
 
-[Hook](_012D) -- A pointer to a struct [Hook](_012D) which determines a function
+[Hook](_012D.md) -- A pointer to a struct [Hook](_012D.md) which determines a function
 in your code to be called every time the user types a key.
 This is done before control is passed to the gadget custom
 editing hook, so effects ALL string gadgets.

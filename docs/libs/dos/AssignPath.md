@@ -35,4 +35,4 @@ success - Success/failure indicator of the operation
 
 **SEE ALSO**
 
-[AssignAdd](AssignAdd), [AssignLock](AssignLock), [AssignLate](AssignLate), [Open](Open)
+[AssignAdd](AssignAdd.md), [AssignLock](AssignLock.md), [AssignLate](AssignLate.md), [Open](Open.md)

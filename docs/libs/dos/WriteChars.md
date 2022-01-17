@@ -27,4 +27,4 @@ count - Number of bytes written.  -1 (EOF) indicates an error
 
 **SEE ALSO**
 
-[FPuts](FPuts), [FPutC](FPutC), [FWrite](FWrite), [PutStr](PutStr)
+[FPuts](FPuts.md), [FPutC](FPutC.md), [FWrite](FWrite.md), [PutStr](PutStr.md)

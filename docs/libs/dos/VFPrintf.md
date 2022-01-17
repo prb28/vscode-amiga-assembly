@@ -21,13 +21,13 @@ VFPrintf -- format and print a string to a file (buffered) (V36)
 Writes the formatted string and values to the given file.  This
 routine is assumed to handle all internal buffering so that the
 formatting string and resultant formatted values can be arbitrarily
-long.  Any secondary error code is returned in [IoErr](IoErr).  This routine
+long.  Any secondary error code is returned in [IoErr](IoErr.md).  This routine
 is buffered.
 
 **INPUTS**
 
 fh    - Filehandle to write to
-fmt   - [RawDoFmt](../exec/RawDoFmt) style formatting string
+fmt   - [RawDoFmt](../exec/RawDoFmt.md) style formatting string
 argv  - Pointer to array of formatting values
 
 RESULT
@@ -40,4 +40,4 @@ that generates fds, prototypes, and amiga.lib stubs.
 
 **SEE ALSO**
 
-[VPrintf](VPrintf), [VFWritef](VFWritef), [RawDoFmt](../exec/RawDoFmt), [FPutC](FPutC)
+[VPrintf](VPrintf.md), [VFWritef](VFWritef.md), [RawDoFmt](../exec/RawDoFmt.md), [FPutC](FPutC.md)

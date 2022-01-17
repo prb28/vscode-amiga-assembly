@@ -15,7 +15,7 @@ FPutC -- Write a character to the specified output (buffered) (V36)
 **FUNCTION**
 
 Writes a single character to the output stream.  This call is
-buffered.  Use [Flush](Flush) between buffered and unbuffered I/O on a
+buffered.  Use [Flush](Flush.md) between buffered and unbuffered I/O on a
 filehandle.  Interactive filehandles are flushed automatically
 on a newline, return, '0', or line feed.
 
@@ -29,4 +29,4 @@ char - either the character written, or EOF for an error.
 
 **SEE ALSO**
 
-[FGetC](FGetC), [UnGetC](UnGetC), [Flush](Flush)
+[FGetC](FGetC.md), [UnGetC](UnGetC.md), [Flush](Flush.md)

@@ -22,14 +22,14 @@ stacksize is encoded in the file, the size will be stuffed in the
 LONG pointed to by stack.  This LONG should be initialized to your
 default value: InternalLoadSeg() will not change it if no stacksize
 is found. Clears unused portions of Code and Data hunks (as well as
-BSS hunks).  (This also applies to [LoadSeg](LoadSeg) and [NewLoadSeg](NewLoadSeg)).
+BSS hunks).  (This also applies to [LoadSeg](LoadSeg.md) and [NewLoadSeg](NewLoadSeg.md)).
 
 If the file being loaded is an overlaid file, this will return
 -(seglist).  All other results will be positive.
 
 NOTE to overlay users: InternalLoadSeg() does NOT return seglist in
-both D0 and D1, as [LoadSeg](LoadSeg) does.  The current ovs.asm uses [LoadSeg](LoadSeg),
-and assumes returns are in D1.  We will support this for [LoadSeg](LoadSeg)
+both D0 and D1, as [LoadSeg](LoadSeg.md) does.  The current ovs.asm uses [LoadSeg](LoadSeg.md),
+and assumes returns are in D1.  We will support this for [LoadSeg](LoadSeg.md)
 ONLY.
 
 **INPUTS**
@@ -53,4 +53,4 @@ Really should use tags.
 
 **SEE ALSO**
 
-[LoadSeg](LoadSeg), [UnLoadSeg](UnLoadSeg), [NewLoadSeg](NewLoadSeg), [InternalUnLoadSeg](InternalUnLoadSeg)
+[LoadSeg](LoadSeg.md), [UnLoadSeg](UnLoadSeg.md), [NewLoadSeg](NewLoadSeg.md), [InternalUnLoadSeg](InternalUnLoadSeg.md)

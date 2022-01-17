@@ -12,14 +12,14 @@ ExAll -- Examine an entire directory (V36)
     BOOL ExAll(BPTR,STRPTR,LONG,LONG,struct ExAllControl *)
 
 ```
-Links: [ExAllControl](_0079) 
+Links: [ExAllControl](_0079.md) 
 
 **FUNCTION**
 
 Examines an entire directory.
 
 Lock must be on a directory.  Size is the size of the buffer supplied.
-The buffer will be filled with (partial) [ExAllData](_0079) structures, as
+The buffer will be filled with (partial) [ExAllData](_0079.md) structures, as
 specified by the type field.
 
 Type is a value from those shown below that determines which information is
@@ -58,7 +58,7 @@ calls to ExAll.  Whenever ExAll returns non-zero, there are more
 calls required before all names have been received.
 
 As soon as a FALSE return is received then ExAll has completed
-(if [IoErr](IoErr) returns ERROR_NO_MORE_ENTRIES - otherwise it returns
+(if [IoErr](IoErr.md) returns ERROR_NO_MORE_ENTRIES - otherwise it returns
 the error that occured, similar to ExNext.)
 
 MatchString
@@ -78,13 +78,13 @@ called with the following parameters (as is standard for hooks):
 
 BOOL = MatchFunc( hookptr, data, typeptr )
 a0      a1      a2
-(a0 = ptr to hook, a1 = ptr to filled in [ExAllData](_0079), a2 = ptr
+(a0 = ptr to hook, a1 = ptr to filled in [ExAllData](_0079.md), a2 = ptr
 to longword of type).
 
 MatchFunc should return FALSE if the entry is not to be
 accepted, otherwise return TRUE.
 
-Note that Dos will emulate ExAll() using [Examine](Examine) and [ExNext](ExNext)
+Note that Dos will emulate ExAll() using [Examine](Examine.md) and [ExNext](ExNext.md)
 if the handler in question doesn't support the ExAll() packet.
 
 **INPUTS**
@@ -119,7 +119,7 @@ if (eac-&#062;eac_Entries == 0) {
 /* ExAll failed normally with no entries */
 continue;                   /* (&#034;more&#034; is *usually* zero) */
 }
-ead = (struct [ExAllData](_0079) *) EAData;
+ead = (struct [ExAllData](_0079.md) *) EAData;
 do {
 /* use ead here */
 ...
@@ -139,5 +139,5 @@ advised you only use this under V37 and later.
 
 **SEE ALSO**
 
-[Examine](Examine), [ExNext](ExNext), [ExamineFH](ExamineFH), [MatchPatternNoCase](MatchPatternNoCase),
-[ParsePatternNoCase](ParsePatternNoCase), [AllocDosObject](AllocDosObject)
+[Examine](Examine.md), [ExNext](ExNext.md), [ExamineFH](ExamineFH.md), [MatchPatternNoCase](MatchPatternNoCase.md),
+[ParsePatternNoCase](ParsePatternNoCase.md), [AllocDosObject](AllocDosObject.md)

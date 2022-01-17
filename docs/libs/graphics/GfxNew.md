@@ -12,12 +12,12 @@ GfxNew -- allocate a graphics extended data structure (V36)
     struct ExtendedNode *GfxNew( ULONG);
 
 ```
-Links: [ExtendedNode](_00BA) 
+Links: [ExtendedNode](_00BA.md) 
 
 **FUNCTION**
 
 Allocate a special graphics extended data structure (each of which
-begins with an [ExtendedNode](_00BA) structure).  The type of structure to
+begins with an [ExtendedNode](_00BA.md) structure).  The type of structure to
 be allocated is specified by the node_type identifier.
 
 **INPUTS**
@@ -33,4 +33,4 @@ BUGS
 
 **SEE ALSO**
 
-[graphics/gfxnodes.h](_00BA) [GfxFree](GfxFree) [GfxAssociate](GfxAssociate) GfxLookUp()
+[graphics/gfxnodes.h](_00BA.md) [GfxFree](GfxFree.md) [GfxAssociate](GfxAssociate.md) GfxLookUp()

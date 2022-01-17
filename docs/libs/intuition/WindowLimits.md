@@ -14,15 +14,15 @@ WindowLimits -- Set the minimum and maximum limits of a window.
     BOOL WindowLimits( struct Window *, WORD, WORD, UWORD, UWORD );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
 Sets the minimum and maximum limits of the window's size.  Until this
 routine is called, the window's size limits are equal to the initial
-values established in the [OpenWindow](OpenWindow) function.
+values established in the [OpenWindow](OpenWindow.md) function.
 
-After a call to this routine, the [Window](_00D4) will be able to be sized
+After a call to this routine, the [Window](_00D4.md) will be able to be sized
 to any dimensions within the specified limits.
 
 If you don't want to change any one of the dimensions, set the limit
@@ -42,7 +42,7 @@ you may put -1 (i.e. ~0) in either or both Max arguments.  But
 please note: screen sizes may vary for several reasons, and you
 must be able to handle any possible size of window you might end
 up with if you use this method.  Note that you can use the function
-[GetScreenData](GetScreenData) to find out how big the screen your window appears in
+[GetScreenData](GetScreenData.md) to find out how big the screen your window appears in
 is.  That function is particularly useful if your window is in
 the Workbench screen.  You may also refer to the WScreen field
 in your window structure, providing that your window remains open,
@@ -54,7 +54,7 @@ not take effect until after the sizing is completed.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to a [Window](_00D4) structure
+[Window](_00D4.md) = pointer to a [Window](_00D4.md) structure
 MinWidth, MinHeight, MaxWidth, MaxHeight = the new limits for the size
 of this window.  If any of these is set to zero, it will
 be ignored and that setting will be unchanged.
@@ -69,4 +69,4 @@ BUGS
 
 **SEE ALSO**
 
-[GetScreenData](GetScreenData)
+[GetScreenData](GetScreenData.md)

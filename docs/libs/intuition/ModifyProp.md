@@ -15,7 +15,7 @@ ModifyProp -- Modify the current parameters of a proportional gadget.
             struct Requester *, UWORD, UWORD, UWORD, UWORD, UWORD );
 
 ```
-Links: [Gadget](_00D4) [Window](_00D4) [Requester](_00D4) [Gadget](_00D4) [Window](_00D4) [Requester](_00D4) 
+Links: [Gadget](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) [Gadget](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) 
 
 **FUNCTION**
 
@@ -32,24 +32,24 @@ be NULL.
 NOTE: this function causes all gadgets from the proportional
 gadget to the end of the gadget list to be refreshed, for
 reasons of compatibility.
-For more refined display updating, use [NewModifyProp](NewModifyProp).
+For more refined display updating, use [NewModifyProp](NewModifyProp.md).
 
 New for V36: ModifyProp() refreshing consists of redrawing gadgets
-completely.  [NewModifyProp](NewModifyProp) has changed this behavior (see
-[NewModifyProp](NewModifyProp)).
+completely.  [NewModifyProp](NewModifyProp.md) has changed this behavior (see
+[NewModifyProp](NewModifyProp.md)).
 
 **INPUTS**
 
 PropGadget = pointer to a proportional gadget
-[Window](_00D4) = pointer to the window containing the gadget or the window
+[Window](_00D4.md) = pointer to the window containing the gadget or the window
 containing the requester containing the gadget.
-[Requester](_00D4) = pointer to a requester (may be NULL if this isn't
+[Requester](_00D4.md) = pointer to a requester (may be NULL if this isn't
 a requester gadget)
-Flags = value to be stored in the Flags field of the [PropInfo](_00D4)
-HorizPot = value to be stored in the HorizPot field of the [PropInfo](_00D4)
-VertPot = value to be stored in the VertPot field of the [PropInfo](_00D4)
-HorizBody = value to be stored in the HorizBody field of the [PropInfo](_00D4)
-VertBody = value to be stored in the VertBody field of the [PropInfo](_00D4)
+Flags = value to be stored in the Flags field of the [PropInfo](_00D4.md)
+HorizPot = value to be stored in the HorizPot field of the [PropInfo](_00D4.md)
+VertPot = value to be stored in the VertPot field of the [PropInfo](_00D4.md)
+HorizBody = value to be stored in the HorizBody field of the [PropInfo](_00D4.md)
+VertBody = value to be stored in the VertBody field of the [PropInfo](_00D4.md)
 
 RESULT
 None
@@ -58,6 +58,6 @@ BUGS
 
 **SEE ALSO**
 
-[NewModifyProp](NewModifyProp)
+[NewModifyProp](NewModifyProp.md)
 The Intuition Reference Manual and Amiga Rom Kernel Manual contain
 more information on Proportional Gadgets.

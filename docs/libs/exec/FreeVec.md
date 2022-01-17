@@ -1,7 +1,7 @@
 
 **NAME**
 
-FreeVec -- return [AllocVec](AllocVec) memory to the system  (V36)
+FreeVec -- return [AllocVec](AllocVec.md) memory to the system  (V36)
 
 **SYNOPSIS**
 
@@ -14,7 +14,7 @@ FreeVec -- return [AllocVec](AllocVec) memory to the system  (V36)
 ```
 **FUNCTION**
 
-Free an allocation made by the [AllocVec](AllocVec) call.  The memory will
+Free an allocation made by the [AllocVec](AllocVec.md) call.  The memory will
 be returned to the system pool from which it came.
 
 NOTE
@@ -29,4 +29,4 @@ memoryBlock - pointer to the memory block to free, or NULL.
 
 **SEE ALSO**
 
-[AllocVec](AllocVec)
+[AllocVec](AllocVec.md)

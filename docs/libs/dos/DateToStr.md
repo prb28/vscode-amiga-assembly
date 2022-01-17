@@ -1,7 +1,7 @@
 
 **NAME**
 
-DateToStr -- Converts a [DateStamp](_0068) to a string (V36)
+DateToStr -- Converts a [DateStamp](_0068.md) to a string (V36)
 
 **SYNOPSIS**
 
@@ -12,19 +12,19 @@ DateToStr -- Converts a [DateStamp](_0068) to a string (V36)
     BOOL DateToStr(struct DateTime *)
 
 ```
-Links: [DateTime](_0060) 
+Links: [DateTime](_0060.md) 
 
 **FUNCTION**
 
-StamptoStr converts an AmigaDOS [DateStamp](_0068) to a human
+StamptoStr converts an AmigaDOS [DateStamp](_0068.md) to a human
 readable ASCII string as requested by your settings in the
-[DateTime](_0060) structure.
+[DateTime](_0060.md) structure.
 
 **INPUTS**
 
-[DateTime](_0060) - a pointer to an initialized [DateTime](_0060) structure.
+[DateTime](_0060.md) - a pointer to an initialized [DateTime](_0060.md) structure.
 
-The [DateTime](_0060) structure should be initialized as follows:
+The [DateTime](_0060.md) structure should be initialized as follows:
 
 dat_Stamp - a copy of the datestamp you wish to convert to
 ascii.
@@ -66,10 +66,10 @@ dat_StrTime -   pointer to a buffer to receive the time of day
 string. If NULL, this will not be generated.
 
 RESULT
-success - a zero return indicates that the [DateStamp](_0068) was
+success - a zero return indicates that the [DateStamp](_0068.md) was
 invalid, and could not be converted.  Non-zero
 indicates that the call succeeded.
 
 **SEE ALSO**
 
-[DateStamp](DateStamp), StrtoDate(), [&#060;dos/datetime.h&#062;](_0060)
+[DateStamp](DateStamp.md), StrtoDate(), [&#060;dos/datetime.h&#062;](_0060.md)

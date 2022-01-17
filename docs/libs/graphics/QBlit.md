@@ -12,7 +12,7 @@ QBlit -- Queue up a request for blitter usage
     void QBlit( struct bltnode * );
 
 ```
-Links: [bltnode](_00CC) 
+Links: [bltnode](_00CC.md) 
 
 **FUNCTION**
 
@@ -36,12 +36,12 @@ bp - pointer to a blit structure
 RESULT
 Your routine is called when the blitter is ready for you.
 In general requests for blitter usage through this channel are
-put in front of those who use the blitter via [OwnBlitter](OwnBlitter) and
-[DisownBlitter](DisownBlitter). However for small blits there is more overhead
+put in front of those who use the blitter via [OwnBlitter](OwnBlitter.md) and
+[DisownBlitter](DisownBlitter.md). However for small blits there is more overhead
 using the queuer than Own/Disown Blitter.
 
 BUGS
 
 **SEE ALSO**
 
-[QBSBlit](QBSBlit) [hardware/blit.h](_00CC)
+[QBSBlit](QBSBlit.md) [hardware/blit.h](_00CC.md)

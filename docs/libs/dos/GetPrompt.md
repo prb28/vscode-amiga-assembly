@@ -18,7 +18,7 @@ Extracts the prompt string from the CLI structure and puts it
 into the buffer.  If the buffer is too small, the string is truncated
 appropriately and a failure code returned.  If no CLI structure is
 present, a null string is returned in the buffer, and failure from
-the call (with [IoErr](IoErr) == ERROR_OBJECT_WRONG_TYPE);
+the call (with [IoErr](IoErr.md) == ERROR_OBJECT_WRONG_TYPE);
 
 **INPUTS**
 
@@ -30,4 +30,4 @@ success - Success/failure indicator
 
 **SEE ALSO**
 
-[SetPrompt](SetPrompt)
+[SetPrompt](SetPrompt.md)

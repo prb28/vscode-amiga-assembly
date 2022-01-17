@@ -43,4 +43,4 @@ read to be an EOF.  This was fixed for V37.
 
 **SEE ALSO**
 
-[FGetC](FGetC), [FPutC](FPutC), [Flush](Flush)
+[FGetC](FGetC.md), [FPutC](FPutC.md), [Flush](Flush.md)

@@ -1,7 +1,7 @@
 
 **NAME**
 
-NewFontContents -- Create a [FontContents](_0102) image for a font. (V34)
+NewFontContents -- Create a [FontContents](_0102.md) image for a font. (V34)
 
 **SYNOPSIS**
 
@@ -12,11 +12,11 @@ NewFontContents -- Create a [FontContents](_0102) image for a font. (V34)
      struct FontContentsHeader *NewFontContents( BPTR, char * );
 
 ```
-Links: [FontContentsHeader](_0102) 
+Links: [FontContentsHeader](_0102.md) 
 
 **FUNCTION**
 
-This function creates a new array of [FontContents](_0102) entries
+This function creates a new array of [FontContents](_0102.md) entries
 that describe all the fonts associated with the fontName,
 specifically, all those in the font directory whose name
 is that of the font sans the &#034;.font&#034; suffix.
@@ -30,7 +30,7 @@ fontName - the font name, with the &#034;.font&#034; suffix, which
 is also the name of the font contents file.
 
 RESULT
-fontContentsHeader - a struct [FontContentsHeader](_0102) pointer.
+fontContentsHeader - a struct [FontContentsHeader](_0102.md) pointer.
 
 EXCEPTIONS
 This command was first made available as of version 34.
@@ -41,4 +41,4 @@ memory could not be allocated for the fontContentsHeader.
 
 **SEE ALSO**
 
-[DisposeFontContents](DisposeFontContents) to free the structure acquired here.
+[DisposeFontContents](DisposeFontContents.md) to free the structure acquired here.

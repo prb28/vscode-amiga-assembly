@@ -12,12 +12,12 @@ AttemptLockDosList -- Attempt to lock the Dos Lists for use (V36)
     struct DosList *AttemptLockDosList(ULONG)
 
 ```
-Links: [DosList](_0078) 
+Links: [DosList](_0078.md) 
 
 **FUNCTION**
 
 Locks the dos device list in preparation to walk the list.  If the
-list is 'busy' then this routine will return NULL.  See [LockDosList](LockDosList)
+list is 'busy' then this routine will return NULL.  See [LockDosList](LockDosList.md)
 for more information.
 
 **INPUTS**
@@ -30,4 +30,4 @@ node!
 
 **SEE ALSO**
 
-[LockDosList](LockDosList), [UnLockDosList](UnLockDosList), [Forbid](../exec/Forbid), [NextDosEntry](NextDosEntry)
+[LockDosList](LockDosList.md), [UnLockDosList](UnLockDosList.md), [Forbid](../exec/Forbid.md), [NextDosEntry](NextDosEntry.md)

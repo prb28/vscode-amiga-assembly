@@ -12,16 +12,16 @@ SetRast - Set an entire drawing area to a specified color.
     void SetRast( struct RastPort *, UBYTE );
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
-Set the entire contents of the specified [RastPort](_00AF) to the
+Set the entire contents of the specified [RastPort](_00AF.md) to the
 specified pen.
 
 **INPUTS**
 
-rp - pointer to [RastPort](_00AF) structure
+rp - pointer to [RastPort](_00AF.md) structure
 pen - the pen number (0-255) to jam into bitmap
 
 RESULT
@@ -32,4 +32,4 @@ BUGS
 
 **SEE ALSO**
 
-[RectFill](RectFill) [graphics/rastport.h](_00AF)
+[RectFill](RectFill.md) [graphics/rastport.h](_00AF.md)

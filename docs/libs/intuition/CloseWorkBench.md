@@ -46,7 +46,7 @@ Workbench wasn't opened when called.  The idea as it is now
 is probably this: if you want to free up the memory of the
 Workbench screen when your program begins, you can call
 CloseWorkBench().  The return value of that call indicates
-whether you should call [OpenWorkBench](OpenWorkBench) when your program
+whether you should call [OpenWorkBench](OpenWorkBench.md) when your program
 exits: if FALSE, that means either the the Workbench existed
 but you could not close it, or that it wasn't around to
 begin with, and you should not try to re-open it.
@@ -57,4 +57,4 @@ rather than your making assumptions like these.
 
 **SEE ALSO**
 
-[OpenWorkBench](OpenWorkBench)
+[OpenWorkBench](OpenWorkBench.md)

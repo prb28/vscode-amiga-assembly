@@ -1,4 +1,4 @@
-# TST Test an operand
+# TST - Test an operand
 
 ## Operation
 [CCR] ← tested([operand])<br/>

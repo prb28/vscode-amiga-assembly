@@ -12,7 +12,7 @@ RemSegment - Removes a resident segment from the resident list (V36)
     BOOL RemSegment(struct Segment *)
 
 ```
-Links: [Segment](_0078) 
+Links: [Segment](_0078.md) 
 
 **FUNCTION**
 
@@ -29,4 +29,4 @@ success - success or failure.
 
 **SEE ALSO**
 
-[FindSegment](FindSegment), [AddSegment](AddSegment)
+[FindSegment](FindSegment.md), [AddSegment](AddSegment.md)

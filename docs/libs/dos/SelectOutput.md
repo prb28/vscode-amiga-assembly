@@ -15,7 +15,7 @@ SelectOutput -- Select a filehandle as the default input channel (V36)
 **FUNCTION**
 
 Set the current output as the default output for the process.
-This changes the value returned by [Output](Output).  old_fh should
+This changes the value returned by [Output](Output.md).  old_fh should
 be closed or saved as needed.
 
 **INPUTS**
@@ -27,4 +27,4 @@ old_fh - Previous current output
 
 **SEE ALSO**
 
-[Output](Output), [SelectInput](SelectInput), [Input](Input)
+[Output](Output.md), [SelectInput](SelectInput.md), [Input](Input.md)

@@ -12,7 +12,7 @@ RemTail -- remove the tail node from a list
     struct Node *RemTail(struct List *);
 
 ```
-Links: [Node](_0091) [List](_007D) 
+Links: [Node](_0091.md) [List](_007D.md) 
 
 **FUNCTION**
 
@@ -34,4 +34,4 @@ node - the node removed or zero when empty list
 
 **SEE ALSO**
 
-[AddHead](AddHead), [AddTail](AddTail), [Enqueue](Enqueue), Insert, Remove, [RemHead](RemHead), RemTail
+[AddHead](AddHead.md), [AddTail](AddTail.md), [Enqueue](Enqueue.md), Insert, Remove, [RemHead](RemHead.md), RemTail

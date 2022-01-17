@@ -12,7 +12,7 @@ EndRequest -- Remove a currently active requester.
     VOID EndRequest( struct Requester *, struct Window * );
 
 ```
-Links: [Requester](_00D4) [Window](_00D4) [Requester](_00D4) [Window](_00D4) 
+Links: [Requester](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -25,8 +25,8 @@ requesters, they will remain in the window.
 
 **INPUTS**
 
-[Requester](_00D4) = pointer to the requester to be removed
-[Window](_00D4) = pointer to the [Window](_00D4) structure with which this requester
+[Requester](_00D4.md) = pointer to the requester to be removed
+[Window](_00D4.md) = pointer to the [Window](_00D4.md) structure with which this requester
 is associated
 
 RESULT
@@ -36,4 +36,4 @@ BUGS
 
 **SEE ALSO**
 
-[Request](Request)
+[Request](Request.md)

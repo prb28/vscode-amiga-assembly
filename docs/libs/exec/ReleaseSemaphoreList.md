@@ -12,11 +12,11 @@ ReleaseSemaphoreList -- make a list of semaphores available
     void ReleaseSemaphoreList(struct List *);
 
 ```
-Links: [List](_007D) 
+Links: [List](_007D.md) 
 
 **FUNCTION**
 
-ReleaseSemaphoreList() is the inverse of [ObtainSemaphoreList](ObtainSemaphoreList). It
+ReleaseSemaphoreList() is the inverse of [ObtainSemaphoreList](ObtainSemaphoreList.md). It
 releases each element in the semaphore list.
 
 Needless to say, havoc breaks out if the task releases more times
@@ -27,4 +27,4 @@ list -- a list of signal semaphores
 
 **SEE ALSO**
 
-[ObtainSemaphoreList](ObtainSemaphoreList)
+[ObtainSemaphoreList](ObtainSemaphoreList.md)

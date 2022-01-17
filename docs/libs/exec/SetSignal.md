@@ -37,7 +37,7 @@ SetSignal(0L,SIGBREAKF_CTRL_C);
 
 Check if the CTRL-C signal was pressed:
 
-#include [&#060;libraries/dos.h&#062;](_0108)
+#include [&#060;libraries/dos.h&#062;](_0108.md)
 
 /* Check &#038; clear CTRL_C signal */
 if(SetSignal(0L,SIGBREAKF_CTRL_C) &#038; SIGBREAKF_CTRL_C)
@@ -47,4 +47,4 @@ printf(&#034;CTRL-C pressed!n&#034;);
 
 **SEE ALSO**
 
-[Signal](Signal), Wait
+[Signal](Signal.md), Wait

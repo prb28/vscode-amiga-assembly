@@ -12,13 +12,13 @@ ReadArgs - Parse the command line input (V36)
     struct RDArgs * ReadArgs(STRPTR, LONG *, struct RDArgs *)
 
 ```
-Links: [RDArgs](_0076) [RDArgs](_0076) 
+Links: [RDArgs](_0076.md) [RDArgs](_0076.md) 
 
 **FUNCTION**
 
 Parses and argument string according to a template.  Normally gets
-the arguments by reading buffered IO from [Input](Input), but also can be
-made to parse a string.  MUST be matched by a call to [FreeArgs](FreeArgs).
+the arguments by reading buffered IO from [Input](Input.md), but also can be
+made to parse a string.  MUST be matched by a call to [FreeArgs](FreeArgs.md).
 
 ReadArgs() parses the commandline according to a template that is
 passed to it.  This specifies the different command-line options and
@@ -79,16 +79,16 @@ If there are unfilled /A parameters after parsing, it will grab
 strings from the end of a previous /M parameter list to fill the
 /A's.  This is used for things like Copy (&#034;From/A/M,To/A&#034;).
 
-ReadArgs() returns a struct [RDArgs](_0076) if it succeeds.  This serves as an
-&#034;anchor&#034; to allow [FreeArgs](FreeArgs) to free the associated memory.  You can
-also pass in a struct [RDArgs](_0076) to control the operation of ReadArgs()
+ReadArgs() returns a struct [RDArgs](_0076.md) if it succeeds.  This serves as an
+&#034;anchor&#034; to allow [FreeArgs](FreeArgs.md) to free the associated memory.  You can
+also pass in a struct [RDArgs](_0076.md) to control the operation of ReadArgs()
 (normally you pass NULL for the parameter, and ReadArgs() allocates
 one for you).  This allows providing different sources for the
 arguments, providing your own string buffer space for temporary
-storage, and extended help text.  See [&#060;dos/rdargs.h&#062;](_0076) for more
-information on this.  Note: if you pass in a struct [RDArgs](_0076), you must
-still call [FreeArgs](FreeArgs) to release storage that gets attached to it,
-but you are responsible for freeing the [RDArgs](_0076) yourself.
+storage, and extended help text.  See [&#060;dos/rdargs.h&#062;](_0076.md) for more
+information on this.  Note: if you pass in a struct [RDArgs](_0076.md), you must
+still call [FreeArgs](FreeArgs.md) to release storage that gets attached to it,
+but you are responsible for freeing the [RDArgs](_0076.md) yourself.
 
 See BUGS regarding passing in strings.
 
@@ -96,11 +96,11 @@ See BUGS regarding passing in strings.
 
 template - formatting string
 array    - array of longwords for results, 1 per template entry
-rdargs   - optional rdargs structure for options.  [AllocDosObject](AllocDosObject)
+rdargs   - optional rdargs structure for options.  [AllocDosObject](AllocDosObject.md)
 should be used for allocating them if you pass one in.
 
 RESULT
-result   - a struct [RDArgs](_0076) or NULL for failure.
+result   - a struct [RDArgs](_0076.md) or NULL for failure.
 
 BUGS
 In V36, there were a couple of minor bugs with certain argument
@@ -118,4 +118,4 @@ the future.
 
 **SEE ALSO**
 
-[FindArg](FindArg), [ReadItem](ReadItem), [FreeArgs](FreeArgs), [AllocDosObject](AllocDosObject)
+[FindArg](FindArg.md), [ReadItem](ReadItem.md), [FreeArgs](FreeArgs.md), [AllocDosObject](AllocDosObject.md)

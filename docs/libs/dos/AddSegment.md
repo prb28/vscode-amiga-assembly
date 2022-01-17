@@ -19,7 +19,7 @@ and type (stored in seg_UC - normally 0).  NOTE: currently unused
 types may cause it to interpret other registers (d4-?) as additional
 parameters in the future.
 
-Do NOT build [Segment](_0078) structures yourself!
+Do NOT build [Segment](_0078.md) structures yourself!
 
 **INPUTS**
 
@@ -32,4 +32,4 @@ success - success or failure
 
 **SEE ALSO**
 
-[FindSegment](FindSegment), [RemSegment](RemSegment), [LoadSeg](LoadSeg)
+[FindSegment](FindSegment.md), [RemSegment](RemSegment.md), [LoadSeg](LoadSeg.md)

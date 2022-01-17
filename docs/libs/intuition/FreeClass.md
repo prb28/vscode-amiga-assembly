@@ -1,7 +1,7 @@
 
 **NAME**
 
-FreeClass -- Frees a boopsi class created by [MakeClass](MakeClass). (V36)
+FreeClass -- Frees a boopsi class created by [MakeClass](MakeClass.md). (V36)
 
 **SYNOPSIS**
 
@@ -16,13 +16,13 @@ FreeClass -- Frees a boopsi class created by [MakeClass](MakeClass). (V36)
 
 For class implementors only.
 
-Tries to free a boopsi class created by [MakeClass](MakeClass).  This
+Tries to free a boopsi class created by [MakeClass](MakeClass.md).  This
 won't always succeed: classes with outstanding objects or
 with subclasses cannot be freed.  You cannot allow the code
 which implements the class to be unloaded in this case.
 
 For public classes, this function will *always* remove
-the class (see [RemoveClass](RemoveClass) ) making it unavailable, whether
+the class (see [RemoveClass](RemoveClass.md) ) making it unavailable, whether
 it succeeds or not.
 
 If you have a dynamically allocated data for your class (hanging
@@ -31,7 +31,7 @@ user data, so you don't get stuck with a half-freed class.
 
 **INPUTS**
 
-ClassPtr - pointer to a class created by [MakeClass](MakeClass).
+ClassPtr - pointer to a class created by [MakeClass](MakeClass.md).
 
 RESULT
 Returns FALSE if the class could not be freed.  Reasons include,
@@ -40,7 +40,7 @@ cl_SubclassCount.
 
 Returns TRUE if the class could be freed.
 
-Calls [RemoveClass](RemoveClass) for the class in either case.
+Calls [RemoveClass](RemoveClass.md) for the class in either case.
 
 EXAMPLE
 Freeing a private class with dynamically allocated user data:
@@ -66,6 +66,6 @@ BUGS
 
 **SEE ALSO**
 
-[MakeClass](MakeClass),
+[MakeClass](MakeClass.md),
 Document &#034;Basic Object-Oriented Programming System for Intuition&#034;
 and the &#034;boopsi Class Reference&#034; document.

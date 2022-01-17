@@ -429,8 +429,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
 
     // Show documentation
     disposable = vscode.commands.registerCommand('amiga-assembly.showdoc', async (args: any) => {
+        let newPath = args.path;
+        if (!newPath.endsWith(".md")) {
+            newPath += ".md";
+        }
         const docsPathOnDisk = vscode.Uri.file(
-            path.join(context.extensionPath, 'docs', args.path + ".md")
+            path.join(context.extensionPath, 'docs', newPath)
         );
         await vscode.commands.executeCommand('markdown.showPreview', docsPathOnDisk);
     });

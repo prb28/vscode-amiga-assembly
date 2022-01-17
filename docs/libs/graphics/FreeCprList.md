@@ -12,15 +12,15 @@ FreeCprList -- deallocate hardware copper list
     void FreeCprList(struct cprlist *);
 
 ```
-Links: [cprlist](_00AD) 
+Links: [cprlist](_00AD.md) 
 
 **FUNCTION**
 
-return [cprlist](_00AD) to free memory pool
+return [cprlist](_00AD.md) to free memory pool
 
 **INPUTS**
 
-[cprlist](_00AD) - pointer to [cprlist](_00AD) structure
+[cprlist](_00AD.md) - pointer to [cprlist](_00AD.md) structure
 
 **RESULTS**
 
@@ -30,4 +30,4 @@ BUGS
 
 **SEE ALSO**
 
-[graphics/copper.h](_00AD)
+[graphics/copper.h](_00AD.md)

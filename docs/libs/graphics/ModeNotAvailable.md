@@ -27,10 +27,10 @@ or NULL if there is no reason why it shouldn't be available.
 
 NOTE
 ULONG return values from this function are a proper superset of the
-DisplayInfo.NotAvailable field (defined in [graphics/displayinfo.h](_00BD).
+DisplayInfo.NotAvailable field (defined in [graphics/displayinfo.h](_00BD.md).
 
 BUGS
 
 **SEE ALSO**
 
-[graphics/displayinfo.h](_00BD), [GetVPModeID](GetVPModeID)
+[graphics/displayinfo.h](_00BD.md), [GetVPModeID](GetVPModeID.md)

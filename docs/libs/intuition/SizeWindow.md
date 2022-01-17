@@ -12,7 +12,7 @@ SizeWindow -- Ask Intuition to size a window.
     VOID SizeWindow( struct Window *, WORD, WORD );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -30,7 +30,7 @@ chapter of The Intuition Reference Manual for description of the IDCMP.
 
 New for V36: Intuition now will do validity checking on the final
 dimensions.  To change to new absolute dimensions, or to move and
-size a window in one step, use [ChangeWindowBox](ChangeWindowBox).
+size a window in one step, use [ChangeWindowBox](ChangeWindowBox.md).
 
 However, limit checking against window MinWidth, MinHeight,
 MaxWidth, and MaxHeight was not done prior to V36, and
@@ -43,7 +43,7 @@ taken effect by receiving the IDCMP_CHANGEWINDOW IDCMP message.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the structure of the window to be sized
+[Window](_00D4.md) = pointer to the structure of the window to be sized
 DeltaX = signed value describing how much to size the window
 on the x-axis
 DeltaY = signed value describing how much to size the window
@@ -56,4 +56,4 @@ BUGS
 
 **SEE ALSO**
 
-[ChangeWindowBox](ChangeWindowBox), [MoveWindow](MoveWindow), [WindowToFront](WindowToFront), [WindowToBack](WindowToBack)
+[ChangeWindowBox](ChangeWindowBox.md), [MoveWindow](MoveWindow.md), [WindowToFront](WindowToFront.md), [WindowToBack](WindowToBack.md)

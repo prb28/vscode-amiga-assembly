@@ -12,8 +12,8 @@ ExtendFont -- ensure tf_Extension has been built for a font (V36)
     ULONG ExtendFont(struct TextFont *, struct TagItem *);
 
 ```
-Links: [TextFont](_00A8) [TagItem](_012E) 
+Links: [TextFont](_00A8.md) [TagItem](_012E.md) 
 
 **SEE ALSO**
 
-[graphics/text.h](_00A8)
+[graphics/text.h](_00A8.md)

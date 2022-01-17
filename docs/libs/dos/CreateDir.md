@@ -29,4 +29,4 @@ lock - BCPL pointer to a lock or NULL for failure.
 
 **SEE ALSO**
 
-[Lock](Lock), [UnLock](UnLock)
+[Lock](Lock.md), [UnLock](UnLock.md)

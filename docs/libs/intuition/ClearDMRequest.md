@@ -12,7 +12,7 @@ ClearDMRequest -- Clear (detaches) the DMRequest of the window.
     BOOL ClearDMRequest( struct Window * );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -27,7 +27,7 @@ requesters in use in a window is terminated.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the window from which the DMRequest is to be
+[Window](_00D4.md) = pointer to the window from which the DMRequest is to be
 cleared.
 
 RESULT
@@ -41,4 +41,4 @@ BUGS
 
 **SEE ALSO**
 
-[SetDMRequest](SetDMRequest), [Request](Request)
+[SetDMRequest](SetDMRequest.md), [Request](Request.md)

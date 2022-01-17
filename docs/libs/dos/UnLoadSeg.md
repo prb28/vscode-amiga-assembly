@@ -1,7 +1,7 @@
 
 **NAME**
 
-UnLoadSeg -- Unload a seglist previously loaded by [LoadSeg](LoadSeg)
+UnLoadSeg -- Unload a seglist previously loaded by [LoadSeg](LoadSeg.md)
 
 **SYNOPSIS**
 
@@ -14,7 +14,7 @@ UnLoadSeg -- Unload a seglist previously loaded by [LoadSeg](LoadSeg)
 ```
 **FUNCTION**
 
-Unload a seglist loaded by [LoadSeg](LoadSeg).  'seglist' may be zero.
+Unload a seglist loaded by [LoadSeg](LoadSeg.md).  'seglist' may be zero.
 Overlaid segments will have all needed cleanup done, including
 closing files.
 
@@ -30,4 +30,4 @@ a random value before V36!
 
 **SEE ALSO**
 
-[LoadSeg](LoadSeg), [InternalLoadSeg](InternalLoadSeg), [InternalUnLoadSeg](InternalUnLoadSeg)
+[LoadSeg](LoadSeg.md), [InternalLoadSeg](InternalLoadSeg.md), [InternalUnLoadSeg](InternalUnLoadSeg.md)

@@ -2,7 +2,7 @@
 **NAME**
 
 ParsePatternNoCase -- Create a tokenized string for
-[MatchPatternNoCase](MatchPatternNoCase) (V37)
+[MatchPatternNoCase](MatchPatternNoCase.md) (V37)
 
 **SYNOPSIS**
 
@@ -15,12 +15,12 @@ ParsePatternNoCase -- Create a tokenized string for
 ```
 **FUNCTION**
 
-Tokenizes a pattern, for use by [MatchPatternNoCase](MatchPatternNoCase).  Also indicates
+Tokenizes a pattern, for use by [MatchPatternNoCase](MatchPatternNoCase.md).  Also indicates
 if there are any wildcards in the pattern (i.e. whether it might match
 more than one item).  Note that Dest must be at least 2 times as
 large as Source plus 2 bytes.
 
-For a description of the wildcards, see [ParsePattern](ParsePattern).
+For a description of the wildcards, see [ParsePattern](ParsePattern.md).
 
 **INPUTS**
 
@@ -35,9 +35,9 @@ IsWild - 1 means there were wildcards in the pattern,
 -1 means there was a buffer overflow or other error
 
 BUGS
-Should set [IoErr](IoErr) to something useful (not currently set) on an
+Should set [IoErr](IoErr.md) to something useful (not currently set) on an
 error.
 
 **SEE ALSO**
 
-[ParsePattern](ParsePattern), [MatchPatternNoCase](MatchPatternNoCase), [MatchFirst](MatchFirst), [MatchNext](MatchNext)
+[ParsePattern](ParsePattern.md), [MatchPatternNoCase](MatchPatternNoCase.md), [MatchFirst](MatchFirst.md), [MatchNext](MatchNext.md)

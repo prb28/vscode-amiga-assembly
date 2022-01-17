@@ -12,7 +12,7 @@ SetDMRequest -- Set the DMRequest of a window.
     BOOL SetDMRequest( struct Window *, struct Requester * );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) [Requester](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) 
 
 **FUNCTION**
 
@@ -22,7 +22,7 @@ the double-click of the menu button which the user can then
 bring up on demand.  This routine WILL NOT change the DMRequest
 if it's already set and is currently active (in use by the user).
 After having called SetDMRequest(), if you want to change the
-DMRequest, the correct way to start is by calling [ClearDMRequest](ClearDMRequest)
+DMRequest, the correct way to start is by calling [ClearDMRequest](ClearDMRequest.md)
 until it returns a value of TRUE; then you can call SetDMRequest()
 with the new DMRequest.
 
@@ -32,7 +32,7 @@ for fine-tuning the position.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the window from which the DMRequest is to be set
+[Window](_00D4.md) = pointer to the window from which the DMRequest is to be set
 DMRequest = a pointer to a requester
 
 RESULT
@@ -45,4 +45,4 @@ BUGS
 
 **SEE ALSO**
 
-[ClearDMRequest](ClearDMRequest), [Request](Request)
+[ClearDMRequest](ClearDMRequest.md), [Request](Request.md)

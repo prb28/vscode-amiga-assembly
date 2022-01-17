@@ -12,7 +12,7 @@ Enqueue -- insert or append node to a system queue
     void Enqueue(struct List *, struct Node *);
 
 ```
-Links: [List](_007D) [Node](_0091) 
+Links: [List](_007D.md) [Node](_0091.md) 
 
 **FUNCTION**
 
@@ -35,4 +35,4 @@ with type, priority and name fields.
 
 **SEE ALSO**
 
-[AddHead](AddHead), [AddTail](AddTail), Insert, Remove, [RemHead](RemHead), [RemTail](RemTail)
+[AddHead](AddHead.md), [AddTail](AddTail.md), Insert, Remove, [RemHead](RemHead.md), [RemTail](RemTail.md)

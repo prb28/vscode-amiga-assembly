@@ -12,7 +12,7 @@ Request -- Activate a requester.
     BOOL Request( struct Requester *, struct Window * );
 
 ```
-Links: [Requester](_00D4) [Window](_00D4) [Requester](_00D4) [Window](_00D4) 
+Links: [Requester](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
@@ -22,8 +22,8 @@ This routine ignores the window's IDCMP_REQVERIFY flag.
 
 **INPUTS**
 
-[Requester](_00D4) = pointer to the requester to be displayed
-[Window](_00D4) = pointer to the window into which this requester goes
+[Requester](_00D4.md) = pointer to the requester to be displayed
+[Window](_00D4.md) = pointer to the window into which this requester goes
 
 New for V36: the POINTREL flag now has meaning if the requester
 is not a DMR (Double-Menu Requester):

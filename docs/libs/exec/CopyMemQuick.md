@@ -34,4 +34,4 @@ zero bytes.
 
 **SEE ALSO**
 
-[CopyMem](CopyMem)
+[CopyMem](CopyMem.md)

@@ -12,13 +12,13 @@ ObtainSemaphoreShared -- gain shared access to a semaphore (V36)
     void ObtainSemaphoreShared(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_0082) 
+Links: [SignalSemaphore](_0082.md) 
 
 **FUNCTION**
 
 A lock on a signal semaphore may either be exclusive, or shared.
-Exclusive locks are granted by the [ObtainSemaphore](ObtainSemaphore) and
-[AttemptSemaphore](AttemptSemaphore) functions.  Shared locks are granted by
+Exclusive locks are granted by the [ObtainSemaphore](ObtainSemaphore.md) and
+[AttemptSemaphore](AttemptSemaphore.md) functions.  Shared locks are granted by
 ObtainSemaphoreShared().  Calls may be nested.
 
 Any number of tasks may simultaneously hold a shared lock on a
@@ -58,4 +58,4 @@ RESULT
 
 **SEE ALSO**
 
-[InitSemaphore](InitSemaphore), [ReleaseSemaphore](ReleaseSemaphore)
+[InitSemaphore](InitSemaphore.md), [ReleaseSemaphore](ReleaseSemaphore.md)

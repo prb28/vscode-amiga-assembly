@@ -12,7 +12,7 @@ GetConsoleTask -- Returns the default console for the process (V36)
     struct MsgPort *GetConsoleTask(void)
 
 ```
-Links: [MsgPort](_0099) 
+Links: [MsgPort](_0099.md) 
 
 **FUNCTION**
 
@@ -24,4 +24,4 @@ port - The pr_MsgPort of the console handler, or NULL.
 
 **SEE ALSO**
 
-[SetConsoleTask](SetConsoleTask), [Open](Open)
+[SetConsoleTask](SetConsoleTask.md), [Open](Open.md)

@@ -13,12 +13,12 @@ CloseScreen -- Close an Intuition screen.
     /* returns BOOL in V36 and greater */
 
 ```
-Links: [Screen](_00DD) [Screen](_00DD) 
+Links: [Screen](_00DD.md) [Screen](_00DD.md) 
 
 **FUNCTION**
 
 Unlinks the screen, unlinks the viewport, deallocates everything that
-Intuition allocated when the screen was opened (using [OpenScreen](OpenScreen)).
+Intuition allocated when the screen was opened (using [OpenScreen](OpenScreen.md)).
 Doesn't care whether or not there are still any windows attached to the
 screen.  Doesn't try to close any attached windows; in fact, ignores
 them altogether (but see below for changes in V36).
@@ -32,7 +32,7 @@ is closed out from under a window.
 
 **INPUTS**
 
-[Screen](_00DD) = pointer to the screen to be closed.
+[Screen](_00DD.md) = pointer to the screen to be closed.
 
 RESULT
 New for V36: returns TRUE (1) if screen is closed,
@@ -43,4 +43,4 @@ BUGS
 
 **SEE ALSO**
 
-[OpenScreen](OpenScreen)
+[OpenScreen](OpenScreen.md)

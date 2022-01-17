@@ -12,7 +12,7 @@ LockPubScreen -- Prevent a public screen from closing. (V36)
     struct Screen *LockPubScreen( UBYTE * );
 
 ```
-Links: [Screen](_00DD) 
+Links: [Screen](_00DD.md) 
 
 **FUNCTION**
 
@@ -23,10 +23,10 @@ The sequence you use to open a visitor window that needs to
 examine fields in the screen it is about to open on is:
 LockPubScreen()
 ... examine fields ...
-[OpenWindow](OpenWindow) on public screen
-[UnlockPubScreen](UnlockPubScreen)
+[OpenWindow](OpenWindow.md) on public screen
+[UnlockPubScreen](UnlockPubScreen.md)
 ... use your window ...
-[CloseWindow](CloseWindow)
+[CloseWindow](CloseWindow.md)
 
 NOTE
 You needn't hold the &#034;pubscreen lock&#034; for the duration that
@@ -53,4 +53,4 @@ BUGS
 
 **SEE ALSO**
 
-[OpenWindow](OpenWindow), [UnlockPubScreen](UnlockPubScreen), [GetScreenData](GetScreenData)
+[OpenWindow](OpenWindow.md), [UnlockPubScreen](UnlockPubScreen.md), [GetScreenData](GetScreenData.md)

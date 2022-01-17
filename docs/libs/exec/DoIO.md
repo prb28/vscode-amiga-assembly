@@ -12,7 +12,7 @@ DoIO -- perform an I/O command and wait for completion
     BYTE DoIO(struct IORequest *);
 
 ```
-Links: [IORequest](_0094) 
+Links: [IORequest](_0094.md) 
 
 **FUNCTION**
 
@@ -31,18 +31,18 @@ before the internal device call.
 The LN_TYPE field is used internally to flag completion.  Active
 requests have type NT_MESSAGE.  Requests that have been replied
 have type NT_REPLYMSG.  It is illegal to start IO using a
-still active [IORequest](_0094), or a request with type NT_REPLYMSG.
+still active [IORequest](_0094.md), or a request with type NT_REPLYMSG.
 
 **INPUTS**
 
-iORequest - pointer to an [IORequest](_0094) initialized by [OpenDevice](OpenDevice)
+iORequest - pointer to an [IORequest](_0094.md) initialized by [OpenDevice](OpenDevice.md)
 
 **RESULTS**
 
 error - a sign-extended copy of the io_Error field of the
-[IORequest](_0094).  Most device commands require that the error
+[IORequest](_0094.md).  Most device commands require that the error
 return be checked.
 
 **SEE ALSO**
 
-[SendIO](SendIO), [CheckIO](CheckIO), [WaitIO](WaitIO), [AbortIO](_04F7), [amiga.lib/BeginIO](_04CB)
+[SendIO](SendIO.md), [CheckIO](CheckIO.md), [WaitIO](WaitIO.md), [AbortIO](_04F7.md), [amiga.lib/BeginIO](_04CB.md)

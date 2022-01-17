@@ -38,4 +38,4 @@ lock - BCPL pointer to a lock
 
 **SEE ALSO**
 
-[UnLock](UnLock), [DupLock](DupLock), [ChangeMode](ChangeMode), [NameFromLock](NameFromLock), [DupLockFromFH](DupLockFromFH)
+[UnLock](UnLock.md), [DupLock](DupLock.md), [ChangeMode](ChangeMode.md), [NameFromLock](NameFromLock.md), [DupLockFromFH](DupLockFromFH.md)

@@ -12,7 +12,7 @@ BitMapScale -- Perform raster scaling on a bit map. (V36)
     void BitMapScale(struct BitScaleArgs *);
 
 ```
-Links: [BitScaleArgs](_00BF) 
+Links: [BitScaleArgs](_00BF.md) 
 
 **FUNCTION**
 
@@ -50,7 +50,7 @@ o   This function may use the blitter.
 o   Overlapping source and destination bit maps are not
 supported.
 o   No check is made to ensure destBitMap is big enough: use
-[ScalerDiv](ScalerDiv) to calculate a destination dimension.
+[ScalerDiv](ScalerDiv.md) to calculate a destination dimension.
 
 BUGS
 o   This function does not use the HighRes Agnus 'Big Blit'
@@ -64,4 +64,4 @@ is always safe).
 
 **SEE ALSO**
 
-[ScalerDiv](ScalerDiv)  [graphics/scale.h](_00BF)
+[ScalerDiv](ScalerDiv.md)  [graphics/scale.h](_00BF.md)

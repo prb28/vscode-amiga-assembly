@@ -19,7 +19,7 @@ This function returns a pointer to the character after the next-to-last
 component of a path specification, which will normally be the directory
 name.  If there is only one component, it returns a pointer to the
 beginning of the string.  The only real difference between this and
-[FilePart](FilePart) is the handling of '/'.
+[FilePart](FilePart.md) is the handling of '/'.
 
 **INPUTS**
 
@@ -35,4 +35,4 @@ PathPart(&#034;xxx:yyy&#034;) would return a pointer to the first 'y').
 
 **SEE ALSO**
 
-[FilePart](FilePart), [AddPart](AddPart)
+[FilePart](FilePart.md), [AddPart](AddPart.md)

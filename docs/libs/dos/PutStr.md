@@ -28,4 +28,4 @@ most Dos function returns!
 
 **SEE ALSO**
 
-[FPuts](FPuts), [FPutC](FPutC), [FWrite](FWrite), [WriteChars](WriteChars)
+[FPuts](FPuts.md), [FPutC](FPutC.md), [FWrite](FWrite.md), [WriteChars](WriteChars.md)

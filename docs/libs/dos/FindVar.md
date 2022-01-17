@@ -12,7 +12,7 @@ FindVar -- Finds a local variable (V36)
     struct LocalVar * FindVar(STRPTR, ULONG )
 
 ```
-Links: [LocalVar](_0073) 
+Links: [LocalVar](_0073.md) 
 
 **FUNCTION**
 
@@ -23,12 +23,12 @@ Finds a local variable structure.
 name - pointer to an variable name.  Note variable names follow
 filesystem syntax and semantics.
 
-type - type of variable to be found (see [&#060;dos/var.h&#062;](_0073))
+type - type of variable to be found (see [&#060;dos/var.h&#062;](_0073.md))
 
 RESULT
 
-var  - pointer to a [LocalVar](_0073) structure or NULL
+var  - pointer to a [LocalVar](_0073.md) structure or NULL
 
 **SEE ALSO**
 
-[GetVar](GetVar), [SetVar](SetVar), [DeleteVar](DeleteVar), [&#060;dos/var.h&#062;](_0073)
+[GetVar](GetVar.md), [SetVar](SetVar.md), [DeleteVar](DeleteVar.md), [&#060;dos/var.h&#062;](_0073.md)

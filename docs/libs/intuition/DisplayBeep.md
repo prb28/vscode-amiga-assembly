@@ -12,7 +12,7 @@ DisplayBeep -- Flash the video display.
     VOID DisplayBeep( struct Screen * );
 
 ```
-Links: [Screen](_00DD) [Screen](_00DD) 
+Links: [Screen](_00DD.md) [Screen](_00DD.md) 
 
 **FUNCTION**
 
@@ -28,13 +28,13 @@ an event that is not serious enough to require the use of a requester,
 the DisplayBeep() function may be called.
 
 New for V36:  Intuition now calls DisplayBeep through the
-external library vector.  This means that if you call [SetFunction](../exec/SetFunction)
+external library vector.  This means that if you call [SetFunction](../exec/SetFunction.md)
 to replace DisplayBeep with an audible beep, for example, then
 your change will affect even Intuition's calls to DisplayBeep.
 
 **INPUTS**
 
-[Screen](_00DD) = pointer to a screen.  If NULL, every screen in the display
+[Screen](_00DD.md) = pointer to a screen.  If NULL, every screen in the display
 will be flashed
 
 RESULT

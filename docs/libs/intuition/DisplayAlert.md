@@ -30,7 +30,7 @@ NOTE: Starting with V33, if Intuition can't get enough
 memory for a RECOVERY_ALERT, the value FALSE will be returned.
 
 AlertNumber is a LONG value, historically related to the value
-sent to the [Alert](../exec/Alert) routine.  But the only bits that are pertinent to
+sent to the [Alert](../exec/Alert.md) routine.  But the only bits that are pertinent to
 this routine are the ALERT_TYPE bit(s).  These bits must be set to
 either RECOVERY_ALERT for alerts from which the system may safely
 recover, or DEADEND_ALERT for those fatal alerts.  These states are

@@ -34,8 +34,8 @@ to see if the real lock is a lock on the root of the boot volume.
 
 In V36, it would return LOCK_SAME_VOLUME for different volumes on the
 same handler.  Also, LOCK_SAME_VOLUME was LOCK_SAME_HANDLER (now
-an obsolete define, see [&#060;dos/dos.h&#062;](_0068)).
+an obsolete define, see [&#060;dos/dos.h&#062;](_0068.md)).
 
 **SEE ALSO**
 
-[&#060;dos/dos.h&#062;](_0068)
+[&#060;dos/dos.h&#062;](_0068.md)

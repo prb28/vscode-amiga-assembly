@@ -13,7 +13,7 @@ ActivateGadget -- Activate a (string or custom) gadget.
             struct Requester * );
 
 ```
-Links: [Gadget](_00D4) [Window](_00D4) [Gadget](_00D4) [Window](_00D4) [Requester](_00D4) 
+Links: [Gadget](_00D4.md) [Window](_00D4.md) [Gadget](_00D4.md) [Window](_00D4.md) [Requester](_00D4.md) 
 
 **FUNCTION**
 
@@ -35,8 +35,8 @@ The current set of conditions includes:
 -   The window must be active.  If you are opening a new window
 and want an active gadget in it, it is not sufficient to
 assume that the WFLG_ACTIVATE flag has taken effect by the time
-[OpenWindow](OpenWindow) returns, even if you insert a delay of some
-finite amount of time.  Use the IDCMP_ACTIVEWINDOW [IntuiMessage](_00D4)
+[OpenWindow](OpenWindow.md) returns, even if you insert a delay of some
+finite amount of time.  Use the IDCMP_ACTIVEWINDOW [IntuiMessage](_00D4.md)
 to tell when your window really becomes active.  Many
 programs use an event loop that calls ActivateGadget()
 whenever they receive the IDCMP_ACTIVEWINDOW message, and also
@@ -55,9 +55,9 @@ not attached to a window or requester.
 
 **INPUTS**
 
-[Gadget](_00D4) = pointer to the gadget that you want activated.
-[Window](_00D4) = pointer to a window structure containing the gadget.
-[Requester](_00D4) = pointer to a requester (may by NULL if this isn't
+[Gadget](_00D4.md) = pointer to the gadget that you want activated.
+[Window](_00D4.md) = pointer to a window structure containing the gadget.
+[Requester](_00D4.md) = pointer to a requester (may by NULL if this isn't
 a requester gadget (i.e. GTYP_REQGADGET is not set)).
 
 RESULT

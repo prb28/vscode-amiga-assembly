@@ -11,7 +11,7 @@ CEND -- Terminate user copper list.
     struct UCopList *c;
 
 ```
-Links: [UCopList](_00AD) 
+Links: [UCopList](_00AD.md) 
 
 **FUNCTION**
 
@@ -19,7 +19,7 @@ Add instruction to terminate user copper list.
 
 **INPUTS**
 
-c - pointer to [UCopList](_00AD) structure
+c - pointer to [UCopList](_00AD.md) structure
 
 **RESULTS**
 
@@ -31,4 +31,4 @@ BUGS
 
 **SEE ALSO**
 
-[CINIT](CINIT) [CWAIT](CWAIT) [CMOVE](CMOVE) [graphics/copper.h](_00AD)
+[CINIT](CINIT.md) [CWAIT](CWAIT.md) [CMOVE](CMOVE.md) [graphics/copper.h](_00AD.md)

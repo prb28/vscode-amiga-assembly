@@ -12,7 +12,7 @@ Procure -- bid for a message lock (semaphore)
     BYTE Procure(struct Semaphore *, struct Message *);
 
 ```
-Links: [Semaphore](_0082) [Message](_0099) 
+Links: [Semaphore](_0082.md) [Message](_0099.md) 
 
 **FUNCTION**
 
@@ -33,7 +33,7 @@ PA_IGNORE option, as the MP_SigTask field is used for a pointer to
 the current locker message (not a task). New semaphore ports must
 also have the SM_BIDS word initialized to -1.  If the semaphore is
 public, it should be named, its priority set, and the added with
-[AddPort](AddPort). [Message](_0099) port priority is often used for anti-deadlock
+[AddPort](AddPort.md). [Message](_0099.md) port priority is often used for anti-deadlock
 locking conventions.
 
 RESULT
@@ -42,8 +42,8 @@ needs to be done.  If false, then the task should wait at its
 bidMessage reply port.
 
 BUGS
-Procure() and [Vacate](Vacate) do not have proven reliability.
+Procure() and [Vacate](Vacate.md) do not have proven reliability.
 
 **SEE ALSO**
 
-[Vacate](Vacate)
+[Vacate](Vacate.md)

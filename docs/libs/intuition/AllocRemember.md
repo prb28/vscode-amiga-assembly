@@ -1,7 +1,7 @@
 
 **NAME**
 
-AllocRemember -- [AllocMem](../exec/AllocMem) with tracking to make freeing easy.
+AllocRemember -- [AllocMem](../exec/AllocMem.md) with tracking to make freeing easy.
 
 **SYNOPSIS**
 
@@ -12,13 +12,13 @@ AllocRemember -- [AllocMem](../exec/AllocMem) with tracking to make freeing easy
     APTR AllocRemember( struct Remember **, ULONG, ULONG );
 
 ```
-Links: [Remember](_00D4) 
+Links: [Remember](_00D4.md) 
 
 **FUNCTION**
 
-This routine calls the Exec [AllocMem](../exec/AllocMem) function for you, but also links
+This routine calls the Exec [AllocMem](../exec/AllocMem.md) function for you, but also links
 the parameters of the allocation into a master list, so that
-you can simply call the Intuition routine [FreeRemember](FreeRemember) at a later
+you can simply call the Intuition routine [FreeRemember](FreeRemember.md) at a later
 time to deallocate all allocated memory without being required to
 remember the details of the memory you've allocated.
 
@@ -35,20 +35,20 @@ allocated.
 -   Also, in the more general case, you may do all of the allocations
 in your entire program using this routine.  Then, when your
 program is exiting, you can free it all up at once with a
-simple call to [FreeRemember](FreeRemember).
+simple call to [FreeRemember](FreeRemember.md).
 
 You create the &#034;anchor&#034; for the allocation master list by creating
-a variable that's a pointer to struct [Remember](_00D4), and initializing
+a variable that's a pointer to struct [Remember](_00D4.md), and initializing
 that pointer to NULL.  This is called the RememberKey.  Whenever
 you call AllocRemember(), the routine actually does two memory
 allocations, one for the memory you want and the other for a copy
-of a [Remember](_00D4) structure.  The [Remember](_00D4) structure is filled in
+of a [Remember](_00D4.md) structure.  The [Remember](_00D4.md) structure is filled in
 with data describing your memory allocation, and it's linked
 into the master list pointed to by your RememberKey.  Then, to
 free up any memory that's been allocated, all you have to do is
-call [FreeRemember](FreeRemember) with your RememberKey.
+call [FreeRemember](FreeRemember.md) with your RememberKey.
 
-Please read the [FreeRemember](FreeRemember) function description, too.  As you will
+Please read the [FreeRemember](FreeRemember.md) function description, too.  As you will
 see, you can select either to free just the link nodes and keep all the
 allocated memory for yourself, or to free both the nodes and your
 memory buffers.
@@ -56,16 +56,16 @@ memory buffers.
 
 **INPUTS**
 
-RememberKey = the address of a pointer to struct [Remember](_00D4).  Before the
+RememberKey = the address of a pointer to struct [Remember](_00D4.md).  Before the
 very first call to AllocRemember, initialize this pointer to NULL.
 
 Size = the size in bytes of the memory allocation.  Please refer to the
-[exec.library/AllocMem](../exec/AllocMem) function for details.
+[exec.library/AllocMem](../exec/AllocMem.md) function for details.
 Flags = the specifications for the memory allocation.  Please refer to
-the [exec.library/AllocMem](../exec/AllocMem) function for details.
+the [exec.library/AllocMem](../exec/AllocMem.md) function for details.
 
 EXAMPLE
-struct [Remember](_00D4) *RememberKey;
+struct [Remember](_00D4.md) *RememberKey;
 RememberKey = NULL;
 buffer = AllocRemember(&#038;RememberKey, BUFSIZE, MEMF_CHIP);
 if (buffer)
@@ -88,8 +88,8 @@ you request.  This is neither fast nor good for memory
 fragmentation.
 
 This function should use the exec AllocPool() function internally,
-at least for the [Remember](_00D4) headers.
+at least for the [Remember](_00D4.md) headers.
 
 **SEE ALSO**
 
-[FreeRemember](FreeRemember), [exec.library/AllocMem](../exec/AllocMem)
+[FreeRemember](FreeRemember.md), [exec.library/AllocMem](../exec/AllocMem.md)

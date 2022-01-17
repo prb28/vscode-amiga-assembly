@@ -1,7 +1,7 @@
 
 **NAME**
 
-ViewAddress -- Return the address of the Intuition [View](_00B8) structure.
+ViewAddress -- Return the address of the Intuition [View](_00B8.md) structure.
 
 **SYNOPSIS**
 
@@ -12,11 +12,11 @@ ViewAddress -- Return the address of the Intuition [View](_00B8) structure.
     struct View *ViewAddress( VOID );
 
 ```
-Links: [View](_00B8) 
+Links: [View](_00B8.md) 
 
 **FUNCTION**
 
-Returns the address of the Intuition [View](_00B8) structure.  If you
+Returns the address of the Intuition [View](_00B8.md) structure.  If you
 want to use any of the graphics, text, or animation primitives
 in your window and that primitive requires a pointer to a view,
 this routine will return the address of the view for you.
@@ -26,7 +26,7 @@ this routine will return the address of the view for you.
 None
 
 RESULT
-Returns the address of the Intuition [View](_00B8) structure
+Returns the address of the Intuition [View](_00B8.md) structure
 
 BUGS
 

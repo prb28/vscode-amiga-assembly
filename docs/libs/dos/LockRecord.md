@@ -47,4 +47,4 @@ This was fixed for V37.
 
 **SEE ALSO**
 
-[LockRecords](LockRecords), [UnLockRecord](UnLockRecord), [UnLockRecords](UnLockRecords)
+[LockRecords](LockRecords.md), [UnLockRecord](UnLockRecord.md), [UnLockRecords](UnLockRecords.md)

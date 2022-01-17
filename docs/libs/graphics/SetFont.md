@@ -1,7 +1,7 @@
 
 **NAME**
 
-SetFont -- Set the text font and attributes in a [RastPort](_00AF).
+SetFont -- Set the text font and attributes in a [RastPort](_00AF.md).
 
 **SYNOPSIS**
 
@@ -12,29 +12,29 @@ SetFont -- Set the text font and attributes in a [RastPort](_00AF).
     void SetFont(struct RastPort *, struct TextFont *);
 
 ```
-Links: [RastPort](_00AF) [TextFont](_00A8) 
+Links: [RastPort](_00AF.md) [TextFont](_00A8.md) 
 
 **FUNCTION**
 
-This function sets the font in the [RastPort](_00AF) to that described
+This function sets the font in the [RastPort](_00AF.md) to that described
 by font, and updates the text attributes to reflect that
 change.  This function clears the effect of any previous
 soft styles.
 
 **INPUTS**
 
-rp   - the [RastPort](_00AF) in which the text attributes are to be changed
-font - pointer to a [TextFont](_00A8) structure returned from [OpenFont](OpenFont)
-or [OpenDiskFont](../diskfont/OpenDiskFont)
+rp   - the [RastPort](_00AF.md) in which the text attributes are to be changed
+font - pointer to a [TextFont](_00A8.md) structure returned from [OpenFont](OpenFont.md)
+or [OpenDiskFont](../diskfont/OpenDiskFont.md)
 
 RESULT
 
 NOTES
 This function had previously been documented that it would
 accept a null font.  This practice is discouraged.
-o   Use of a [RastPort](_00AF) with a null font with text routines has
+o   Use of a [RastPort](_00AF.md) with a null font with text routines has
 always been incorrect and risked the guru.
-o   Keeping an obsolete font pointer in the [RastPort](_00AF) is no more
+o   Keeping an obsolete font pointer in the [RastPort](_00AF.md) is no more
 dangerous than keeping a zero one there.
 o   SetFont(rp, 0) causes spurious low memory accesses under
 some system software releases.
@@ -52,9 +52,9 @@ BUGS
 Calling SetFont() on in-code TextFonts (ie fonts not
 OpenFont()ed) will result in a loss of 24 bytes from
 the system as of V36.
-This can be resolved by calling [StripFont](StripFont).
+This can be resolved by calling [StripFont](StripFont.md).
 
 **SEE ALSO**
 
-[OpenFont](OpenFont)  [StripFont](StripFont)
-[diskfont.library/OpenDiskFont](../diskfont/OpenDiskFont)  [graphics/text.h](_00A8)
+[OpenFont](OpenFont.md)  [StripFont](StripFont.md)
+[diskfont.library/OpenDiskFont](../diskfont/OpenDiskFont.md)  [graphics/text.h](_00A8.md)

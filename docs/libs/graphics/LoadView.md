@@ -13,27 +13,27 @@ list to create the current display.
     void LoadView( struct View * );
 
 ```
-Links: [View](_00B8) [View](_00B8) 
+Links: [View](_00B8.md) [View](_00B8.md) 
 
 **FUNCTION**
 
 Install a new view to be displayed during the next display
 refresh pass.
 Coprocessor instruction list has been created by
-[InitVPort](InitVPort), [MakeVPort](MakeVPort), and [MrgCop](MrgCop).
+[InitVPort](InitVPort.md), [MakeVPort](MakeVPort.md), and [MrgCop](MrgCop.md).
 
 **INPUTS**
 
-[View](_00B8) - a pointer to the [View](_00B8) structure which contains the
+[View](_00B8.md) - a pointer to the [View](_00B8.md) structure which contains the
 pointer to the constructed coprocessor instructions list, or NULL.
 
 RESULT
-If the [View](_00B8) pointer is non-NULL, the new [View](_00B8) is displayed,
+If the [View](_00B8.md) pointer is non-NULL, the new [View](_00B8.md) is displayed,
 according to your instructions.  The vertical blank routine
 will pick this pointer up and direct the copper to start
-displaying this [View](_00B8).
+displaying this [View](_00B8.md).
 
-If the [View](_00B8) pointer is NULL, no [View](_00B8) is displayed.
+If the [View](_00B8.md) pointer is NULL, no [View](_00B8.md) is displayed.
 
 NOTE
 Even though a LoadView(NULL) is performed, display DMA will still be
@@ -44,5 +44,5 @@ BUGS
 
 **SEE ALSO**
 
-[InitVPort](InitVPort) [MakeVPort](MakeVPort) [MrgCop](MrgCop) [intuition/RethinkDisplay](../intuition/RethinkDisplay)
-[graphics/view.h](_00B8)
+[InitVPort](InitVPort.md) [MakeVPort](MakeVPort.md) [MrgCop](MrgCop.md) [intuition/RethinkDisplay](../intuition/RethinkDisplay.md)
+[graphics/view.h](_00B8.md)

@@ -12,7 +12,7 @@ RemTask -- remove a task from the system
     void RemTask(struct Task *);
 
 ```
-Links: [Task](_008E) 
+Links: [Task](_008E.md) 
 
 **FUNCTION**
 
@@ -32,10 +32,10 @@ cause the next ready task to begin execution.
 
 BUGS
 Before V36 if RemTask() was called on a task other than the current
-task, and that task was created with [amiga.lib/CreateTask](_014A), there was
+task, and that task was created with [amiga.lib/CreateTask](_014A.md), there was
 a slight chance of a crash.  The problem can be hidden by bracketing
 RemTask() with <a href="../Includes_and_Autodocs_2._guide/node0369.html">Forbid()/Permit().
 
 **SEE ALSO**
 
-[AddTask](AddTask), [exec/AllocEntry](AllocEntry), [amiga.lib/DeleteTask](_0155)
+[AddTask](AddTask.md), [exec/AllocEntry](AllocEntry.md), [amiga.lib/DeleteTask](_0155.md)

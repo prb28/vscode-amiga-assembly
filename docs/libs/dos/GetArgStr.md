@@ -22,4 +22,4 @@ ptr - pointer to arguments
 
 **SEE ALSO**
 
-[SetArgStr](SetArgStr), [RunCommand](RunCommand)
+[SetArgStr](SetArgStr.md), [RunCommand](RunCommand.md)

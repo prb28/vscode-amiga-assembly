@@ -12,12 +12,12 @@ DoPkt -- Send a dos packet and wait for reply (V36)
     LONG DoPkt(struct MsgPort *,LONG,LONG,LONG,LONG,LONG,LONG)
 
 ```
-Links: [MsgPort](_0099) 
+Links: [MsgPort](_0099.md) 
 
 **FUNCTION**
 
 Sends a packet to a handler and waits for it to return.  Any secondary
-return will be available in D1 AND from [IoErr](IoErr).  DoPkt() will work
+return will be available in D1 AND from [IoErr](IoErr.md).  DoPkt() will work
 even if the caller is an exec task and not a process; however it will
 be slower, and may fail for some additional reasons, such as being
 unable to allocate a signal.  DoPkt() uses your pr_MsgPort for the
@@ -36,18 +36,18 @@ be required.
 RESULT
 result1 - the value returned in dp_Res1, or FALSE if there was some
 problem in sending the packet or recieving it.
-result2 - Available from [IoErr](IoErr) AND in register D1.
+result2 - Available from [IoErr](IoErr.md) AND in register D1.
 
 BUGS
-Using DoPkt() from tasks doesn't work in V36. Use [AllocDosObject](AllocDosObject),
-[PutMsg](../exec/PutMsg), and <a href="../Includes_and_Autodocs_2._guide/node035A.html">WaitPort()/GetMsg() for a workaround, or you can call
-[CreateNewProc](CreateNewProc) to start a process to do Dos I/O for you.  In V37,
-DoPkt() will allocate, use, and free the [MsgPort](_0099) required.
+Using DoPkt() from tasks doesn't work in V36. Use [AllocDosObject](AllocDosObject.md),
+[PutMsg](../exec/PutMsg.md), and <a href="../Includes_and_Autodocs_2._guide/node035A.html">WaitPort()/GetMsg() for a workaround, or you can call
+[CreateNewProc](CreateNewProc.md) to start a process to do Dos I/O for you.  In V37,
+DoPkt() will allocate, use, and free the [MsgPort](_0099.md) required.
 
 NOTES
 Callable from a task (under V37 and above).
 
 **SEE ALSO**
 
-[AllocDosObject](AllocDosObject), [FreeDosObject](FreeDosObject), [SendPkt](SendPkt), [WaitPkt](WaitPkt),
-[CreateNewProc](CreateNewProc), [AbortPkt](AbortPkt)
+[AllocDosObject](AllocDosObject.md), [FreeDosObject](FreeDosObject.md), [SendPkt](SendPkt.md), [WaitPkt](WaitPkt.md),
+[CreateNewProc](CreateNewProc.md), [AbortPkt](AbortPkt.md)

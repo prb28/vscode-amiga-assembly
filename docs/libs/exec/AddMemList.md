@@ -15,7 +15,7 @@ AddMemList - add memory to the system free pool
 **FUNCTION**
 
 Add a new region of memory to the system free pool.  The first few
-bytes will be used to hold the [MemHeader](_0089) structure.  The remainder
+bytes will be used to hold the [MemHeader](_0089.md) structure.  The remainder
 will be made available to the rest of the world.
 
 **INPUTS**
@@ -34,4 +34,4 @@ system.
 
 **SEE ALSO**
 
-[AllocMem](AllocMem), [exec/memory.h](_0089)
+[AllocMem](AllocMem.md), [exec/memory.h](_0089.md)

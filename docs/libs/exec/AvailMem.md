@@ -28,8 +28,8 @@ actually be the amount of free memory available at that instant.
 
 **INPUTS**
 
-requirements - a requirements mask as specified in [AllocMem](AllocMem).  Any
-of the [AllocMem](AllocMem) bits are valid, as is MEMF_LARGEST
+requirements - a requirements mask as specified in [AllocMem](AllocMem.md).  Any
+of the [AllocMem](AllocMem.md) bits are valid, as is MEMF_LARGEST
 which returns the size of the largest block matching
 the requirements.
 
@@ -47,4 +47,4 @@ AvailMem(MEMF_CHIP|MEMF_LARGEST);
 
 **SEE ALSO**
 
-[exec/memory.h](_0089)
+[exec/memory.h](_0089.md)

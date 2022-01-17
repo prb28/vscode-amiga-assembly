@@ -12,7 +12,7 @@ SetRGB4 -- Set one color register for this viewport.
     void SetRGB4( struct ViewPort *, SHORT, UBYTE, UBYTE, UBYTE );
 
 ```
-Links: [ViewPort](_00B8) 
+Links: [ViewPort](_00B8.md) 
 
 **FUNCTION**
 
@@ -28,8 +28,8 @@ g - green level (0-15)
 b - blue level (0-15)
 
 RESULT
-If there is a [ColorMap](_00B8) for this viewport, then the value will
-be stored in the [ColorMap](_00B8).
+If there is a [ColorMap](_00B8.md) for this viewport, then the value will
+be stored in the [ColorMap](_00B8.md).
 The selected color register is changed to match your specs.
 If the color value is unused then nothing will happen.
 
@@ -40,4 +40,4 @@ copper lists.
 
 **SEE ALSO**
 
-[LoadRGB4](LoadRGB4) [GetRGB4](GetRGB4) [graphics/view.h](_00B8)
+[LoadRGB4](LoadRGB4.md) [GetRGB4](GetRGB4.md) [graphics/view.h](_00B8.md)

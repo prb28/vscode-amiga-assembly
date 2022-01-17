@@ -1,7 +1,7 @@
 
 **NAME**
 
-SetDrMd -- Set drawing mode for a [RastPort](_00AF)
+SetDrMd -- Set drawing mode for a [RastPort](_00AF.md)
 
 **SYNOPSIS**
 
@@ -12,7 +12,7 @@ SetDrMd -- Set drawing mode for a [RastPort](_00AF)
     void SetDrMd( struct RastPort *, UBYTE );
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
@@ -21,7 +21,7 @@ Get the bit definitions from rastport.h
 
 **INPUTS**
 
-rp - pointer to [RastPort](_00AF) structure.
+rp - pointer to [RastPort](_00AF.md) structure.
 mode - 0-255, some combinations may not make much sense.
 
 RESULT
@@ -33,4 +33,4 @@ BUGS
 
 **SEE ALSO**
 
-[SetAPen](SetAPen) [SetBPen](SetBPen) [graphics/rastport.h](_00AF)
+[SetAPen](SetAPen.md) [SetBPen](SetBPen.md) [graphics/rastport.h](_00AF.md)

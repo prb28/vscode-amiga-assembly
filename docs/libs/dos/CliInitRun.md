@@ -12,7 +12,7 @@ CliInitRun -- Set up a process to be a shell from initial packet
     LONG CliInitRun( struct DosPacket * )
 
 ```
-Links: [DosPacket](_0078) 
+Links: [DosPacket](_0078.md) 
 
 **FUNCTION**
 
@@ -33,29 +33,29 @@ Bit  2     Set if this is a System() call
 Bit  1     Set if user provided input stream
 Bit  0     Set if RUN provided output stream
 
-If Bit 31 is 0, then you must check [IoErr](IoErr) to determine if an error
-occurred.  If [IoErr](IoErr) returns a pointer to your process, there has
+If Bit 31 is 0, then you must check [IoErr](IoErr.md) to determine if an error
+occurred.  If [IoErr](IoErr.md) returns a pointer to your process, there has
 been an error, and you should clean up and exit.  The packet will
-have already been returned by [CliInitNewcli](CliInitNewcli).  If it isn't a pointer
+have already been returned by [CliInitNewcli](CliInitNewcli.md).  If it isn't a pointer
 to your process and Bit 31 is 0, you should wait before replying
 the packet until after you've loaded the first command (or when you
 exit).  This helps avoid disk &#034;gronking&#034; with the Run command.
 (Note: this is different from what you do for CliInitNewcli().)
 
-If Bit 31 is 1, then if Bit 3 is one, [ReplyPkt](ReplyPkt) the packet
+If Bit 31 is 1, then if Bit 3 is one, [ReplyPkt](ReplyPkt.md) the packet
 immediately (Asynch System()), otherwise wait until your shell exits
-(Sync System(), [Execute](Execute)).
+(Sync System(), [Execute](Execute.md)).
 (Note: this is different from what you do for CliInitNewcli().)
 
-This function is very similar to [CliInitNewcli](CliInitNewcli).
+This function is very similar to [CliInitNewcli](CliInitNewcli.md).
 
 **INPUTS**
 
-packet - the initial packet sent to your process [MsgPort](_0099)
+packet - the initial packet sent to your process [MsgPort](_0099.md)
 
 RESULT
 fn - flags or a pointer
 
 **SEE ALSO**
 
-[CliInitNewcli](CliInitNewcli), [ReplyPkt](ReplyPkt), [WaitPkt](WaitPkt), System(), [Execute](Execute), [IoErr](IoErr)
+[CliInitNewcli](CliInitNewcli.md), [ReplyPkt](ReplyPkt.md), [WaitPkt](WaitPkt.md), System(), [Execute](Execute.md), [IoErr](IoErr.md)

@@ -12,15 +12,15 @@ ScreenToFront -- Make the specified screen the frontmost.
     VOID ScreenToFront( struct Screen * );
 
 ```
-Links: [Screen](_00DD) [Screen](_00DD) 
+Links: [Screen](_00DD.md) [Screen](_00DD.md) 
 
 **FUNCTION**
 
-Brings the specified [Screen](_00DD) to the front of the display.
+Brings the specified [Screen](_00DD.md) to the front of the display.
 
 **INPUTS**
 
-[Screen](_00DD) = a pointer to a [Screen](_00DD) structure
+[Screen](_00DD.md) = a pointer to a [Screen](_00DD.md) structure
 
 RESULT
 None
@@ -29,4 +29,4 @@ BUGS
 
 **SEE ALSO**
 
-[ScreenToBack](ScreenToBack)
+[ScreenToBack](ScreenToBack.md)

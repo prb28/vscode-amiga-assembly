@@ -33,4 +33,4 @@ did not exist before V36!
 
 **SEE ALSO**
 
-[Open](Open), [OpenFromLock](OpenFromLock)
+[Open](Open.md), [OpenFromLock](OpenFromLock.md)

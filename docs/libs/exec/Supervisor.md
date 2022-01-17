@@ -37,4 +37,4 @@ result   - Whatever values the userFunc left in the registers.
 
 **SEE ALSO**
 
-[SuperState](SuperState),[UserState](UserState)
+[SuperState](SuperState.md),[UserState](UserState.md)

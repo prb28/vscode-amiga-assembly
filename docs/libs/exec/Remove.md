@@ -12,7 +12,7 @@ Remove -- remove a node from a list
     void Remove(struct Node *);
 
 ```
-Links: [Node](_0091) 
+Links: [Node](_0091.md) 
 
 **FUNCTION**
 
@@ -31,4 +31,4 @@ node - the node to remove
 
 **SEE ALSO**
 
-[AddHead](AddHead), [AddTail](AddTail), [Enqueue](Enqueue), Insert, [RemHead](RemHead), [RemTail](RemTail)
+[AddHead](AddHead.md), [AddTail](AddTail.md), [Enqueue](Enqueue.md), Insert, [RemHead](RemHead.md), [RemTail](RemTail.md)

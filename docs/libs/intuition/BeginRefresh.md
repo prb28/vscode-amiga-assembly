@@ -12,24 +12,24 @@ BeginRefresh -- Sets up a window for optimized refreshing.
     VOID BeginRefresh( struct Window * );
 
 ```
-Links: [Window](_00D4) [Window](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) 
 
 **FUNCTION**
 
 This routine sets up your window for optimized refreshing.
 
 Its role is to provide Intuition integrated access to the Layers
-library function [BeginUpdate](_038E).  Its additional contribution is
+library function [BeginUpdate](_038E.md).  Its additional contribution is
 to be sure that locking protocols for layers are followed, by
 locking both layers of a WFLG_GIMMEZEROZERO window only after the
-parent [Layer_Info](_00C4) has been locked.  Also, the WFLG_WINDOWREFRESH
+parent [Layer_Info](_00C4.md) has been locked.  Also, the WFLG_WINDOWREFRESH
 flag is set in your window, for your information.
 
-The purpose of [BeginUpdate](_038E), and hence BeginRefresh(), is to
+The purpose of [BeginUpdate](_038E.md), and hence BeginRefresh(), is to
 restrict rendering in a window (layer) to the region that needs
 refreshing after an operation such as window sizing or uncovering.
 This restriction to the &#034;damage region&#034; persists until you call
-[EndRefresh](EndRefresh).
+[EndRefresh](EndRefresh.md).
 
 For instance, if you have a WFLG_SIMPLE_REFRESH window which is
 partially concealed and the user brings it to the front, you can
@@ -41,21 +41,21 @@ which goes to the newly-revealed areas.  This is very performance-
 efficient, and visually attractive.
 
 After you have performed your refresh of the display, you should call
-[EndRefresh](EndRefresh) to reset the state of the layer and the window.  Then you
+[EndRefresh](EndRefresh.md) to reset the state of the layer and the window.  Then you
 may proceed with rendering to the entire window as usual.
 
 You learn that your window needs refreshing by receiving either a
 message of class IDCMP_REFRESHWINDOW through the IDCMP, or an input
 event of class IECLASS_REFRESHWINDOW through the Console device.
 Whenever you are told that your window needs refreshing, you should
-call BeginRefresh() and [EndRefresh](EndRefresh) to clear the refresh-needed
+call BeginRefresh() and [EndRefresh](EndRefresh.md) to clear the refresh-needed
 state, even if you don't plan on doing any rendering.  You may relieve
 yourself of even this burden by setting the WFLG_NOCAREREFRESH flag
 when opening your window.
 
 WARNING: You should only perform graphics refreshing operations
-during the period between calling BeginRefresh() and [EndRefresh](EndRefresh).
-In particular, do not call [RefreshGadgets](RefreshGadgets) or [RefreshGList](RefreshGList), since
+during the period between calling BeginRefresh() and [EndRefresh](EndRefresh.md).
+In particular, do not call [RefreshGadgets](RefreshGadgets.md) or [RefreshGList](RefreshGList.md), since
 the locking protocol internal to Intuition runs the risk of creating
 a deadlock.  Note that Intuition refreshes the gadgets (through
 the damage region) before it sends the IDCMP_REFRESHWINDOW message.
@@ -68,19 +68,19 @@ will dispose of all damage, including the new, and your
 initial refreshing pass will never get the chance to refresh
 the new damage.
 
-To avoid this, you must protect your session using [LockLayerInfo](_039C)
+To avoid this, you must protect your session using [LockLayerInfo](_039C.md)
 which will prevent Intuition from performing window operations
 or anything else which might cause further damage from occurring.
 Again, while holding the LayerInfo lock make no Intuition
 function calls dealing with gadgets; just render.
 
-You can, however, call [InstallClipRegion](_0399) for the different
+You can, however, call [InstallClipRegion](_0399.md) for the different
 refresh passes, if you have two clip regions.
 
 SIMILAR WARNING: Your program and Intuition &#034;share&#034; your window
 layer's DamageList.  BeginRefresh() helps arbitrate this
-sharing, but the lower-level function [layers.library/BeginUpdate](../layers/BeginUpdate)
-does not.  It isn't really supported to use [BeginUpdate](_038E) on
+sharing, but the lower-level function [layers.library/BeginUpdate](../layers/BeginUpdate.md)
+does not.  It isn't really supported to use [BeginUpdate](_038E.md) on
 a window's layer, but if you do--for whatever reason--it is
 critical that you first acquire the LayerInfo lock as in
 the above example: even if you only have one pass of refresh
@@ -123,17 +123,17 @@ break;
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the window structure which needs refreshing
+[Window](_00D4.md) = pointer to the window structure which needs refreshing
 
 RESULT
 None
 
 BUGS
 This function should check the return code of
-[layers.library/BeginUpdate](../layers/BeginUpdate), and abort if that function fails.
+[layers.library/BeginUpdate](../layers/BeginUpdate.md), and abort if that function fails.
 
 **SEE ALSO**
 
-[EndRefresh](EndRefresh), [layers.library/BeginUpdate](../layers/BeginUpdate), [OpenWindow](OpenWindow)
-[layer.library/InstallClipRegion](../layer/InstallClipRegion), [graphics.library/LockLayerInfo](../graphics/LockLayerInfo)
+[EndRefresh](EndRefresh.md), [layers.library/BeginUpdate](../layers/BeginUpdate.md), [OpenWindow](OpenWindow.md)
+[layer.library/InstallClipRegion](../layer/InstallClipRegion.md), [graphics.library/LockLayerInfo](../graphics/LockLayerInfo.md)
 The &#034;Windows&#034; chapter of the Intuition Reference Manual

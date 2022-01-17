@@ -12,7 +12,7 @@ ShowTitle -- Set the screen title bar display mode.
     VOID ShowTitle( struct Screen *, BOOL );
 
 ```
-Links: [Screen](_00DD) [Screen](_00DD) 
+Links: [Screen](_00DD.md) [Screen](_00DD.md) 
 
 **FUNCTION**
 
@@ -36,7 +36,7 @@ flag is TRUE.
 
 **INPUTS**
 
-[Screen](_00DD) = pointer to a [Screen](_00DD) structure
+[Screen](_00DD.md) = pointer to a [Screen](_00DD.md) structure
 ShowIt = Boolean TRUE or FALSE describing whether to show or hide the
 screen title bar
 

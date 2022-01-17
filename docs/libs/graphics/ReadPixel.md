@@ -2,7 +2,7 @@
 **NAME**
 
 ReadPixel -- read the pen number value of the pixel at a
-specified x,y location within a certain [RastPort](_00AF).
+specified x,y location within a certain [RastPort](_00AF.md).
 
 **SYNOPSIS**
 
@@ -13,19 +13,19 @@ specified x,y location within a certain [RastPort](_00AF).
     LONG ReadPixel( struct RastPort *, SHORT, SHORT );
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
 Combine the bits from each of the bit-planes used to describe
-a particular [RastPort](_00AF) into the pen number selector which that
+a particular [RastPort](_00AF.md) into the pen number selector which that
 bit combination normally forms for the system hardware selection
 of pixel color.
 
 **INPUTS**
 
-rp -  pointer to a [RastPort](_00AF) structure
-(x,y) a point in the [RastPort](_00AF)
+rp -  pointer to a [RastPort](_00AF.md) structure
+(x,y) a point in the [RastPort](_00AF.md)
 
 RESULT
 penno - the pen number of the pixel at (x,y) is returned.
@@ -35,4 +35,4 @@ BUGS
 
 **SEE ALSO**
 
-[WritePixel](WritePixel)    [graphics/rastport.h](_00AF)
+[WritePixel](WritePixel.md)    [graphics/rastport.h](_00AF.md)

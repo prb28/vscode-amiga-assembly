@@ -31,4 +31,4 @@ BUGS
 
 **SEE ALSO**
 
-[FreeRaster](FreeRaster) [graphics/gfx.h](_00A6)
+[FreeRaster](FreeRaster.md) [graphics/gfx.h](_00A6.md)

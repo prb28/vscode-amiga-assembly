@@ -12,28 +12,28 @@ OpenWindow -- Open an Intuition window.
     struct Window *OpenWindow( struct NewWindow * );
 
 ```
-Links: [Window](_00D4) [NewWindow](_00D4) [Window](_00D4) [NewWindow](_00D4) 
+Links: [Window](_00D4.md) [NewWindow](_00D4.md) [Window](_00D4.md) [NewWindow](_00D4.md) 
 
 **FUNCTION**
 
 Opens an Intuition window of the given dimensions and position,
-with the properties specified in the [NewWindow](_00D4) structure.
+with the properties specified in the [NewWindow](_00D4.md) structure.
 Allocates everything you need to get going.
 
 New for V36: there is an extensive discussion of public Screens
 and visitor windows at the end of this section.  Also,
-you can provide extensions to the [NewWindow](_00D4) parameters using
-and array of [TagItem](_012E) structures.  See the discussion below,
-and the documentation for the function [OpenScreenTagList](OpenScreenTagList).
+you can provide extensions to the [NewWindow](_00D4.md) parameters using
+and array of [TagItem](_012E.md) structures.  See the discussion below,
+and the documentation for the function [OpenScreenTagList](OpenScreenTagList.md).
 
 Before you call OpenWindow(), you must initialize an instance of
-a [NewWindow](_00D4) structure.  [NewWindow](_00D4) is a structure that contains
-all of the arguments needed to open a window.  The [NewWindow](_00D4)
+a [NewWindow](_00D4.md) structure.  [NewWindow](_00D4.md) is a structure that contains
+all of the arguments needed to open a window.  The [NewWindow](_00D4.md)
 structure may be discarded immediately after it is used to open
 the window.
 
 If Type == CUSTOMSCREEN, you must have opened your own screen
-already via a call to [OpenScreen](OpenScreen).  Then Intuition uses your screen
+already via a call to [OpenScreen](OpenScreen.md).  Then Intuition uses your screen
 argument for the pertinent information needed to get your window
 going.  On the other hand, if type == one of the Intuition's standard
 screens, your screen argument is ignored.  Instead,
@@ -45,21 +45,21 @@ New for V36: If you specify Type == WBENCHSCREEN, then your
 window will appear on the Workbench screen, unless the global
 public screen mode SHANGHAI is set, in which case your window
 will be &#034;hijacked&#034; to the default public screen.  See also
-[SetPubScreenModes](SetPubScreenModes).
+[SetPubScreenModes](SetPubScreenModes.md).
 
 New for V36: If the WFLG_NW_EXTENDED flag is set, it means that the
 field 'ExtNewWindow-&#062;Extension' points to an array of TagItems, as
 defined in intuition/tagitem.h.  This provides an extensible means
 of providing extra parameters to OpenWindow.  For compatibility
-reasons, we could not add the 'Extension' field to the [NewWindow](_00D4)
-structure, so we have define a new structure [ExtNewWindow](_00D4), which
-is identical to [NewWindow](_00D4) with the addition of the Extension field.
+reasons, we could not add the 'Extension' field to the [NewWindow](_00D4.md)
+structure, so we have define a new structure [ExtNewWindow](_00D4.md), which
+is identical to [NewWindow](_00D4.md) with the addition of the Extension field.
 
 We recommend that rather than using ExtNewWindow.Extension, you
-use the new Intuition function [OpenWindowTagList](OpenWindowTagList) and its
+use the new Intuition function [OpenWindowTagList](OpenWindowTagList.md) and its
 varargs equivalent OpenWindowTags().  We document the window
 attribute tag ID's (ti_Tag values) here, rather than in
-[OpenWindowTagList](OpenWindowTagList), so that you can find all the parameters
+[OpenWindowTagList](OpenWindowTagList.md), so that you can find all the parameters
 for a new window defined in one place.
 
 If the WFLG_SUPER_BITMAP flag is set, the bitmap variable must point
@@ -77,7 +77,7 @@ opens on a &#034;full-blown new look screen.&#034;
 
 **INPUTS**
 
-[NewWindow](_00D4) = pointer to an instance of a [NewWindow](_00D4) structure.  That
+[NewWindow](_00D4.md) = pointer to an instance of a [NewWindow](_00D4.md) structure.  That
 structure is initialized with the following data:
 -------------------------------------------------------------------------
 Left = the initial x-position for your window
@@ -140,7 +140,7 @@ as well.
 mouse movement events whenever your window is the active
 one.  After you've opened your window, if you want to change
 you can later change the status of this via a call to
-[ReportMouse](ReportMouse).  Whether or not your window is listening to
+[ReportMouse](ReportMouse.md).  Whether or not your window is listening to
 mouse is affected by gadgets too, since they can cause you
 to start getting reports too if you like.  The mouse move
 reports (either InputEvents or messages on the IDCMP) that
@@ -195,18 +195,18 @@ to be trapped and broadcast as events.  You can receive
 these events through either the IDCMP or the console.
 
 - WFLG_NOCAREREFRESH indicates that you do not wish to
-be responsible for calling [BeginRefresh](BeginRefresh) and [EndRefresh](EndRefresh)
+be responsible for calling [BeginRefresh](BeginRefresh.md) and [EndRefresh](EndRefresh.md)
 when your window has exposed regions (i.e., when the
 IDCMP_REFRESHWINDOW message would be generated).  See also
 the descriptions of these two functions.
 
-- WFLG_NW_EXTENDED (V36) indicates that [NewWindow](_00D4) in fact points
-to an [ExtNewWindow](_00D4) structure, and that the 'Extension'
-field points to an array of [TagItem](_012E) structures, with
+- WFLG_NW_EXTENDED (V36) indicates that [NewWindow](_00D4.md) in fact points
+to an [ExtNewWindow](_00D4.md) structure, and that the 'Extension'
+field points to an array of [TagItem](_012E.md) structures, with
 meaning described below.
 
 IDCMPFlags = IDCMP is the acronym for Intuition Direct Communications
-[Message](_0099) Port.  (It's Intuition's sole acronym.) If any of the
+[Message](_0099.md) Port.  (It's Intuition's sole acronym.) If any of the
 IDCMP Flags is selected, Intuition will create a pair of
 message ports and use them for direct communications with the
 task opening this window (as compared with broadcasting
@@ -235,7 +235,7 @@ The IDCMP flags you can set are:
 want to make sure that your graphical state is quiescent
 before something extraordinary happens.  In this case, the
 extraordinary event is that a rectangle of graphical data is
-about to be blasted into your [Window](_00D4).  If you're drawing
+about to be blasted into your [Window](_00D4.md).  If you're drawing
 directly into its screen, you probably will wish to make sure
 that you've ceased drawing before the user is allowed to bring
 up the DMRequest you've set up, and the same for when system
@@ -270,13 +270,13 @@ window.  If the user wants to resize the window,  you may want
 to make sure that any queued output completes before the sizing
 takes place (critical text, for instance).  If this is the
 case, set this flag.   Then, when the user wants to size,
-Intuition will send you the IDCMP_SIZEVERIFY message and [Wait](../exec/Wait)
+Intuition will send you the IDCMP_SIZEVERIFY message and [Wait](../exec/Wait.md)
 until you reply that it's OK to proceed with the sizing. NOTE:
-when we say that Intuition will [Wait](../exec/Wait) until you reply, what
+when we say that Intuition will [Wait](../exec/Wait.md) until you reply, what
 we're really saying is that user will WAIT until you reply, which
 suffers the great negative potential of User-Unfriendliness.
 So remember:  use this flag sparingly, and, as always with any
-IDCMP [Message](_0099) you receive, reply to it promptly!  Then, after
+IDCMP [Message](_0099.md) you receive, reply to it promptly!  Then, after
 user has sized the window, you can find out about it using
 IDCMP_NEWSIZE.
 
@@ -289,7 +289,7 @@ a &#034;VERIFY&#034; function is active.  If AmigaDOS needs to put up a
 disk requester for you, your task might end up waiting for the
 requester to be satisfied, at the same time as Intuition is
 waiting for your response.  The result is a complete machine
-lockup.  USE [ModifyIDCMP](ModifyIDCMP) TO TURN OFF ANY VERIFY MESSAGES
+lockup.  USE [ModifyIDCMP](ModifyIDCMP.md) TO TURN OFF ANY VERIFY MESSAGES
 BEFORE CALLING dos.library!!
 
 For V36: If you do not respond to the verification IntuiMessages
@@ -381,8 +381,8 @@ x/y values in the MouseX and MouseY fields of the
 IDCMPMessage.
 
 - IDCMP_NEWPREFS indicates you wish to be notified when the
-system-wide [Preferences](_00D5) changes.  For V36, there is a new
-environment mechanism to replace [Preferences](_00D5), which we
+system-wide [Preferences](_00D5.md) changes.  For V36, there is a new
+environment mechanism to replace [Preferences](_00D5.md), which we
 recommend you consider using instead.
 
 - Set IDCMP_ACTIVEWINDOW and IDCMP_INACTIVEWINDOW to get messages
@@ -401,8 +401,8 @@ to your application.
 
 - IDCMP_CHANGEWINDOW is a new class for V36 that will be sent
 to your window whenever its dimensions or position are changed
-by the user or the functions [SizeWindow](SizeWindow), [MoveWindow](MoveWindow),
-[ChangeWindowBox](ChangeWindowBox), or [ZipWindow](ZipWindow).
+by the user or the functions [SizeWindow](SizeWindow.md), [MoveWindow](MoveWindow.md),
+[ChangeWindowBox](ChangeWindowBox.md), or [ZipWindow](ZipWindow.md).
 
 - IDCMP_MENUHELP is new for V37.  If you specify the WA_MenuHelp
 tag when you open your window, then when the user presses the
@@ -425,10 +425,10 @@ get a MENUHELP.
 controllable.  We apologize...
 
 Gadgets = the pointer to the first of a linked list of the your own
-Gadgets which you want attached to this [Window](_00D4).  Can be NULL
+Gadgets which you want attached to this [Window](_00D4.md).  Can be NULL
 if you have no Gadgets of your own
 
-CheckMark = a pointer to an instance of the struct [Image](_00D4) where can
+CheckMark = a pointer to an instance of the struct [Image](_00D4.md) where can
 be found the imagery you want used when any of your
 menu items is to be checkmarked.  If you don't want to
 supply your own imagery and you want to just use
@@ -444,11 +444,11 @@ Types available include:
 - CUSTOMSCREEN
 - PUBLICSCREEN (new for V36, see text below)
 
-[Screen](_00DD) = if your type is one of Intuition's standard screens, then
+[Screen](_00DD.md) = if your type is one of Intuition's standard screens, then
 this argument is ignored.  However, if Type == CUSTOMSCREEN,
 this must point to the structure of your own screen
 
-[BitMap](_00A6) = if you have specified WFLG_SUPER_BITMAP as the type of
+[BitMap](_00A6.md) = if you have specified WFLG_SUPER_BITMAP as the type of
 refreshing you want for this window, then this value points to a
 instance of the struct bitmap.  However, if the refresh type
 is NOT WFLG_SUPER_BITMAP, this pointer is ignored.
@@ -460,7 +460,7 @@ the maximums be smaller than the current size.  If they are,
 they're ignored.  Any one of these can be initialized to zero,
 which means that that limit will be set to the current
 dimension of that axis.  The limits can be changed after the
-[Window](_00D4) is opened by calling the [WindowLimits](WindowLimits) routine.
+[Window](_00D4.md) is opened by calling the [WindowLimits](WindowLimits.md) routine.
 
 NOTE: ORIGINALLY, we stated that:
 
@@ -468,7 +468,7 @@ NOTE: ORIGINALLY, we stated that:
 variables are ignored so you don't have to initialize them.&#034;
 
 It is now clear that a variety of programs take it upon
-themselves to call [SizeWindow](SizeWindow) (or [ChangeWindowBox](ChangeWindowBox)) without
+themselves to call [SizeWindow](SizeWindow.md) (or [ChangeWindowBox](ChangeWindowBox.md)) without
 your program's consent or consulting your WFLG_SIZEGADGE
 option.  To protect yourself against the results, we strongly
 urge that if you supply suitable values for these fields even
@@ -482,22 +482,22 @@ your software.  If there is no good reason to limit the size,
 then don't.  -1 or ~0 indicates that the maximum size is only
 limited by the size of the window's screen.
 
-See also the docs on the function [WindowLimits](WindowLimits) for more
+See also the docs on the function [WindowLimits](WindowLimits.md) for more
 information.
 
 Extension (New for V36) = a pointer to an array (or chain of arrays)
 of TagItems to specify additional parameters to OpenWindow().
-TagItems in general are described in [utility/tagitem.h](_012E),
-and the OpenWindow tags are defined in [intuition/intuition.h](_00D4)
+TagItems in general are described in [utility/tagitem.h](_012E.md),
+and the OpenWindow tags are defined in [intuition/intuition.h](_00D4.md)
 and described here.  For items pertaining to Public Screens
 and visitor windows, please see below.
 
 Here are the TagItem.ti_Tag values that are defined for OpenWindow
-(and [OpenWindowTagList](OpenWindowTagList)).
+(and [OpenWindowTagList](OpenWindowTagList.md)).
 
-Certain tags simply override equivalent values in [NewWindow](_00D4),
-and allow you to open a window using [OpenWindowTagList](OpenWindowTagList) without
-having a [NewWindow](_00D4) structure at all.  In each case, cast
+Certain tags simply override equivalent values in [NewWindow](_00D4.md),
+and allow you to open a window using [OpenWindowTagList](OpenWindowTagList.md) without
+having a [NewWindow](_00D4.md) structure at all.  In each case, cast
 the corresponding data to ULONG and put it in ti_Data.
 
 The compatible tag items include:
@@ -545,7 +545,7 @@ WA_GimmeZeroZero        - equivalent to WFLG_GIMMEZEROZERO
 The following tag items specify new attributes of a window.
 
 WA_ScreenTitle - You can specify the screen title associated
-with your window this way, and avoid a call to [SetWindowTitles](SetWindowTitles)
+with your window this way, and avoid a call to [SetWindowTitles](SetWindowTitles.md)
 when your window opens.
 
 WA_AutoAdjust - a Boolean attribute which says that it's OK
@@ -557,8 +557,8 @@ currently visible portion of the screen the window
 will be opening on, so don't draw too many conclusions
 about the auto-adjust algorithms.
 (Normally, this attribute defaults to FALSE.  However,
-if you call OpenWindowTags() or [OpenWindowTagList](OpenWindowTagList)
-with a NULL [NewWindow](_00D4) pointer, this attribute defaults
+if you call OpenWindowTags() or [OpenWindowTagList](OpenWindowTagList.md)
+with a NULL [NewWindow](_00D4.md) pointer, this attribute defaults
 to TRUE).
 
 WA_InnerWidth
@@ -590,13 +590,13 @@ to open as a visitor window on the public screen whose name
 is pointed to by (UBYTE *) ti_Data.
 
 WA_PubScreen - Open as a visitor window on the public screen
-whose address if provided as (struct [Screen](_00DD) *) ti_Data.
+whose address if provided as (struct [Screen](_00DD.md) *) ti_Data.
 To ensure that this screen remains open long enough, you
 must either:
 1) Be the screen's owner
 2) have another window already open on the screen
-3) use [LockPubScreen](LockPubScreen)
-Using [exec.library/Forbid](../exec/Forbid) is not sufficient.
+3) use [LockPubScreen](LockPubScreen.md)
+Using [exec.library/Forbid](../exec/Forbid.md) is not sufficient.
 
 You can provide ti_Data to be NULL (zero), without any
 of the above precautions, to specify the default public screen.
@@ -621,7 +621,7 @@ might not have a sizing gadget.
 WA_MouseQueue - This tag specifies a limit for the number
 of outstanding IDCMP_MOUSEMOVE IntuiMessages that Intuition
 will send to your window.  You can change the value of this
-limit after the window is open using [SetMouseQueue](SetMouseQueue).
+limit after the window is open using [SetMouseQueue](SetMouseQueue.md).
 
 WA_RptQueue - This tag specifies a limit for the number of
 outstanding repeated-IDCMP_RAWKEY, repeated-IDCMP_VANILLAKEY,
@@ -629,9 +629,9 @@ and repeated-IDCMP_IDCMPUPDATE IntuiMessages that Intuition will
 send to your window.  Currently, there is no function to adjust
 the repeat-key queue.
 
-WA_BackFill - ti_Data is a pointer to a [Hook](_012D) structure that
+WA_BackFill - ti_Data is a pointer to a [Hook](_012D.md) structure that
 the Layers library will call when your window needs
-&#034;backfilling.&#034;  See [layers.library/InstallLayerHook](../layers/InstallLayerHook).
+&#034;backfilling.&#034;  See [layers.library/InstallLayerHook](../layers/InstallLayerHook.md).
 
 WA_MenuHelp - ti_Data is a boolean.  If true, enables the MenuHelp
 feature for this window.  See IDCMP_MENUHELP above.  (Ignored
@@ -640,7 +640,7 @@ in V36 and earlier).
 NOTES
 Regarding Public Screens, you can specify a window to be a
 &#034;visitor window&#034; on a public screen in one of several ways.
-In each case, you must be sure not to specify a [NewWindow](_00D4)
+In each case, you must be sure not to specify a [NewWindow](_00D4.md)
 type of CUSTOMSCREEN.  You should use the value PUBLICSCREEN.
 
 There are actually several ways you can specify which screen
@@ -670,7 +670,7 @@ public screen.  You may ensure this several ways:
 
 - Be the owner of the screen.
 - Have a window already open on the screen.
-- Use [LockPubScreen](LockPubScreen) to prevent the screen from closing.
+- Use [LockPubScreen](LockPubScreen.md) to prevent the screen from closing.
 - specifying the WFLG_VISITOR bit in NewWindow.Flags is not
 supported.
 
@@ -680,13 +680,13 @@ properties of the screen your window will be using in order
 to compensate for differences in dimension, depth, and font.
 
 The standard sequence for this method is as follows:
-[LockPubScreen](LockPubScreen) - obtain a pointer and a promise
+[LockPubScreen](LockPubScreen.md) - obtain a pointer and a promise
 layout window       - adapt your window to the screen you will use
 OpenWindow()        - using the pointer you specify
-[UnlockPubScreen](UnlockPubScreen)     - once your window is open, you can let go
+[UnlockPubScreen](UnlockPubScreen.md)     - once your window is open, you can let go
 of the lock on the public screen
 ... normal window even processing ...
-[CloseWindow](CloseWindow).
+[CloseWindow](CloseWindow.md).
 
 Regarding &#034;service&#034; windows, such as those opened for a system
 requester or file requester associated with a given &#034;client&#034;window.
@@ -711,7 +711,7 @@ screen (probably Workbench).  The correct way to get a pointer
 to this screen is to call LockPubScreen( NULL ).  In this
 case, you want to open as a visitor window, which means you
 should use either PUBLICSCREEN or WA_PubScreen, described above.
-You should call [UnlockPubScreen](UnlockPubScreen) after your visitor window is open.
+You should call [UnlockPubScreen](UnlockPubScreen.md) after your visitor window is open.
 
 As of V36, gadgets in the right and bottom border
 (specified with GACT_RIGHTBORDER and GACT_BOTTOMBORDER) only
@@ -719,21 +719,21 @@ contribute to the dimensions of the borders if they are also
 GFLG_RELRIGHT and GFLG_RELBOTTOM, respectively.
 
 RESULT
-If all is well, returns the pointer to your new [Window](_00D4)
+If all is well, returns the pointer to your new [Window](_00D4.md)
 If anything goes wrong, returns NULL
 
 BUGS
 When you open a window, Intuition will set the font of
-the window's [RastPort](_00AF) to the font of the window's screen.
+the window's [RastPort](_00AF.md) to the font of the window's screen.
 This does not work right for GimmeZeroZero windows: the
-BorderRPort [RastPort](_00AF) has the font set correctly, but
+BorderRPort [RastPort](_00AF.md) has the font set correctly, but
 Window.RPort is set up with the system default font.
 For compatibility reasons, we won't be fixing this problem.
 
 Also, there is a compatibility trick going on with the
-default font of your window's [RastPort](_00AF) if the screen's
+default font of your window's [RastPort](_00AF.md) if the screen's
 font is &#034;fancy.&#034;  See the SA_SysFont attribute described
-under [OpenScreen](OpenScreen).
+under [OpenScreen](OpenScreen.md).
 
 Unless you arrange otherwise, each window you open will allocate
 a signal for your task from the 16 &#034;user signals.&#034;
@@ -743,6 +743,6 @@ check this condition, but just left you with an unusable port.
 
 **SEE ALSO**
 
-[OpenWindowTagList](OpenWindowTagList), [OpenScreen](OpenScreen), [ModifyIDCMP](ModifyIDCMP), [SetWindowTitles](SetWindowTitles),
-[LockPubScreen](LockPubScreen), [SetDefaultPubScreen](SetDefaultPubScreen), [ZipWindow](ZipWindow),
-[layers.library/InstallLayerHook](../layers/InstallLayerHook), [SetPubScreenModes](SetPubScreenModes)
+[OpenWindowTagList](OpenWindowTagList.md), [OpenScreen](OpenScreen.md), [ModifyIDCMP](ModifyIDCMP.md), [SetWindowTitles](SetWindowTitles.md),
+[LockPubScreen](LockPubScreen.md), [SetDefaultPubScreen](SetDefaultPubScreen.md), [ZipWindow](ZipWindow.md),
+[layers.library/InstallLayerHook](../layers/InstallLayerHook.md), [SetPubScreenModes](SetPubScreenModes.md)

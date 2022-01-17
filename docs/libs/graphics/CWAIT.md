@@ -16,7 +16,7 @@ CWAIT -- Append copper wait instruction to user copper list.
     void CWait( struct UCopList *, WORD, WORD)
 
 ```
-Links: [UCopList](_00AD) 
+Links: [UCopList](_00AD.md) 
 
 **FUNCTION**
 
@@ -25,7 +25,7 @@ horizontal position h to this intermediate copper list.
 
 **INPUTS**
 
-c - pointer to [UCopList](_00AD) structure
+c - pointer to [UCopList](_00AD.md) structure
 v - vertical beam position (relative to top of viewport)
 h - horizontal beam position
 
@@ -41,4 +41,4 @@ is illegal.
 
 **SEE ALSO**
 
-[CINIT](CINIT) [CMOVE](CMOVE) [CEND](CEND) [graphics/copper.h](_00AD)
+[CINIT](CINIT.md) [CMOVE](CMOVE.md) [CEND](CEND.md) [graphics/copper.h](_00AD.md)

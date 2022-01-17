@@ -12,7 +12,7 @@ LockDosList -- Locks the specified Dos Lists for use (V36)
     struct DosList *LockDosList(ULONG)
 
 ```
-Links: [DosList](_0078) 
+Links: [DosList](_0078.md) 
 
 **FUNCTION**
 
@@ -21,17 +21,17 @@ If the list is 'busy' then this routine will not return until it is
 available.  This routine &#034;nests&#034;: you can call it multiple times, and
 then must unlock it the same number of times.  The dlist
 returned is NOT a valid entry: it is a special value.  Note that
-for 1.3 compatibility, it also does a [Forbid](../exec/Forbid) - this will probably
-be removed at some future time.  The 1.3 [Forbid](../exec/Forbid) locking of this
+for 1.3 compatibility, it also does a [Forbid](../exec/Forbid.md) - this will probably
+be removed at some future time.  The 1.3 [Forbid](../exec/Forbid.md) locking of this
 list had some race conditions.  The pointer returned by this is NOT
-an actual [DosList](_0078) pointer - you should use on of the other DosEntry
-calls to get actual pointers to [DosList](_0078) structures (such as
-[NextDosEntry](NextDosEntry)), passing the value returned by LockDosList()
+an actual [DosList](_0078.md) pointer - you should use on of the other DosEntry
+calls to get actual pointers to [DosList](_0078.md) structures (such as
+[NextDosEntry](NextDosEntry.md)), passing the value returned by LockDosList()
 as the dlist value.
 
 Note for handler writers: you should never call this function with
 LDF_WRITE, since it can deadlock you (if someone has it read-locked
-and they're trying to send you a packet).  Use [AttemptLockDosList](AttemptLockDosList)
+and they're trying to send you a packet).  Use [AttemptLockDosList](AttemptLockDosList.md)
 instead, and effectively busy-wait with delays for the list to be
 available.  The other option is that you can spawn a process to
 add the entry safely.
@@ -87,8 +87,8 @@ Permit();
 /* must not use dl after this! */
 ...
 
-struct [DosList](_0078) *
-yourfindentry (struct [DosList](_0078) *dl, STRPTRname, type)
+struct [DosList](_0078.md) *
+yourfindentry (struct [DosList](_0078.md) *dl, STRPTRname, type)
 {
 /* tricky - depends on dol_Next being at offset 0,
 and the initial ptr being a ptr to di_DeviceList! */
@@ -112,4 +112,4 @@ dlist - Pointer to the head of the list.  NOT a valid node!
 
 **SEE ALSO**
 
-[AttemptLockDosList](AttemptLockDosList), [UnLockDosList](UnLockDosList), [Forbid](../exec/Forbid), [NextDosEntry](NextDosEntry)
+[AttemptLockDosList](AttemptLockDosList.md), [UnLockDosList](UnLockDosList.md), [Forbid](../exec/Forbid.md), [NextDosEntry](NextDosEntry.md)

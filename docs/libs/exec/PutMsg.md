@@ -12,7 +12,7 @@ PutMsg -- put a message to a message port
     void PutMsg(struct MsgPort *, struct Message *);
 
 ```
-Links: [MsgPort](_0099) [Message](_0099) 
+Links: [MsgPort](_0099.md) [Message](_0099.md) 
 
 **FUNCTION**
 
@@ -49,4 +49,4 @@ message - pointer to a message
 
 **SEE ALSO**
 
-[GetMsg](GetMsg), [ReplyMsg](ReplyMsg), [exec/ports.h](_0099)
+[GetMsg](GetMsg.md), [ReplyMsg](ReplyMsg.md), [exec/ports.h](_0099.md)

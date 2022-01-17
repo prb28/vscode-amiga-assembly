@@ -42,4 +42,4 @@ this, allowing filename to be any path, including absolute.
 
 **SEE ALSO**
 
-Filepart(), [PathPart](PathPart)
+Filepart(), [PathPart](PathPart.md)

@@ -1,7 +1,7 @@
 
 **NAME**
 
-ReleaseGIRPort -- Release a custom gadget [RastPort](_00AF). (V36)
+ReleaseGIRPort -- Release a custom gadget [RastPort](_00AF.md). (V36)
 
 **SYNOPSIS**
 
@@ -12,16 +12,16 @@ ReleaseGIRPort -- Release a custom gadget [RastPort](_00AF). (V36)
     VOID ReleaseGIRPort( struct RastPort * );
 
 ```
-Links: [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) 
 
 **FUNCTION**
 
-The corresponding function to [ObtainGIRPort](ObtainGIRPort), it releases
+The corresponding function to [ObtainGIRPort](ObtainGIRPort.md), it releases
 arbitration used by Intuition for gadget RastPorts.
 
 **INPUTS**
 
-Pointer to the [RastPort](_00AF) returned by [ObtainGIRPort](ObtainGIRPort).
+Pointer to the [RastPort](_00AF.md) returned by [ObtainGIRPort](ObtainGIRPort.md).
 This pointer can be NULL, in which case nothing happens.
 
 RESULT
@@ -31,4 +31,4 @@ BUGS
 
 **SEE ALSO**
 
-[ObtainGIRPort](ObtainGIRPort), [Custom](_00CD) [Gadget](_00D4) documentation
+[ObtainGIRPort](ObtainGIRPort.md), [Custom](_00CD.md) [Gadget](_00D4.md) documentation

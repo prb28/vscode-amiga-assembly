@@ -12,7 +12,7 @@ SetFileDate -- Sets the modification date for a file or dir (V36)
     BOOL SetFileDate(STRPTR, struct DateStamp *)
 
 ```
-Links: [DateStamp](_0068) 
+Links: [DateStamp](_0068.md) 
 
 **FUNCTION**
 
@@ -31,4 +31,4 @@ success - Success/failure indication
 
 **SEE ALSO**
 
-[DateStamp](DateStamp), [Examine](Examine), [ExNext](ExNext), [ExAll](ExAll)
+[DateStamp](DateStamp.md), [Examine](Examine.md), [ExNext](ExNext.md), [ExAll](ExAll.md)

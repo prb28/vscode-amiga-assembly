@@ -1,7 +1,7 @@
 
 **NAME**
 
-EraseImage -- Erases an [Image](_00D4). (V36)
+EraseImage -- Erases an [Image](_00D4.md). (V36)
 
 **SYNOPSIS**
 
@@ -12,22 +12,22 @@ EraseImage -- Erases an [Image](_00D4). (V36)
     VOID EraseImage( struct RastPort *, struct Image *, WORD, WORD );
 
 ```
-Links: [Image](_00D4) [RastPort](_00AF) [Image](_00D4) 
+Links: [Image](_00D4.md) [RastPort](_00AF.md) [Image](_00D4.md) 
 
 **FUNCTION**
 
-Erases an [Image](_00D4).  For a normal [Image](_00D4) structure, this will
-call the graphics function [EraseRect](../graphics/EraseRect) (clear using layer
-backfill, if any) for the [Image](_00D4) box (LeftEdge/TopEdge/Width/Height).
+Erases an [Image](_00D4.md).  For a normal [Image](_00D4.md) structure, this will
+call the graphics function [EraseRect](../graphics/EraseRect.md) (clear using layer
+backfill, if any) for the [Image](_00D4.md) box (LeftEdge/TopEdge/Width/Height).
 
 For custom image, the exact behavior is determined by the
 custom image class.
 
 **INPUTS**
 
-RPort   - [RastPort](_00AF) to erase a part of
-[Image](_00D4)   - custom or standard image
-LeftOffset,RightOffset - pixel offsets of [Image](_00D4) position
+RPort   - [RastPort](_00AF.md) to erase a part of
+[Image](_00D4.md)   - custom or standard image
+LeftOffset,RightOffset - pixel offsets of [Image](_00D4.md) position
 
 RESULT
 None.
@@ -40,4 +40,4 @@ BUGS
 
 **SEE ALSO**
 
-[graphics.library/EraseRect](../graphics/EraseRect).
+[graphics.library/EraseRect](../graphics/EraseRect.md).

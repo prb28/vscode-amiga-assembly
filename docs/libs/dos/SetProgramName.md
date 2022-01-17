@@ -32,4 +32,4 @@ This clips to a fixed (1.3 compatible) size.
 
 **SEE ALSO**
 
-[GetProgramName](GetProgramName)
+[GetProgramName](GetProgramName.md)

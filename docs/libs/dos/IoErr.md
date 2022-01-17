@@ -28,4 +28,4 @@ error - integer
 
 **SEE ALSO**
 
-[Fault](Fault), [PrintFault](PrintFault), [SetIoErr](SetIoErr)
+[Fault](Fault.md), [PrintFault](PrintFault.md), [SetIoErr](SetIoErr.md)

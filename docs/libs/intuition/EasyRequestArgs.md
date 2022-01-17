@@ -1,7 +1,7 @@
 
 **NAME**
 
-EasyRequestArgs -- Easy alternative to [AutoRequest](AutoRequest). (V36)
+EasyRequestArgs -- Easy alternative to [AutoRequest](AutoRequest.md). (V36)
 EasyRequest -- Varargs stub for EasyRequestArgs(). (V36)
 
 **SYNOPSIS**
@@ -28,12 +28,12 @@ EasyRequest -- Varargs stub for EasyRequestArgs(). (V36)
     };
 
 ```
-Links: [Window](_00D4) [Window](_00D4) [EasyStruct](_00D4) [Window](_00D4) [Window](_00D4) [EasyStruct](_00D4) [EasyStruct](_00D4) 
+Links: [Window](_00D4.md) [Window](_00D4.md) [EasyStruct](_00D4.md) [Window](_00D4.md) [Window](_00D4.md) [EasyStruct](_00D4.md) [EasyStruct](_00D4.md) 
 
 **FUNCTION**
 
 This function provides a simpler method of using a 'System
-Requester' than provided by [AutoRequest](AutoRequest).  It performs layout
+Requester' than provided by [AutoRequest](AutoRequest.md).  It performs layout
 and size calculations sensitive to the current font and screen
 resolution.
 
@@ -53,9 +53,9 @@ a call to the first function, and might be supplied by your
 compiler vendor, in amiga.lib, or using the first example below,
 for most C compilers.
 
-NOTE: The formatting is done by [exec.library/RawDoFmt](../exec/RawDoFmt), so
+NOTE: The formatting is done by [exec.library/RawDoFmt](../exec/RawDoFmt.md), so
 be aware that to display a 32-bit integer argument, for
-example, you must say &#034;%ld&#034;, not &#034;%d&#034;, since [RawDoFmt](../exec/RawDoFmt) is
+example, you must say &#034;%ld&#034;, not &#034;%d&#034;, since [RawDoFmt](../exec/RawDoFmt.md) is
 &#034;word-oriented.&#034;
 
 NOTE: This function switches the processor stack to ensure
@@ -64,8 +64,8 @@ sufficient stack space for the function to complete.
 EXAMPLES
 /* varargs interface works for most C compilers */
 EasyRequest( w, es, ip, arg1 )
-struct [Window](_00D4)   *w;
-struct [EasyStruct](_00D4) *es;
+struct [Window](_00D4.md)   *w;
+struct [EasyStruct](_00D4.md) *es;
 ULONG             *ip;
 int               arg1;
 {
@@ -75,7 +75,7 @@ return ( EasyRequestArgs( w, es, ip, &#038;arg1 ) );
 /*********************************************/
 
 /* typical use */
-struct [EasyStruct](_00D4) volumeES = {
+struct [EasyStruct](_00D4.md) volumeES = {
 sizeof (struct EasyStruct),
 0,
 &#034;Volume Request&#034;,
@@ -112,13 +112,13 @@ return ( vptr );
 
 **INPUTS**
 
-[Window](_00D4) = Reference window pointer, determines the screen and
+[Window](_00D4.md) = Reference window pointer, determines the screen and
 title of the requester window.  This can be NULL, which
 means the requester is to appear on the Workbench screen,
 or default public screen, if defined.
 IDCMP_ptr = Pointer to IDCMP flags that you want to terminate
 the requester.  This pointer may be NULL.
-easyStruct = Pointer to [EasyStruct](_00D4) structure with fields
+easyStruct = Pointer to [EasyStruct](_00D4.md) structure with fields
 interpreted as follows:
 
 es_StructSize = sizeof (struct EasyStruct), for future extension.
@@ -126,9 +126,9 @@ es_Flags = 0 for now, in the future may specify other options.
 es_Title = Title of system requester window.  If this is NULL,
 the title will be taken to be the same as the title of 'Window',
 if provided, or else &#034;System Request.&#034;
-es_TextFormat = Format string, a la [RawDoFmt](../exec/RawDoFmt), for message in
+es_TextFormat = Format string, a la [RawDoFmt](../exec/RawDoFmt.md), for message in
 requester body.  Lines are separated by 'n'.  Formatting
-'%' functions are supported exactly as in [RawDoFmt](../exec/RawDoFmt).
+'%' functions are supported exactly as in [RawDoFmt](../exec/RawDoFmt.md).
 es_GadgetFormat = Format string for gadgets.  Text for separate
 gadgets is separated by '|'.  Format functions are supported.
 You MUST specify at least one gadget.
@@ -150,7 +150,7 @@ NOTES
 When DOS brings up EasyRequests() on your process (eg.
 &#034;Please insert volume XXX in any drive&#034;, they normally come
 up on the default public screen, which is usually the Workbench
-screen.  If you set your [Process](_0078) pr_WindowPtr field to point to
+screen.  If you set your [Process](_0078.md) pr_WindowPtr field to point to
 one of your windows, then DOS will bring its requesters up on the
 same screen as that window.  A pr_WindowPtr of -1 prevents
 requesters from coming up at all.
@@ -174,5 +174,5 @@ gadget format strings for future use as a line separator.
 
 **SEE ALSO**
 
-[exec.library/RawDoFmt](../exec/RawDoFmt), [BuildEasyRequestArgs](BuildEasyRequestArgs), [SysReqHandler](SysReqHandler),
-[AutoRequest](AutoRequest), [BuildSysRequest](BuildSysRequest)
+[exec.library/RawDoFmt](../exec/RawDoFmt.md), [BuildEasyRequestArgs](BuildEasyRequestArgs.md), [SysReqHandler](SysReqHandler.md),
+[AutoRequest](AutoRequest.md), [BuildSysRequest](BuildSysRequest.md)

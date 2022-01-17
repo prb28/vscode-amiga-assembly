@@ -1,7 +1,7 @@
 
 **NAME**
 
-RemBob -- Macro to remove a [Bob](_00C3) from the gel list.
+RemBob -- Macro to remove a [Bob](_00C3.md) from the gel list.
 
 **SYNOPSIS**
 
@@ -11,20 +11,20 @@ RemBob -- Macro to remove a [Bob](_00C3) from the gel list.
     RemBob(struct Bob *);
 
 ```
-Links: [Bob](_00C3) 
+Links: [Bob](_00C3.md) 
 
 **FUNCTION**
 
-Marks a [Bob](_00C3) as no-longer-required.  The gels internal code then
-removes the [Bob](_00C3) from the list of active gels the next time
-[DrawGList](DrawGList) is executed. This is implemented as a macro.
-If the user is double-buffering the [Bob](_00C3), it could take two
-calls to [DrawGList](DrawGList) before the [Bob](_00C3) actually disappears from
-the [RastPort](_00AF).
+Marks a [Bob](_00C3.md) as no-longer-required.  The gels internal code then
+removes the [Bob](_00C3.md) from the list of active gels the next time
+[DrawGList](DrawGList.md) is executed. This is implemented as a macro.
+If the user is double-buffering the [Bob](_00C3.md), it could take two
+calls to [DrawGList](DrawGList.md) before the [Bob](_00C3.md) actually disappears from
+the [RastPort](_00AF.md).
 
 **INPUTS**
 
-[Bob](_00C3) = pointer to the [Bob](_00C3) to be removed
+[Bob](_00C3.md) = pointer to the [Bob](_00C3.md) to be removed
 
 RESULT
 
@@ -32,4 +32,4 @@ BUGS
 
 **SEE ALSO**
 
-[RemIBob](RemIBob)  [DrawGList](DrawGList)  [graphics/gels.h](_00C3)  [graphics/gfxmacros.h](_00B6)
+[RemIBob](RemIBob.md)  [DrawGList](DrawGList.md)  [graphics/gels.h](_00C3.md)  [graphics/gfxmacros.h](_00B6.md)

@@ -12,7 +12,7 @@ PubScreenStatus -- Change status flags for a public screen. (V36)
     UWORD PubScreenStatus( struct Screen *, UWORD );
 
 ```
-Links: [Screen](_00DD) [Screen](_00DD) 
+Links: [Screen](_00DD.md) [Screen](_00DD.md) 
 
 **FUNCTION**
 
@@ -24,7 +24,7 @@ this function for the Workbench screen.
 
 **INPUTS**
 
-[Screen](_00DD) = pointer to public screen
+[Screen](_00DD.md) = pointer to public screen
 StatusFlags = values currently:
 PSNF_PRIVATE: make this screen unavailable to visitor windows
 
@@ -40,4 +40,4 @@ BUGS
 
 **SEE ALSO**
 
-[OpenScreen](OpenScreen), Intuition V36 update documentation
+[OpenScreen](OpenScreen.md), Intuition V36 update documentation

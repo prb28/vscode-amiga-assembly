@@ -1,7 +1,7 @@
 
 **NAME**
 
-SetIoErr -- Sets the value returned by [IoErr](IoErr) (V36)
+SetIoErr -- Sets the value returned by [IoErr](IoErr.md) (V36)
 
 **SYNOPSIS**
 
@@ -15,15 +15,15 @@ SetIoErr -- Sets the value returned by [IoErr](IoErr) (V36)
 **FUNCTION**
 
 This routine sets up the secondary result (pr_Result2) return code
-(returned by the [IoErr](IoErr) function).
+(returned by the [IoErr](IoErr.md) function).
 
 **INPUTS**
 
-code - Code to be returned by a call to [IoErr](IoErr).
+code - Code to be returned by a call to [IoErr](IoErr.md).
 
 RESULT
 oldcode - The previous error code.
 
 **SEE ALSO**
 
-[IoErr](IoErr), [Fault](Fault), [PrintFault](PrintFault)
+[IoErr](IoErr.md), [Fault](Fault.md), [PrintFault](PrintFault.md)

@@ -12,11 +12,11 @@ AttemptSemaphore -- try to obtain without blocking
     LONG AttemptSemaphore(struct SignalSemaphore *);
 
 ```
-Links: [SignalSemaphore](_0082) 
+Links: [SignalSemaphore](_0082.md) 
 
 **FUNCTION**
 
-This call is similar to [ObtainSemaphore](ObtainSemaphore), except that it will not
+This call is similar to [ObtainSemaphore](ObtainSemaphore.md), except that it will not
 block if the semaphore could not be locked.
 
 INPUT
@@ -31,5 +31,5 @@ This call does NOT preserve registers.
 
 **SEE ALSO**
 
-[ObtainSemaphore](ObtainSemaphore) [ObtainSemaphoreShared](ObtainSemaphoreShared), [ReleaseSemaphore](ReleaseSemaphore),
-[exec/semaphores.h](_0082)
+[ObtainSemaphore](ObtainSemaphore.md) [ObtainSemaphoreShared](ObtainSemaphoreShared.md), [ReleaseSemaphore](ReleaseSemaphore.md),
+[exec/semaphores.h](_0082.md)

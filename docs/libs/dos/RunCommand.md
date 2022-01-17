@@ -21,17 +21,17 @@ program exited with in d0. Returns -1 if the stack couldn't be
 allocated.
 
 NOTE: the argument string MUST be terminated with a newline to work
-properly with [ReadArgs](ReadArgs) and other argument parsers.
+properly with [ReadArgs](ReadArgs.md) and other argument parsers.
 
 RunCommand also takes care of setting up the current input filehandle
-in such a way that [ReadArgs](ReadArgs) can be used in the program, and restores
+in such a way that [ReadArgs](ReadArgs.md) can be used in the program, and restores
 the state of the buffering before returning.  It also sets the value
-returned by [GetArgStr](GetArgStr), and restores it before returning.  NOTE:
+returned by [GetArgStr](GetArgStr.md), and restores it before returning.  NOTE:
 the setting of the argument string in the filehandle was added in V37.
 
 It's usually appropriate to set the command name (via
-[SetProgramName](SetProgramName)) before calling RunCommand().  RunCommand() sets
-the value returned by [GetArgStr](GetArgStr) while the command is running.
+[SetProgramName](SetProgramName.md)) before calling RunCommand().  RunCommand() sets
+the value returned by [GetArgStr](GetArgStr.md) while the command is running.
 
 **INPUTS**
 
@@ -45,5 +45,5 @@ rc        - Return code from executed command. -1 indicates failure
 
 **SEE ALSO**
 
-[CreateNewProc](CreateNewProc), [SystemTagList](SystemTagList), [Execute](Execute), [GetArgStr](GetArgStr),
-[SetProgramName](SetProgramName), [ReadArgs](ReadArgs)
+[CreateNewProc](CreateNewProc.md), [SystemTagList](SystemTagList.md), [Execute](Execute.md), [GetArgStr](GetArgStr.md),
+[SetProgramName](SetProgramName.md), [ReadArgs](ReadArgs.md)

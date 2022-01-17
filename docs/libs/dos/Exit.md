@@ -42,4 +42,4 @@ returnCode - integer
 
 **SEE ALSO**
 
-[CreateProc](CreateProc), [CreateNewProc](CreateNewProc)
+[CreateProc](CreateProc.md), [CreateNewProc](CreateNewProc.md)

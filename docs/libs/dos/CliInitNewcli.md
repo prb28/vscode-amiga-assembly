@@ -12,7 +12,7 @@ CliInitNewcli -- Set up a process to be a shell from initial packet
     LONG CliInitNewcli( struct DosPacket * )
 
 ```
-Links: [DosPacket](_0078) 
+Links: [DosPacket](_0078.md) 
 
 **FUNCTION**
 
@@ -33,22 +33,22 @@ Bit  2     Set if this is a System() call
 Bit  1     Set if user provided input stream
 Bit  0     Set if RUN provided output stream
 
-If Bit 31 is 0, then you must check [IoErr](IoErr) to determine if an error
-occurred.  If [IoErr](IoErr) returns a pointer to your process, there has
+If Bit 31 is 0, then you must check [IoErr](IoErr.md) to determine if an error
+occurred.  If [IoErr](IoErr.md) returns a pointer to your process, there has
 been an error, and you should clean up and exit.  The packet will
 have already been returned by CliInitNewcli().  If it isn't a pointer
 to your process and Bit 31 is 0, reply the packet immediately.
 (Note: this is different from what you do for CliInitRun().)
 
-This function is very similar to [CliInitRun](CliInitRun).
+This function is very similar to [CliInitRun](CliInitRun.md).
 
 **INPUTS**
 
-packet - the initial packet sent to your process [MsgPort](_0099)
+packet - the initial packet sent to your process [MsgPort](_0099.md)
 
 RESULT
 fn - flags or a pointer
 
 **SEE ALSO**
 
-[CliInitRun](CliInitRun), [ReplyPkt](ReplyPkt), [WaitPkt](WaitPkt), [IoErr](IoErr)
+[CliInitRun](CliInitRun.md), [ReplyPkt](ReplyPkt.md), [WaitPkt](WaitPkt.md), [IoErr](IoErr.md)

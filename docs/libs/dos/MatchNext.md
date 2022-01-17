@@ -12,27 +12,27 @@ MatchNext - Finds the next file or directory that matches pattern (V36)
     LONG MatchNext(struct AnchorPath *)
 
 ```
-Links: [AnchorPath](_0070) 
+Links: [AnchorPath](_0070.md) 
 
 **FUNCTION**
 
 Locates the next file or directory that matches a given pattern.
-See [&#060;dos/dosasl.h&#062;](_0070) for more information.  Various bits in the flags
+See [&#060;dos/dosasl.h&#062;](_0070.md) for more information.  Various bits in the flags
 allow the application to control the operation of MatchNext().
 
-See [MatchFirst](MatchFirst) for other notes.
+See [MatchFirst](MatchFirst.md) for other notes.
 
 **INPUTS**
 
-[AnchorPath](_0070) - Place holder for search.  MUST be longword aligned!
+[AnchorPath](_0070.md) - Place holder for search.  MUST be longword aligned!
 
 RESULT
 error - 0 for success or error code.  (Opposite of most Dos calls)
 
 BUGS
-See [MatchFirst](MatchFirst).
+See [MatchFirst](MatchFirst.md).
 
 **SEE ALSO**
 
-[MatchFirst](MatchFirst), [ParsePattern](ParsePattern), [Examine](Examine), [CurrentDir](CurrentDir), [Examine](Examine),
-[MatchEnd](MatchEnd), [ExNext](ExNext), [&#060;dos/dosasl.h&#062;](_0070)
+[MatchFirst](MatchFirst.md), [ParsePattern](ParsePattern.md), [Examine](Examine.md), [CurrentDir](CurrentDir.md), [Examine](Examine.md),
+[MatchEnd](MatchEnd.md), [ExNext](ExNext.md), [&#060;dos/dosasl.h&#062;](_0070.md)

@@ -32,4 +32,4 @@ FilePart(&#034;xxx:yyy&#034;) would return a pointer to the first 'y').
 
 **SEE ALSO**
 
-[PathPart](PathPart), [AddPart](AddPart)
+[PathPart](PathPart.md), [AddPart](AddPart.md)

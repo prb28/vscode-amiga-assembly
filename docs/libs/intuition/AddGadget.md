@@ -12,7 +12,7 @@ AddGadget -- Add a gadget to the gadget list of a window.
     UWORD  AddGadget( struct Window *, struct Gadget *, UWORD );
 
 ```
-Links: [Window](_00D4) [Gadget](_00D4) [Window](_00D4) [Gadget](_00D4) 
+Links: [Window](_00D4.md) [Gadget](_00D4.md) [Window](_00D4.md) [Gadget](_00D4.md) 
 
 **FUNCTION**
 
@@ -51,8 +51,8 @@ but also provide an IDCMP channel for gadget input messages.
 
 **INPUTS**
 
-[Window](_00D4) = pointer to the window to get your gadget
-[Gadget](_00D4) = pointer to the new gadget
+[Window](_00D4.md) = pointer to the window to get your gadget
+[Gadget](_00D4.md) = pointer to the new gadget
 Position = integer position in the list for the new gadget (starting
 from zero as the first position in the list)
 
@@ -63,4 +63,4 @@ BUGS
 
 **SEE ALSO**
 
-[AddGList](AddGList), [RemoveGadget](RemoveGadget), [RemoveGList](RemoveGList)
+[AddGList](AddGList.md), [RemoveGadget](RemoveGadget.md), [RemoveGList](RemoveGList.md)

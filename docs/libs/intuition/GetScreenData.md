@@ -12,11 +12,11 @@ GetScreenData -- Get copy of a screen data structure.
     BOOL GetScreenData( APTR, UWORD, UWORD, struct Screen * );
 
 ```
-Links: [Screen](_00DD) [Screen](_00DD) 
+Links: [Screen](_00DD.md) [Screen](_00DD.md) 
 
 **FUNCTION**
 
-This function copies into the caller's buffer data from a [Screen](_00DD)
+This function copies into the caller's buffer data from a [Screen](_00DD.md)
 structure.  Typically, this call will be used to find the size, title
 bar height, and other values for a standard screen, such as the
 Workbench screen.
@@ -41,13 +41,13 @@ elected to implement ...
 
 Changes as of V36:
 
-For V36 and later, the function [LockPubScreen](LockPubScreen) is an improvement
+For V36 and later, the function [LockPubScreen](LockPubScreen.md) is an improvement
 over this function, in that it doesn't copy the screen data
 but returns a pointer and a guarantee that the screen will not
 be closed.
 
 If the global public screen SHANGHAI mode is in effect (see
-[SetPubScreenModes](SetPubScreenModes) ), this function will actually report on
+[SetPubScreenModes](SetPubScreenModes.md) ), this function will actually report on
 the default public screen, where &#034;Workbench&#034; windows will
 actually open.
 
@@ -77,8 +77,8 @@ try to &#034;clone&#034; the Workbench screen using this function.
 
 If you want the real information about the modern Workbench
 screen, call LockPubScreen( &#034;Workbench&#034; ) and acquire its
-display mode ID by inquiring of the actual [ViewPort](_00B8) (using
-[graphics.library/GetVPModeID](../graphics/GetVPModeID) ).
+display mode ID by inquiring of the actual [ViewPort](_00B8.md) (using
+[graphics.library/GetVPModeID](../graphics/GetVPModeID.md) ).
 
 You may then use the information you get to clone as many of
 the properties of the Workbench screen that you wish.
@@ -90,9 +90,9 @@ with a screen mode selection option, and skip all this.
 
 Buffer = pointer to a buffer into which data can be copied
 Size   = the size of the buffer provided, in bytes
-Type   = the screen type, as specified in [OpenWindow](OpenWindow) (WBENCHSCREEN,
+Type   = the screen type, as specified in [OpenWindow](OpenWindow.md) (WBENCHSCREEN,
 CUSTOMSCREEN, ...)
-[Screen](_00DD) = ignored, unless type is CUSTOMSCREEN, which results only in
+[Screen](_00DD.md) = ignored, unless type is CUSTOMSCREEN, which results only in
 copying 'size' bytes from 'screen' to 'buffer'
 
 RESULT
@@ -104,5 +104,5 @@ You cannot support the new V36 display modes using this function.
 
 **SEE ALSO**
 
-[OpenWindow](OpenWindow), [LockPubScreen](LockPubScreen), [graphics.library/GetVPModeID](../graphics/GetVPModeID),
-[SetPubScreenModes](SetPubScreenModes), [OpenScreen](OpenScreen)
+[OpenWindow](OpenWindow.md), [LockPubScreen](LockPubScreen.md), [graphics.library/GetVPModeID](../graphics/GetVPModeID.md),
+[SetPubScreenModes](SetPubScreenModes.md), [OpenScreen](OpenScreen.md)

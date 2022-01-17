@@ -15,11 +15,11 @@ AddBuffers -- Changes the number of buffers for a filesystem (V36)
 **FUNCTION**
 
 Adds buffers to a filesystem.  If it succeeds, the number of current
-buffers is returned in [IoErr](IoErr).  Note that &#034;number&#034; may be negative.
+buffers is returned in [IoErr](IoErr.md).  Note that &#034;number&#034; may be negative.
 The amount of memory used per buffer, and any limits on the number of
 buffers, are dependant on the filesystem in question.
 If the call succeeds, the number of buffers in use on the filesystem
-will be returned by [IoErr](IoErr).
+will be returned by [IoErr](IoErr.md).
 
 **INPUTS**
 
@@ -36,10 +36,10 @@ counted).  This is fixed in V37.
 
 The V37 and before ROM filesystem doesn't return success, it returns
 the number of buffers.  The best way to test for this is to consider
-0 (FALSE) failure, -1 (DOSTRUE) to mean that [IoErr](IoErr) will have the
+0 (FALSE) failure, -1 (DOSTRUE) to mean that [IoErr](IoErr.md) will have the
 number of buffers, and any other positive value to be the number of
 buffers.  It may be fixed in some future ROM revision.
 
 **SEE ALSO**
 
-[IoErr](IoErr)
+[IoErr](IoErr.md)

@@ -15,7 +15,7 @@ right for count pixels. (V36)
          UWORD, UBYTE *, struct RastPort *);
 
 ```
-Links: [RastPort](_00AF) [RastPort](_00AF) 
+Links: [RastPort](_00AF.md) [RastPort](_00AF.md) 
 
 **FUNCTION**
 
@@ -25,12 +25,12 @@ a particular rastport.
 
 **INPUTS**
 
-rp     - pointer to a [RastPort](_00AF) structure
-(x,y)  - a point in the [RastPort](_00AF)
+rp     - pointer to a [RastPort](_00AF.md) structure
+(x,y)  - a point in the [RastPort](_00AF.md)
 width  - count of horizontal pixels to write
 array  - pointer to an array of UBYTEs from which to fetch the pixel
 data allocate at least (((width+15)&#062;&#062;4)&#060;&#060;4) bytes.
-temprp - temporary rastport (copy of rp with [Layer](_00A1) set == NULL,
+temprp - temporary rastport (copy of rp with [Layer](_00A1.md) set == NULL,
 temporary memory allocated for
 temprp-&#062;BitMap with Rows set == 1,
 temprp-&#062;BytesPerRow == (((width+15)&#062;&#062;4)&#060;&#060;1),
@@ -48,4 +48,4 @@ BUGS
 
 **SEE ALSO**
 
-[WritePixel](WritePixel)  [graphics/rastport.h](_00AF)
+[WritePixel](WritePixel.md)  [graphics/rastport.h](_00AF.md)

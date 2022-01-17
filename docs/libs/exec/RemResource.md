@@ -23,4 +23,4 @@ resource - pointer to a resource node
 
 **SEE ALSO**
 
-[AddResource](AddResource)
+[AddResource](AddResource.md)

@@ -12,7 +12,7 @@ AddLibrary -- add a library to the system
     void AddLibrary(struct Library *);
 
 ```
-Links: [Library](_009C) 
+Links: [Library](_009C.md) 
 
 **FUNCTION**
 
@@ -27,4 +27,4 @@ library - pointer to a properly initialized library structure
 
 **SEE ALSO**
 
-[RemLibrary](RemLibrary), [CloseLibrary](CloseLibrary), [OpenLibrary](OpenLibrary), [MakeLibrary](MakeLibrary)
+[RemLibrary](RemLibrary.md), [CloseLibrary](CloseLibrary.md), [OpenLibrary](OpenLibrary.md), [MakeLibrary](MakeLibrary.md)

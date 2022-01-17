@@ -1,7 +1,7 @@
 
 **NAME**
 
-NextDosEntry -- Get the next Dos [List](_007D) entry (V36)
+NextDosEntry -- Get the next Dos [List](_007D.md) entry (V36)
 
 **SYNOPSIS**
 
@@ -12,11 +12,11 @@ NextDosEntry -- Get the next Dos [List](_007D) entry (V36)
     struct DosList *NextDosEntry(struct DosList *,ULONG)
 
 ```
-Links: [DosList](_0078) [DosList](_0078) 
+Links: [DosList](_0078.md) [DosList](_0078.md) 
 
 **FUNCTION**
 
-Find the next Dos [List](_007D) entry of the right type.  You MUST have locked
+Find the next Dos [List](_007D.md) entry of the right type.  You MUST have locked
 the types you're looking for.  Returns NULL if there are no more of
 that type in the list.
 
@@ -30,5 +30,5 @@ newdlist - The next device entry of the right type or NULL.
 
 **SEE ALSO**
 
-[AddDosEntry](AddDosEntry), [RemDosEntry](RemDosEntry), [FindDosEntry](FindDosEntry), [LockDosList](LockDosList),
-[MakeDosEntry](MakeDosEntry), [FreeDosEntry](FreeDosEntry)
+[AddDosEntry](AddDosEntry.md), [RemDosEntry](RemDosEntry.md), [FindDosEntry](FindDosEntry.md), [LockDosList](LockDosList.md),
+[MakeDosEntry](MakeDosEntry.md), [FreeDosEntry](FreeDosEntry.md)

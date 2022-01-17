@@ -16,7 +16,7 @@ WaitForChar -- Determine if chars arrive within a time limit
 
 If a character is available to be read from 'file' within a the
 time (in microseconds) indicated by 'timeout', WaitForChar()
-returns -1 (TRUE). If a character is available, you can use [Read](Read)
+returns -1 (TRUE). If a character is available, you can use [Read](Read.md)
 to read it.  Note that WaitForChar() is only valid when the I/O
 stream is connected to a virtual terminal device. If a character is
 not available within 'timeout', a 0 (FALSE) is returned.
@@ -37,4 +37,4 @@ status - boolean
 
 **SEE ALSO**
 
-[Read](Read), [FGetC](FGetC)
+[Read](Read.md), [FGetC](FGetC.md)
