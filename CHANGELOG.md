@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [1.1.x] - 
+- Fix preventing program name for example workspace with ".s"
+- Updated documentation
 - [Feat #192](https://github.com/prb28/vscode-amiga-assembly/pull/192) *grahambates* Improve outline by setting label ranges
 - [Feat #191](https://github.com/prb28/vscode-amiga-assembly/pull/191) *grahambates* Add xref symbols for completion/hover
 - [Fix #190](https://github.com/prb28/vscode-amiga-assembly/pull/190) *grahambates* Don't complete prefixed local labels
