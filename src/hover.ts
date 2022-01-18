@@ -61,7 +61,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             let word = document.getWordRangeAtPosition(position);
             let prefix = "";
             if (word) {
-                if (line.text.charAt(word.start.character -1) === '.') {
+                if (line.text.charAt(word.start.character - 1) === '.') {
                     // Extend range to include leading dot
                     word = new vscode.Range(
                         new vscode.Position(word.start.line, word.start.character - 1),
@@ -91,8 +91,8 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     } else if (label || xref) {
                         const symbol = label || xref;
                         const info = new vscode.MarkdownString();
-                        info.appendCodeblock("(label) " + symbol!.getLabel());
-                        const description = symbol!.getCommentBlock();
+                        info.appendCodeblock("(label) " + symbol?.getLabel());
+                        const description = symbol?.getCommentBlock();
                         if (description) {
                             rendered = new vscode.MarkdownString();
                             rendered.appendText(description);
