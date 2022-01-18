@@ -1,6 +1,6 @@
 **Collision control**
 
-This register controls which bitplanes are included (enabled) in collision detection, and their required state if included. It also controls the individual inclusion of odd numbered sprites in the collision detection, by logically ORing them with their correspond- ing even numbered sprite. Writing to this register resets the bits in [CLXCON2](/hardware:clxcon2).
+This register controls which bitplanes are included (enabled) in collision detection, and their required state if included. It also controls the individual inclusion of odd numbered sprites in the collision detection, by logically ORing them with their correspond- ing even numbered sprite. Writing to this register resets the bits in [CLXCON2](DFF10E_CLXCON2.md).
 
 | Bit| Function| Description  |
 |---|---|---  |

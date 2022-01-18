@@ -1,4 +1,4 @@
 **Horiz line position for HSYNC stop**
 
-Set # of colour clocks for sync start ([HTOTAL](/hardware:htotal) for bits) See [BEAMCON0](/hardware:beamcon0) for details of when these 2 are active.
+Set # of colour clocks for sync start ([HTOTAL](DFF1C0_HTOTAL.md) for bits) See [BEAMCON0](DFF1DC_BEAMCON0.md) for details of when these 2 are active.
 

@@ -1,6 +1,6 @@
 **Extended Collision Control**
 
-This reg controls when bit planes 7 and 8 are included in collision detection, and there required state if included. Contents of this register are reset by a write to [CLXCON](/hardware:clxcon). ***BITS INITIALIZED BY RESET** * ***BITS INITIALIZED BY RESET** *
+This reg controls when bit planes 7 and 8 are included in collision detection, and there required state if included. Contents of this register are reset by a write to [CLXCON](DFF098_CLXCON.md). ***BITS INITIALIZED BY RESET** * ***BITS INITIALIZED BY RESET** *
 
 | Bit| Function| Description  |
 |---|---|---  |

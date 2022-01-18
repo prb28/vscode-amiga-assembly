@@ -1,6 +1,6 @@
 **Display window upper bits for start, stop**
 
-This is an added register for Hires chips, and allows larger start & stop ranges. If it is not written, ([DIWSTRT](/hardware:diwstrt), [DIWSTOP](/hardware:diwstrt)) description holds. If this register is written, direct start & stop positions anywhere on the screen. It doesn't affect the UHRES pointers.
+This is an added register for Hires chips, and allows larger start & stop ranges. If it is not written, ([DIWSTRT](DFF08E_DIWSTRT.md), [DIWSTOP](DFF08E_DIWSTRT.md)) description holds. If this register is written, direct start & stop positions anywhere on the screen. It doesn't affect the UHRES pointers.
 
 | Bit| 15| 14| 13| 12| 11| 10| 09| 08| 07| 06| 05| 04| 03| 02| 01| 00  |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---  |
