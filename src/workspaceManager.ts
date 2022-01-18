@@ -73,8 +73,11 @@ export class WorkspaceManager {
         if (selectedFolders && (selectedFolders.length > 0)) {
             const selectedFolder = selectedFolders[0];
             // select the program name
-            const programName = await window.showInputBox(<InputBoxOptions>{ prompt: "Program name", title: "Set the program name", placeHolder: "program name" });
+            let programName = await window.showInputBox(<InputBoxOptions>{ prompt: "Program name", title: "Set the program name", placeHolder: "program name" });
             if (programName && (programName.length > 0)) {
+                if (programName.endsWith(".s")) {
+                    programName = programName.replace(".s", "");
+                }
                 // check if there is files in the folder
                 const fProxy = new FileProxy(selectedFolder);
                 const subFiles = await fProxy.listFiles();
