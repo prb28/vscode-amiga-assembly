@@ -12,5 +12,5 @@
 |01| EV8| End (stop) vertical value 9th bit  |
 |00| SH2| Start horizontal value, 140nS increment|
 
-These registers work together as position, size and feature sprite control registers. They are usually loaded by the sprite DMA channel, during horizontal blank, however they may be loaded by either processor any time. Writing to SPRxCTL disables the corresponding sprite.
+These registers work together as position, size and feature sprite control registers. They are usually loaded by the sprite DMA channel, during horizontal blank, however they may be loaded by either processor any time. Writing to [SPRxCTL](../hardware_manual_guide/SPRxCTL.md) disables the corresponding sprite.
 

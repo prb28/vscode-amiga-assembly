@@ -15,6 +15,22 @@ export class DocumentationElement {
     description = "";
     detail = "";
     type: DocumentationType = DocumentationType.UNKNOWN;
+
+    public static refactorLinks(relativePath: string, text: string): string {
+        let rText = text;
+        // eslint-disable-next-line no-useless-escape
+        const matcher = /\[([\/\\a-z0-9_\.\-]*)\]\(([a-z0-9_\-\/\\\.]*)\)/gi;
+        let match = matcher.exec(text);
+        while (match) {
+            const title = match[1];
+            const pageName = match[2];
+            const args = [{ path: `${relativePath}/${pageName}` }];
+            const commandUri = `[${title}](command:amiga-assembly.showdoc?${encodeURIComponent(JSON.stringify(args))})`;
+            rText = rText.replace(match[0], commandUri);
+            match = matcher.exec(text);
+        }
+        return rText;
+    }
 }
 
 /**
@@ -108,7 +124,7 @@ export class DocumentationDirectivesManager extends DocumentationMDFileFolderMan
     }
 
     protected loadFile(filename: string): void {
-        let element = filename.replace(".md", "");
+        const element = filename.replace(".md", "");
         const filePath = path.join(this.dirPath, filename);
         const name = element.toUpperCase();
         const di = new DocumentationDirective(element, this.dirPath, filePath);
@@ -143,7 +159,7 @@ export interface DocumentationLazy {
     loadDescription(): Promise<void>;
 }
 
-export function isDocumentationLazy (el: any): el is DocumentationLazy {
+export function isDocumentationLazy(el: any): el is DocumentationLazy {
     return (el as DocumentationLazy).loadDescription !== undefined;
 }
 
@@ -313,9 +329,9 @@ export class DocumentationRegister extends DocumentationElement implements Docum
         // Retrieve the first line
         if (description.trim().startsWith("**")) {
             const lAddress = address.toLocaleLowerCase();
-            return description.replace("**", `**${name}($${lAddress}) - `);
+            return DocumentationElement.refactorLinks("hardware", description.replace("**", `**${name}($${lAddress}) - `));
         } else {
-            return description;
+            return DocumentationElement.refactorLinks("hardware", description);
         }
     }
 }
@@ -407,28 +423,12 @@ export class DocumentationLibraryManager {
         }
     }
 
-    private refactorLinks(relativePath: string, text: string): string {
-        let rText = text;
-        // eslint-disable-next-line no-useless-escape
-        const matcher = /\[([\/\\a-z0-9_\.\-]*)\]\(([a-z0-9_\-\/\\\.]*)\)/gi;
-        let match = matcher.exec(text);
-        while (match) {
-            const title = match[1];
-            const pageName = match[2];
-            const args = [{ path: `${relativePath}/${pageName}` }];
-            const commandUri = `[${title}](command:amiga-assembly.showdoc?${encodeURIComponent(JSON.stringify(args))})`;
-            rText = rText.replace(match[0], commandUri);
-            match = matcher.exec(text);
-        }
-        return rText;
-    }
-
     public async loadDescription(functionName: string): Promise<DocumentationLibraryFunction | undefined> {
         const hLibFunc = this.functionsByName.get(functionName);
         if (hLibFunc && (hLibFunc.description.length === 0)) {
             const description = await hLibFunc.fileProxy.readFileText('utf8');
             // refactor the description links
-            hLibFunc.description = this.refactorLinks(`libs/${hLibFunc.libraryName}`, description);
+            hLibFunc.description = DocumentationElement.refactorLinks(`libs/${hLibFunc.libraryName}`, description);
         }
         return hLibFunc;
     }

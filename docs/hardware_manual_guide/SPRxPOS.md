@@ -13,8 +13,8 @@ SPRxPOS register:
 
 BIT#  | SYM    |  FUNCTION
 ----  | ----   |  -----------------------------
-15-08 | SV7-SV0 | Start vertical value. High bit(SV8) is in SPRxCTL register below.
-07-00 | SH8-SH1 | Start horizontal value. Low bit(SH0) is in SPRxCTL register below.
+15-08 | SV7-SV0 | Start vertical value. High bit(SV8) is in [SPRxCTL](../hardware_manual_guide/SPRxCTL.md) register below.
+07-00 | SH8-SH1 | Start horizontal value. Low bit(SH0) is in [SPRxCTL](../hardware_manual_guide/SPRxCTL.md) register below.
 
 SPRxCTL register (writing this address disables sprite horizontal comparator circuit):
 

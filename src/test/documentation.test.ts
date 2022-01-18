@@ -78,7 +78,7 @@ describe("Documentation Tests", function () {
         it("Should read the file correctly", async function () {
             const manager = documentationManger.directivesManager;
             expect(manager.getCount()).to.be.equal(98);
-            let documentation = await manager.getDirectiveByName("SECTION");
+            const documentation = await manager.getDirectiveByName("SECTION");
             expect(documentation).to.not.be.undefined;
             if (documentation) {
                 expect(documentation.name).to.be.equal("section");
