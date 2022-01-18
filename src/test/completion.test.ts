@@ -174,7 +174,7 @@ describe("Completion Tests", function () {
             const tokenEmitter = new CancellationTokenSource();
             document.addLine(" mov");
             const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
-            expect(results.length).to.be.equal(5);
+            expect(results.length).to.be.equal(7);
             const elm = results[0];
             expect(elm.label).to.be.equal("move");
             expect(elm.detail).to.be.equal("instruction");
@@ -187,7 +187,7 @@ describe("Completion Tests", function () {
             const tokenEmitter = new CancellationTokenSource();
             document.addLine(" MOV");
             const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
-            expect(results.length).to.be.equal(5);
+            expect(results.length).to.be.equal(7);
             const elm = results[0];
             expect(elm.label).to.be.equal("MOVE");
         });

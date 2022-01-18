@@ -22,7 +22,7 @@ describe("Documentation Tests", function () {
     context("Hover instruction file parsing", function () {
         it("Should read the file correctly", async function () {
             const manager = documentationManger.instructionsManager;
-            expect(manager.getCount()).to.be.equal(124);
+            expect(manager.getCount()).to.be.equal(127);
             let addDocumentation = await manager.getInstructionByName("ADD");
             expect(addDocumentation).to.not.be.undefined;
             if (addDocumentation) {
@@ -113,15 +113,15 @@ describe("Documentation Tests", function () {
                 expect(registerByName.name).to.be.equals("OpenLibrary");
                 expect(registerByName.description).to.contains("gain access to a library");
                 // should have refactored a link
-                expect(registerByName.description).not.to.contains("[OpenDevice](OpenDevice)");
-                expect(registerByName.description).to.contains("[OpenDevice](command:amiga-assembly.showdoc?%5B%7B%22path%22%3A%22libs%2Fexec%2FOpenDevice%22%7D%5D)");
+                expect(registerByName.description).not.to.contains("[OpenDevice](OpenDevice.md)");
+                expect(registerByName.description).to.contains("[OpenDevice](command:amiga-assembly.showdoc?%5B%7B%22path%22%3A%22libs%2Fexec%2FOpenDevice.md%22%7D%5D)");
             }
             registerByName = await manager.loadDescription("ADDTASK");
             expect(registerByName).to.not.be.undefined;
             if (registerByName) {
                 // should have refactored a link with relative path
-                expect(registerByName.description).not.to.contains("[dos/CreateProc](../dos/CreateProc)");
-                expect(registerByName.description).to.contains("[dos/CreateProc](command:amiga-assembly.showdoc?%5B%7B%22path%22%3A%22libs%2Fexec%2F..%2Fdos%2FCreateProc%22%7D%5D)");
+                expect(registerByName.description).not.to.contains("[dos/CreateProc](../dos/CreateProc.md)");
+                expect(registerByName.description).to.contains("[dos/CreateProc](command:amiga-assembly.showdoc?%5B%7B%22path%22%3A%22libs%2Fexec%2F..%2Fdos%2FCreateProc.md%22%7D%5D)");
             }
         });
     });
@@ -134,6 +134,6 @@ describe("Documentation Tests", function () {
         expect(docs[0].name).to.be.equal("AddTail");
         expect(docs[1].name).to.be.equal("AddTask");
         docs = await documentationManger.findKeywordStartingWith("move");
-        expect(docs.length).to.be.equal(10);
+        expect(docs.length).to.be.equal(12);
     });
 });
