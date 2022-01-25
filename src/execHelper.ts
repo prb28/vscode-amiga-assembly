@@ -4,6 +4,7 @@ import * as path from 'path';
 import { ExtensionState } from './extension';
 import { workspace, Uri } from 'vscode';
 import * as winston from 'winston';
+import { SymbolFile } from './symbols';
 
 export class ICheckResult {
     file = "";
@@ -158,6 +159,7 @@ export class ExecutorHelper {
                 }
                 let startColumn = 0;
                 let endColumn = 1;
+                const perErrorDiagnostics: Array<vscode.Diagnostic> = [];
                 if ((document) && ((document.uri.toString() === canonicalFile) || error.parentFile)) {
                     let text = "";
                     // Processing path of included files
@@ -203,7 +205,27 @@ export class ExecutorHelper {
                         }
                         endColumn = text.length - trailing.length;
                     }
-
+                } else if (error.msg.includes("undefined symbol")) {
+                    // parse of the symbol
+                    const pos = error.msg.indexOf("undefined symbol");
+                    if (pos > 0) {
+                        let symbol = error.msg.substring(pos + 17).trim();
+                        if (symbol.endsWith(".")) {
+                            symbol = symbol.substring(0, symbol.length - 1);
+                        }
+                        if (symbol.startsWith("_")) {
+                            symbol = symbol.substring(1, symbol.length);
+                        }
+                        // search in file
+                        const sFile = new SymbolFile(Uri.file(error.file));
+                        await sFile.readFile();
+                        for (const fSymbol of sFile.getReferredSymbols()) {
+                            if (fSymbol.getLabel() == symbol) {
+                                const severity = this.mapSeverityToVSCodeSeverity(error.severity);
+                                perErrorDiagnostics.push(new vscode.Diagnostic(fSymbol.getRange(), error.msg, severity));
+                            }
+                        }
+                    }
                 }
                 const errorRange = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
                 const severity = this.mapSeverityToVSCodeSeverity(error.severity);
@@ -217,7 +239,13 @@ export class ExecutorHelper {
                     diag = [];
                     diagnostics.set(severity, diag);
                 }
-                diag.push(diagnostic);
+                if (perErrorDiagnostics.length > 0) {
+                    for (const d of perErrorDiagnostics) {
+                        diag.push(d);
+                    }
+                } else {
+                    diag.push(diagnostic);
+                }
                 diagnosticMap.set(canonicalFile, diagnostics);
             }
         }

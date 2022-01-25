@@ -101,7 +101,7 @@ describe("VLINK Tests", function () {
             expect(error.msg).to.be.equal("Link Error 21(CODE+0xc): Reference to undefined symbol COPPERLIST_SIZE.");
             expect(error.severity).to.be.equal("error");
             expect(error.line).to.be.equal(1);
-            expect(error.file).to.be.equal("gencop.o");
+            expect(error.file).to.be.equal("gencop.s");
         });
     });
 });

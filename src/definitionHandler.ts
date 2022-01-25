@@ -32,8 +32,8 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             for (let i = 0; i < symbols.length; i++) {
                 const symbol = symbols[i];
                 let symbolKind = vscode.SymbolKind.Function;
-                let isLocal = symbol.getLabel().includes(".");
-                let label = symbol.getLabel().replace(/.+\./, ".");
+                const isLocal = symbol.getLabel().includes(".");
+                const label = symbol.getLabel().replace(/.+\./, ".");
                 if (symbolFile.getSubRoutines().indexOf(label) >= 0) {
                     symbolKind = vscode.SymbolKind.Class;
                 } else if (symbolFile.getDcLabels().indexOf(symbol) >= 0) {
@@ -50,7 +50,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                             break;
                         }
                     }
-                    const end = nextLabel?.getRange().start ?? document.lineAt(document.lineCount -1).range.end;
+                    const end = nextLabel?.getRange().start ?? document.lineAt(document.lineCount - 1).range.end;
                     const range = new Range(symbol.getRange().start, end);
                     results.push(new SymbolInformation(label, symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), range)));
                 }
@@ -58,12 +58,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             symbols = symbolFile.getMacros();
             for (let i = 0; i < symbols.length; i++) {
                 const symbol = symbols[i];
-                let symbolKind = vscode.SymbolKind.Function;
+                const symbolKind = vscode.SymbolKind.Function;
                 results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
             }
             symbols = symbolFile.getXrefs();
             for (let i = 0; i < symbols.length; i++) {
-                let symbolKind = vscode.SymbolKind.Function;
+                const symbolKind = vscode.SymbolKind.Function;
                 const symbol = symbols[i];
                 results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
             }

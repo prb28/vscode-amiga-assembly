@@ -141,7 +141,11 @@ export class VLINKParser implements ExecutorParser {
                     match = /(error|warning|message)\s([\d]+):\s([a-z.]+)\s*\(([a-z+0-9]+)\)\s*:\s*(.*)/i.exec(line);
                     if (match) {
                         const error: ICheckResult = new ICheckResult();
-                        error.file = match[3];
+                        let f = match[3];
+                        if (f.endsWith(".o")) {
+                            f = f.replace(".o", ".s");
+                        }
+                        error.file = f;
                         error.line = 1;
                         error.msg = "Link " + match[1] + " " + match[2] + "(" + match[4] + ")" + ": " + match[5];
                         error.severity = match[1].toLowerCase();
