@@ -223,7 +223,12 @@ export class ExecutorHelper {
         }
 
         for (const [file, diagMap] of diagnosticMap) {
-            const fileUri = vscode.Uri.parse(file);
+            let fileUri: vscode.Uri;
+            if (file.startsWith("file:")) {
+                fileUri = vscode.Uri.parse(file);
+            } else {
+                fileUri = vscode.Uri.file(file);
+            }
             const warningDiagnosticCollection = ExtensionState.getCurrent().getWarningDiagnosticCollection();
             const errorDiagnosticCollection = ExtensionState.getCurrent().getErrorDiagnosticCollection();
             if (diagnosticSeverity === undefined || diagnosticSeverity === vscode.DiagnosticSeverity.Error) {

@@ -138,12 +138,22 @@ export class VLINKParser implements ExecutorParser {
                     error.severity = match[1];
                     errors.push(error);
                 } else {
-                    match = /.*error\s([\d]+)\s*:\s*(.*)/i.exec(line);
+                    match = /(error|warning|message)\s([\d]+):\s([a-z.]+)\s*\(([a-z+0-9]+)\)\s*:\s*(.*)/i.exec(line);
                     if (match) {
                         const error: ICheckResult = new ICheckResult();
-                        error.severity = 'error';
-                        error.msg = line;
+                        error.file = match[3];
+                        error.line = 1;
+                        error.msg = "Link " + match[1] + " " + match[2] + "(" + match[4] + ")" + ": " + match[5];
+                        error.severity = match[1].toLowerCase();
                         errors.push(error);
+                    } else {
+                        match = /.*error\s([\d]+)\s*:\s*(.*)/i.exec(line);
+                        if (match) {
+                            const error: ICheckResult = new ICheckResult();
+                            error.severity = 'error';
+                            error.msg = line;
+                            errors.push(error);
+                        }
                     }
                 }
             }

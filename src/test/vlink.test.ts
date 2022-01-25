@@ -83,8 +83,8 @@ describe("VLINK Tests", function () {
             expect(errors.length).to.be.equal(0);
         });
         it("Should parse a error", async function () {
-            const errors = parser.parse("error 3 : This is not good\n\nnothing\nerror 5 : This is not good too\nwarning 5 in line 2 of \"myfile\": oh no");
-            expect(errors.length).to.be.equal(3);
+            const errors = parser.parse("error 3 : This is not good\n\nnothing\nerror 5 : This is not good too\nwarning 5 in line 2 of \"myfile\": oh no\nError 21: gencop.o (CODE+0xc): Reference to undefined symbol COPPERLIST_SIZE.");
+            expect(errors.length).to.be.equal(4);
             let i = 0;
             let error = errors[i++];
             expect(error.msg).to.be.equal("error 3 : This is not good");
@@ -92,11 +92,16 @@ describe("VLINK Tests", function () {
             error = errors[i++];
             expect(error.msg).to.be.equal("error 5 : This is not good too");
             expect(error.severity).to.be.equal("error");
-            error = errors[i];
+            error = errors[i++];
             expect(error.msg).to.be.equal("warning 5: oh no");
             expect(error.severity).to.be.equal("warning");
             expect(error.line).to.be.equal(2);
             expect(error.file).to.be.equal("myfile");
+            error = errors[i];
+            expect(error.msg).to.be.equal("Link Error 21(CODE+0xc): Reference to undefined symbol COPPERLIST_SIZE.");
+            expect(error.severity).to.be.equal("error");
+            expect(error.line).to.be.equal(1);
+            expect(error.file).to.be.equal("gencop.o");
         });
     });
 });

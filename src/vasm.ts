@@ -300,6 +300,10 @@ export class VASMCompiler {
           }
           const errors = await this.linker.linkFiles(vlinkConf, filesURI, vlinkConf.exefilename, vlinkConf.entrypoint, workspaceRootDir, buildDir.getUri(), logEmitter);
           if (errors && errors.length > 0) {
+            for (const err of errors) {
+              err.file = buildDir.getRelativeFile(err.file).getUri().fsPath;
+            }
+            this.executor.handleDiagnosticErrors(undefined, errors, DiagnosticSeverity.Error);
             throw new Error(`Linker error: ${errors[0].msg}`);
           } else if (ASMOneEnabled) {
             this.asmONE.Auto(filesURI, buildDir.getRelativeFile(vlinkConf.exefilename).getUri());
