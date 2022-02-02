@@ -209,12 +209,14 @@ export class ExecutorHelper {
                     // parse of the symbol
                     const pos = error.msg.indexOf("undefined symbol");
                     if (pos > 0) {
+                        let hasUnderScore = false;
                         let symbol = error.msg.substring(pos + 17).trim();
                         if (symbol.endsWith(".")) {
                             symbol = symbol.substring(0, symbol.length - 1);
                         }
                         if (symbol.startsWith("_")) {
                             symbol = symbol.substring(1, symbol.length);
+                            hasUnderScore = true;
                         }
                         // search in file
                         const sFile = new SymbolFile(Uri.file(error.file));
@@ -222,7 +224,11 @@ export class ExecutorHelper {
                         for (const fSymbol of sFile.getReferredSymbols()) {
                             if (fSymbol.getLabel() == symbol) {
                                 const severity = this.mapSeverityToVSCodeSeverity(error.severity);
-                                perErrorDiagnostics.push(new vscode.Diagnostic(fSymbol.getRange(), error.msg, severity));
+                                let range = fSymbol.getRange();
+                                if (hasUnderScore && range.start.character > 0) {
+                                    range = new vscode.Range(new vscode.Position(range.start.line, range.start.character - 1), range.end);
+                                }
+                                perErrorDiagnostics.push(new vscode.Diagnostic(range, error.msg, severity));
                             }
                         }
                     }

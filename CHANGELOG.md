@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [1.1.x] - 
+- [Fix #200](https://github.com/prb28/vscode-amiga-assembly/issues/200) Undefined symbols not reported in errors view
 - [Fix #197](https://github.com/prb28/vscode-amiga-assembly/issues/197) File resolution of the build errors wrong
 - Fix preventing program name for example workspace with ".s"
 - Updated documentation

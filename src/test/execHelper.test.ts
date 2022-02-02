@@ -7,6 +7,7 @@ import { ExtensionState } from '../extension';
 import { DummyTextDocument } from './dummy';
 import { Uri, workspace, TextDocument } from 'vscode';
 import * as Path from 'path';
+import { ASMLine } from '../parser';
 
 describe("Executor Tests", function () {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..');
@@ -18,6 +19,8 @@ describe("Executor Tests", function () {
         if (ext) {
             await ext.activate();
         }
+        const state = ExtensionState.getCurrent();
+        ASMLine.init(await state.getLanguage());
     });
     it("Should execute a command and parse stdout", async () => {
         const stdoutText = 'My Stdout\ntext';
@@ -90,6 +93,7 @@ describe("Executor Tests", function () {
             document = new DummyTextDocument();
             document.addLine('line1');
             document.addLine('line2');
+            document.addLine('   move.l #2,COPPERLIST_SIZE');
             spiedErrorDiagnosticCollection = spy(errorDiagnosticCollection);
             spiedWarningDiagnosticCollection = spy(warningDiagnosticCollection);
             error.file = document.uri.path;
@@ -194,6 +198,34 @@ describe("Executor Tests", function () {
                 }
                 if (fileUri instanceof vscode.Uri) {
                     expect(fileUri.path.includes("test_files/sources/include/hw.i")).to.be.true;
+                } else {
+                    expect.fail("FileUri should be defined and be a uri");
+                }
+            });
+            it("Should handle the Diagnostics of errors for symbols", async () => {
+                const error = new ICheckResult();
+                error.file = MAIN_SOURCE;
+                error.line = 1;
+                error.msg = "Link Error 21(CODE+0xc): Reference to undefined symbol GfxName.";
+                error.severity = "error";
+                const error2 = new ICheckResult();
+                error2.file = MAIN_SOURCE;
+                error2.line = 1;
+                error2.msg = "Link Error 21(CODE+0xc): Reference to undefined symbol _LVOCloseLibrary.";
+                error2.severity = "error";
+                await ex.handleDiagnosticErrors(undefined, [error, error2], vscode.DiagnosticSeverity.Error);
+                const [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
+                if (newErrors instanceof Array) {
+                    expect(newErrors.length).to.be.equal(2);
+                    expect(newErrors[0].message).to.be.equal(error.msg);
+                    expect(newErrors[0].range.end.character - newErrors[0].range.start.character).to.be.equal(7);
+                    expect(newErrors[1].message).to.be.equal(error2.msg);
+                    expect(newErrors[1].range.end.character - newErrors[1].range.start.character).to.be.equal(16);
+                } else {
+                    expect.fail("Diagnostic errors should be an array");
+                }
+                if (fileUri instanceof vscode.Uri) {
+                    expect(fileUri.path.includes("tutorial.s")).to.be.true;
                 } else {
                     expect.fail("FileUri should be defined and be a uri");
                 }

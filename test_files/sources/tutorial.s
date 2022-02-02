@@ -52,7 +52,7 @@ OSOff      movem.l    d0-a6,-(sp)
            jsr        -408(a6)                                                   ; oldopenlibrary()
            move.l     d0,a1                                                      ; récupération de l'adresse de chargement de la lib
            move.l     38(a1),CopperSave                                          ; pointeur du Copper originel
-           jsr        -414(a6)                                                   ; closelibrary()
+           jsr        _LVOCloseLibrary(a6)                                       ; closelibrary()
 
            lea        $dff000,a6                                                 ; adresse de base
 
@@ -405,11 +405,11 @@ Screen:
            ds.b       BPLSIZE
 
 ; <name> MACRO
-macro1   MACRO
-           move.w d0,d1
+macro1     MACRO
+           move.w     d0,d1
            endm
 
 ; MACRO <name>
            MACRO      macro2
-           move.w d0,d1
+           move.w     d0,d1
            endm

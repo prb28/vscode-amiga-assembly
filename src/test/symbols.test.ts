@@ -6,12 +6,24 @@ import { expect } from 'chai';
 import { SymbolFile } from '../symbols';
 import { Uri } from 'vscode';
 import * as Path from 'path';
+import { ExtensionState } from '../extension';
+import { ASMLine } from '../parser';
+import * as vscode from 'vscode';
 
 
 describe("Symbols reader Tests", function () {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..');
     const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');
     const MAIN_SOURCE = Path.join(SOURCES_DIR, 'tutorial.s');
+    before(async () => {
+        // activate the extension
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
+        const state = ExtensionState.getCurrent();
+        ASMLine.init(await state.getLanguage());
+    });
     it("Should read all the symbols of a file", async function () {
         const sf = new SymbolFile(Uri.file(MAIN_SOURCE));
         const symbolFile = await sf.readFile();
@@ -21,7 +33,7 @@ describe("Symbols reader Tests", function () {
         const macros = symbolFile.getMacros();
         expect(definedSymbols.length).to.be.equal(63);
         const referedSymbols = symbolFile.getReferredSymbols();
-        expect(referedSymbols.length).to.be.equal(318);
+        expect(referedSymbols.length).to.be.equal(319);
         const firstDefined = definedSymbols[2];
         expect(firstDefined.getLabel()).to.be.equal("COPPER_WAIT");
         let count = 0;

@@ -3,7 +3,7 @@ Amiga Assembly for Visual Studio Code is a extension to support assembly languag
 
 Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to discover all the features and get the documentation.
 
-**For an easy startup try the** [Example workspace Bundle](https://github.com/prb28/vscode-amiga-wks-example/releases) or the [VBCC workspace](https://github.com/prb28/vscode-amiga-vbcc-example).
+**For an easy startup try the** [getting started example](https://github.com/prb28/vscode-amiga-assembly/wiki/Getting-started).
 
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
