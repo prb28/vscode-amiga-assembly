@@ -6,4 +6,4 @@ ifp1
 ```
 
 ## Description
-Just for compatibility. Equivalent to if1.
+Just for compatibility. Equivalent to [if1](if1.md).

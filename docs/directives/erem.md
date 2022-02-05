@@ -6,4 +6,4 @@ erem
 ```
 
 ## Description
-Ends an outcommented block. Assembly will continue.
+Ends an outcommented block from [rem](rem.md). Assembly will continue.

@@ -6,4 +6,4 @@ endm
 ```
 
 ## Description
-Ends a macro definition.
+Ends a [macro](macro.md) definition.

@@ -7,4 +7,4 @@ fail <message>
 
 ## Description
 Show an error message including the `<message>` string.
-Do not generate an ouput file.
+Do not generate an output file.

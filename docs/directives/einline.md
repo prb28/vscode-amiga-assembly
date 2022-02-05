@@ -6,4 +6,4 @@ einline
 ```
 
 ## Description
-End a block of isolated local labels, started by inline.
+End a block of isolated local labels, started by [inline](inline.md).

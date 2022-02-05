@@ -6,4 +6,4 @@ endr
 ```
 
 ## Description
-Ends a repetition block.
+Ends a [rept](rept.md) repetition block.
