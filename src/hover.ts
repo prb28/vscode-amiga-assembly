@@ -142,16 +142,15 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     const match = /\w+/.exec(text);
                     if (match) {
                         const variable = match[0];
-                        const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                         try {
                             const value = await definitionHandler.evaluateVariable(variable);
                             const renderedNumber = this.renderNumber(value, numberDisplayFormat);
                             if (renderedNumber) {
-                                const variable = definitionHandler.getVariableByName(document.getText(word));
-                                const description = variable?.getCommentBlock();
-                                if (description) {
+                                const searchedVar = definitionHandler.getVariableByName(document.getText(word));
+                                const desc = searchedVar?.getCommentBlock();
+                                if (desc) {
                                     rendered = new vscode.MarkdownString();
-                                    rendered.appendText(description);
+                                    rendered.appendText(desc);
                                     return new vscode.Hover([renderedNumber, rendered]);
                                 } else {
                                     return new vscode.Hover(renderedNumber);
@@ -172,7 +171,6 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 const match = /\w+/.exec(text);
                 if (match) {
                     const variable = match[0];
-                    const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                     try {
                         const value = await definitionHandler.evaluateVariable(variable);
                         const rendered = this.renderNumber(value, numberDisplayFormat);

@@ -27,10 +27,10 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
 
         const inst = asmLine.instruction.toLowerCase();
         const isInclude = inst === "include" || inst === "incbin" || inst === "incdir";
-        
+
         if (range) {
             let prefix = "";
-            if (line.text.charAt(range.start.character -1) === ".") {
+            if (line.text.charAt(range.start.character - 1) === ".") {
                 // Extend range to include leading dot
                 range = new vscode.Range(
                     new vscode.Position(range.start.line, range.start.character - 1),
@@ -104,7 +104,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                                 const completion = new vscode.CompletionItem(unPrefixed, kind);
                                 const filename = symbol.getFile().getUri().path.split("/").pop();
                                 const line = symbol.getRange().start.line;
-                                completion.detail =  "label " + filename + ":" + line;
+                                completion.detail = "label " + filename + ":" + line;
                                 completion.documentation = symbol.getCommentBlock();
                                 completion.range = { replacing: range, inserting: range }
                                 completions.push(completion);
@@ -116,7 +116,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                             if (!labelsAdded.includes(xref)) {
                                 const kind = vscode.CompletionItemKind.Function;
                                 const completion = new vscode.CompletionItem(xref, kind);
-                                completion.detail =  "xref";
+                                completion.detail = "xref";
                                 completions.push(completion);
                                 labelsAdded.push(xref);
                             }
@@ -139,7 +139,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                         if (!labelsAdded.includes(label)) {
                             const kind = vscode.CompletionItemKind.Function;
                             const completion = new vscode.CompletionItem(label, kind);
-                            completion.detail =  "macro";
+                            completion.detail = "macro";
                             completion.documentation = symbol.getCommentBlock();
                             completions.push(completion);
                         }
@@ -152,7 +152,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
             const extensions = this.language.getExtensions(word.toLowerCase());
             const isUpper = word === word.toUpperCase();
             if (extensions) {
-                for (let ext of extensions) {
+                for (const ext of extensions) {
                     const text = isUpper ? ext.toUpperCase() : ext;
                     const completion = new vscode.CompletionItem(text, vscode.CompletionItemKind.Unit);
                     completions.push(completion);
@@ -172,8 +172,9 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         // Extend range for replacement where path component contains word boundaries
         let range = document.getWordRangeAtPosition(position);
         const line = document.lineAt(position.line);
+        let start = 0;
         if (range) {
-            let start = range.start.character;
+            start = range.start.character;
             while (start > 0 && !line.text.charAt(start - 1).match(/[\s'"/]/)) {
                 start--;
             }
@@ -182,10 +183,10 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                 range.end
             );
         }
-        
+
         // filtering the path from the include
         let length = position.character - asmLine.dataRange.start.character;
-        let start = 0;
+        start = 0;
         if (asmLine.data.startsWith('"') || asmLine.data.startsWith("'")) {
             start = 1;
             length--;
@@ -265,18 +266,18 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
 
     private async provideCompletionForIncludes(asmLine: ASMLine, document: vscode.TextDocument, position: vscode.Position): Promise<vscode.CompletionItem[]> {
         let completions = new Array<vscode.CompletionItem>();
-        // Root folder of worksapce
+        // Root folder of workspace
         let rootUri = vscode.workspace.getWorkspaceFolder(document.uri)?.uri
         if (!rootUri) {
             // Default to containing folder of file if not in workspace
             rootUri = new FileProxy(document.uri).getParent().getUri();
-        } 
+        }
         const rootDir = new FileProxy(rootUri);
         // In root dir:
         completions = completions.concat(await this.provideCompletionsForFile(asmLine, document, rootDir, position));
         // In any of the include dirs:
         for (const [incPath] of this.definitionHandler.getIncludeDirs().entries()) {
-            let incDir = rootDir.getRelativeFile(incPath);
+            const incDir = rootDir.getRelativeFile(incPath);
             if (await incDir.exists() && await incDir.isDirectory()) {
                 const items = await this.provideCompletionsForFile(asmLine, document, incDir, position);
                 completions = completions.concat(items);

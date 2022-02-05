@@ -9,6 +9,8 @@ import { DummyTextDocument } from './dummy';
 import * as Path from 'path';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
+import { ExtensionState } from '../extension';
+import { ASMLine } from '../parser';
 
 chai.use(chaiAsPromised);
 
@@ -19,6 +21,8 @@ describe("Definition handler Tests", function () {
         if (ext) {
             await ext.activate();
         }
+        const state = ExtensionState.getCurrent();
+        ASMLine.init(await state.getLanguage());
     });
     context("tutorial source", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');

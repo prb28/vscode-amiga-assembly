@@ -24,8 +24,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         const results = new Array<SymbolInformation>();
         if (symbolFile) {
             let symbols = symbolFile.getVariables();
-            for (let i = 0; i < symbols.length; i++) {
-                const symbol = symbols[i];
+            for (const symbol of symbols) {
                 results.push(new SymbolInformation(symbol.getLabel(), vscode.SymbolKind.Constant, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
             }
             symbols = symbolFile.getLabels();
@@ -33,7 +32,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 const symbol = symbols[i];
                 let symbolKind = vscode.SymbolKind.Function;
                 const isLocal = symbol.getLabel().includes(".");
-                const label = symbol.getLabel().replace(/.+\./, ".");
+                const label = symbol.getLabel().replace(/$.+\./, ".");
                 if (symbolFile.getSubRoutines().indexOf(label) >= 0) {
                     symbolKind = vscode.SymbolKind.Class;
                 } else if (symbolFile.getDcLabels().indexOf(symbol) >= 0) {
@@ -56,15 +55,13 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 }
             }
             symbols = symbolFile.getMacros();
-            for (let i = 0; i < symbols.length; i++) {
-                const symbol = symbols[i];
+            for (const symbol of symbols) {
                 const symbolKind = vscode.SymbolKind.Function;
                 results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
             }
             symbols = symbolFile.getXrefs();
-            for (let i = 0; i < symbols.length; i++) {
+            for (const symbol of symbols) {
                 const symbolKind = vscode.SymbolKind.Function;
-                const symbol = symbols[i];
                 results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
             }
             const includedFiles = symbolFile.getIncludedFiles();
@@ -110,8 +107,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             for (const refs of this.referredSymbols) {
                 const symbols = refs[1].get(label);
                 if (symbols !== undefined) {
-                    for (let i = 0; i < symbols.length; i++) {
-                        const s = symbols[i];
+                    for (const s of symbols) {
                         locations.push(new Location(s.getFile().getUri(), s.getRange()));
                     }
                 }
@@ -250,8 +246,8 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     public async scanWorkspace(): Promise<void> {
         await vscode.workspace.findFiles(M68kDefinitionHandler.SOURCE_FILES_GLOB, null).then(async (filesURI) => {
             const promises = [];
-            for (let i = 0; i < filesURI.length; i++) {
-                promises.push(this.scanFile(filesURI[i]));
+            for (const fURI of filesURI) {
+                promises.push(this.scanFile(fURI));
             }
             return Promise.all(promises);
         });
@@ -271,15 +267,13 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             await file.readFile();
         }
         let symbol = file.getDefinedSymbols();
-        for (let i = 0; i < symbol.length; i++) {
-            const s = symbol[i];
+        for (const s of symbol) {
             this.definedSymbols.set(s.getLabel(), s);
         }
         this.referredSymbols.delete(uri.fsPath);
         const refs = new Map<string, Array<Symbol>>();
         const refSymbol = file.getReferredSymbols();
-        for (let i = 0; i < refSymbol.length; i++) {
-            const s = refSymbol[i];
+        for (const s of refSymbol) {
             const label = s.getLabel();
             let lst = refs.get(label);
             if (lst === undefined) {
@@ -290,8 +284,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         }
         this.referredSymbols.set(uri.fsPath, refs);
         symbol = file.getVariables();
-        for (let i = 0; i < symbol.length; i++) {
-            const s = symbol[i];
+        for (const s of symbol) {
             this.variables.set(s.getLabel(), s);
         }
         // sort variables
@@ -301,23 +294,19 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         });
 
         symbol = file.getLabels();
-        for (let i = 0; i < symbol.length; i++) {
-            const s = symbol[i];
+        for (const s of symbol) {
             this.labels.set(s.getLabel(), s);
         }
         symbol = file.getMacros();
-        for (let i = 0; i < symbol.length; i++) {
-            const s = symbol[i];
+        for (const s of symbol) {
             this.macros.set(s.getLabel(), s);
         }
         symbol = file.getIncludeDirs();
-        for (let i = 0; i < symbol.length; i++) {
-            const s = symbol[i];
+        for (const s of symbol) {
             this.includeDirs.set(s.getLabel(), s);
         }
         symbol = file.getXrefs();
-        for (let i = 0; i < symbol.length; i++) {
-            const s = symbol[i];
+        for (const s of symbol) {
             this.xrefs.set(s.getLabel(), s);
         }
 
@@ -384,8 +373,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     private replaceVariablesInFormula(formula: string): string {
         let newFormula = formula;
         const variables = this.findVariablesInFormula(newFormula);
-        for (let i = 0; i < variables.length; i++) {
-            const vn = variables[i];
+        for (const vn of variables) {
             const evaluatedFormula = this.evaluateVariableFormula(vn);
             if (evaluatedFormula !== undefined) {
                 // replace all
@@ -398,8 +386,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
 
     public findVariablesInFormula(formula: string): Array<string> {
         const variables = new Array<string>();
-        for (let i = 0; i < this.sortedVariablesNames.length; i++) {
-            const vn = this.sortedVariablesNames[i];
+        for (const vn of this.sortedVariablesNames) {
             if (formula.indexOf(vn) >= 0) {
                 variables.push(vn);
             }

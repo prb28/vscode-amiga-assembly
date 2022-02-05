@@ -216,7 +216,7 @@ export class Symbol {
                 } else {
                     // Preceding line comments:
                     for (let i = line - 1; i >= 0; i--) {
-                        const match = doc.lineAt(i).text.match(/^[;\*]+-*\s?(.*)/);
+                        const match = doc.lineAt(i).text.match(/^[;*]+-*\s?(.*)/);
                         if (!match) {
                             break;
                         }
@@ -224,7 +224,7 @@ export class Symbol {
                     }
                     // Subsequent line comments:
                     for (let i = line + 1; i < doc.lineCount; i++) {
-                        const match = doc.lineAt(i).text.match(/^[;\*]+-*\s?(.*)/);
+                        const match = doc.lineAt(i).text.match(/^[;*]+-*\s?(.*)/);
                         if (!match) {
                             break;
                         }

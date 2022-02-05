@@ -192,7 +192,13 @@ export class StringUtils {
     static compareStringsLowerCase(a: [string, number], b: [string, number]): number {
         const aL = a[0].toLowerCase();
         const bL = b[0].toLowerCase();
-        return aL > bL ? 1 : (aL < bL ? -1 : 0);
+        if (aL > bL) {
+            return 1;
+        } else if (aL < bL) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 
     /**
