@@ -223,27 +223,27 @@ export class ExecutorHelper {
                         await sFile.readFile();
                         for (const fSymbol of sFile.getReferredSymbols()) {
                             if (fSymbol.getLabel() == symbol) {
-                                const sever = this.mapSeverityToVSCodeSeverity(error.severity);
+                                const symbolErrorSeverity = this.mapSeverityToVSCodeSeverity(error.severity);
                                 let range = fSymbol.getRange();
                                 if (hasUnderScore && range.start.character > 0) {
                                     range = new vscode.Range(new vscode.Position(range.start.line, range.start.character - 1), range.end);
                                 }
-                                perErrorDiagnostics.push(new vscode.Diagnostic(range, error.msg, sever));
+                                perErrorDiagnostics.push(new vscode.Diagnostic(range, error.msg, symbolErrorSeverity));
                             }
                         }
                     }
                 }
                 const errorRange = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
-                const sever = this.mapSeverityToVSCodeSeverity(error.severity);
+                const errorSeverity = this.mapSeverityToVSCodeSeverity(error.severity);
                 const diagnostic = new vscode.Diagnostic(errorRange, error.msg, sever);
                 let diagnostics = diagnosticMap.get(canonicalFile);
                 if (!diagnostics) {
                     diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
                 }
-                let diag = diagnostics.get(sever);
+                let diag = diagnostics.get(errorSeverity);
                 if (!diag) {
                     diag = [];
-                    diagnostics.set(sever, diag);
+                    diagnostics.set(errorSeverity, diag);
                 }
                 if (perErrorDiagnostics.length > 0) {
                     for (const d of perErrorDiagnostics) {
