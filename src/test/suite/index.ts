@@ -28,7 +28,7 @@ if (!tty.getWindowSize) {
     };
 }
 
-export async function run(_testsRoot: string): Promise<void> {
+export async function run(): Promise<void> {
     let nyc;
     const testsRoot = path.resolve(__dirname, '..');
     if (enableCoverage) {
@@ -83,20 +83,8 @@ export async function run(_testsRoot: string): Promise<void> {
     const failures: number = await new Promise(resolve => mocha.run(resolve));
     if (enableCoverage) {
         await nyc.writeCoverageFile();
-
-        // Capture text-summary reporter's output and log it in console
-        console.log(await captureStdout(nyc.report.bind(nyc)));
     }
     if (failures > 0) {
         throw new Error(`${failures} tests failed.`);
     }
-}
-
-async function captureStdout(fn: () => Promise<void>) {
-    const w = process.stdout.write;
-    let buffer = '';
-    process.stdout.write = (s: string) => { buffer = buffer + s; return true; };
-    await fn();
-    process.stdout.write = w;
-    return buffer;
 }
