@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### [1.2.0] - 2022-02-05
+### [1.2.0] - 2022-02-06
 - Stable release from 1.1.x versions
 ### [1.1.x] - 2022-02-03
 - [Fix #200](https://github.com/prb28/vscode-amiga-assembly/issues/200) Undefined symbols not reported in errors view
