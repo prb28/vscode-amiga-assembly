@@ -235,7 +235,7 @@ export class ExecutorHelper {
                 }
                 const errorRange = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
                 const errorSeverity = this.mapSeverityToVSCodeSeverity(error.severity);
-                const diagnostic = new vscode.Diagnostic(errorRange, error.msg, sever);
+                const diagnostic = new vscode.Diagnostic(errorRange, error.msg, errorSeverity);
                 let diagnostics = diagnosticMap.get(canonicalFile);
                 if (!diagnostics) {
                     diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
