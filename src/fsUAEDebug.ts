@@ -296,6 +296,12 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         // Data breakpoint
         response.body.supportsDataBreakpoints = true;
 
+        // Memory edition
+        response.body.supportsWriteMemoryRequest = true;
+
+        // value formatting option
+        response.body.supportsValueFormattingOptions = true;
+
         // Set expression is accepted - TODO : Try it later
         //response.body.supportsSetExpression = true;
 
@@ -740,7 +746,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                     name: variableName,
                                     type: "register",
                                     value: formatter.format(r.value),
-                                    variablesReference: vRef
+                                    variablesReference: vRef,
+                                    memoryReference: r.value.toString()
                                 });
                             }
                         }
@@ -767,7 +774,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                 name: variableName,
                                 type: "segment",
                                 value: `${formatter.format(s.address)} {size:${s.size}}`,
-                                variablesReference: 0
+                                variablesReference: 0,
+                                memoryReference: s.address.toString()
                             });
                         }
                         response.body = {
@@ -793,7 +801,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                             name: key,
                             type: "symbol",
                             value: formatter.format(value),
-                            variablesReference: 0
+                            variablesReference: 0,
+                            memoryReference: value.toString()
                         });
                     }
                     response.body = {
@@ -924,16 +933,30 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async readMemoryRequest(response: DebugProtocol.ReadMemoryResponse, args: DebugProtocol.ReadMemoryArguments): Promise<void> {
-        let address = parseInt(args.memoryReference);
-        if (args.offset) {
-            address += args.offset;
-        }
+        const address = parseInt(args.memoryReference);
         try {
             await this.gdbProxy.waitConnected();
-            const memory = await this.gdbProxy.getMemory(address, args.count);
+            let size = 0;
+            let memory = "";
+            const DEFAULT_CHUNK_SIZE = 1000;
+            let remaining = args.count;
+            while (remaining > 0) {
+                let chunkSize = DEFAULT_CHUNK_SIZE;
+                if (remaining < chunkSize) {
+                    chunkSize = remaining;
+                }
+                memory += await this.gdbProxy.getMemory(address + size, chunkSize);
+                remaining -= chunkSize;
+                size += chunkSize;
+            }
+            let unreadable = args.count - size;
+            if (unreadable < 0) {
+                unreadable = 0;
+            }
             response.body = {
-                address: address.toString(),
+                address: address.toString(16),
                 data: StringUtils.hexToBase64(memory)
+                //unreadableBytes: unreadable
             };
             this.sendResponse(response);
         } catch (err) {
@@ -944,6 +967,36 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     public async getMemory(address: number, size: number): Promise<string> {
         await this.gdbProxy.waitConnected();
         return this.gdbProxy.getMemory(address, size);
+    }
+
+    protected async writeMemoryRequest(response: DebugProtocol.WriteMemoryResponse, args: DebugProtocol.WriteMemoryArguments): Promise<void> {
+        let address = parseInt(args.memoryReference);
+        if (args.offset) {
+            address += args.offset;
+        }
+        try {
+            await this.gdbProxy.waitConnected();
+            const hexString = StringUtils.base64ToHex(args.data);
+            const count = hexString.length;
+            const DEFAULT_CHUNK_SIZE = 1000;
+            let remaining = count;
+            let size = 0;
+            while (remaining > 0) {
+                let chunkSize = DEFAULT_CHUNK_SIZE;
+                if (remaining < chunkSize) {
+                    chunkSize = remaining;
+                }
+                await this.gdbProxy.setMemory(address, hexString.substring(size, chunkSize));
+                remaining -= chunkSize;
+                size += chunkSize;
+            }
+            response.body = {
+                bytesWritten: size
+            };
+            this.sendResponse(response);
+        } catch (err) {
+            this.sendStringErrorResponse(response, err.message);
+        }
     }
 
     public async getVariablePointedMemory(variableName: string, frameIndex?: number, size?: number): Promise<string> {

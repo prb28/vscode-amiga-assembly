@@ -13,10 +13,11 @@ describe("String Utils tests", function () {
         expect(buffer[0]).to.be.equal(10);
         expect(buffer[1]).to.be.equal(15);
     });
-    it("Should transform a hex string to a base64", function () {
+    it("Should transform a hex string to a base64 and inverse", function () {
         const hexString = "0a0f";
         const buffer = StringUtils.hexToBase64(hexString);
         expect(buffer).to.be.equal("Cg8=");
+        expect(StringUtils.base64ToHex(buffer)).to.be.equal(hexString);
     });
     it("Should transform an array to a hex string", function () {
         const buffer = [10, 15];

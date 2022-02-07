@@ -183,6 +183,14 @@ export class StringUtils {
         return buffer.toString('base64');
     }
 
+    /** 
+     * Convert a base64 string to a hex string
+     **/
+    static base64ToHex(base64String: string): string {
+        // Conversion to bytes
+        return Buffer.from(base64String, 'base64').toString('hex');
+    }
+
     /**
      * Compare two strings.
      * @param a First string
