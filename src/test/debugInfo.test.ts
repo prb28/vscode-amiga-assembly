@@ -51,9 +51,18 @@ describe("Debug Info", function () {
         // tslint:disable-next-line:no-unused-expression
         expect(di.areSameSourceFileNames("b", "b")).to.be.true;
         // tslint:disable-next-line:no-unused-expression
-        expect(di.areSameSourceFileNames("/b/c", "/b/C")).to.be.false;
+        if (process.platform === "win32") {
+            expect(di.areSameSourceFileNames("/b/c", "/b/C")).to.be.true;
+        } else {
+            expect(di.areSameSourceFileNames("/b/c", "/b/C")).to.be.false;
+        }
         // tslint:disable-next-line:no-unused-expression       
-        expect(di.areSameSourceFileNames("./c", "/b/c")).to.be.true;
+        if (process.platform === "win32") {
+            expect(di.areSameSourceFileNames("./c", "/b/C")).to.be.true;
+        } else {
+            expect(di.areSameSourceFileNames("./c", "/b/C")).to.be.false;
+            expect(di.areSameSourceFileNames("./c", "/b/c")).to.be.true;
+        }
     });
     it("Should resolve the line number of a C file", async function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');

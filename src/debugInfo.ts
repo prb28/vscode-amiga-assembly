@@ -203,9 +203,17 @@ export class DebugInfo {
 
     public areSameSourceFileNames(sourceA: string, sourceB: string): boolean {
         if (path.isAbsolute(sourceA) && path.isAbsolute(sourceB)) {
-            return sourceA === sourceB;
+            if (process.platform === "win32") {
+                return path.normalize(sourceA).toLowerCase() === path.normalize(sourceB).toLowerCase();
+            } else {
+                return path.normalize(sourceA) === path.normalize(sourceB);
+            }
         }
-        return path.basename(sourceB) === path.basename(sourceA);
+        if (process.platform === "win32") {
+            return path.basename(sourceB).toLowerCase() === path.basename(sourceA).toLowerCase();
+        } else {
+            return path.basename(sourceB) === path.basename(sourceA);
+        }
     }
 
     public async getAddressSeg(filename: string, fileLine: number): Promise<([number, number] | null)> {
@@ -215,13 +223,11 @@ export class DebugInfo {
             const hunk = this.hunks[i];
             const sourceFiles = hunk.lineDebugInfo;
             if (sourceFiles) {
-                for (let j = 0; j < sourceFiles.length; j++) {
-                    const srcFile = sourceFiles[j];
+                for (const srcFile of sourceFiles) {
                     // Is there a path replacement
                     const name = await this.resolveFileName(srcFile.name);
                     if (this.areSameSourceFileNames(name, normFilename)) {
-                        for (let k = 0; k < srcFile.lines.length; k++) {
-                            const line = srcFile.lines[k];
+                        for (const line of srcFile.lines) {
                             if (line.line === fileLine) {
                                 return [i, line.offset];
                             }
