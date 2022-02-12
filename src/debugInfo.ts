@@ -27,6 +27,7 @@ export class DebugInfo {
             const parser = new HunkParser();
             try {
                 this.hunks = await parser.readFile(this.uri);
+                this.loaded = true;
                 return true;
             } catch (err) {
                 return false;
