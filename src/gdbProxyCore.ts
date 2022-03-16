@@ -26,6 +26,7 @@ export interface GdbRegister {
 
 /** Memory segment */
 export interface Segment {
+    id: number;
     name: string;
     address: number;
     size: number;

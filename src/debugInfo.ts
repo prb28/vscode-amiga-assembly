@@ -37,8 +37,7 @@ export class DebugInfo {
 
     public getCodeData(): Uint32Array[] {
         const codeDataArray = new Array<Uint32Array>();
-        for (let i = 0; i < this.hunks.length; i++) {
-            const hunk = this.hunks[i];
+        for (const hunk of this.hunks) {
             if ((hunk.hunkType === HunkType.CODE) && hunk.codeData) {
                 codeDataArray.push(hunk.codeData);
             }
@@ -53,14 +52,12 @@ export class DebugInfo {
         if (normFilename) {
             normFilename = FileProxy.normalize(normFilename);
         }
-        for (let i = 0; i < this.hunks.length; i++) {
-            const hunk = this.hunks[i];
+        for (const hunk of this.hunks) {
             if (hunk.symbols) {
                 if (normFilename) {
                     const sourceFiles = hunk.lineDebugInfo;
                     if (sourceFiles) {
-                        for (let j = 0; j < sourceFiles.length; j++) {
-                            const srcFile = sourceFiles[j];
+                        for (const srcFile of sourceFiles) {
                             // Is there a path replacement
                             const name = await this.resolveFileName(srcFile.name);
                             if (this.areSameSourceFileNames(name, normFilename)) {
@@ -85,8 +82,7 @@ export class DebugInfo {
         let sourceLine = 0;
         let wasOver = false;
 
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
+        for (const line of lines) {
             if (line.offset === offset) {
                 //println!("Matching source {} line {}", filename, line.line);
                 return [filename, line.line];
@@ -132,11 +128,7 @@ export class DebugInfo {
 
         const source_files = hunk.lineDebugInfo;
         if (source_files) {
-            for (let i = 0; i < source_files.length; i++) {
-                const srcFile = source_files[i];
-                //if offset > src_file.base_offset {
-                //    continue;
-                //}
+            for (const srcFile of source_files) {
                 const data = this.tryFindLine(srcFile.name, srcFile.lines, offset);
                 if (data) {
                     // transform the file path to a local one
@@ -248,8 +240,7 @@ export class DebugInfo {
             const hunk = this.hunks[i];
             const sourceFiles = hunk.lineDebugInfo;
             if (sourceFiles) {
-                for (let j = 0; j < sourceFiles.length; j++) {
-                    const srcFile = sourceFiles[j];
+                for (const srcFile of sourceFiles) {
                     // Is there a path replacement
                     const name = await this.resolveFileName(srcFile.name);
                     if (this.areSameSourceFileNames(name, normFilename)) {

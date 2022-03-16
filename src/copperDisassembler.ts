@@ -40,6 +40,11 @@ export class CopperInstruction {
     public getAsmInstruction(): string {
         return `dc.w $${this.format(this.first)},$${this.format(this.second)}`;
     }
+    public getInstructionBytes(): string {
+        const f = this.format(this.first);
+        const s = this.format(this.second);
+        return `${f.substring(0, 2)} ${f.substring(2)} ${s.substring(0, 2)} ${s.substring(2)}`;
+    }
     protected getPaddedAsmInstruction(): string {
         const inst = this.getAsmInstruction();
         const pad = " ".repeat(20 - inst.length);

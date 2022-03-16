@@ -7,6 +7,7 @@ import { CopperDisassembler } from "./copperDisassembler";
 import { DebugVariableResolver } from "./debugVariableResolver";
 import { MemoryLabelsRegistry } from "./customMemoryAddresses";
 import { Uri } from "vscode";
+import { StringUtils } from "./stringUtils";
 
 export class DebugDisassembledFile {
     public static readonly DGBFILE_SCHEME = "disassembly";
@@ -239,11 +240,14 @@ export class DebugDisassembledManager {
             dAsmFile.setStackFrameIndex(stackFrameIndex).setAddressExpression(`$${newAddress.toString(16)}`).setLength(length);
         }
         const url = `${DebugDisassembledFile.DGBFILE_SCHEME}:///${dAsmFile}`;
-        if (lineNumber >= 0) {
-            return new StackFrame(stackFrameIndex, stackFrameLabel, new Source(dAsmFile.toString(), url), lineNumber, 1);
+        let sf;
+        if (lineNumber >= 0 && isCopper) {
+            sf = new StackFrame(stackFrameIndex, stackFrameLabel, new Source(dAsmFile.toString(), url), lineNumber, 1);
         } else {
-            return new StackFrame(stackFrameIndex, stackFrameLabel);
+            sf = new StackFrame(stackFrameIndex, stackFrameLabel);
         }
+        sf.instructionPointerReference = StringUtils.formatAddress(address);
+        return sf;
     }
 
     public async getLineNumberInDisassembledSegment(segmentId: number, offset: number): Promise<number> {
@@ -279,7 +283,7 @@ export class DebugDisassembledManager {
         }
     }
 
-    public async disassembleAddress(addressExpression: string, length: number, isCopper: boolean): Promise<DebugProtocol.DisassembledInstruction[]> {
+    public async disassembleAddress(addressExpression: string, length: number, offset: number | undefined, isCopper: boolean): Promise<DebugProtocol.DisassembledInstruction[]> {
         let searchedAddress: number | void;
         if ((isCopper) && ((addressExpression === '1') || (addressExpression === '2'))) {
             // Retrieve the copper address
@@ -288,7 +292,10 @@ export class DebugDisassembledManager {
             searchedAddress = await this.debugExpressionHelper.getAddressFromExpression(addressExpression, undefined, this.variableResolver);
         }
         if (searchedAddress || searchedAddress === 0) {
-            return await this.disassembleNumericalAddress(searchedAddress, length, isCopper);
+            if (offset) {
+                searchedAddress += offset;
+            }
+            return this.disassembleNumericalAddress(searchedAddress, length, isCopper);
         } else {
             throw new Error("Unable to resolve address expression void returned");
         }
@@ -306,7 +313,8 @@ export class DebugDisassembledManager {
             for (const i of instructions) {
                 const addOffset = startAddress + offset;
                 variables.push({
-                    address: addOffset.toString(16),
+                    instructionBytes: i.getInstructionBytes(),
+                    address: StringUtils.formatAddress(addOffset),
                     instruction: i.toString()
                 });
                 // 4 addresses : 32b / address
@@ -316,12 +324,18 @@ export class DebugDisassembledManager {
         } else if (this.capstone) {
             const localCapstone = this.capstone;
             // ask for memory dump
-            const memory = await this.gdbProxy.getMemory(address, length);
-            const startAddress = address;
-            // disassemble the code 
-            const code = await localCapstone.disassemble(memory);
-            const [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
-            return variables;
+            if (this.gdbProxy.isConnected()) {
+                const memory = await this.gdbProxy.getMemory(address, length);
+                const startAddress = address;
+                // disassemble the code 
+                const code = await localCapstone.disassemble(memory);
+                const [, variables] = this.debugExpressionHelper.processOutputFromDisassembler(code, startAddress);
+                return variables;
+            }
+            else {
+                throw new Error("Debugger not started");
+
+            }
         } else {
             throw new Error("Capstone has not been defined");
         }
@@ -344,17 +358,21 @@ export class DebugDisassembledManager {
     }
 
     public async disassembleRequest(args: DisassembleAddressArguments): Promise<DebugProtocol.DisassembledInstruction[]> {
+        let offset = 0;
+        if (args.offset) {
+            offset += args.offset;
+        }
         if (args.copper) {
             if (args.addressExpression && args.instructionCount) {
-                return await this.disassembleAddress(args.addressExpression, args.instructionCount, args.copper);
+                return this.disassembleAddress(args.addressExpression, args.instructionCount * 4, offset, args.copper);
             } else {
                 throw new Error(`Unable to disassemble; invalid parameters ${args}`);
             }
         } else if (this.capstone) {
             if (args.segmentId !== undefined) {
-                return await this.disassembleSegment(args.segmentId);
+                return this.disassembleSegment(args.segmentId);
             } else if (args.addressExpression && args.instructionCount) {
-                return await this.disassembleAddress(args.addressExpression, args.instructionCount, args.copper);
+                return this.disassembleAddress(args.addressExpression, args.instructionCount * 4, offset, args.copper);
             } else {
                 throw new Error(`Unable to disassemble; invalid parameters ${args}`);
             }
@@ -379,7 +397,7 @@ export class DebugDisassembledManager {
                 const address = dAsmFile.getAddressExpression();
                 const length = dAsmFile.getLength();
                 if ((address !== undefined) && (length !== undefined)) {
-                    instructions = await this.disassembleAddress(address, length, dAsmFile.isCopper());
+                    instructions = await this.disassembleAddress(address, length, 0, dAsmFile.isCopper());
                 }
             }
             if (instructions) {
@@ -395,5 +413,9 @@ export class DebugDisassembledManager {
         } else {
             throw new Error(`Invalid line number: '${lineNumber}'`);
         }
+    }
+
+    public setCapstone(capstone: Capstone) {
+        this.capstone = capstone;
     }
 }

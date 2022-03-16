@@ -11,7 +11,7 @@ import { GdbStackFrame, GdbStackPosition, GdbRegister, Segment, GdbHaltStatus, G
 import { spy, anyString, instance, when, anything, mock, anyNumber, reset, verify, resetCalls, capture } from '@johanblumenberg/ts-mockito';
 import { ExecutorHelper } from '../execHelper';
 import { Capstone } from '../capstone';
-import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
+import { BreakpointManager, GdbBreakpoint, GdbBreakpointType } from '../breakpointManager';
 import { DebugDisassembledFile } from '../debugDisassembled';
 import { ExtensionState } from '../extension';
 
@@ -468,7 +468,7 @@ describe('Node Debug Adapter', () => {
 						}
 						cb = callbacks.get('segmentsUpdated');
 						if (cb) {
-							cb([<Segment>{ address: 10, size: 416 }]);
+							cb([<Segment>{ id: 0, address: 10, size: 416 }]);
 						}
 					}, 1);
 					return Promise.resolve();
@@ -482,7 +482,7 @@ describe('Node Debug Adapter', () => {
 					name: "a0",
 					value: 10
 				}]));
-				when(this.mockedGdbProxy.getSegments()).thenReturn([<Segment>{ address: 10, size: 10 }]);
+				when(this.mockedGdbProxy.getSegments()).thenReturn([<Segment>{ id: 0, address: 10, size: 10 }]);
 				when(this.mockedGdbProxy.toRelativeOffset(anyNumber())).thenReturn([-1, 40]);
 			}
 		});
@@ -553,7 +553,7 @@ describe('Node Debug Adapter', () => {
 				}
 			}
 			expect(stackFrames[1].id).to.be.equal(1);
-			expect(stackFrames[1].line).to.be.equal(1);
+			expect(stackFrames[1].line).to.be.equal(0);
 			expect(stackFrames[1].name).to.be.equal("$a: sub.l	(a1), d0");
 			const responseScopes: DebugProtocol.ScopesResponse = await dc.scopesRequest(<DebugProtocol.ScopesArguments>{ frameId: 0 });
 			expect(responseScopes.body.scopes[0].name).to.be.equal('Registers');
@@ -656,6 +656,7 @@ describe('Node Debug Adapter', () => {
 						}
 					}, 1);
 					this.session.updateSegments([<Segment>{
+						id: 0,
 						address: 10,
 						size: 416
 					}]);
@@ -823,6 +824,7 @@ describe('Node Debug Adapter', () => {
 						}
 					}, 1);
 					this.session.updateSegments([<Segment>{
+						id: 0,
 						address: 10,
 						size: 416
 					}]);
@@ -940,6 +942,7 @@ describe('Node Debug Adapter', () => {
 			expect(response.success).to.be.equal(true);
 			const [bp] = capture(this.mockedGdbProxy.removeBreakpoint).last();
 			expect(bp).to.be.eql(<GdbBreakpoint>{
+				breakpointType: GdbBreakpointType.EXCEPTION,
 				exceptionMask: BreakpointManager.DEFAULT_EXCEPTION_MASK,
 				id: 1,
 				verified: false

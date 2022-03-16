@@ -120,7 +120,8 @@ export class BreakpointManager {
                     await this.gdbProxy.setBreakpoint(debugBp);
                     this.breakpoints.push(debugBp);
                 }
-            } else if (debugBp.exceptionMask !== undefined || (debugBp.size && debugBp.size > 0 && this.gdbProxy.isConnected())) {
+            } else if (debugBp.exceptionMask !== undefined
+                || ((debugBp.breakpointType === GdbBreakpointType.DATA || debugBp.breakpointType === GdbBreakpointType.INSTRUCTION) && this.gdbProxy.isConnected())) {
                 await this.gdbProxy.setBreakpoint(debugBp);
                 if (debugBp.exceptionMask === undefined) {
                     this.breakpoints.push(debugBp);
@@ -137,6 +138,7 @@ export class BreakpointManager {
 
     public createBreakpoint(source: DebugProtocol.Source, line: number): GdbBreakpoint {
         return <GdbBreakpoint>{
+            breakpointType: GdbBreakpointType.SOURCE,
             id: this.nextBreakpointId++,
             line: line,
             source: source,
@@ -146,10 +148,22 @@ export class BreakpointManager {
 
     public createTemporaryBreakpoint(address: number): GdbBreakpoint {
         return <GdbBreakpoint>{
+            breakpointType: GdbBreakpointType.TEMPORARY,
             id: this.nextBreakpointId++,
             segmentId: undefined,
             offset: address,
             temporary: true,
+            verified: false
+        };
+    }
+
+    public createInstructionBreakpoint(address: number): GdbBreakpoint {
+        return <GdbBreakpoint>{
+            breakpointType: GdbBreakpointType.INSTRUCTION,
+            id: this.nextBreakpointId++,
+            segmentId: undefined,
+            offset: address,
+            temporary: false,
             verified: false
         };
     }
@@ -171,6 +185,7 @@ export class BreakpointManager {
                 break;
         }
         return <GdbBreakpoint>{
+            breakpointType: GdbBreakpointType.DATA,
             id: this.nextBreakpointId++,
             segmentId: undefined,
             offset: address,
@@ -227,9 +242,9 @@ export class BreakpointManager {
         }
     }
 
-
     public createExceptionBreakpoint(): GdbBreakpoint {
         return <GdbBreakpoint>{
+            breakpointType: GdbBreakpointType.EXCEPTION,
             id: this.nextBreakpointId++,
             exceptionMask: this.exceptionMask,
             verified: false
@@ -288,12 +303,14 @@ export class BreakpointManager {
         return source.path === other.path;
     }
 
-    public async clearBreakpointsInner(source: DebugProtocol.Source | null, clearDataBreakpoint: boolean): Promise<void> {
+    public async clearBreakpointsInner(source: DebugProtocol.Source | null, clearDataBreakpoint: boolean, clearInstructionBreakpoints: boolean): Promise<void> {
         let hasError = false;
         const remainingBreakpoints = new Array<GdbBreakpoint>();
         this.breakpointLock = await this.mutex.capture('breakpointLock');
         for (const bp of this.breakpoints) {
-            if ((source && bp.source && this.isSameSource(bp.source, source) && !clearDataBreakpoint && bp.accessType === undefined) || (clearDataBreakpoint && bp.accessType !== undefined)) {
+            if ((source && bp.source && this.isSameSource(bp.source, source) && !clearDataBreakpoint && !clearInstructionBreakpoints && bp.breakpointType === GdbBreakpointType.SOURCE)
+                || (clearDataBreakpoint && bp.breakpointType === GdbBreakpointType.DATA)
+                || (clearInstructionBreakpoints && bp.breakpointType === GdbBreakpointType.INSTRUCTION)) {
                 try {
                     await this.gdbProxy.removeBreakpoint(bp);
                 } catch (err) {
@@ -313,12 +330,16 @@ export class BreakpointManager {
             throw new Error("Some breakpoints cannot be removed");
         }
     }
-
     public clearBreakpoints(source: DebugProtocol.Source): Promise<void> {
-        return this.clearBreakpointsInner(source, false);
+        return this.clearBreakpointsInner(source, false, false);
     }
+
     public clearDataBreakpoints(): Promise<void> {
-        return this.clearBreakpointsInner(null, true);
+        return this.clearBreakpointsInner(null, true, false);
+    }
+
+    public clearInstructionBreakpoints(): Promise<void> {
+        return this.clearBreakpointsInner(null, false, true);
     }
 
     public getPendingBreakpoints(): Array<GdbBreakpoint> {
@@ -446,6 +467,8 @@ export class BreakpointManager {
 
 /** Interface for a breakpoint */
 export interface GdbBreakpoint extends DebugProtocol.Breakpoint {
+    /**Type of breakpoint */
+    breakpointType: GdbBreakpointType;
     /** Id for the segment if undefined it is an absolute offset*/
     segmentId?: number;
     /** Offset relative to the segment*/
@@ -460,6 +483,17 @@ export interface GdbBreakpoint extends DebugProtocol.Breakpoint {
     accessType?: GdbBreakpointAccessType;
     /** default message for the breakpoint */
     defaultMessage: string | undefined;
+}
+
+/**
+ * Types of breakpoints
+ */
+export enum GdbBreakpointType {
+    SOURCE,
+    DATA,
+    INSTRUCTION,
+    EXCEPTION,
+    TEMPORARY
 }
 
 /**

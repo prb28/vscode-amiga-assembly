@@ -6,27 +6,31 @@ import { ExtensionState } from './extension';
 export class DebugExpressionHelper {
     public async getAddressFromExpression(expression: string, frameIndex: number | undefined, variableResolver: DebugVariableResolver): Promise<number> {
         if (expression !== null) {
-            let newExpression = expression;
-            // Replace all variables
-            const variableRegexp = /([$#]\{[a-zA-Z0-9_\-.]*\})/g;
-            let match = variableRegexp.exec(expression);
-            while (match) {
-                const variableExpression = match[1];
-                const variableName = variableExpression.substring(2, variableExpression.length - 1);
-                let value: string | void;
-                if (variableExpression.startsWith('$')) {
-                    value = await variableResolver.getVariableValue(variableName, frameIndex);
-                } else {
-                    value = await variableResolver.getVariablePointedMemory(variableName, frameIndex);
+            if (expression.startsWith("0x")) {
+                return parseInt(expression);
+            } else {
+                let newExpression = expression;
+                // Replace all variables
+                const variableRegexp = /([$#]\{[a-zA-Z0-9_\-.]*\})/g;
+                let match = variableRegexp.exec(expression);
+                while (match) {
+                    const variableExpression = match[1];
+                    const variableName = variableExpression.substring(2, variableExpression.length - 1);
+                    let value: string | void;
+                    if (variableExpression.startsWith('$')) {
+                        value = await variableResolver.getVariableValue(variableName, frameIndex);
+                    } else {
+                        value = await variableResolver.getVariablePointedMemory(variableName, frameIndex);
+                    }
+                    if (value) {
+                        newExpression = newExpression.replace("#{", "${").replace("${" + variableName + "}", "$" + value);
+                    }
+                    match = variableRegexp.exec(expression)
                 }
-                if (value) {
-                    newExpression = newExpression.replace("#{", "${").replace("${" + variableName + "}", "$" + value);
-                }
-                match = variableRegexp.exec(expression)
+                // call the function to calculate the expression
+                const dHnd = ExtensionState.getCurrent().getDefinitionHandler();
+                return dHnd.evaluateFormula(newExpression);
             }
-            // call the function to calculate the expression
-            const dHnd = ExtensionState.getCurrent().getDefinitionHandler();
-            return dHnd.evaluateFormula(newExpression);
         } else {
             throw new Error("Invalid address");
         }

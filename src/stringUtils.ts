@@ -227,4 +227,14 @@ export class StringUtils {
         }
         return quotedString.substring(start, end);
     }
+
+    /**
+     * Format an address to send to vscode
+     * @param address  Address to format
+     * @param pad address pad
+     * @returns Formatted address
+     */
+    public static formatAddress(address: number, pad = 8) {
+        return '0x' + address.toString(16).padStart(pad, '0');
+    }
 }

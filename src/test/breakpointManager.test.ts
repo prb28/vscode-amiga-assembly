@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { BreakpointManager, GdbBreakpoint } from '../breakpointManager';
+import { BreakpointManager, GdbBreakpoint, GdbBreakpointType } from '../breakpointManager';
 import { when, mock, anything, instance, spy, verify, resetCalls, reset } from '@johanblumenberg/ts-mockito';
 import { GdbProxy } from '../gdbProxy';
 import { DebugDisassembledManager } from '../debugDisassembled';
@@ -51,7 +51,8 @@ describe('Breakpoint Manager', () => {
             const bp = <GdbBreakpoint>{
                 id: 1,
                 source: source,
-                line: sourceLine
+                line: sourceLine,
+                breakpointType: GdbBreakpointType.SOURCE
             };
             const segId = 1;
             const offset = 2;

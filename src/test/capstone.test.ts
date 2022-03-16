@@ -8,12 +8,21 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as Path from 'path';
 import { ExecutorHelper } from '../execHelper';
 import { instance, when, anything, mock, capture, reset } from '@johanblumenberg/ts-mockito';
-import { Uri } from 'vscode';
+import { extensions, Uri } from 'vscode';
+import { ConfigurationHelper } from '../configurationHelper';
+import { fail } from 'assert';
 
 chai.use(chaiAsPromised);
 describe("Capstone test", function () {
     let mockedExecutor: ExecutorHelper;
     let executor: ExecutorHelper;
+    before(async function () {
+        // activate the extension
+        const ext = extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
+    });
     beforeEach(function () {
         mockedExecutor = mock(ExecutorHelper);
         executor = instance(mockedExecutor);
@@ -21,11 +30,31 @@ describe("Capstone test", function () {
     afterEach(function () {
         reset(mockedExecutor);
     });
-    it("Should disassemble a buffer", function () {
-        when(mockedExecutor.runToolRetrieveStdout(anything(), anything(), anything(), anything(), anything())).thenResolve(" 0  90 91  sub.l\t(a1), d0\n");
-        const capstone = new Capstone('cstool');
-        capstone.setTestContext(executor);
-        return expect(capstone.disassemble('9091')).to.be.eventually.equal(" 0  90 91  sub.l\t(a1), d0\n");
+    it("Should disassemble a buffer", async function () {
+        const conf = ConfigurationHelper.retrieveStringPropertyInDefaultConf('cstool');
+        if (conf) {
+            const capstone = new Capstone(conf);
+            let code = await capstone.disassemble('9091');
+            code = code.replace("\r", "");
+            return expect(code).to.be.equal("\n 0  90 91  sub.l\t(a1), d0\n");
+        } else {
+            fail("capstone not defined");
+        }
+    });
+    it("Should disassemble a big buffer", async function () {
+        const intructionsLength = 1000;
+        const buffer = Buffer.alloc(intructionsLength * 4);
+        buffer.fill("9091");
+        const conf = ConfigurationHelper.retrieveStringPropertyInDefaultConf('cstool');
+        if (conf) {
+            const capstone = new Capstone(conf);
+            const code = await capstone.disassemble(buffer.toString());
+            const lines = code.split("\n");
+            expect(lines.length).to.be.equal(intructionsLength + 2);
+            expect(lines[5].replace("\r", "")).to.be.equal(" 8  90 91  sub.l\t(a1), d0");
+        } else {
+            fail("capstone not defined");
+        }
     });
     it("Should disassemble a file", async function () {
         when(mockedExecutor.runToolRetrieveStdout(anything(), anything(), anything(), anything(), anything())).thenResolve(" 0  90 91  sub.l\t(a1), d0\n");

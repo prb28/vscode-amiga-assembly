@@ -12,7 +12,7 @@ import { CancellationTokenSource, window, Uri } from 'vscode';
 import { DebugInfo } from './debugInfo';
 import { Capstone } from './capstone';
 import { DebugVariableResolver } from './debugVariableResolver';
-import { DebugExpressionHelper } from './debugExpressionHelper';
+import { DebugExpressionHelper, DisassembledInstructionAdapter } from './debugExpressionHelper';
 import { DebugDisassembledManager, DisassembleAddressArguments } from './debugDisassembled';
 import { StringUtils } from './stringUtils';
 import { MemoryLabelsRegistry } from './customMemoryAddresses';
@@ -290,8 +290,10 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         // Read memory
         response.body.supportsReadMemoryRequest = true;
 
-        // Disassemble
+        // make VS Code send disassemble request
         response.body.supportsDisassembleRequest = true;
+        response.body.supportsSteppingGranularity = false;
+        response.body.supportsInstructionBreakpoints = true;
 
         // Data breakpoint
         response.body.supportsDataBreakpoints = true;
@@ -320,9 +322,8 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         const conf = ConfigurationHelper.retrieveStringPropertyInDefaultConf('cstool');
         if (!this.capstone && conf && (conf.length > 5)) {
             this.capstone = new Capstone(conf);
+            this.debugDisassembledManager.setCapstone(this.capstone);
         }
-
-        this.debugDisassembledManager = new DebugDisassembledManager(this.gdbProxy, this.capstone, this);
 
         this.sendResponse(response);
 
@@ -516,8 +517,71 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected async disassembleRequestInner(response: DebugProtocol.DisassembleResponse, args: DisassembleAddressArguments): Promise<void> {
+        const newArgs = { ...args };
         try {
-            const instructions = await this.debugDisassembledManager.disassembleRequest(args);
+            let firstAddress = undefined;
+            if (args.addressExpression && (args.offset || args.instructionOffset)) {
+                const segments = this.gdbProxy.getSegments();
+                if (segments) {
+                    firstAddress = parseInt(args.addressExpression);
+                    if (args.offset) {
+                        firstAddress = firstAddress - args.offset;
+                    }
+                    const segment = this.findSegmentForAddress(firstAddress, segments);
+                    if (segment) {
+                        newArgs.addressExpression = segment.address.toString();
+                    }
+                }
+            }
+            let instructions = await this.debugDisassembledManager.disassembleRequest(newArgs);
+            if (firstAddress) {
+                let iIndex = undefined;
+                let index = 0;
+                const firstInstructionAddress = parseInt(instructions[0].address);
+                for (const instruction of instructions) {
+                    if (parseInt(instruction.address) === firstAddress) {
+                        iIndex = index;
+                        break;
+                    }
+                    index++;
+                }
+                if (iIndex !== undefined && args.instructionOffset) {
+                    const start = iIndex + args.instructionOffset;
+                    if (start < 0) {
+                        const emptyArray = new Array<DebugProtocol.DisassembledInstruction>(-start);
+                        let currentAddress = firstInstructionAddress - 4;
+                        for (let i = emptyArray.length - 1; i >= 0; i--) {
+                            emptyArray[i] = <DebugProtocol.DisassembledInstruction>{
+                                address: DisassembledInstructionAdapter.getAddressString(currentAddress), instruction: "-------"
+                            };
+                            currentAddress -= 4;
+                            if (currentAddress < 0) {
+                                currentAddress = 0;
+                            }
+                        }
+                        instructions = emptyArray.concat(instructions);
+                    } else if (start > 0 && start < instructions.length) {
+                        instructions = instructions.splice(0, start);
+                    }
+                    if (instructions.length < args.instructionCount) {
+                        const emptyArray = new Array<DebugProtocol.DisassembledInstruction>(args.instructionCount - instructions.length);
+                        const instr = instructions[instructions.length - 1];
+                        let lastAddress = parseInt(instr.address);
+                        if (instr.instructionBytes) {
+                            lastAddress += instr.instructionBytes.split(" ").length;
+                        }
+                        for (let i = 0; i < emptyArray.length; i++) {
+                            emptyArray[i] = <DebugProtocol.DisassembledInstruction>{
+                                address: DisassembledInstructionAdapter.getAddressString(lastAddress + i * 4), instruction: "-------"
+                            };
+                        }
+                        instructions = instructions.concat(emptyArray);
+                    } else if (instructions.length > args.instructionCount) {
+                        instructions = instructions.splice(0, args.instructionCount);
+                    }
+                }
+            }
+            await this.findInstructionSourceLines(instructions);
             response.body = {
                 instructions: instructions,
             };
@@ -528,8 +592,33 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     }
 
     protected disassembleRequest(response: DebugProtocol.DisassembleResponse, args: DebugProtocol.DisassembleArguments): Promise<void> {
-        const dArgs = DisassembleAddressArguments.copy(args, false);
+        const isCopper = this.disassembledCopperCache.get(parseInt(args.memoryReference)) !== undefined;
+        const dArgs = DisassembleAddressArguments.copy(args, isCopper);
         return this.disassembleRequestInner(response, dArgs);
+    }
+
+    protected async setInstructionBreakpointsRequest(response: DebugProtocol.SetInstructionBreakpointsResponse, args: DebugProtocol.SetInstructionBreakpointsArguments) {
+        const debugBreakPoints = new Array<DebugProtocol.Breakpoint>();
+        // clear all breakpoints for this file
+        await this.breakpointManager.clearInstructionBreakpoints();
+        // set and verify breakpoint locations
+        if (args.breakpoints) {
+            for (const reqBp of args.breakpoints) {
+                const debugBp = this.breakpointManager.createInstructionBreakpoint(parseInt(reqBp.instructionReference));
+                try {
+                    const modifiedBp = await this.breakpointManager.setBreakpoint(debugBp);
+                    debugBreakPoints.push(modifiedBp);
+                } catch (err) {
+                    debugBreakPoints.push(debugBp);
+                }
+            }
+        }
+        // send back the actual breakpoint positions
+        response.body = {
+            breakpoints: debugBreakPoints
+        };
+        response.success = true;
+        this.sendResponse(response);
     }
 
     protected terminateEmulator(): void {
@@ -578,7 +667,6 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
             this.sendStringErrorResponse(response, err.message);
         }
     }
-
     protected async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): Promise<void> {
         if (this.debugInfo) {
             await this.gdbProxy.waitConnected();
@@ -612,7 +700,9 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                                 } else {
                                     line = pc;
                                 }
-                                stackFrames.push(new StackFrame(f.index, line, this.createSource(values[0]), values[1], 1));
+                                const sf = new StackFrame(f.index, line, this.createSource(values[0]), values[1], 1);
+                                sf.instructionPointerReference = StringUtils.formatAddress(f.pc);
+                                stackFrames.push(sf);
                                 stackFrameDone = true;
                             }
                         }
@@ -718,8 +808,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                         const variablesArray = new Array<DebugProtocol.Variable>();
                         const srVariablesArray = new Array<DebugProtocol.Variable>();
                         const srVRef = this.variableHandles.create("status_register_" + frameId);
-                        for (let i = 0; i < registers.length; i++) {
-                            const r = registers[i];
+                        for (const r of registers) {
                             let variableName = r.name;
                             if (r.name.startsWith("SR_")) {
                                 variableName = variableName.replace("SR_", "");
@@ -1250,6 +1339,7 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 if (posSegment >= segments.length) {
                     // Segment not declared by the protocol
                     segment = <Segment>{
+                        id: posSegment,
                         address: 0,
                         name: "",
                         size: hunk.allocSize
@@ -1283,5 +1373,45 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
     //---- helpers
     protected createSource(filePath: string): Source {
         return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath));
+    }
+
+    protected async findInstructionSourceLines(instructions: DebugProtocol.DisassembledInstruction[]): Promise<void> {
+        const segments = this.gdbProxy.getSegments();
+        if (segments) {
+            for (const instruction of instructions) {
+                const values = await this.findSourceLine(parseInt(instruction.address), segments);
+                if (values) {
+                    const [source, lineNumber] = values;
+                    instruction.location = source;
+                    instruction.line = lineNumber;
+                }
+            }
+        }
+    }
+
+    protected async findSourceLine(address: number, segments: Segment[]): Promise<[Source, number] | undefined> {
+        if (this.debugInfo) {
+            const selectedSegment = this.findSegmentForAddress(address, segments);
+            if (selectedSegment) {
+                const values = await this.debugInfo.resolveFileLine(selectedSegment.id, address - selectedSegment.address);
+                if (values) {
+                    return [this.createSource(values[0]), values[1]];
+                }
+            }
+        }
+        return undefined;
+    }
+
+    protected findSegmentForAddress(address: number, segments: Segment[]): Segment | undefined {
+        for (const segment of segments) {
+            if (this.isAddressInSegment(address, segment)) {
+                return segment;
+            }
+        }
+        return undefined;
+    }
+
+    protected isAddressInSegment(address: number, segment: Segment): boolean {
+        return address >= segment.address && address < segment.address + segment.size;
     }
 }

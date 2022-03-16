@@ -69,6 +69,7 @@ export class GdbProxyWinUAE extends GdbProxy {
                 address = segElms[0];
             }
             this.segments.push(<Segment>{
+                id: segIdx - 1,
                 name: name,
                 address: parseInt(address, 16),
                 size: 0,

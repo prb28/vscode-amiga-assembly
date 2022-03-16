@@ -272,17 +272,20 @@ export class GdbProxy extends EventEmitter {
         const segs = segmentReply.split(";");
         this.segments = new Array<Segment>();
         // The segments message begins with the keyword AS
+        let index = 0;
         for (const seg of segs) {
             const segElms = seg.split("=");
             if (segElms.length > 1) {
                 const name = segElms[0];
                 const address = segElms[1];
                 this.segments.push(<Segment>{
+                    id: index,
                     name: name,
                     address: parseInt(address, 16),
                     size: 0,
                 });
             }
+            index++;
         }
         this.sendEvent("segmentsUpdated", this.segments);
     }
@@ -814,13 +817,16 @@ export class GdbProxy extends EventEmitter {
         const segs = segmentReply.substring(2).split(";"); // removing "AS"
         this.segments = new Array<Segment>();
         // The segments message begins with the keyword AS
+        let index = 0;
         for (let i = 1; i < segs.length - 1; i += 2) {
             const address = segs[i];
             const size = segs[i + 1];
             this.segments.push(<Segment>{
+                id: index,
                 address: parseInt(address, 16),
                 size: parseInt(size, 16),
             });
+            index++;
         }
         this.sendEvent("segmentsUpdated", this.segments);
     }
