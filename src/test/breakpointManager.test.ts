@@ -33,6 +33,7 @@ describe('Breakpoint Manager', () => {
         mockedDebugDisassembledManager = mock(DebugDisassembledManager);
         mockedDebugInfo = mock(DebugInfo);
         bpManager = new BreakpointManager(instance(mockedGdbProxy), instance(mockedDebugDisassembledManager));
+        when(mockedGdbProxy.isConnected()).thenReturn(true);
     });
     afterEach(function () {
         reset(mockedGdbProxy);

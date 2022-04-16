@@ -788,11 +788,16 @@ export class GdbProxy extends EventEmitter {
      * Reads the thread id's
      */
     public async getThreadIds(): Promise<Array<GdbThread>> {
-        if (this.threads.size <= 0) {
-            const data = await this.sendPacketString("qfThreadInfo", GdbPacketType.UNKNOWN);
-            return this.parseThreadsMessage(data);
-        } else {
-            return Array.from(this.threads.values());
+        const unlock = await this.mutex.capture('getThreadIds');
+        try {
+            if (this.threads.size <= 0) {
+                const data = await this.sendPacketString("qfThreadInfo", GdbPacketType.UNKNOWN);
+                return this.parseThreadsMessage(data);
+            } else {
+                return Array.from(this.threads.values());
+            }
+        } finally {
+            unlock();
         }
     }
 

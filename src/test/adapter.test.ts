@@ -213,6 +213,7 @@ describe('Node Debug Adapter', () => {
 		beforeEach(function () {
 			if (!testWithRealEmulator) {
 				when(this.mockedGdbProxy.connect(anything(), anything())).thenReturn(Promise.resolve());
+				when(this.mockedGdbProxy.isConnected()).thenReturn(true);
 				when(this.spiedSession.startEmulator(anything())).thenReturn(Promise.resolve()); // Do nothing
 			}
 		});

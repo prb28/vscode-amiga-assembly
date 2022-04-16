@@ -97,37 +97,41 @@ export class BreakpointManager {
 
     public async setBreakpoint(debugBp: GdbBreakpoint): Promise<GdbBreakpoint> {
         try {
-            if (debugBp.source && debugBp.line && (debugBp.id !== undefined)) {
-                debugBp.verified = false;
-                const path = <string>debugBp.source.path;
+            if (this.gdbProxy.isConnected()) {
+                if (debugBp.source && debugBp.line && (debugBp.id !== undefined)) {
+                    debugBp.verified = false;
+                    const path = <string>debugBp.source.path;
 
-                if (!DebugDisassembledFile.isDebugAsmFile(path)) {
-                    if (this.debugInfo) {
-                        if (await this.fillBreakpointWithSegAddress(debugBp, path, debugBp.line)) {
-                            await this.gdbProxy.setBreakpoint(debugBp);
-                            this.breakpoints.push(debugBp);
+                    if (!DebugDisassembledFile.isDebugAsmFile(path)) {
+                        if (this.debugInfo) {
+                            if (await this.fillBreakpointWithSegAddress(debugBp, path, debugBp.line)) {
+                                await this.gdbProxy.setBreakpoint(debugBp);
+                                this.breakpoints.push(debugBp);
+                            } else {
+                                throw new Error("Segment offset not resolved");
+                            }
                         } else {
-                            throw new Error("Segment offset not resolved");
+                            throw new Error("Debug information not retrieved");
                         }
                     } else {
-                        throw new Error("Debug information not retrieved");
+                        const name = <string>debugBp.source.name;
+                        const address = await this.debugDisassembledManager.getAddressForFileEditorLine(name, debugBp.line);
+                        debugBp.segmentId = undefined;
+                        debugBp.offset = address;
+                        await this.gdbProxy.setBreakpoint(debugBp);
+                        this.breakpoints.push(debugBp);
+                    }
+                } else if (debugBp.exceptionMask !== undefined
+                    || ((debugBp.breakpointType === GdbBreakpointType.DATA || debugBp.breakpointType === GdbBreakpointType.INSTRUCTION) && this.gdbProxy.isConnected())) {
+                    await this.gdbProxy.setBreakpoint(debugBp);
+                    if (debugBp.exceptionMask === undefined) {
+                        this.breakpoints.push(debugBp);
                     }
                 } else {
-                    const name = <string>debugBp.source.name;
-                    const address = await this.debugDisassembledManager.getAddressForFileEditorLine(name, debugBp.line);
-                    debugBp.segmentId = undefined;
-                    debugBp.offset = address;
-                    await this.gdbProxy.setBreakpoint(debugBp);
-                    this.breakpoints.push(debugBp);
-                }
-            } else if (debugBp.exceptionMask !== undefined
-                || ((debugBp.breakpointType === GdbBreakpointType.DATA || debugBp.breakpointType === GdbBreakpointType.INSTRUCTION) && this.gdbProxy.isConnected())) {
-                await this.gdbProxy.setBreakpoint(debugBp);
-                if (debugBp.exceptionMask === undefined) {
-                    this.breakpoints.push(debugBp);
+                    throw new Error("Breakpoint info incomplete");
                 }
             } else {
-                throw new Error("Breakpoint info incomplete");
+                this.addPendingBreakpoint(debugBp);
             }
         } catch (error) {
             this.addPendingBreakpoint(debugBp, error);
