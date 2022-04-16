@@ -8,11 +8,10 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
-## New in 1.2
-- Memory read/write/readwrite watch breakpoint on WinUAE [wiki details](https://github.com/prb28/vscode-amiga-assembly/wiki/Debugging-emulator#add-a-memory-watch-breakpoint-on-winuae)
-- Completion, outline, documentation improvements by *grahambates*
-- Add documentation for compiler directives
-- Extension compressed with webpack (faster loading time)
+## New in 1.4
+- Fix binaries download issues
+- Use of default vscode disassembly view non source debugging
+- Add vscode hex editor for memory editing
 - Bug fixes
 
 ## Breaking change 1.0!
@@ -90,14 +89,19 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
-## New in 1.2 (1.1 pre-release)
+## 1.4 (1.3 pre-release)
+- Fix binaries download issues
+- Use of default vscode disassembly view non source debugging
+- Bug fixes
+
+## 1.2 (1.1 pre-release)
 - Memory read/write/readwrite watch breakpoint on WinUAE
 - Completion, outline, documentation improvements by *grahambates*
 - Add documentation for compiler directives
 - Extension compressed with webpack (faster loading time)
 - Bug fixes
 
-## New in 1.0
+## 1.0
 - Build sequence review with output displayed
 - Selection of display format for variables
 - Add a "Run current file" launch configuration
@@ -243,5 +247,5 @@ The assembly language will be formatted with the standard shortcuts :
 ## Misc credits
 See the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) for detailed credits.
 
-## Misc Licence
+## Misc License
 Amiga and the boing ball are licensed by [Cloanto Coporation](https://cloanto.com)
