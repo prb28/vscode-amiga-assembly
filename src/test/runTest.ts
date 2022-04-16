@@ -22,7 +22,7 @@ async function main() {
         const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
 
         // Use cp.spawn / cp.exec for custom setup
-        cp.spawnSync(cliPath, ['--install-extension', 'mindaro-dev.file-downloader'], {
+        cp.spawnSync(cliPath, [], {
             encoding: 'utf-8',
             stdio: 'inherit'
         });

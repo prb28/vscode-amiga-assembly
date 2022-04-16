@@ -955,9 +955,6 @@
             }
         ]
     },
-    "extensionDependencies": [
-        "mindaro-dev.file-downloader"
-    ],
     "scripts": {
         "vscode:prepublish": "webpack --mode production",
         "webpack": "webpack --mode development",
@@ -979,6 +976,9 @@
         "@types/vscode": "^1.64.0",
         "@typescript-eslint/eslint-plugin": "^5.10.2",
         "@typescript-eslint/parser": "^5.10.2",
+        "@types/rimraf": "^3.0.2",
+        "@types/unzipper": "^0.10.5",
+        "@types/uuid": "^8.3.4",
         "chai": "^4.3.6",
         "chai-as-promised": "^7.1.1",
         "decache": "^4.6.1",
@@ -997,13 +997,15 @@
         "webpack-cli": "^4.9.2"
     },
     "dependencies": {
-        "@microsoft/vscode-file-downloader-api": "^1.0.1",
         "await-notify": "^1.0.1",
         "axios": "^0.25.0",
         "glob": "^7.2.0",
         "vscode-debugadapter": "^1.51.0",
         "vscode-debugprotocol": "^1.51.0",
         "winston": "^3.5.1",
-        "winston-transport": "^4.5.0"
+        "winston-transport": "^4.5.0",
+        "extract-zip": "^2.0.1",
+        "rimraf": "^3.0.2",
+        "uuid": "^8.3.2"
     }
 }

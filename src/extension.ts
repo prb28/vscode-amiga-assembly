@@ -32,6 +32,9 @@ import { ConfigurationHelper } from './configurationHelper';
 import { WorkspaceManager } from './workspaceManager';
 import { DebugDisassembledFile } from './debugDisassembled';
 import { BreakpointManager } from './breakpointManager';
+import HttpRequestHandler from './filedownloader/networking/HttpRequestHandler';
+import FileDownloader from './filedownloader/FileDownloader';
+import OutputLogger from './filedownloader/logging/OutputLogger';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
@@ -72,6 +75,7 @@ export class ExtensionState {
     private workspaceRootDir: vscode.Uri | null = null;
     private forcedBuildDir?: FileProxy;
     private iffViewPanelsMap: Map<vscode.WebviewPanel, IFFViewerPanel>;
+    private fileDownloader?: FileDownloader;
 
     private extensionPath: string = path.join(__dirname, "..");
 
@@ -316,6 +320,14 @@ export class ExtensionState {
     getIffViewPanelsMap(): Map<vscode.WebviewPanel, IFFViewerPanel> {
         return this.iffViewPanelsMap;
     }
+
+    setFileDownloader(fileDownloader: FileDownloader) {
+        this.fileDownloader = fileDownloader;
+    }
+
+    getFileDownloader(): FileDownloader | undefined {
+        return this.fileDownloader;
+    }
 }
 
 const state = new ExtensionState();
@@ -326,6 +338,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     state.setExtensionPath(context.extensionPath);
     const languageAsm = await state.getLanguage();
     ASMLine.init(languageAsm);
+
+    // Create the file downloader
+    const logger = new OutputLogger('Amiga Assembly', context);
+    const requestHandler = new HttpRequestHandler(logger);
+    state.setFileDownloader(new FileDownloader(requestHandler, logger));
 
     // Preparing the status manager
     const statusManager = state.getStatusManager();

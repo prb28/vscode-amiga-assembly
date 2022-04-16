@@ -1,10 +1,11 @@
 import { ExtensionContext, ProgressLocation, Uri, window } from "vscode";
 import * as path from 'path';
-import { getApi, FileDownloader } from "@microsoft/vscode-file-downloader-api";
 import axios from 'axios';
 import { FileProxy } from "./fsProxy";
 import winston = require("winston");
 import { EventEmitter } from "stream";
+import FileDownloader from "./filedownloader/FileDownloader";
+import { ExtensionState } from "./extension";
 
 /**
  * Interface to store the Github Tag information
@@ -327,7 +328,7 @@ export class DownloadManager extends EventEmitter {
      * @returns local downloaded file path
      */
     public async getDownloadedFile(filename: string, context: ExtensionContext): Promise<Uri> {
-        const fileDownloader: FileDownloader = await this.getFileDownloader();
+        const fileDownloader: FileDownloader = this.getFileDownloader();
         return fileDownloader.getItem(filename, context);
     }
 
@@ -337,7 +338,7 @@ export class DownloadManager extends EventEmitter {
      * @param context Context of the extension
      */
     public async deleteDownloadedFile(filename: string, context: ExtensionContext): Promise<void> {
-        const fileDownloader: FileDownloader = await this.getFileDownloader();
+        const fileDownloader: FileDownloader = this.getFileDownloader();
         await fileDownloader.deleteItem(filename, context);
     }
 
@@ -346,7 +347,7 @@ export class DownloadManager extends EventEmitter {
      * @param context Context of the extension
      */
     public async deleteAllDownloadedFiles(context: ExtensionContext): Promise<void> {
-        const fileDownloader: FileDownloader = await this.getFileDownloader();
+        const fileDownloader: FileDownloader = this.getFileDownloader();
         await fileDownloader.deleteAllItems(context);
     }
 
@@ -355,7 +356,7 @@ export class DownloadManager extends EventEmitter {
      * @param context Extension context
      */
     public async listAllDownloadedFiles(context: ExtensionContext): Promise<Uri[]> {
-        const fileDownloader: FileDownloader = await this.getFileDownloader();
+        const fileDownloader: FileDownloader = this.getFileDownloader();
         return fileDownloader.listDownloadedItems(context);
     }
 
@@ -363,8 +364,13 @@ export class DownloadManager extends EventEmitter {
      * Return the file downloader api (useful for mocking)
      * @returns FileDownloader api
      */
-    public getFileDownloader(): Promise<FileDownloader> {
-        return getApi();
+    public getFileDownloader(): FileDownloader {
+        const fileDownloader = ExtensionState.getCurrent().getFileDownloader();
+        if (fileDownloader) {
+            return fileDownloader;
+        } else {
+            throw new Error("File downloader not initialized");
+        }
     }
 
     /**
@@ -385,7 +391,7 @@ export class DownloadManager extends EventEmitter {
             cancellable: true
         }, async (progress, token) => {
             // Get downloader API and begin to download the requested file
-            const fileDownloader = await this.getFileDownloader();
+            const fileDownloader = this.getFileDownloader();
             let lastProgress = 0;
             const file: Uri = await fileDownloader.downloadFile(uri, outPath, context, token, (downloaded, total) => {
                 // Just return if we don't know how large the file is

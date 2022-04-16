@@ -2,11 +2,10 @@ import { expect } from 'chai';
 import { BinariesManager, TagInfo, Version, ExampleProjectManager, DownloadManager } from '../downloadManager';
 import { spy, when, anything, mock, instance } from '@johanblumenberg/ts-mockito';
 import { CancellationToken, ExtensionContext, Uri } from 'vscode';
-import { FileDownloader } from '@microsoft/vscode-file-downloader-api';
 import * as temp from 'temp';
 import * as path from 'path';
 import * as fs from 'fs';
-import { FileDownloadSettings } from '@microsoft/vscode-file-downloader-api/out/FileDownloader';
+import FileDownloader, { FileDownloadSettings } from '../filedownloader/FileDownloader';
 
 describe("Download manager tests", function () {
     before(function () {
@@ -124,7 +123,7 @@ describe("Download manager tests", function () {
             when(fileDownloaderMock.downloadFile(anything(), anything(), anything(), anything(), anything(), anything())).thenResolve(downloadedFile);
             when(fileDownloaderMock.listDownloadedItems(anything())).thenResolve([uri1, uri2, uri3]);
             const fileDownloader = instance(fileDownloaderMock);
-            when(spyBinManager.getFileDownloader()).thenResolve(fileDownloader);
+            when(spyBinManager.getFileDownloader()).thenReturn(fileDownloader);
             when(spyBinManager.getZipURL(anything())).thenResolve([v1, "http://mydownload"]);
 
             const fUri = await binManager.downloadProject(<ExtensionContext>{}, vStr);
@@ -167,7 +166,7 @@ describe("Download manager tests", function () {
             when(fileDownloaderMock.downloadFile(anything(), anything(), anything(), anything(), anything(), anything())).thenReject(new Error("not good"));
             when(fileDownloaderMock.listDownloadedItems(anything())).thenResolve([uri1, uri2]);
             const fileDownloader = instance(fileDownloaderMock);
-            when(spyBinManager.getFileDownloader()).thenResolve(fileDownloader);
+            when(spyBinManager.getFileDownloader()).thenReturn(fileDownloader);
             when(spyBinManager.getZipURL(anything())).thenResolve([v1, "http://mydownnload"]);
 
             // tslint:disable-next-line: no-unused-expression
@@ -284,7 +283,7 @@ describe("Download manager tests", function () {
     });
 });
 
-class FileDownloaderMock implements FileDownloader {
+class FileDownloaderMock extends FileDownloader {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     downloadFile(url: Uri, filename: string, context: ExtensionContext, cancellationToken?: CancellationToken, onDownloadProgressChange?: (downloadedBytes: number, totalBytes: number | undefined) => void, settings?: FileDownloadSettings): Promise<Uri> {
         throw new Error('Method not implemented.');
