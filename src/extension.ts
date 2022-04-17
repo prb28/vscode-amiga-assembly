@@ -288,6 +288,23 @@ export class ExtensionState {
     }
 
     /**
+     * Reads the workspaces folders 
+     */
+    getWorkspaceFolders(): Array<vscode.Uri> {
+        const folders = new Array<vscode.Uri>();
+        if (this.workspaceRootDir) {
+            folders.push(this.workspaceRootDir);
+        } else {
+            if (vscode.workspace.workspaceFolders) {
+                for (const folder of vscode.workspace.workspaceFolders) {
+                    folders.push(folder.uri);
+                }
+            }
+        }
+        return folders;
+    }
+
+    /**
      * Select a workspace root directory
      * @param workspaceRootDir Workspace root directory
      */

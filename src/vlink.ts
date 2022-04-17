@@ -74,7 +74,7 @@ export class VLINKLinker {
             let objFilename;
             const extSep = filename.indexOf(".");
             if (extSep > 0) {
-                objFilename = path.join(buildDir.fsPath, filename.substr(0, filename.lastIndexOf(".")) + ".o");
+                objFilename = path.join(buildDir.fsPath, filename.substring(0, filename.lastIndexOf(".")) + ".o");
             } else {
                 objFilename = path.join(buildDir.fsPath, filename + ".o");
             }

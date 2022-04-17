@@ -98,7 +98,7 @@ describe("VASM Tests", function () {
       when(spiedCompiler.getBuildDir()).thenReturn(instance(buildDirMock));
       when(spiedCompiler.getTmpDir()).thenReturn(instance(tmpDirMock));
       when(spiedCompiler.mayCompile(anything())).thenReturn(true);
-      when(spiedCompiler.getWorkspaceRootDir()).thenReturn(vscode.Uri.file("/workdir"));
+      when(spiedCompiler.getWorkspaceRootDirs()).thenReturn([vscode.Uri.file("/workdir")]);
     });
     after(function () {
       reset(buildDirMock);
@@ -321,8 +321,8 @@ describe("VASM Tests", function () {
     });
     it("Should return an error if the build dir does not exists", function () {
       spiedCompiler = spy(compiler);
-      when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
-        vscode.Uri.file("/workdir")
+      when(spiedCompiler.getWorkspaceRootDirs()).thenReturn(
+        [vscode.Uri.file("/workdir")]
       );
       const error = new Error("Not possible");
       when(buildDirMock.mkdir()).thenReject(error);
@@ -407,8 +407,8 @@ describe("VASM Tests", function () {
     });
     it("Should not get an error when cleaning the workspace and vasm disabled", async function () {
       spiedCompiler = spy(compiler);
-      when(spiedCompiler.getWorkspaceRootDir()).thenReturn(
-        vscode.Uri.parse("file:///workdir")
+      when(spiedCompiler.getWorkspaceRootDirs()).thenReturn(
+        [vscode.Uri.parse("file:///workdir")]
       );
       when(buildDirMock.mkdir()).thenResolve();
       when(spiedCompiler.mayCompile(anything())).thenReturn(false);

@@ -196,8 +196,8 @@ export class VASMCompiler {
    * Returns the workspace root directory
    * Useful for tests
    */
-  public getWorkspaceRootDir(): Uri | null {
-    return ExtensionState.getCurrent().getWorkspaceRootDir();
+  public getWorkspaceRootDirs(): Array<Uri> {
+    return ExtensionState.getCurrent().getWorkspaceFolders();
   }
 
   /**
@@ -240,12 +240,16 @@ export class VASMCompiler {
    * @param logEmitter Log emitter
    */
   private async buildWorkspaceInner(conf: VasmBuildProperties, vlinkConf: VlinkBuildProperties, logEmitter?: EventEmitter<string>): Promise<void> {
-    const workspaceRootDir = this.getWorkspaceRootDir();
+    const workspaceFolders = this.getWorkspaceRootDirs();
     const buildDir = this.getBuildDir();
     const ASMOneEnabled = this.isASMOneEnabled();
     try {
-      if (workspaceRootDir && buildDir) {
-        const filesURI = await this.listFilesToBuild(workspaceRootDir, vlinkConf);
+      if (buildDir && workspaceFolders.length > 0) {
+        let filesURI = new Array<Uri>();
+        for (const folder of workspaceFolders) {
+          const files = await this.listFilesToBuild(folder, vlinkConf);
+          filesURI = filesURI.concat(files)
+        }
         const promises: Thenable<ICheckResult[]>[] = [];
         for (const f of filesURI) {
           promises.push(
@@ -298,7 +302,7 @@ export class VASMCompiler {
               startupSequenceFile.writeFile(buf);
             }
           }
-          const errors = await this.linker.linkFiles(vlinkConf, filesURI, vlinkConf.exefilename, vlinkConf.entrypoint, workspaceRootDir, buildDir.getUri(), logEmitter);
+          const errors = await this.linker.linkFiles(vlinkConf, filesURI, vlinkConf.exefilename, vlinkConf.entrypoint, workspaceFolders[0], buildDir.getUri(), logEmitter);
           if (errors && errors.length > 0) {
             for (const err of errors) {
               for (const f of filesURI) {
@@ -343,14 +347,15 @@ export class VASMCompiler {
    * @param logEmitter Emitter for logging
    */
   public async buildFile(conf: VasmBuildProperties, fileUri: Uri, temporaryBuild: boolean, logEmitter?: EventEmitter<string>): Promise<[string | null, ICheckResult[]]> {
-    const workspaceRootDir = this.getWorkspaceRootDir();
+    const workspaceFolders = this.getWorkspaceRootDirs();
     let buildDir: FileProxy;
     if (temporaryBuild) {
       buildDir = this.getTmpDir();
     } else {
       buildDir = this.getBuildDir();
     }
-    if (workspaceRootDir && buildDir) {
+    if (workspaceFolders.length > 0 && buildDir) {
+      const workspaceRootDir = workspaceFolders[0];
       const filename = path.basename(fileUri.fsPath);
       if (this.mayCompile(conf)) {
         if (!await buildDir.exists()) {

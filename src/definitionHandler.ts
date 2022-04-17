@@ -6,6 +6,7 @@ import { Calc } from './calc';
 import { ASMLine } from './parser';
 import { FileProxy } from './fsProxy';
 import { StringUtils } from './stringUtils';
+import { logger } from 'vscode-debugadapter';
 
 export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvider, DocumentSymbolProvider {
     static readonly SOURCE_FILES_GLOB = "**/*.{asm,s,i,ASM,S,I}";
@@ -254,73 +255,78 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     public async scanFile(uri: Uri, document: TextDocument | undefined = undefined): Promise<SymbolFile> {
-        let file = this.files.get(uri.fsPath);
-        if (file === undefined) {
-            file = new SymbolFile(uri);
-            this.files.set(uri.fsPath, file);
-        } else {
-            this.clearSymbolsForFile(file);
-        }
-        if (document) {
-            file.readDocument(document);
-        } else {
-            await file.readFile();
-        }
-        let symbol = file.getDefinedSymbols();
-        for (const s of symbol) {
-            this.definedSymbols.set(s.getLabel(), s);
-        }
-        this.referredSymbols.delete(uri.fsPath);
-        const refs = new Map<string, Array<Symbol>>();
-        const refSymbol = file.getReferredSymbols();
-        for (const s of refSymbol) {
-            const label = s.getLabel();
-            let lst = refs.get(label);
-            if (lst === undefined) {
-                lst = new Array<Symbol>();
-                refs.set(label, lst);
+        try {
+            let file = this.files.get(uri.fsPath);
+            if (file === undefined) {
+                file = new SymbolFile(uri);
+                this.files.set(uri.fsPath, file);
+            } else {
+                this.clearSymbolsForFile(file);
             }
-            lst.push(s);
-        }
-        this.referredSymbols.set(uri.fsPath, refs);
-        symbol = file.getVariables();
-        for (const s of symbol) {
-            this.variables.set(s.getLabel(), s);
-        }
-        // sort variables
-        this.sortedVariablesNames = Array.from(this.variables.keys());
-        this.sortedVariablesNames.sort((a, b) => {
-            return b.length - a.length;
-        });
+            if (document) {
+                file.readDocument(document);
+            } else {
+                await file.readFile();
+            }
+            let symbol = file.getDefinedSymbols();
+            for (const s of symbol) {
+                this.definedSymbols.set(s.getLabel(), s);
+            }
+            this.referredSymbols.delete(uri.fsPath);
+            const refs = new Map<string, Array<Symbol>>();
+            const refSymbol = file.getReferredSymbols();
+            for (const s of refSymbol) {
+                const label = s.getLabel();
+                let lst = refs.get(label);
+                if (lst === undefined) {
+                    lst = new Array<Symbol>();
+                    refs.set(label, lst);
+                }
+                lst.push(s);
+            }
+            this.referredSymbols.set(uri.fsPath, refs);
+            symbol = file.getVariables();
+            for (const s of symbol) {
+                this.variables.set(s.getLabel(), s);
+            }
+            // sort variables
+            this.sortedVariablesNames = Array.from(this.variables.keys());
+            this.sortedVariablesNames.sort((a, b) => {
+                return b.length - a.length;
+            });
 
-        symbol = file.getLabels();
-        for (const s of symbol) {
-            this.labels.set(s.getLabel(), s);
-        }
-        symbol = file.getMacros();
-        for (const s of symbol) {
-            this.macros.set(s.getLabel(), s);
-        }
-        symbol = file.getIncludeDirs();
-        for (const s of symbol) {
-            this.includeDirs.set(s.getLabel(), s);
-        }
-        symbol = file.getXrefs();
-        for (const s of symbol) {
-            this.xrefs.set(s.getLabel(), s);
-        }
+            symbol = file.getLabels();
+            for (const s of symbol) {
+                this.labels.set(s.getLabel(), s);
+            }
+            symbol = file.getMacros();
+            for (const s of symbol) {
+                this.macros.set(s.getLabel(), s);
+            }
+            symbol = file.getIncludeDirs();
+            for (const s of symbol) {
+                this.includeDirs.set(s.getLabel(), s);
+            }
+            symbol = file.getXrefs();
+            for (const s of symbol) {
+                this.xrefs.set(s.getLabel(), s);
+            }
 
-        // Scan any new included files
-        const currentFile = new FileProxy(file.getUri());
-        for (const symbol of file.getIncludedFiles()) {
-            const includedFile = await this.resolveIncludedFile(currentFile, symbol.getLabel());
-            if (includedFile && !this.files.has(includedFile.getPath())) {
-                if (await includedFile.exists() && await includedFile.isFile()) {
-                    await this.scanFile(includedFile.getUri());
+            // Scan any new included files
+            const currentFile = new FileProxy(file.getUri());
+            for (const symbol of file.getIncludedFiles()) {
+                const includedFile = await this.resolveIncludedFile(currentFile, symbol.getLabel());
+                if (includedFile && !this.files.has(includedFile.getPath())) {
+                    if (await includedFile.exists() && await includedFile.isFile()) {
+                        await this.scanFile(includedFile.getUri());
+                    }
                 }
             }
+            return file;
+        } catch (error) {
+            logger.error(`Error while scanning file '${uri}': ${error.message}`);
+            return new SymbolFile(uri);
         }
-        return file;
     }
 
     public deleteFile(uri: Uri) {
