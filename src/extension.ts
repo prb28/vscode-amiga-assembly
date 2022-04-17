@@ -340,7 +340,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     ASMLine.init(languageAsm);
 
     // Create the file downloader
-    const logger = new OutputLogger('Amiga Assembly', context);
+    const logger = new OutputLogger(state.getOutputChannel(), context);
     const requestHandler = new HttpRequestHandler(logger);
     state.setFileDownloader(new FileDownloader(requestHandler, logger));
 
@@ -633,7 +633,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     };
 
     if (ConfigurationHelper.retrieveBooleanProperty(ConfigurationHelper.getDefaultConfiguration(null), 'downloadBinaries', true)) {
-        await vscode.commands.executeCommand('amiga-assembly.download-binaries');
+        setTimeout(async () => {
+            try {
+                vscode.commands.executeCommand('amiga-assembly.download-binaries');
+            } catch (error) {
+                // forget it
+            }
+        }, 500);
     }
     return api;
 }

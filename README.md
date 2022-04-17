@@ -8,7 +8,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
-## New in 1.4
+## New in 1.4 (1.3 pre-release)
 - Fix binaries download issues
 - Use of default vscode disassembly view non source debugging
 - Add vscode hex editor for memory editing

@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { ExtensionContext, OutputChannel, window } from "vscode";
+import { ExtensionContext, OutputChannel } from "vscode";
 import ILogger from "./ILogger";
 
 export default class OutputLogger implements ILogger {
     private readonly _outputChannel: OutputChannel;
 
-    public constructor(extensionName: string, context: ExtensionContext) {
-        this._outputChannel = window.createOutputChannel(extensionName);
+    public constructor(outputChannel: OutputChannel, context: ExtensionContext) {
+        this._outputChannel = outputChannel;
         context.subscriptions.push(this._outputChannel);
     }
 
