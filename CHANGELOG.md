@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 ### [1.4.0] -
+- [Feat #215](https://github.com/prb28/vscode-amiga-assembly/pull/215) *grahambates* Substitute variables in config args
 - [Feat #213](https://github.com/prb28/vscode-amiga-assembly/issues/213) multi-root workspace integration
 - [Issue #211](https://github.com/prb28/vscode-amiga-assembly/issues/211) Unable to Download Binaries
 - [Feat #210](https://github.com/prb28/vscode-amiga-assembly/issues/210) Use of the default disassembly view of vscode
