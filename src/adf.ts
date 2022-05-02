@@ -5,6 +5,7 @@ import { VASMCompiler } from "./vasm";
 import { FileProxy } from "./fsProxy";
 import { ExtensionState } from "./extension";
 import { ConfigurationHelper } from "./configurationHelper";
+import { substituteVariables } from "./configVariables";
 
 /**
  * Definition of the adf properties
@@ -80,7 +81,7 @@ export class ADFTools {
         }
         const includes = conf.includes;
         const excludes = conf.excludes;
-        const adfCreateOptions = conf.adfCreateOptions;
+        const adfCreateOptions = conf.adfCreateOptions.map(a => substituteVariables(a, true));
         let bootBlockSourceFileName;
         if (conf.bootBlockSourceFile) {
             bootBlockSourceFileName = conf.bootBlockSourceFile;
