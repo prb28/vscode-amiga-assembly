@@ -25,7 +25,7 @@ describe("WorkspaceManager test", function () {
         const workspaceManager = new WorkspaceManager();
         const context = ExtensionState.getCurrent().getExtensionContext();
         if (context) {
-            await workspaceManager.createExampleWorkspace(context, "0.21", Uri.file(tempDir));
+            await workspaceManager.createExampleWorkspace(context, "1.0", Uri.file(tempDir));
             const expFile = new FileProxy(Uri.file(path.join(tempDir, "gencop.s")));
             // tslint:disable-next-line: no-unused-expression
             expect(await expFile.exists()).to.be.true;
