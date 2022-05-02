@@ -21,6 +21,7 @@ import { CopperDisassembler } from './copperDisassembler';
 import { FileProxy } from './fsProxy';
 import { VariableDisplayFormat, VariableDisplayFormatRequest, VariableFormatter } from './variableFormatter';
 import { ConfigurationHelper } from './configurationHelper';
+import { substituteVariables } from './configVariables';
 
 /**
  * This interface describes the mock-debug specific launch attributes
@@ -469,10 +470,11 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
                 if (await this.checkEmulator(emulatorExe)) {
                     this.cancellationTokenSource = new CancellationTokenSource();
                     let emulatorWorkingDir = args.emulatorWorkingDir || null;
+                    const options = args.options.map(a => substituteVariables(a, true))
                     if (emulatorWorkingDir) {
                         emulatorWorkingDir = ConfigurationHelper.replaceBinDirVariable(emulatorWorkingDir);
                     }
-                    this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
+                    this.executor.runTool(options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
                         this.sendEvent(new TerminatedEvent());
                     }).catch(err => {
                         this.sendEvent(new TerminatedEvent());

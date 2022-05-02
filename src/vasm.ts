@@ -14,6 +14,7 @@ import * as path from "path";
 import * as winston from 'winston';
 import { FileProxy } from "./fsProxy";
 import { ConfigurationHelper } from "./configurationHelper";
+import { substituteVariables } from "./configVariables";
 
 /**
  * Definition of the vasm build properties
@@ -388,7 +389,7 @@ export class VASMCompiler {
         }
         let confArgs = new Array<string>();
         if (conf.args && (conf.args.length > 0)) {
-          confArgs = conf.args;
+          confArgs = conf.args.map((a) => substituteVariables(a, true));
         }
         const args: Array<string> = confArgs.concat(["-o", objFilename, fileUri.fsPath]);
         errorDiagnosticCollection.delete(fileUri);

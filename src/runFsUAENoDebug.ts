@@ -10,6 +10,7 @@ import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { CancellationTokenSource, window, Uri } from 'vscode';
 import { ExecutorHelper } from './execHelper';
 import { FileProxy } from './fsProxy';
+import { substituteVariables } from './configVariables';
 
 /**
  * This interface describes the mock-debug specific launch attributes
@@ -109,12 +110,13 @@ export class RunFsUAENoDebugSession extends DebugSession {
 		logger.warn("Starting emulator: " + args.emulator);
 		const emulatorExe = args.emulator;
 		const emulatorWorkingDir = args.emulatorWorkingDir || null;
+		const options = args.options.map((a) => substituteVariables(a, true));
 		if (emulatorExe) {
 			// Is the emulator exe present in the filesystem ?
 			if (await this.checkEmulator(emulatorExe)) {
 				this.cancellationTokenSource = new CancellationTokenSource();
 				try {
-					await this.executor.runTool(args.options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token);
+					await this.executor.runTool(options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token);
 					this.sendEvent(new TerminatedEvent());
 				} catch (err) {
 					throw new Error(`Error raised by the emulator run: ${err.message}`);
