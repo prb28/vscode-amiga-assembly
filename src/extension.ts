@@ -652,7 +652,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     if (ConfigurationHelper.retrieveBooleanProperty(ConfigurationHelper.getDefaultConfiguration(null), 'downloadBinaries', true)) {
         setTimeout(async () => {
             try {
-                vscode.commands.executeCommand('amiga-assembly.download-binaries');
+                await vscode.commands.executeCommand('amiga-assembly.download-binaries');
             } catch (error) {
                 // forget it
             }
