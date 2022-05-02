@@ -28,6 +28,9 @@ export interface FileDownloadSettings {
 }
 
 export default class FileDownloader implements IFileDownloader {
+    public static readonly MAX_FILES = 10000;
+    public static readonly MAX_SIZE = 1000000000; // 1 GB
+    public static readonly THRESHOLD_RATIO = 10;
     public static readonly DOWNLOAD_DIR = `downloads`;
     public constructor(
         private readonly _requestHandler: IHttpRequestHandler,
@@ -64,7 +67,7 @@ export default class FileDownloader implements IFileDownloader {
         const retryDelayInMs = settings?.retryDelayInMs ?? DefaultRetryDelayInMs;
         const shouldUnzip = settings?.shouldUnzip ?? false;
         let progress = 0;
-        let progressTimerId: any;
+        let progressTimerId: NodeJS.Timeout | undefined;
         try {
             progressTimerId = setInterval(() => {
                 if (progress <= 100) {
@@ -73,7 +76,7 @@ export default class FileDownloader implements IFileDownloader {
                         onDownloadProgressChange(progress++, 100);
                     }
                 }
-                else {
+                else if (progressTimerId) {
                     clearInterval(progressTimerId);
                 }
             }, 1500);
@@ -94,8 +97,33 @@ export default class FileDownloader implements IFileDownloader {
 
             if (shouldUnzip) {
                 const unzipDownloadedFileAsyncFn = async (): Promise<void> => {
+                    let fileCount = 0;
+                    let totalSize = 0;
                     await fs.promises.access(tempZipFileDownloadPath);
-                    await extractZip(tempZipFileDownloadPath, { dir: tempFileDownloadPath });
+                    await extractZip(tempZipFileDownloadPath, {
+                        dir: tempFileDownloadPath,
+                        onEntry: (entry) => {
+                            fileCount++;
+                            if (fileCount > FileDownloader.MAX_FILES) {
+                                throw 'Reached max. number of files';
+                            }
+
+                            // The uncompressedSize comes from the zip headers, so it might not be trustworthy.
+                            // Alternatively, calculate the size from the readStream.
+                            const entrySize = entry.uncompressedSize;
+                            totalSize += entrySize;
+                            if (totalSize > FileDownloader.MAX_SIZE) {
+                                throw 'Reached max. size';
+                            }
+
+                            if (entry.compressedSize > 0) {
+                                const compressionRatio = entrySize / entry.compressedSize;
+                                if (compressionRatio > FileDownloader.THRESHOLD_RATIO) {
+                                    throw 'Reached max. compression ratio';
+                                }
+                            }
+                        }
+                    })
                     await rimrafAsync(tempZipFileDownloadPath);
                 };
                 await RetryUtility.exponentialRetryAsync(unzipDownloadedFileAsyncFn, unzipDownloadedFileAsyncFn.name, retries, retryDelayInMs);
