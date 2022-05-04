@@ -465,14 +465,14 @@ export class FsUAEDebugSession extends DebugSession implements DebugVariableReso
         if (args.startEmulator) {
             this.sendEvent(new OutputEvent(`Starting emulator: ${args.emulator}`));
             if (args.emulator) {
-                const emulatorExe = ConfigurationHelper.replaceBinDirVariable(args.emulator);
+                const emulatorExe = substituteVariables(args.emulator, true);
                 // Is the emulator exe present in the filesystem ?
                 if (await this.checkEmulator(emulatorExe)) {
                     this.cancellationTokenSource = new CancellationTokenSource();
                     let emulatorWorkingDir = args.emulatorWorkingDir || null;
                     const options = args.options.map(a => substituteVariables(a, true))
                     if (emulatorWorkingDir) {
-                        emulatorWorkingDir = ConfigurationHelper.replaceBinDirVariable(emulatorWorkingDir);
+                        emulatorWorkingDir = substituteVariables(emulatorWorkingDir, true);
                     }
                     this.executor.runTool(options, emulatorWorkingDir, "warning", true, emulatorExe, null, true, null, this.cancellationTokenSource.token).then(() => {
                         this.sendEvent(new TerminatedEvent());
