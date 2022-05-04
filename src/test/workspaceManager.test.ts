@@ -9,7 +9,7 @@ import { WorkspaceManager } from '../workspaceManager';
 import { ExtensionState } from '../extension';
 chai.use(chaiAsPromised);
 
-describe.only("WorkspaceManager test", function () {
+describe("WorkspaceManager test", function () {
     before(async function () {
         // Automatically track and cleanup files at exit
         temp.track();
