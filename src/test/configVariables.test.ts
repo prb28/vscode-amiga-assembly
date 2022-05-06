@@ -48,7 +48,7 @@ describe("configVariables", () => {
           },
         ],
       });
-      expect(result).to.equal("foo /example/dir baz");
+      expect(result.replace(/\\/g, "/")).to.equal("foo /example/dir baz");
     });
 
     it("replaces workspaceFolderBasename", () => {
@@ -86,7 +86,7 @@ describe("configVariables", () => {
           ),
         } as unknown as vscode.TextEditor,
       });
-      expect(result).to.equal("foo /example/dir/file.s baz");
+      expect(result.replace(/\\/g, "/")).to.equal("foo /example/dir/file.s baz");
     });
 
     it("replaces fileWorkspaceFolder", () => {
@@ -115,7 +115,7 @@ describe("configVariables", () => {
           ),
         } as unknown as vscode.TextEditor,
       });
-      expect(result).to.equal("foo /example2 baz");
+      expect(result.replace(/\\/g, "/")).to.equal("foo /example2 baz");
     });
 
     it("replaces relativeFile", () => {
@@ -293,7 +293,7 @@ describe("configVariables", () => {
           ),
         } as unknown as vscode.TextEditor,
       });
-      expect(result).to.equal("foo /example/dir baz");
+      expect(result.replace(/\\/g, "/")).to.equal("foo /example/dir baz");
     });
 
     it("replaces lineNumber", () => {
