@@ -1,7 +1,6 @@
 import { Uri, EventEmitter } from "vscode";
 import { ExecutorParser, ICheckResult, ExecutorHelper } from "./execHelper";
 import * as path from "path";
-import { ConfigurationHelper } from "./configurationHelper";
 import { substituteVariables } from "./configVariables";
 
 /**
@@ -67,7 +66,11 @@ export class VLINKLinker {
      * @param logEmitter Log emitter
      */
     public async linkFiles(conf: VlinkBuildProperties, filesURI: Uri[], exeFilepathname: string, entrypoint: string | undefined, workspaceRootDir: Uri, buildDir: Uri, logEmitter?: EventEmitter<string>): Promise<ICheckResult[]> {
-        const vlinkExecutableName: string = ConfigurationHelper.replaceBinDirVariable(conf.command);
+        exeFilepathname = substituteVariables(exeFilepathname, true);
+        if (entrypoint) {
+          entrypoint = substituteVariables(entrypoint, true);
+        }
+        const vlinkExecutableName: string = substituteVariables(conf.command, true);
         const confArgs = conf.args.map(a => substituteVariables(a, true));
         const objectPathNames: string[] = [];
         for (let i = 0; i < filesURI.length; i += 1) {

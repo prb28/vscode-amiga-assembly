@@ -376,7 +376,7 @@ export class VASMCompiler {
         const state = ExtensionState.getCurrent();
         const warningDiagnosticCollection = state.getWarningDiagnosticCollection();
         const errorDiagnosticCollection = state.getErrorDiagnosticCollection();
-        const vasmExecutableName: string = ConfigurationHelper.replaceBinDirVariable(conf.command);
+        const vasmExecutableName: string = substituteVariables(conf.command, true);
         const extSep = filename.indexOf(".");
         let objFilename: string;
         if (extSep > 0) {

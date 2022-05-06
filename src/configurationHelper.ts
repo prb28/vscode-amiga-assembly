@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import winston = require('winston');
+import { substituteVariables } from './configVariables';
 import { FileProxy } from './fsProxy';
 export class ConfigurationHelper {
     public static readonly CONFIGURATION_NAME = 'amiga-assembly';
@@ -107,25 +108,8 @@ export class ConfigurationHelper {
         const configuration = ConfigurationHelper.getDefaultConfiguration(null);
         const confValue = configuration.get<string>(key);
         if (confValue) {
-            return ConfigurationHelper.replaceBinDirVariable(confValue);
+            return substituteVariables(confValue, true);
         }
         return undefined;
-    }
-
-    /**
-     * 
-     * @param value Replaces a variable with the binaries directory path
-     * @returns Replaced value or undefined
-     */
-    public static replaceBinDirVariable(value: string): string {
-        const configuration = ConfigurationHelper.getDefaultConfiguration(null);
-        let binariesPath = configuration.get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
-        if (ConfigurationHelper.BINARY_PATH) {
-            binariesPath = ConfigurationHelper.BINARY_PATH;
-        }
-        if (binariesPath) {
-            return value.replace("${config:amiga-assembly.binDir}", binariesPath);
-        }
-        return value;
     }
 }
