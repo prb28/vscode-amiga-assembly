@@ -6,7 +6,6 @@ export class ConfigurationHelper {
     public static readonly CONFIGURATION_NAME = 'amiga-assembly';
     public static readonly BINARIES_PATH_KEY = 'binDir';
     public static readonly BINARIES_PATH_DEFAULT = '${workspaceFolder}/bin';
-    public static BINARY_PATH?: string;
 
     /**
      * Set the current binaries path
@@ -21,11 +20,7 @@ export class ConfigurationHelper {
         }
         const upBin = (new FileProxy(vscode.Uri.file(binariesPath))).getParent();
         if (!currentValue || (upCurrent && FileProxy.inSameDir(upCurrent.getPath(), upBin.getPath())) || currentValue === ConfigurationHelper.BINARIES_PATH_DEFAULT) {
-            try {
-                await ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, binariesPath, vscode.ConfigurationTarget.Global);
-            } catch (error) {
-                ConfigurationHelper.BINARY_PATH = binariesPath;
-            }
+            await ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, binariesPath, vscode.ConfigurationTarget.Global);
         } else {
             winston.info(`Using binary path set by user: ${currentValue}`);
         }
