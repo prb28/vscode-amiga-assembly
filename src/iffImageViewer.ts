@@ -42,7 +42,7 @@ export class IFFViewerPanel {
         );
 
         const view = new IFFViewerPanel(panel, extensionPath, image);
-        await view.update();
+        view.update();
         return [panel, view];
     }
 
