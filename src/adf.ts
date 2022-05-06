@@ -4,7 +4,6 @@ import * as path from 'path';
 import { VASMCompiler } from "./vasm";
 import { FileProxy } from "./fsProxy";
 import { ExtensionState } from "./extension";
-import { ConfigurationHelper } from "./configurationHelper";
 import { substituteVariables } from "./configVariables";
 
 /**
@@ -49,7 +48,7 @@ export class ADFTools {
      */
     public constructor(adfToolsRootPath: string) {
         this.executor = new ExecutorHelper();
-        this.setToolsRootPath(ConfigurationHelper.replaceBinDirVariable(adfToolsRootPath));
+        this.setToolsRootPath(substituteVariables(adfToolsRootPath, true));
     }
 
     /**
@@ -71,20 +70,20 @@ export class ADFTools {
      * @param cancellationToken Token to cancel the process
      */
     public async createBootableADFDisk(conf: AdfGeneratorProperties, logEmitter?: EventEmitter<string>, compiler?: VASMCompiler, cancellationToken?: CancellationToken): Promise<void> {
-        this.setToolsRootPath(ConfigurationHelper.replaceBinDirVariable(conf.ADFToolsParentDir));
-        const filename = conf.outputADFFile;
+        this.setToolsRootPath(substituteVariables(conf.ADFToolsParentDir, true));
+        const filename = substituteVariables(conf.outputADFFile, true);
         let rootSourceDir = "";
         if (conf.sourceRootDir) {
-            rootSourceDir = conf.sourceRootDir;
+            rootSourceDir = substituteVariables(conf.sourceRootDir, true);
         } else {
             throw new Error("Please configure de sourceRootDir of the ADF file generator");
         }
-        const includes = conf.includes;
-        const excludes = conf.excludes;
+        const includes = substituteVariables(conf.includes, true);
+        const excludes = substituteVariables(conf.excludes, true);
         const adfCreateOptions = conf.adfCreateOptions.map(a => substituteVariables(a, true));
         let bootBlockSourceFileName;
         if (conf.bootBlockSourceFile) {
-            bootBlockSourceFileName = conf.bootBlockSourceFile;
+            bootBlockSourceFileName = substituteVariables(conf.bootBlockSourceFile, true);
         }
         await this.createBootableADFDiskFromDir(filename, rootSourceDir, includes, excludes, adfCreateOptions, bootBlockSourceFileName, logEmitter, compiler, cancellationToken);
     }
