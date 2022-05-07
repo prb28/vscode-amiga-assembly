@@ -10,4 +10,7 @@ parserOptions:
   sourceType: module
 plugins:
   - "@typescript-eslint"
-rules: {}
+  - "mocha-no-only"
+rules: {
+  "mocha-no-only/mocha-no-only": "error"
+}
