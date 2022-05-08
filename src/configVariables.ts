@@ -68,7 +68,7 @@ export function substituteVariables(
     for (const ws of workspaceFolders) {
       if (file.startsWith(ws.uri.fsPath)) {
         activeWorkspace = ws;
-        relativeFile = file.replace(ws.uri.fsPath, "").substr(path.sep.length);
+        relativeFile = file.replace(ws.uri.fsPath, "").substring(path.sep.length);
         break;
       }
     }
@@ -81,14 +81,14 @@ export function substituteVariables(
     file,
     fileBasename: parsedPath?.base,
     fileBasenameNoExtension: parsedPath?.name,
-    fileDirname: parsedPath?.dir.substr(
+    fileDirname: parsedPath?.dir.substring(
       parsedPath.dir.lastIndexOf(path.sep) + 1
     ),
     fileExtname: parsedPath?.ext,
     cwd: parsedPath?.dir,
     fileWorkspaceFolder: activeWorkspace?.uri.fsPath,
     relativeFile,
-    relativeFileDirname: relativeFile?.substr(
+    relativeFileDirname: relativeFile?.substring(
       0,
       relativeFile.lastIndexOf(path.sep)
     ),
@@ -128,8 +128,8 @@ export function substituteVariables(
     str.match(
       new RegExp(
         "\\${(" +
-          Object.keys(replacements).join("|") +
-          "|env:(.*?)|config:(.*?))}"
+        Object.keys(replacements).join("|") +
+        "|env:(.*?)|config:(.*?))}"
       )
     )
   ) {

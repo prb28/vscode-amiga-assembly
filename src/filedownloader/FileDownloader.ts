@@ -105,7 +105,7 @@ export default class FileDownloader implements IFileDownloader {
                         onEntry: (entry) => {
                             fileCount++;
                             if (fileCount > FileDownloader.MAX_FILES) {
-                                throw 'Reached max. number of files';
+                                throw new Error('Reached max. number of files');
                             }
 
                             // The uncompressedSize comes from the zip headers, so it might not be trustworthy.
@@ -113,13 +113,13 @@ export default class FileDownloader implements IFileDownloader {
                             const entrySize = entry.uncompressedSize;
                             totalSize += entrySize;
                             if (totalSize > FileDownloader.MAX_SIZE) {
-                                throw 'Reached max. size';
+                                throw new Error('Reached max. size');
                             }
 
                             if (entry.compressedSize > 0) {
                                 const compressionRatio = entrySize / entry.compressedSize;
                                 if (compressionRatio > FileDownloader.THRESHOLD_RATIO) {
-                                    throw 'Reached max. compression ratio';
+                                    throw new Error('Reached max. compression ratio');
                                 }
                             }
                         }
