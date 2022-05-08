@@ -8,7 +8,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
-## New in 1.4 (1.3 pre-release)
+## New in 1.4
 - Fix binaries download issues
 - Substitute variables in config args by *grahambates*
 - Use of default vscode disassembly view non source debugging
