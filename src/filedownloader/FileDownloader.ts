@@ -30,7 +30,7 @@ export interface FileDownloadSettings {
 export default class FileDownloader implements IFileDownloader {
     public static readonly MAX_FILES = 10000;
     public static readonly MAX_SIZE = 1000000000; // 1 GB
-    public static readonly THRESHOLD_RATIO = 10;
+    public static readonly THRESHOLD_RATIO = 50;
     public static readonly DOWNLOAD_DIR = `downloads`;
     public constructor(
         private readonly _requestHandler: IHttpRequestHandler,
