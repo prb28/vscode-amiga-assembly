@@ -76,6 +76,7 @@ describe('FS-UAE Integration test', () => {
         vlinkBuildProperties.exefilename = path.join("..", "uae", "dh0", "gencop");
         await vasm.buildWorkspace(undefined, vasmBuildProperties, vlinkBuildProperties);
         launchArgs.program = path.join(tempDir, "uae", "dh0", "gencop");
+        launchArgs.options = [];
         launchArgs.options.push("--chip_memory=1024");
         launchArgs.options.push(`--hard_drive_0=${tempDir}/uae/dh0`);
         launchArgs.options.push("--joystick_port_1=none");

@@ -8,9 +8,8 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { spy, verify, when, anything, resetCalls, mock, instance } from '@johanblumenberg/ts-mockito';
+import { spy, verify, when, anything, resetCalls } from '@johanblumenberg/ts-mockito';
 import { ExtensionState } from '../../extension';
-import { Capstone } from '../../capstone';
 import { fail } from 'assert';
 import { ConfigurationHelper } from '../../configurationHelper';
 
@@ -108,12 +107,6 @@ describe("Global Extension Tests", function () {
     });
     context("Disassemble command", function () {
         it("Should disassemble a file", async () => {
-            const state = ExtensionState.getCurrent();
-            const spiedDisassembler = spy(state.getDisassembler());
-            const mockedCapstone = mock(Capstone);
-            const capstone = instance(mockedCapstone);
-            when(spiedDisassembler.getCapstone()).thenCall(() => { return capstone; });
-            when(mockedCapstone.disassembleFile(anything())).thenReturn(Promise.resolve(" 0  90 91  sub.l\t(a1), d0"));
             const uri = vscode.Uri.file(path.join(testFilesPath, "debug", "fs-uae", "hd0", "gencop"));
             const spiedWindow = spy(vscode.window);
             const promise = new Promise<vscode.Uri[] | undefined>((resolve) => { resolve([uri]); });
@@ -129,7 +122,7 @@ describe("Global Extension Tests", function () {
             expect(editor).to.not.be.undefined;
             if (editor) {
                 // Editor opened
-                expect(editor.document.getText().replace('\r', '')).to.be.equal(expectedFileContents.replace('\r', ''));
+                expect(editor.document.getText().replace(/\r/g, '')).to.be.equal(expectedFileContents.replace(/\r/g, ''));
             }
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
         });

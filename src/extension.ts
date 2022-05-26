@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { DebugProtocol } from 'vscode-debugprotocol';
 import { M68kFormatter } from './formatter';
 import { M68kHoverProvider } from './hover';
 import { M86kColorProvider } from './color';
@@ -20,7 +21,6 @@ import { DocumentationManager } from './documentation';
 import { M68kLanguage } from './language';
 import { ASMLine } from './parser';
 import { DisassembledMemoryDataProvider } from './viewDisassembled';
-import { DisassembledInstructionAdapter } from './debugExpressionHelper';
 import * as winston from "winston";
 import * as TransportStream from "winston-transport";
 import { FileProxy } from './fsProxy';
@@ -30,15 +30,14 @@ import { VariableDisplayFormat, VariableDisplayFormatRequest } from './variableF
 import { BinariesManager } from './downloadManager';
 import { ConfigurationHelper } from './configurationHelper';
 import { WorkspaceManager } from './workspaceManager';
-import { DebugDisassembledFile } from './debugDisassembled';
-import { BreakpointManager } from './breakpointManager';
 import HttpRequestHandler from './filedownloader/networking/HttpRequestHandler';
 import FileDownloader from './filedownloader/FileDownloader';
 import OutputLogger from './filedownloader/logging/OutputLogger';
+import { BreakpointStorageWorkspace } from './breakpointStorage';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
-export const AMIGA_DEBUG_ASM_MODE: vscode.DocumentFilter = { language: 'amiga-assembly-debug.disassembly', scheme: DebugDisassembledFile.DGBFILE_SCHEME };
+export const AMIGA_DEBUG_ASM_MODE: vscode.DocumentFilter = { language: 'amiga-assembly-debug.disassembly', scheme: 'disassembly' };
 
 class SimpleConsoleTransport extends TransportStream {
     private outputChannel: vscode.OutputChannel;
@@ -225,7 +224,7 @@ export class ExtensionState {
     }
 
     /**
-     * If it is an absolute path returns it, or add it to the current workspace path 
+     * If it is an absolute path returns it, or add it to the current workspace path
      */
     private getPathOrRelative(pathSelected: string): FileProxy {
         if (!path.isAbsolute(pathSelected)) {
@@ -288,7 +287,7 @@ export class ExtensionState {
     }
 
     /**
-     * Reads the workspaces folders 
+     * Reads the workspaces folders
      */
     getWorkspaceFolders(): Array<vscode.Uri> {
         const folders = new Array<vscode.Uri>();
@@ -497,7 +496,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     context.subscriptions.push(vscode.languages.registerReferenceProvider(AMIGA_ASM_MODE, definitionHandler));
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(AMIGA_ASM_MODE, definitionHandler));
 
-    // Diagnostics 
+    // Diagnostics
     const errorDiagnosticCollection = state.getErrorDiagnosticCollection();
     const warningDiagnosticCollection = state.getWarningDiagnosticCollection();
     context.subscriptions.push(errorDiagnosticCollection);
@@ -560,7 +559,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     // Views
     const disassembledMemoryDataProvider = new DisassembledMemoryDataProvider();
     vscode.window.registerTreeDataProvider('disassembledMemory', disassembledMemoryDataProvider);
-    vscode.commands.registerCommand('disassembledMemory.setDisassembledMemory', (memory: DisassembledInstructionAdapter[]) => disassembledMemoryDataProvider.setDisassembledMemory(memory));
+    vscode.commands.registerCommand('disassembledMemory.setDisassembledMemory', (memory: DebugProtocol.DisassembledInstruction[]) => disassembledMemoryDataProvider.setDisassembledMemory(memory));
 
     // register a configuration provider for 'fs-uae' debug type
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', new FsUAEConfigurationProvider()));
@@ -571,7 +570,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('winuae', new WinUAEInlineDebugAdapterFactory()));
     winston.info("------> done");
 
-    context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider(DebugDisassembledFile.DGBFILE_SCHEME, new DisassemblyContentProvider()));
+    context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('disassembly', new DisassemblyContentProvider()));
     // IFF view
     if (vscode.window.registerWebviewPanelSerializer) {
         // Make sure we register a serializer in activation event
@@ -639,7 +638,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     // clearing the data breakpoints storage
     context.subscriptions.push(
         vscode.commands.registerCommand('amiga-assembly.clear-data-breakpoints-storage', async () => {
-            BreakpointManager.removeStoredDataBreakpointsList();
+            const storage = new BreakpointStorageWorkspace();
+            storage.clear();
         })
     );
     state.setExtensionContext(context);

@@ -203,12 +203,6 @@
 					"default": "m ${symbol},104,2,4",
 					"description": "Default format for a memory dump in watch ('symbol' is replaced)"
 				},
-				"amiga-assembly.cstool": {
-					"type": "string",
-					"scope": "window",
-					"default": "${config:amiga-assembly.binDir}/cstool",
-					"description": "Specifies the path to the Capstone cstool binary."
-				},
 				"amiga-assembly.buildDir": {
 					"type": "string",
 					"scope": "window",
@@ -981,6 +975,7 @@
 		"@typescript-eslint/parser": "^5.10.2",
 		"chai": "^4.3.6",
 		"chai-as-promised": "^7.1.1",
+		"copy-webpack-plugin": "^11.0.0",
 		"decache": "^4.6.1",
 		"del": "^6.0.0",
 		"eslint": "^8.8.0",
@@ -1003,6 +998,7 @@
 		"extract-zip": "^2.0.1",
 		"glob": "^7.2.0",
 		"rimraf": "^3.0.2",
+		"uae-dap": "^0.4.0",
 		"uuid": "^8.3.2",
 		"vscode-debugadapter": "^1.51.0",
 		"vscode-debugprotocol": "^1.51.0",

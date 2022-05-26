@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DisassembledInstructionAdapter } from './debugExpressionHelper';
+import { DebugProtocol } from 'vscode-debugprotocol';
 import { ASMLine } from './parser';
 
 export class DisassembledMemoryDataProvider implements vscode.TreeDataProvider<ViewLineItem> {
@@ -22,7 +22,7 @@ export class DisassembledMemoryDataProvider implements vscode.TreeDataProvider<V
             return [];
         }
     }
-    setDisassembledMemory(memory: DisassembledInstructionAdapter[]): void {
+    setDisassembledMemory(memory: DebugProtocol.DisassembledInstruction[]): void {
         this.currentValues = new Array<ViewLineItem>();
         for (const dl of memory) {
             const address = dl.address;

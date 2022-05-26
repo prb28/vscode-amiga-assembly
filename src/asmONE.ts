@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Hunk, HunkParser, Symbol } from './amigaHunkParser';
+import { Hunk, HunkParser, Symbol } from "uae-dap";
 import { ICheckResult } from "./execHelper";
 import { Uri } from "vscode";
 import * as fs from "fs";
@@ -53,7 +53,7 @@ export class AsmONE {
 
 	/**
 	 * Remove AsmONE related errors and warnings for handled commands
-	 * @param errToFilter list of errors to filter 
+	 * @param errToFilter list of errors to filter
 	 */
 	public filterErrors(errToFilter: ICheckResult[]): ICheckResult[] {
 		const filtered = new Array<ICheckResult>();
@@ -106,14 +106,16 @@ export class AsmONE {
 
 	private async loadExeSymbols(exeFile: Uri): Promise<Symbol[]> {
 		const symbols = new Array<Symbol>();
-		const hunks = await this.hunkParser.readFile(exeFile);
+		const hunks = await this.hunkParser.readFile(exeFile.fsPath);
 		for (let i = 0; i < hunks.length; i++) {
 			const hunk: Hunk = hunks[i];
 			if (!hunk.symbols) {
 				continue;
 			}
 			for (const lSymbol of hunk.symbols) {
-				lSymbol.offset += hunk.dataOffset;
+				if (hunk.dataOffset) {
+					lSymbol.offset += hunk.dataOffset;
+				}
 				symbols.push(lSymbol);
 			}
 		}

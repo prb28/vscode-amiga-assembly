@@ -68,6 +68,7 @@ describe('WinUAE Integration test', () => {
             vlinkBuildProperties.exefilename = path.join("..", "uae", "dh0", "gencop");
             await vasm.buildWorkspace(undefined, vasmBuildProperties, vlinkBuildProperties);
             launchArgs.program = path.join(tempDir, "uae", "dh0", "gencop");
+            launchArgs.options = [];
             launchArgs.options.push("-s");
             launchArgs.options.push(`quickstart=a500,1`);
             launchArgs.options.push("-s");

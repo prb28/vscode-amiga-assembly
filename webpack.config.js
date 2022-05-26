@@ -4,6 +4,7 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const CopyPlugin = require("copy-webpack-plugin");
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -46,6 +47,11 @@ const config = {
                 ]
             }
         ]
-    }
+    },
+    plugins: [
+        new CopyPlugin({
+            patterns: [{ from: "node_modules/uae-dap/wasm", to: "wasm" }],
+        }),
+    ],
 };
 module.exports = config;
