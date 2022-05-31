@@ -14,7 +14,7 @@
 				"extract-zip": "^2.0.1",
 				"glob": "^7.2.0",
 				"rimraf": "^3.0.2",
-				"uae-dap": "^0.4.0",
+				"uae-dap": "^0.5.0",
 				"uuid": "^8.3.2",
 				"vscode-debugadapter": "^1.51.0",
 				"vscode-debugprotocol": "^1.51.0",
@@ -3996,9 +3996,9 @@
 			}
 		},
 		"node_modules/uae-dap": {
-			"version": "0.4.0",
-			"resolved": "https://registry.npmjs.org/uae-dap/-/uae-dap-0.4.0.tgz",
-			"integrity": "sha512-EhWn0WAFBAmvnhiLbb60FuPIgKGGwtcraNjRGNGIGHBdpM7uP33QDdm7iFDvEfF89y3+IjFWwoZvPuUBm5EbXQ==",
+			"version": "0.5.0",
+			"resolved": "https://registry.npmjs.org/uae-dap/-/uae-dap-0.5.0.tgz",
+			"integrity": "sha512-SaYhsFHpOBjP17HdKrnw2OWh9c/lbrbZBQdxxcJMGm8+G2N1mWZW/Rt3AEvqLLRxdL5jhlv7w9NCG1nIsy2aZQ==",
 			"dependencies": {
 				"@vscode/debugadapter": "^1.55.1",
 				"@vscode/debugprotocol": "^1.55.1",
@@ -7475,9 +7475,9 @@
 			"dev": true
 		},
 		"uae-dap": {
-			"version": "0.4.0",
-			"resolved": "https://registry.npmjs.org/uae-dap/-/uae-dap-0.4.0.tgz",
-			"integrity": "sha512-EhWn0WAFBAmvnhiLbb60FuPIgKGGwtcraNjRGNGIGHBdpM7uP33QDdm7iFDvEfF89y3+IjFWwoZvPuUBm5EbXQ==",
+			"version": "0.5.0",
+			"resolved": "https://registry.npmjs.org/uae-dap/-/uae-dap-0.5.0.tgz",
+			"integrity": "sha512-SaYhsFHpOBjP17HdKrnw2OWh9c/lbrbZBQdxxcJMGm8+G2N1mWZW/Rt3AEvqLLRxdL5jhlv7w9NCG1nIsy2aZQ==",
 			"requires": {
 				"@vscode/debugadapter": "^1.55.1",
 				"@vscode/debugprotocol": "^1.55.1",
