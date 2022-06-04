@@ -26,7 +26,6 @@ import * as TransportStream from "winston-transport";
 import { FileProxy } from './fsProxy';
 import { WinUAEDebugSession } from './winUAEDebug';
 import { AmigaBuildTaskProvider, CompilerController } from './customTaskProvider';
-import { VariableDisplayFormat, VariableDisplayFormatRequest } from './variableFormatter';
 import { BinariesManager } from './downloadManager';
 import { ConfigurationHelper } from './configurationHelper';
 import { WorkspaceManager } from './workspaceManager';
@@ -34,6 +33,7 @@ import HttpRequestHandler from './filedownloader/networking/HttpRequestHandler';
 import FileDownloader from './filedownloader/FileDownloader';
 import OutputLogger from './filedownloader/logging/OutputLogger';
 import { BreakpointStorageWorkspace } from './breakpointStorage';
+import { NumberFormat, VariableDisplayFormatRequest } from 'uae-dap';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
@@ -533,28 +533,71 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(AMIGA_ASM_MODE, state.getDataGenerator()));
 
     // Debugger View commands
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDec', (variable) => {
-        const ds = vscode.debug.activeDebugSession;
-        if (ds) {
-            ds.customRequest('modifyVariableFormat', <VariableDisplayFormatRequest>{ variableInfo: variable, variableDisplayFormat: VariableDisplayFormat.DECIMAL });
-        }
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsBin', (variable) => {
-        const ds = vscode.debug.activeDebugSession;
-        if (ds) {
-            ds.customRequest('modifyVariableFormat', <VariableDisplayFormatRequest>{ variableInfo: variable, variableDisplayFormat: VariableDisplayFormat.BINARY });
-        }
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHex', (variable) => {
-        const ds = vscode.debug.activeDebugSession;
-        if (ds) {
-            ds.customRequest('modifyVariableFormat', <VariableDisplayFormatRequest>{ variableInfo: variable, variableDisplayFormat: VariableDisplayFormat.HEXADECIMAL });
-        }
-    });
-    context.subscriptions.push(disposable);
 
+    const setDisplayFormat = (variableInfo: any, variableDisplayFormat: NumberFormat) => {
+        const ds = vscode.debug.activeDebugSession;
+        if (!ds) {
+            return;
+        }
+        const args: VariableDisplayFormatRequest = {
+            variableInfo,
+            variableDisplayFormat,
+        };
+        ds.customRequest('modifyVariableFormat', args);
+    };
+
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsBin', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.BINARY);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDec', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.DECIMAL);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDecSigned', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.DECIMAL_SIGNED);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDecWord', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.DECIMAL_WORD);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDecWordSigned', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.DECIMAL_WORD_SIGNED);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDecByte', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.DECIMAL_BYTE);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDecByteSigned', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.DECIMAL_BYTE_SIGNED);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHex', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHexSigned', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL_SIGNED);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHexWord', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL_WORD);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHexWordSigned', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL_WORD_SIGNED);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHexByte', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL_BYTE);
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHexByteSigned', (variableInfo) => {
+        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL_BYTE_SIGNED);
+    });
+    context.subscriptions.push(disposable);
 
     // Views
     const disassembledMemoryDataProvider = new DisassembledMemoryDataProvider();

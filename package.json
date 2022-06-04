@@ -1,1008 +1,1098 @@
 {
-	"name": "amiga-assembly",
-	"displayName": "Amiga Assembly",
-	"description": "Amiga Assembly Support for Visual Studio Code",
-	"license": "GNU General Public License v3.0",
-	"homepage": "https://github.com/prb28/vscode-amiga-assembly",
-	"bugs": {
-		"url": "https://github.com/prb28/vscode-amiga-assembly/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/prb28/vscode-amiga-assembly"
-	},
-	"version": "1.4.0",
-	"publisher": "prb28",
-	"engines": {
-		"vscode": "^1.64.0"
-	},
-	"categories": [
-		"Formatters",
-		"Programming Languages",
-		"Debuggers"
-	],
-	"icon": "images/icon.png",
-	"galleryBanner": {
-		"color": "#000000",
-		"theme": "dark"
-	},
-	"activationEvents": [
-		"onDebug",
-		"onLanguage:m68k",
-		"onLanguage:c",
-		"onLanguage:amiga-assembly-debug.disassembly",
-		"onCommand:amiga-assembly.calculator",
-		"onCommand:amiga-assembly.evaluate-selection",
-		"onCommand:amiga-assembly.evaluate-selection-replace",
-		"onCommand:amiga-assembly.clean-vasm-workspace",
-		"onCommand:amiga-assembly.disassemble-file",
-		"onCommand:amiga-assembly.disassemble-copper",
-		"onCommand:amiga-assembly.disassemble-memory",
-		"onCommand:amiga-assembly.list-used-registers",
-		"onCommand:amiga-assembly.view-iff",
-		"onCommand:amiga-assembly.download-binaries",
-		"onCommand:amiga-assembly.create-example-workspace",
-		"onCommand:amiga-assembly.clear-data-breakpoints-storage",
-		"onWebviewPanel:iffView",
-		"workspaceContains:**/*.{s,S,asm,ASM}"
-	],
-	"main": "./dist/extension.js",
-	"contributes": {
-		"languages": [
-			{
-				"id": "m68k",
-				"aliases": [
-					"Amiga-Assembly",
-					"M68k-Assembly",
-					"m68k"
-				],
-				"extensions": [
-					".s",
-					".i",
-					".asm"
-				],
-				"configuration": "./language-configuration.json"
-			},
-			{
-				"id": "amiga-assembly-debug.disassembly",
-				"aliases": [
-					"Amiga Assembly Debug Disassembly"
-				],
-				"extensions": [
-					".dbgasm"
-				]
-			}
-		],
-		"grammars": [
-			{
-				"language": "m68k",
-				"scopeName": "source.asm.m68k",
-				"path": "./syntaxes/M68k-Assembly.tmLanguage.json"
-			},
-			{
-				"language": "amiga-assembly-debug.disassembly",
-				"scopeName": "source.asm.dbgasm",
-				"path": "./syntaxes/Dbg-Assembly.tmLanguage.json"
-			}
-		],
-		"capabilities": {
-			"definitionProvider": "true",
-			"referencesProvider": "true",
-			"codeLensProvider": {
-				"resolveProvider": "true"
-			}
-		},
-		"configuration": {
-			"title": "Amiga Assembly",
-			"properties": {
-				"amiga-assembly.downloadBinaries": {
-					"type": "boolean",
-					"scope": "resource",
-					"default": true,
-					"description": "If true the binaries will be downloaded."
-				},
-				"amiga-assembly.binariesBranchURL": {
-					"type": "string",
-					"scope": "resource",
-					"default": "https://github.com/prb28/vscode-amiga-assembly-binaries/archive/refs/heads",
-					"description": "URL to retrieve the binaries branches"
-				},
-				"amiga-assembly.binariesTagsURL": {
-					"type": "string",
-					"scope": "resource",
-					"default": "https://api.github.com/repos/prb28/vscode-amiga-assembly-binaries/tags",
-					"description": "URL to retrieve the binaries tags"
-				},
-				"amiga-assembly.exampleProjectBranchesURL": {
-					"type": "string",
-					"scope": "resource",
-					"default": "https://github.com/prb28/vscode-amiga-wks-example/archive/refs/heads",
-					"description": "URL to retrieve the example project branches"
-				},
-				"amiga-assembly.exampleProjectTagsURL": {
-					"type": "string",
-					"scope": "resource",
-					"default": "https://api.github.com/repos/prb28/vscode-amiga-wks-example/tags",
-					"description": "URL to retrieve the example project tags"
-				},
-				"amiga-assembly.binDir": {
-					"type": "string",
-					"scope": "resource",
-					"default": "${workspaceFolder}/bin",
-					"description": "Directory containing the binaries path."
-				},
-				"amiga-assembly.logLevel": {
-					"type": "string",
-					"scope": "resource",
-					"default": "info",
-					"description": "Specifies the level of the logs."
-				},
-				"amiga-assembly.format.labelToInstructionDistance": {
-					"type": "integer",
-					"scope": "resource",
-					"default": 2,
-					"description": "Specifies the distance between a label and an instruction."
-				},
-				"amiga-assembly.format.instructionToDataDistance": {
-					"type": "integer",
-					"scope": "resource",
-					"default": 4,
-					"description": "Specifies the distance between an instruction and the data."
-				},
-				"amiga-assembly.format.dataToCommentsDistance": {
-					"type": "integer",
-					"scope": "resource",
-					"default": 4,
-					"description": "Specifies the distance between the data and the comment."
-				},
-				"amiga-assembly.format.variableToOperatorDistance": {
-					"type": "integer",
-					"scope": "resource",
-					"default": 1,
-					"description": "Specifies the distance between the variable and the assignment operator."
-				},
-				"amiga-assembly.format.operatorToValueDistance": {
-					"type": "integer",
-					"scope": "resource",
-					"default": 1,
-					"description": "Specifies the distance between the assignment operator and the value."
-				},
-				"amiga-assembly.format.preferredInstructionPosition": {
-					"type": "integer",
-					"scope": "resource",
-					"default": 0,
-					"description": "Specifies the preferred instruction position (if the label size is small enough)"
-				},
-				"amiga-assembly.format.preferredCommentPosition": {
-					"type": "integer",
-					"scope": "resource",
-					"default": 0,
-					"description": "Specifies the preferred comment position for a line with instruction (if the size is small enough)"
-				},
-				"amiga-assembly.format.useTabs": {
-					"type": "boolean",
-					"scope": "resource",
-					"default": false,
-					"description": "Format document with tabs and not with spaces"
-				},
-				"amiga-assembly.hover.numberDisplayFormat": {
-					"type": "string",
-					"scope": "resource",
-					"default": "#`@dec@` - $`@hex@` - %`@bin@` @ascii@",
-					"description": "Format of the detailed number display use @dec@, @hex@, @bin@, @oct@ and @ascii@ as values replacements"
-				},
-				"amiga-assembly.display.memoryFormat.hover": {
-					"type": "string",
-					"scope": "resource",
-					"default": "m ${symbol},24,2,4",
-					"description": "Default format for a memory dump in hover ('symbol' is replaced)"
-				},
-				"amiga-assembly.display.memoryFormat.watch": {
-					"type": "string",
-					"scope": "resource",
-					"default": "m ${symbol},104,2,4",
-					"description": "Default format for a memory dump in watch ('symbol' is replaced)"
-				},
-				"amiga-assembly.buildDir": {
-					"type": "string",
-					"scope": "window",
-					"default": "build",
-					"description": "Specifies the path to the build directory."
-				},
-				"amiga-assembly.tmpDir": {
-					"type": "string",
-					"scope": "window",
-					"default": "build",
-					"description": "Specifies the path to the temporary build directory."
-				},
-				"amiga-assembly.ASMOneCompatibilityEnabled": {
-					"type": "boolean",
-					"scope": "window",
-					"default": false,
-					"description": "Enables the ASMOne source compatibility commands."
-				},
-				"amiga-assembly.checkErrorOnSave": {
-					"type": "boolean",
-					"scope": "resource",
-					"default": true,
-					"description": "Compiles the current assembler file on save to show errors."
-				}
-			},
-			"completionProvider": {
-				"resolveProvider": "true"
-			}
-		},
-		"commands": [
-			{
-				"command": "amiga-assembly.calculator",
-				"title": "Amiga Assembly: Calculator",
-				"description": "Simple calculator in decimal, hexadecimal and binary"
-			},
-			{
-				"command": "amiga-assembly.evaluate-selection",
-				"title": "Amiga Assembly: Evaluate selection",
-				"description": "Evaluates the selection and shows the result"
-			},
-			{
-				"command": "amiga-assembly.evaluate-selection-replace",
-				"title": "Amiga Assembly: Evaluate selection and replace",
-				"description": "Evaluates the selection and replaces it by the result"
-			},
-			{
-				"command": "amiga-assembly.apply-formula",
-				"title": "Amiga Assembly: Apply formula to selected numerical values",
-				"description": "Applies a formula to to selected numerical values"
-			},
-			{
-				"command": "amiga-assembly.clean-vasm-workspace",
-				"title": "Amiga Assembly: Clean workspace",
-				"description": "Clean all the generated compilation objects"
-			},
-			{
-				"command": "amiga-assembly.disassemble-file",
-				"title": "Amiga Assembly: Disassemble file",
-				"description": "Disassembles an Amiga executable file"
-			},
-			{
-				"command": "amiga-assembly.disassemble-copper",
-				"title": "Amiga Assembly: Disassemble copper memory",
-				"description": "Disassembles memory address with copper instructions"
-			},
-			{
-				"command": "amiga-assembly.disassemble-memory",
-				"title": "Amiga Assembly: Disassemble memory",
-				"description": "Disassembles memory address"
-			},
-			{
-				"command": "amiga-assembly.list-used-registers",
-				"title": "Amiga Assembly: List used registers in selection",
-				"description": "Lists all the registers (a0-a7 / d0-d7) used in the selected code"
-			},
-			{
-				"command": "amiga-assembly.generate-data",
-				"title": "Amiga Assembly: Generate data from expression",
-				"description": "Generate numerical values from a mathematical expression"
-			},
-			{
-				"command": "amiga-assembly.view-iff",
-				"title": "Amiga Assembly: View IFF image",
-				"description": "Display an IFF/ILBM image"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsDec",
-				"title": "View as Decimal"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsHex",
-				"title": "View as Hex"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsBin",
-				"title": "View as Binary"
-			},
-			{
-				"command": "amiga-assembly.showdoc-toc",
-				"title": "Amiga Assembly: Show documentation",
-				"description": "Display the documentation table of contents"
-			},
-			{
-				"command": "disassembledMemory.setDisassembledMemory",
-				"title": "Set disassembled memory"
-			},
-			{
-				"command": "amiga-assembly.download-binaries",
-				"title": "Amiga Assembly: Download binaries"
-			},
-			{
-				"command": "amiga-assembly.clean-downloaded-binaries",
-				"title": "Amiga Assembly: Clean downloaded binaries"
-			},
-			{
-				"command": "amiga-assembly.create-example-workspace",
-				"title": "Amiga Assembly: Create example workspace"
-			},
-			{
-				"command": "amiga-assembly.clear-data-breakpoints-storage",
-				"title": "Amiga Assembly: Clear storage of data breakpoints"
-			}
-		],
-		"breakpoints": [
-			{
-				"language": "m68k"
-			},
-			{
-				"language": "amiga-assembly-debug.disassembly"
-			},
-			{
-				"language": "c"
-			},
-			{
-				"language": "cpp"
-			}
-		],
-		"debuggers": [
-			{
-				"type": "fs-uae",
-				"label": "Amiga-Assembly: FS-UAE Debug",
-				"program": "./out/debugAdapter.js",
-				"runtime": "node",
-				"configurationAttributes": {
-					"launch": {
-						"required": [
-							"program"
-						],
-						"properties": {
-							"program": {
-								"type": "string",
-								"description": "Path to an amiga program.",
-								"default": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\""
-							},
-							"startEmulator": {
-								"type": "boolean",
-								"description": "If true the emulator will be started before debugging.",
-								"default": "true"
-							},
-							"emulator": {
-								"type": "string",
-								"description": "Path to the fs-uae emulator.",
-								"default": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
-							},
-							"emulatorWorkingDir": {
-								"type": "string",
-								"description": "Path to the working directory of the emulator.",
-								"default": "^\"\\${config:amiga-assembly.binDir\\}\""
-							},
-							"stopOnEntry": {
-								"type": "boolean",
-								"description": "Automatically stop after launch.",
-								"default": true
-							},
-							"trace": {
-								"type": "boolean",
-								"description": "Enable logging of the Debug Adapter Protocol.",
-								"default": false
-							},
-							"serverName": {
-								"type": "string",
-								"description": "Host running fs-uae",
-								"default": "localhost"
-							},
-							"serverPort": {
-								"type": "number",
-								"description": "Socket port to connect to FS-UAE",
-								"default": 6860
-							},
-							"exceptionMask": {
-								"type": "number",
-								"description": "Mask used to catch the exceptions",
-								"default": 8188
-							},
-							"emulatorStartDelay": {
-								"type": "number",
-								"description": "Mask used to catch the exceptions",
-								"default": 100
-							},
-							"sourceFileMap": {
-								"type": "object",
-								"description": "Optional source file mappings passed to the debug engine. Example: '{ \"/original/source/path\":\"/current/source/path\" }'",
-								"default": {
-									"<source-path>": "<target-path>"
-								}
-							},
-							"rootSourceFileMap": {
-								"type": "array",
-								"description": "Root paths to seek for sources",
-								"items": {
-									"type": "string",
-									"title": "Root source path"
-								},
-								"default": []
-							},
-							"options": {
-								"type": "array",
-								"items": {
-									"type": "string",
-									"title": "Emulator option"
-								},
-								"default": [],
-								"description": "Emulator options"
-							}
-						}
-					}
-				},
-				"initialConfigurations": [
-					{
-						"type": "fs-uae",
-						"request": "launch",
-						"name": "Amiga-Assembly: FS-UAE Debug",
-						"stopOnEntry": true,
-						"serverName": "localhost",
-						"serverPort": 6860,
-						"startEmulator": true,
-						"windows": {
-							"emulator": "${config:amiga-assembly.binDir}/fs-uae.exe"
-						},
-						"osx": {
-							"emulator": "${config:amiga-assembly.binDir}/fs-uae"
-						},
-						"linux": {
-							"emulator": "${config:amiga-assembly.binDir}/fs-uae"
-						},
-						"emulatorWorkingDir": "${config:amiga-assembly.binDir}",
-						"program": "${workspaceFolder}/uae/dh0/myprogram",
-						"options": [
-							"--chip_memory=2048",
-							"--hard_drive_0=${workspaceFolder}/uae/dh0",
-							"--joystick_port_1=none",
-							"--amiga_model=A1200",
-							"--remote_debugger=200",
-							"--use_remote_debugger=true",
-							"--automatic_input_grab=0"
-						],
-						"preLaunchTask": "amigaassembly: build"
-					}
-				],
-				"configurationSnippets": [
-					{
-						"label": "Amiga-Assembly: FS-UAE Debug",
-						"description": "A new configuration for debugging a program in FS-UAE.",
-						"body": {
-							"type": "fs-uae",
-							"request": "launch",
-							"name": "FS-UAE Debug",
-							"stopOnEntry": true,
-							"serverName": "localhost",
-							"serverPort": 6860,
-							"startEmulator": true,
-							"windows": {
-								"emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae.exe\""
-							},
-							"osx": {
-								"emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
-							},
-							"linux": {
-								"emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
-							},
-							"emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
-							"program": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\"",
-							"options": [
-								"--chip_memory=2048",
-								"^\"--hard_drive_0=\\${workspaceFolder\\}/uae/dh0\"",
-								"--joystick_port_1=none",
-								"--amiga_model=A1200",
-								"--remote_debugger=200",
-								"--use_remote_debugger=true",
-								"--automatic_input_grab=0"
-							],
-							"preLaunchTask": "amigaassembly: build"
-						}
-					}
-				]
-			},
-			{
-				"type": "uae-run",
-				"label": "Amiga-Assembly: Run",
-				"program": "./out/runNoDebugAdapter.js",
-				"runtime": "node",
-				"configurationAttributes": {
-					"launch": {
-						"required": [
-							"emulator"
-						],
-						"properties": {
-							"emulator": {
-								"type": "string",
-								"description": "Path to the uae emulator.",
-								"default": "Path to uae executable"
-							},
-							"emulatorWorkingDir": {
-								"type": "string",
-								"description": "Path to the working directory of the emulator.",
-								"default": "."
-							},
-							"trace": {
-								"type": "boolean",
-								"description": "Enable logging of the Debug Adapter Protocol.",
-								"default": true
-							},
-							"options": {
-								"type": "array",
-								"items": {
-									"type": "string",
-									"title": "Emulator option"
-								},
-								"default": [],
-								"description": "Emulator options"
-							}
-						}
-					}
-				},
-				"initialConfigurations": [
-					{
-						"type": "uae-run",
-						"request": "launch",
-						"name": "Amiga-Assembly: Run",
-						"windows": {
-							"emulator": "${config:amiga-assembly.binDir}/winuae.exe",
-							"emulatorWorkingDir": "${config:amiga-assembly.binDir}",
-							"options": [
-								"-s",
-								"filesystem=rw,dh0:${workspaceFolder}/uae/dh0"
-							]
-						},
-						"osx": {
-							"emulator": "${config:amiga-assembly.binDir}/fs-uae",
-							"options": [
-								"--chip_memory=2048",
-								"--hard_drive_0=${workspaceFolder}/uae/dh0",
-								"--amiga_model=A1200",
-								"--automatic_input_grab=0"
-							]
-						},
-						"linux": {
-							"emulator": "${config:amiga-assembly.binDir}/fs-uae",
-							"options": [
-								"--chip_memory=2048",
-								"--hard_drive_0=${workspaceFolder}/uae/dh0",
-								"--amiga_model=A1200",
-								"--automatic_input_grab=0"
-							]
-						},
-						"emulatorWorkingDir": "${config:amiga-assembly.binDir}",
-						"preLaunchTask": "amigaassembly: build"
-					}
-				],
-				"configurationSnippets": [
-					{
-						"label": "Amiga-Assembly: FS-UAE Run",
-						"description": "A new configuration for running FS-UAE.",
-						"body": {
-							"type": "uae-run",
-							"request": "launch",
-							"name": "FS-UAE Run",
-							"windows": {
-								"emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae.exe\""
-							},
-							"osx": {
-								"emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
-							},
-							"linux": {
-								"emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
-							},
-							"emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
-							"options": [
-								"--chip_memory=2048",
-								"^\"--hard_drive_0=\\${workspaceFolder\\}/uae/dh0\"",
-								"--amiga_model=A1200",
-								"--automatic_input_grab=0"
-							],
-							"preLaunchTask": "amigaassembly: build"
-						}
-					},
-					{
-						"label": "Amiga-Assembly: WinUAE Run",
-						"description": "A new configuration for running WinUAE.",
-						"body": {
-							"type": "uae-run",
-							"request": "launch",
-							"name": "WinUAE Run",
-							"emulator": "^\"\\${config:amiga-assembly.binDir\\}/winuae.exe\"",
-							"emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
-							"options": [
-								"-s",
-								"^\"filesystem=rw,dh0:\\${workspaceFolder\\}/uae/dh0\""
-							],
-							"preLaunchTask": "amigaassembly: build"
-						}
-					}
-				]
-			},
-			{
-				"type": "winuae",
-				"label": "Amiga-Assembly: WinUAE Debug",
-				"program": "./out/debugAdapterWinUAE.js",
-				"runtime": "node",
-				"configurationAttributes": {
-					"launch": {
-						"required": [
-							"program"
-						],
-						"properties": {
-							"program": {
-								"type": "string",
-								"description": "Path to an amiga program.",
-								"default": "${workspaceFolder}/myprogram"
-							},
-							"startEmulator": {
-								"type": "boolean",
-								"description": "If true the emulator will be started before debugging.",
-								"default": "true"
-							},
-							"emulator": {
-								"type": "string",
-								"description": "Path to the WinUAE emulator.",
-								"default": "Path to WinUAE executable"
-							},
-							"emulatorWorkingDir": {
-								"type": "string",
-								"description": "Path to the working directory of the emulator.",
-								"default": "."
-							},
-							"stopOnEntry": {
-								"type": "boolean",
-								"description": "Automatically stop after launch.",
-								"default": true
-							},
-							"trace": {
-								"type": "boolean",
-								"description": "Enable logging of the Debug Adapter Protocol.",
-								"default": true
-							},
-							"serverName": {
-								"type": "string",
-								"description": "Host running WinUAE",
-								"default": "localhost"
-							},
-							"serverPort": {
-								"type": "number",
-								"description": "Socket port to connect to WinUAE",
-								"default": 6860
-							},
-							"exceptionMask": {
-								"type": "number",
-								"description": "Mask used to catch the exceptions",
-								"default": 8188
-							},
-							"emulatorStartDelay": {
-								"type": "number",
-								"description": "Mask used to catch the exceptions",
-								"default": 100
-							},
-							"sourceFileMap": {
-								"type": "object",
-								"description": "Optional source file mappings passed to the debug engine. Example: '{ \"/original/source/path\":\"/current/source/path\" }'",
-								"default": {
-									"<source-path>": "<target-path>"
-								}
-							},
-							"rootSourceFileMap": {
-								"type": "array",
-								"description": "Root paths to seek for sources",
-								"items": {
-									"type": "string",
-									"title": "Root source path"
-								},
-								"default": []
-							},
-							"options": {
-								"type": "array",
-								"items": {
-									"type": "string",
-									"title": "Emulator option"
-								},
-								"default": [],
-								"description": "Emulator options"
-							}
-						}
-					}
-				},
-				"initialConfigurations": [
-					{
-						"type": "winuae",
-						"request": "launch",
-						"name": "Amiga-Assembly: WinUAE Debug",
-						"stopOnEntry": true,
-						"serverName": "localhost",
-						"serverPort": 2345,
-						"startEmulator": true,
-						"emulator": "${config:amiga-assembly.binDir}/winuae.exe",
-						"emulatorWorkingDir": "${config:amiga-assembly.binDir}",
-						"program": "${workspaceFolder}/uae/dh0/myprogram",
-						"options": [
-							"-s",
-							"debugging_trigger=SYS:myprogram",
-							"-s",
-							"filesystem=rw,dh0:${workspaceFolder}/uae/dh0",
-							"-s",
-							"debugging_features=gdbserver"
-						],
-						"preLaunchTask": "amigaassembly: build"
-					}
-				],
-				"configurationSnippets": [
-					{
-						"label": "Amiga-Assembly: WinUAE Debug",
-						"description": "A new configuration for debugging a program in WinUAE.",
-						"body": {
-							"type": "winuae",
-							"request": "launch",
-							"name": "WinUAE Debug",
-							"stopOnEntry": true,
-							"serverName": "localhost",
-							"serverPort": 2345,
-							"startEmulator": true,
-							"emulator": "^\"\\${config:amiga-assembly.binDir\\}/winuae.exe\"",
-							"emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
-							"program": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\"",
-							"options": [
-								"-s",
-								"debugging_trigger=SYS:myprogram",
-								"-s",
-								"^\"filesystem=rw,dh0:\\${workspaceFolder\\}/uae/dh0\"",
-								"-s",
-								"debugging_features=gdbserver"
-							],
-							"preLaunchTask": "amigaassembly: build"
-						}
-					}
-				]
-			}
-		],
-		"snippets": [
-			{
-				"language": "m68k",
-				"path": "./snippets/m68k.json"
-			}
-		],
-		"menus": {
-			"explorer/context": [
-				{
-					"when": "resourceExtname =~ /\\.iff/i",
-					"command": "amiga-assembly.view-iff",
-					"group": "3_preview"
-				}
-			],
-			"debug/variables/context": [
-				{
-					"command": "amiga-assembly.showVariableAsDec",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsHex",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsBin",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view"
-				}
-			]
-		},
-		"views": {
-			"debug": [
-				{
-					"id": "disassembledMemory",
-					"name": "DISASSEMBLED MEMORY"
-				}
-			]
-		},
-		"taskDefinitions": [
-			{
-				"type": "amigaassembly",
-				"required": [],
-				"properties": {
-					"vasm": {
-						"type": "object",
-						"properties": {
-							"enabled": {
-								"type": "boolean",
-								"description": "If true the VASM compiler is enabled"
-							},
-							"command": {
-								"type": "string",
-								"description": "File with absolute path to the VASM compiler"
-							},
-							"args": {
-								"type": "array",
-								"items": {
-									"type": "string",
-									"title": "compiler option"
-								},
-								"default": [],
-								"description": "Compiler options"
-							}
-						},
-						"default": {
-							"enabled": true,
-							"command": "${config:amiga-assembly.binDir}/vasmm68k_mot",
-							"args": [
-								"-m68000",
-								"-Fhunk",
-								"-linedebug"
-							]
-						},
-						"description": "VASM compiler configuration"
-					},
-					"vlink": {
-						"type": "object",
-						"properties": {
-							"enabled": {
-								"type": "boolean",
-								"description": "If true the VLINK linker is enabled"
-							},
-							"command": {
-								"type": "string",
-								"description": "File with absolute path to the VLINK linker"
-							},
-							"includes": {
-								"type": "string",
-								"description": "GlobPattern to select the source files to link"
-							},
-							"excludes": {
-								"type": "string",
-								"description": "GlobPattern to select the source files to exclude from the link"
-							},
-							"entrypoint": {
-								"type": "string",
-								"description": "Name of the object file containing the entrypoint"
-							},
-							"createStartupSequence": {
-								"type": "boolean",
-								"description": "If true a startup-sequence file will be created if not present"
-							},
-							"createExeFileParentDir": {
-								"type": "boolean",
-								"description": "If true the parent dir of the exe file will be created"
-							},
-							"exefilename": {
-								"type": "string",
-								"description": "Name of the executable file relative to the build dir"
-							},
-							"args": {
-								"type": "array",
-								"items": {
-									"type": "string",
-									"title": "linker option"
-								},
-								"default": [],
-								"description": "linker options"
-							}
-						},
-						"default": {
-							"enabled": true,
-							"command": "${config:amiga-assembly.binDir}/vlink",
-							"includes": "*.{s,S,asm,ASM}",
-							"excludes": "",
-							"createStartupSequence": true,
-							"createExeFileParentDir": true,
-							"exefilename": "../uae/dh0/myprogram",
-							"args": [
-								"-bamigahunk",
-								"-Bstatic"
-							]
-						},
-						"description": "VLINK linker configuration"
-					},
-					"adfgenerator": {
-						"type": "object",
-						"scope": "window",
-						"properties": {
-							"ADFToolsParentDir": {
-								"type": "string",
-								"description": "Path to the parent dir of the adftools binaries"
-							},
-							"outputADFFile": {
-								"type": "string",
-								"description": "File with absolute path to new ADF disk file"
-							},
-							"sourceRootDir": {
-								"type": "string",
-								"description": "Path to the root dir of the files to copy"
-							},
-							"includes": {
-								"type": "string",
-								"description": "GlobPattern to select the files to include in the ADF disk"
-							},
-							"excludes": {
-								"type": "string",
-								"description": "GlobPattern to select the files to exclude in the ADF disk"
-							},
-							"adfCreateOptions": {
-								"type": "array",
-								"items": {
-									"type": "string",
-									"title": "adfCreate option"
-								},
-								"default": [],
-								"description": "adfCreate options"
-							},
-							"bootBlockSourceFile": {
-								"type": "string",
-								"description": "Source file containing the code of the bootblock"
-							}
-						},
-						"default": {
-							"ADFToolsParentDir": "${config:amiga-assembly.binDir}",
-							"sourceRootDir": "uae/dh0",
-							"outputADFFile": "./build/disk.adf",
-							"includes": "**/*",
-							"excludes": "**/.*",
-							"adfCreateOptions": [
-								"--label=MYDISK"
-							]
-						},
-						"description": "ADFFile generation from the destination build dir"
-					}
-				}
-			}
-		]
-	},
-	"scripts": {
-		"vscode:prepublish": "webpack --mode production",
-		"webpack": "webpack --mode development",
-		"webpack-dev": "webpack --mode development --watch",
-		"test-compile": "tsc -p ./ && npm run webpack",
-		"lint": "eslint -f json src --ext ts > lint-report.json",
-		"test": "node ./out/test/runTest.js",
-		"package": "vsce package",
-		"publish": "vsce publish"
-	},
-	"devDependencies": {
-		"@johanblumenberg/ts-mockito": "^1.0.32",
-		"@types/chai": "^4.3.0",
-		"@types/chai-as-promised": "^7.1.4",
-		"@types/glob": "^7.2.0",
-		"@types/mocha": "^9.1.0",
-		"@types/node": "^16",
-		"@types/rimraf": "^3.0.2",
-		"@types/temp": "^0.9.1",
-		"@types/unzipper": "^0.10.5",
-		"@types/uuid": "^8.3.4",
-		"@types/vscode": "^1.64.0",
-		"@typescript-eslint/eslint-plugin": "^5.10.2",
-		"@typescript-eslint/parser": "^5.10.2",
-		"chai": "^4.3.6",
-		"chai-as-promised": "^7.1.1",
-		"copy-webpack-plugin": "^11.0.0",
-		"decache": "^4.6.1",
-		"del": "^6.0.0",
-		"eslint": "^8.8.0",
-		"eslint-plugin-mocha-no-only": "^1.1.1",
-		"mocha": "^9.2.0",
-		"mocha-junit-reporter": "^2.0.2",
-		"mocha-multi-reporters": "^1.5.1",
-		"temp": "^0.9.4",
-		"ts-loader": "^9.2.6",
-		"tty": "^1.0.1",
-		"typescript": "^4.5.5",
-		"vscode-debugadapter-testsupport": "^1.51.0",
-		"vscode-test": "^1.6.1",
-		"webpack": "^5.68.0",
-		"webpack-cli": "^4.9.2"
-	},
-	"dependencies": {
-		"await-notify": "^1.0.1",
-		"axios": "^0.25.0",
-		"extract-zip": "^2.0.1",
-		"glob": "^7.2.0",
-		"rimraf": "^3.0.2",
-		"uae-dap": "^0.5.1",
-		"uuid": "^8.3.2",
-		"vscode-debugadapter": "^1.51.0",
-		"vscode-debugprotocol": "^1.51.0",
-		"winston": "^3.5.1",
-		"winston-transport": "^4.5.0"
-	}
+    "name": "amiga-assembly",
+    "displayName": "Amiga Assembly",
+    "description": "Amiga Assembly Support for Visual Studio Code",
+    "license": "GNU General Public License v3.0",
+    "homepage": "https://github.com/prb28/vscode-amiga-assembly",
+    "bugs": {
+        "url": "https://github.com/prb28/vscode-amiga-assembly/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/prb28/vscode-amiga-assembly"
+    },
+    "version": "1.4.0",
+    "publisher": "prb28",
+    "engines": {
+        "vscode": "^1.64.0"
+    },
+    "categories": [
+        "Formatters",
+        "Programming Languages",
+        "Debuggers"
+    ],
+    "icon": "images/icon.png",
+    "galleryBanner": {
+        "color": "#000000",
+        "theme": "dark"
+    },
+    "activationEvents": [
+        "onDebug",
+        "onLanguage:m68k",
+        "onLanguage:c",
+        "onLanguage:amiga-assembly-debug.disassembly",
+        "onCommand:amiga-assembly.calculator",
+        "onCommand:amiga-assembly.evaluate-selection",
+        "onCommand:amiga-assembly.evaluate-selection-replace",
+        "onCommand:amiga-assembly.clean-vasm-workspace",
+        "onCommand:amiga-assembly.disassemble-file",
+        "onCommand:amiga-assembly.disassemble-copper",
+        "onCommand:amiga-assembly.disassemble-memory",
+        "onCommand:amiga-assembly.list-used-registers",
+        "onCommand:amiga-assembly.view-iff",
+        "onCommand:amiga-assembly.download-binaries",
+        "onCommand:amiga-assembly.create-example-workspace",
+        "onCommand:amiga-assembly.clear-data-breakpoints-storage",
+        "onWebviewPanel:iffView",
+        "workspaceContains:**/*.{s,S,asm,ASM}"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "languages": [
+            {
+                "id": "m68k",
+                "aliases": [
+                    "Amiga-Assembly",
+                    "M68k-Assembly",
+                    "m68k"
+                ],
+                "extensions": [
+                    ".s",
+                    ".i",
+                    ".asm"
+                ],
+                "configuration": "./language-configuration.json"
+            },
+            {
+                "id": "amiga-assembly-debug.disassembly",
+                "aliases": [
+                    "Amiga Assembly Debug Disassembly"
+                ],
+                "extensions": [
+                    ".dbgasm"
+                ]
+            }
+        ],
+        "grammars": [
+            {
+                "language": "m68k",
+                "scopeName": "source.asm.m68k",
+                "path": "./syntaxes/M68k-Assembly.tmLanguage.json"
+            },
+            {
+                "language": "amiga-assembly-debug.disassembly",
+                "scopeName": "source.asm.dbgasm",
+                "path": "./syntaxes/Dbg-Assembly.tmLanguage.json"
+            }
+        ],
+        "capabilities": {
+            "definitionProvider": "true",
+            "referencesProvider": "true",
+            "codeLensProvider": {
+                "resolveProvider": "true"
+            }
+        },
+        "configuration": {
+            "title": "Amiga Assembly",
+            "properties": {
+                "amiga-assembly.downloadBinaries": {
+                    "type": "boolean",
+                    "scope": "resource",
+                    "default": true,
+                    "description": "If true the binaries will be downloaded."
+                },
+                "amiga-assembly.binariesBranchURL": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "https://github.com/prb28/vscode-amiga-assembly-binaries/archive/refs/heads",
+                    "description": "URL to retrieve the binaries branches"
+                },
+                "amiga-assembly.binariesTagsURL": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "https://api.github.com/repos/prb28/vscode-amiga-assembly-binaries/tags",
+                    "description": "URL to retrieve the binaries tags"
+                },
+                "amiga-assembly.exampleProjectBranchesURL": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "https://github.com/prb28/vscode-amiga-wks-example/archive/refs/heads",
+                    "description": "URL to retrieve the example project branches"
+                },
+                "amiga-assembly.exampleProjectTagsURL": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "https://api.github.com/repos/prb28/vscode-amiga-wks-example/tags",
+                    "description": "URL to retrieve the example project tags"
+                },
+                "amiga-assembly.binDir": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "${workspaceFolder}/bin",
+                    "description": "Directory containing the binaries path."
+                },
+                "amiga-assembly.logLevel": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "info",
+                    "description": "Specifies the level of the logs."
+                },
+                "amiga-assembly.format.labelToInstructionDistance": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 2,
+                    "description": "Specifies the distance between a label and an instruction."
+                },
+                "amiga-assembly.format.instructionToDataDistance": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 4,
+                    "description": "Specifies the distance between an instruction and the data."
+                },
+                "amiga-assembly.format.dataToCommentsDistance": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 4,
+                    "description": "Specifies the distance between the data and the comment."
+                },
+                "amiga-assembly.format.variableToOperatorDistance": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 1,
+                    "description": "Specifies the distance between the variable and the assignment operator."
+                },
+                "amiga-assembly.format.operatorToValueDistance": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 1,
+                    "description": "Specifies the distance between the assignment operator and the value."
+                },
+                "amiga-assembly.format.preferredInstructionPosition": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 0,
+                    "description": "Specifies the preferred instruction position (if the label size is small enough)"
+                },
+                "amiga-assembly.format.preferredCommentPosition": {
+                    "type": "integer",
+                    "scope": "resource",
+                    "default": 0,
+                    "description": "Specifies the preferred comment position for a line with instruction (if the size is small enough)"
+                },
+                "amiga-assembly.format.useTabs": {
+                    "type": "boolean",
+                    "scope": "resource",
+                    "default": false,
+                    "description": "Format document with tabs and not with spaces"
+                },
+                "amiga-assembly.hover.numberDisplayFormat": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "#`@dec@` - $`@hex@` - %`@bin@` @ascii@",
+                    "description": "Format of the detailed number display use @dec@, @hex@, @bin@, @oct@ and @ascii@ as values replacements"
+                },
+                "amiga-assembly.display.memoryFormat.hover": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "m ${symbol},24,2,4",
+                    "description": "Default format for a memory dump in hover ('symbol' is replaced)"
+                },
+                "amiga-assembly.display.memoryFormat.watch": {
+                    "type": "string",
+                    "scope": "resource",
+                    "default": "m ${symbol},104,2,4",
+                    "description": "Default format for a memory dump in watch ('symbol' is replaced)"
+                },
+                "amiga-assembly.buildDir": {
+                    "type": "string",
+                    "scope": "window",
+                    "default": "build",
+                    "description": "Specifies the path to the build directory."
+                },
+                "amiga-assembly.tmpDir": {
+                    "type": "string",
+                    "scope": "window",
+                    "default": "build",
+                    "description": "Specifies the path to the temporary build directory."
+                },
+                "amiga-assembly.ASMOneCompatibilityEnabled": {
+                    "type": "boolean",
+                    "scope": "window",
+                    "default": false,
+                    "description": "Enables the ASMOne source compatibility commands."
+                },
+                "amiga-assembly.checkErrorOnSave": {
+                    "type": "boolean",
+                    "scope": "resource",
+                    "default": true,
+                    "description": "Compiles the current assembler file on save to show errors."
+                }
+            },
+            "completionProvider": {
+                "resolveProvider": "true"
+            }
+        },
+        "commands": [
+            {
+                "command": "amiga-assembly.calculator",
+                "title": "Amiga Assembly: Calculator",
+                "description": "Simple calculator in decimal, hexadecimal and binary"
+            },
+            {
+                "command": "amiga-assembly.evaluate-selection",
+                "title": "Amiga Assembly: Evaluate selection",
+                "description": "Evaluates the selection and shows the result"
+            },
+            {
+                "command": "amiga-assembly.evaluate-selection-replace",
+                "title": "Amiga Assembly: Evaluate selection and replace",
+                "description": "Evaluates the selection and replaces it by the result"
+            },
+            {
+                "command": "amiga-assembly.apply-formula",
+                "title": "Amiga Assembly: Apply formula to selected numerical values",
+                "description": "Applies a formula to to selected numerical values"
+            },
+            {
+                "command": "amiga-assembly.clean-vasm-workspace",
+                "title": "Amiga Assembly: Clean workspace",
+                "description": "Clean all the generated compilation objects"
+            },
+            {
+                "command": "amiga-assembly.disassemble-file",
+                "title": "Amiga Assembly: Disassemble file",
+                "description": "Disassembles an Amiga executable file"
+            },
+            {
+                "command": "amiga-assembly.disassemble-copper",
+                "title": "Amiga Assembly: Disassemble copper memory",
+                "description": "Disassembles memory address with copper instructions"
+            },
+            {
+                "command": "amiga-assembly.disassemble-memory",
+                "title": "Amiga Assembly: Disassemble memory",
+                "description": "Disassembles memory address"
+            },
+            {
+                "command": "amiga-assembly.list-used-registers",
+                "title": "Amiga Assembly: List used registers in selection",
+                "description": "Lists all the registers (a0-a7 / d0-d7) used in the selected code"
+            },
+            {
+                "command": "amiga-assembly.generate-data",
+                "title": "Amiga Assembly: Generate data from expression",
+                "description": "Generate numerical values from a mathematical expression"
+            },
+            {
+                "command": "amiga-assembly.view-iff",
+                "title": "Amiga Assembly: View IFF image",
+                "description": "Display an IFF/ILBM image"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsDec",
+                "title": "View as Decimal (unsigned longword)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsDecSigned",
+                "title": "View as Decimal (signed longword)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsDecWord",
+                "title": "View as Decimal (unsigned word)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsDecWordSigned",
+                "title": "View as Decimal (signed word)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsDecByte",
+                "title": "View as Decimal (unsigned byte)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsDecByteSigned",
+                "title": "View as Decimal (signed byte)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsHex",
+                "title": "View as Hex (unsigned longword)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsHexSigned",
+                "title": "View as Hex (signed longword)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsHexWord",
+                "title": "View as Hex (unsigned word)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsHexWordSigned",
+                "title": "View as Hex (signed word)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsHexByte",
+                "title": "View as Hex (unsigned byte)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsHexByteSigned",
+                "title": "View as Hex (signed byte)"
+            },
+            {
+                "command": "amiga-assembly.showVariableAsBin",
+                "title": "View as Binary"
+            },
+            {
+                "command": "amiga-assembly.showdoc-toc",
+                "title": "Amiga Assembly: Show documentation",
+                "description": "Display the documentation table of contents"
+            },
+            {
+                "command": "disassembledMemory.setDisassembledMemory",
+                "title": "Set disassembled memory"
+            },
+            {
+                "command": "amiga-assembly.download-binaries",
+                "title": "Amiga Assembly: Download binaries"
+            },
+            {
+                "command": "amiga-assembly.clean-downloaded-binaries",
+                "title": "Amiga Assembly: Clean downloaded binaries"
+            },
+            {
+                "command": "amiga-assembly.create-example-workspace",
+                "title": "Amiga Assembly: Create example workspace"
+            },
+            {
+                "command": "amiga-assembly.clear-data-breakpoints-storage",
+                "title": "Amiga Assembly: Clear storage of data breakpoints"
+            }
+        ],
+        "breakpoints": [
+            {
+                "language": "m68k"
+            },
+            {
+                "language": "amiga-assembly-debug.disassembly"
+            },
+            {
+                "language": "c"
+            },
+            {
+                "language": "cpp"
+            }
+        ],
+        "debuggers": [
+            {
+                "type": "fs-uae",
+                "label": "Amiga-Assembly: FS-UAE Debug",
+                "program": "./out/debugAdapter.js",
+                "runtime": "node",
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Path to an amiga program.",
+                                "default": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\""
+                            },
+                            "startEmulator": {
+                                "type": "boolean",
+                                "description": "If true the emulator will be started before debugging.",
+                                "default": "true"
+                            },
+                            "emulator": {
+                                "type": "string",
+                                "description": "Path to the fs-uae emulator.",
+                                "default": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
+                            },
+                            "emulatorWorkingDir": {
+                                "type": "string",
+                                "description": "Path to the working directory of the emulator.",
+                                "default": "^\"\\${config:amiga-assembly.binDir\\}\""
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Automatically stop after launch.",
+                                "default": true
+                            },
+                            "trace": {
+                                "type": "boolean",
+                                "description": "Enable logging of the Debug Adapter Protocol.",
+                                "default": false
+                            },
+                            "serverName": {
+                                "type": "string",
+                                "description": "Host running fs-uae",
+                                "default": "localhost"
+                            },
+                            "serverPort": {
+                                "type": "number",
+                                "description": "Socket port to connect to FS-UAE",
+                                "default": 6860
+                            },
+                            "exceptionMask": {
+                                "type": "number",
+                                "description": "Mask used to catch the exceptions",
+                                "default": 8188
+                            },
+                            "emulatorStartDelay": {
+                                "type": "number",
+                                "description": "Mask used to catch the exceptions",
+                                "default": 100
+                            },
+                            "sourceFileMap": {
+                                "type": "object",
+                                "description": "Optional source file mappings passed to the debug engine. Example: '{ \"/original/source/path\":\"/current/source/path\" }'",
+                                "default": {
+                                    "<source-path>": "<target-path>"
+                                }
+                            },
+                            "rootSourceFileMap": {
+                                "type": "array",
+                                "description": "Root paths to seek for sources",
+                                "items": {
+                                    "type": "string",
+                                    "title": "Root source path"
+                                },
+                                "default": []
+                            },
+                            "options": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "title": "Emulator option"
+                                },
+                                "default": [],
+                                "description": "Emulator options"
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "fs-uae",
+                        "request": "launch",
+                        "name": "Amiga-Assembly: FS-UAE Debug",
+                        "stopOnEntry": true,
+                        "serverName": "localhost",
+                        "serverPort": 6860,
+                        "startEmulator": true,
+                        "windows": {
+                            "emulator": "${config:amiga-assembly.binDir}/fs-uae.exe"
+                        },
+                        "osx": {
+                            "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+                        },
+                        "linux": {
+                            "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+                        },
+                        "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+                        "program": "${workspaceFolder}/uae/dh0/myprogram",
+                        "options": [
+                            "--chip_memory=2048",
+                            "--hard_drive_0=${workspaceFolder}/uae/dh0",
+                            "--joystick_port_1=none",
+                            "--amiga_model=A1200",
+                            "--remote_debugger=200",
+                            "--use_remote_debugger=true",
+                            "--automatic_input_grab=0"
+                        ],
+                        "preLaunchTask": "amigaassembly: build"
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "Amiga-Assembly: FS-UAE Debug",
+                        "description": "A new configuration for debugging a program in FS-UAE.",
+                        "body": {
+                            "type": "fs-uae",
+                            "request": "launch",
+                            "name": "FS-UAE Debug",
+                            "stopOnEntry": true,
+                            "serverName": "localhost",
+                            "serverPort": 6860,
+                            "startEmulator": true,
+                            "windows": {
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae.exe\""
+                            },
+                            "osx": {
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
+                            },
+                            "linux": {
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
+                            },
+                            "emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
+                            "program": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\"",
+                            "options": [
+                                "--chip_memory=2048",
+                                "^\"--hard_drive_0=\\${workspaceFolder\\}/uae/dh0\"",
+                                "--joystick_port_1=none",
+                                "--amiga_model=A1200",
+                                "--remote_debugger=200",
+                                "--use_remote_debugger=true",
+                                "--automatic_input_grab=0"
+                            ],
+                            "preLaunchTask": "amigaassembly: build"
+                        }
+                    }
+                ]
+            },
+            {
+                "type": "uae-run",
+                "label": "Amiga-Assembly: Run",
+                "program": "./out/runNoDebugAdapter.js",
+                "runtime": "node",
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "emulator"
+                        ],
+                        "properties": {
+                            "emulator": {
+                                "type": "string",
+                                "description": "Path to the uae emulator.",
+                                "default": "Path to uae executable"
+                            },
+                            "emulatorWorkingDir": {
+                                "type": "string",
+                                "description": "Path to the working directory of the emulator.",
+                                "default": "."
+                            },
+                            "trace": {
+                                "type": "boolean",
+                                "description": "Enable logging of the Debug Adapter Protocol.",
+                                "default": true
+                            },
+                            "options": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "title": "Emulator option"
+                                },
+                                "default": [],
+                                "description": "Emulator options"
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "uae-run",
+                        "request": "launch",
+                        "name": "Amiga-Assembly: Run",
+                        "windows": {
+                            "emulator": "${config:amiga-assembly.binDir}/winuae.exe",
+                            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+                            "options": [
+                                "-s",
+                                "filesystem=rw,dh0:${workspaceFolder}/uae/dh0"
+                            ]
+                        },
+                        "osx": {
+                            "emulator": "${config:amiga-assembly.binDir}/fs-uae",
+                            "options": [
+                                "--chip_memory=2048",
+                                "--hard_drive_0=${workspaceFolder}/uae/dh0",
+                                "--amiga_model=A1200",
+                                "--automatic_input_grab=0"
+                            ]
+                        },
+                        "linux": {
+                            "emulator": "${config:amiga-assembly.binDir}/fs-uae",
+                            "options": [
+                                "--chip_memory=2048",
+                                "--hard_drive_0=${workspaceFolder}/uae/dh0",
+                                "--amiga_model=A1200",
+                                "--automatic_input_grab=0"
+                            ]
+                        },
+                        "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+                        "preLaunchTask": "amigaassembly: build"
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "Amiga-Assembly: FS-UAE Run",
+                        "description": "A new configuration for running FS-UAE.",
+                        "body": {
+                            "type": "uae-run",
+                            "request": "launch",
+                            "name": "FS-UAE Run",
+                            "windows": {
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae.exe\""
+                            },
+                            "osx": {
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
+                            },
+                            "linux": {
+                                "emulator": "^\"\\${config:amiga-assembly.binDir\\}/fs-uae\""
+                            },
+                            "emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
+                            "options": [
+                                "--chip_memory=2048",
+                                "^\"--hard_drive_0=\\${workspaceFolder\\}/uae/dh0\"",
+                                "--amiga_model=A1200",
+                                "--automatic_input_grab=0"
+                            ],
+                            "preLaunchTask": "amigaassembly: build"
+                        }
+                    },
+                    {
+                        "label": "Amiga-Assembly: WinUAE Run",
+                        "description": "A new configuration for running WinUAE.",
+                        "body": {
+                            "type": "uae-run",
+                            "request": "launch",
+                            "name": "WinUAE Run",
+                            "emulator": "^\"\\${config:amiga-assembly.binDir\\}/winuae.exe\"",
+                            "emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
+                            "options": [
+                                "-s",
+                                "^\"filesystem=rw,dh0:\\${workspaceFolder\\}/uae/dh0\""
+                            ],
+                            "preLaunchTask": "amigaassembly: build"
+                        }
+                    }
+                ]
+            },
+            {
+                "type": "winuae",
+                "label": "Amiga-Assembly: WinUAE Debug",
+                "program": "./out/debugAdapterWinUAE.js",
+                "runtime": "node",
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Path to an amiga program.",
+                                "default": "${workspaceFolder}/myprogram"
+                            },
+                            "startEmulator": {
+                                "type": "boolean",
+                                "description": "If true the emulator will be started before debugging.",
+                                "default": "true"
+                            },
+                            "emulator": {
+                                "type": "string",
+                                "description": "Path to the WinUAE emulator.",
+                                "default": "Path to WinUAE executable"
+                            },
+                            "emulatorWorkingDir": {
+                                "type": "string",
+                                "description": "Path to the working directory of the emulator.",
+                                "default": "."
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Automatically stop after launch.",
+                                "default": true
+                            },
+                            "trace": {
+                                "type": "boolean",
+                                "description": "Enable logging of the Debug Adapter Protocol.",
+                                "default": true
+                            },
+                            "serverName": {
+                                "type": "string",
+                                "description": "Host running WinUAE",
+                                "default": "localhost"
+                            },
+                            "serverPort": {
+                                "type": "number",
+                                "description": "Socket port to connect to WinUAE",
+                                "default": 6860
+                            },
+                            "exceptionMask": {
+                                "type": "number",
+                                "description": "Mask used to catch the exceptions",
+                                "default": 8188
+                            },
+                            "emulatorStartDelay": {
+                                "type": "number",
+                                "description": "Mask used to catch the exceptions",
+                                "default": 100
+                            },
+                            "sourceFileMap": {
+                                "type": "object",
+                                "description": "Optional source file mappings passed to the debug engine. Example: '{ \"/original/source/path\":\"/current/source/path\" }'",
+                                "default": {
+                                    "<source-path>": "<target-path>"
+                                }
+                            },
+                            "rootSourceFileMap": {
+                                "type": "array",
+                                "description": "Root paths to seek for sources",
+                                "items": {
+                                    "type": "string",
+                                    "title": "Root source path"
+                                },
+                                "default": []
+                            },
+                            "options": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "title": "Emulator option"
+                                },
+                                "default": [],
+                                "description": "Emulator options"
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "winuae",
+                        "request": "launch",
+                        "name": "Amiga-Assembly: WinUAE Debug",
+                        "stopOnEntry": true,
+                        "serverName": "localhost",
+                        "serverPort": 2345,
+                        "startEmulator": true,
+                        "emulator": "${config:amiga-assembly.binDir}/winuae.exe",
+                        "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+                        "program": "${workspaceFolder}/uae/dh0/myprogram",
+                        "options": [
+                            "-s",
+                            "debugging_trigger=SYS:myprogram",
+                            "-s",
+                            "filesystem=rw,dh0:${workspaceFolder}/uae/dh0",
+                            "-s",
+                            "debugging_features=gdbserver"
+                        ],
+                        "preLaunchTask": "amigaassembly: build"
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "Amiga-Assembly: WinUAE Debug",
+                        "description": "A new configuration for debugging a program in WinUAE.",
+                        "body": {
+                            "type": "winuae",
+                            "request": "launch",
+                            "name": "WinUAE Debug",
+                            "stopOnEntry": true,
+                            "serverName": "localhost",
+                            "serverPort": 2345,
+                            "startEmulator": true,
+                            "emulator": "^\"\\${config:amiga-assembly.binDir\\}/winuae.exe\"",
+                            "emulatorWorkingDir": "^\"\\${config:amiga-assembly.binDir\\}\"",
+                            "program": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\"",
+                            "options": [
+                                "-s",
+                                "debugging_trigger=SYS:myprogram",
+                                "-s",
+                                "^\"filesystem=rw,dh0:\\${workspaceFolder\\}/uae/dh0\"",
+                                "-s",
+                                "debugging_features=gdbserver"
+                            ],
+                            "preLaunchTask": "amigaassembly: build"
+                        }
+                    }
+                ]
+            }
+        ],
+        "snippets": [
+            {
+                "language": "m68k",
+                "path": "./snippets/m68k.json"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "when": "resourceExtname =~ /\\.iff/i",
+                    "command": "amiga-assembly.view-iff",
+                    "group": "3_preview"
+                }
+            ],
+            "debug/variables/context": [
+                {
+                    "command": "amiga-assembly.showVariableAsDec",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@1"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsDecSigned",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@2"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsDecWord",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@3"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsDecWordSigned",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@4"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsDecByte",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@5"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsDecByteSigned",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@6"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsHex",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@7"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsHexSigned",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@8"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsHexWord",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@9"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsHexWordSigned",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@10"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsHexByte",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@11"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsHexByteSigned",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@12"
+                },
+                {
+                    "command": "amiga-assembly.showVariableAsBin",
+                    "when": "debugType == 'winuae' || debugType == 'fs-uae'",
+                    "group": "1_view@13"
+                }
+            ]
+        },
+        "views": {
+            "debug": [
+                {
+                    "id": "disassembledMemory",
+                    "name": "DISASSEMBLED MEMORY"
+                }
+            ]
+        },
+        "taskDefinitions": [
+            {
+                "type": "amigaassembly",
+                "required": [],
+                "properties": {
+                    "vasm": {
+                        "type": "object",
+                        "properties": {
+                            "enabled": {
+                                "type": "boolean",
+                                "description": "If true the VASM compiler is enabled"
+                            },
+                            "command": {
+                                "type": "string",
+                                "description": "File with absolute path to the VASM compiler"
+                            },
+                            "args": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "title": "compiler option"
+                                },
+                                "default": [],
+                                "description": "Compiler options"
+                            }
+                        },
+                        "default": {
+                            "enabled": true,
+                            "command": "${config:amiga-assembly.binDir}/vasmm68k_mot",
+                            "args": [
+                                "-m68000",
+                                "-Fhunk",
+                                "-linedebug"
+                            ]
+                        },
+                        "description": "VASM compiler configuration"
+                    },
+                    "vlink": {
+                        "type": "object",
+                        "properties": {
+                            "enabled": {
+                                "type": "boolean",
+                                "description": "If true the VLINK linker is enabled"
+                            },
+                            "command": {
+                                "type": "string",
+                                "description": "File with absolute path to the VLINK linker"
+                            },
+                            "includes": {
+                                "type": "string",
+                                "description": "GlobPattern to select the source files to link"
+                            },
+                            "excludes": {
+                                "type": "string",
+                                "description": "GlobPattern to select the source files to exclude from the link"
+                            },
+                            "entrypoint": {
+                                "type": "string",
+                                "description": "Name of the object file containing the entrypoint"
+                            },
+                            "createStartupSequence": {
+                                "type": "boolean",
+                                "description": "If true a startup-sequence file will be created if not present"
+                            },
+                            "createExeFileParentDir": {
+                                "type": "boolean",
+                                "description": "If true the parent dir of the exe file will be created"
+                            },
+                            "exefilename": {
+                                "type": "string",
+                                "description": "Name of the executable file relative to the build dir"
+                            },
+                            "args": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "title": "linker option"
+                                },
+                                "default": [],
+                                "description": "linker options"
+                            }
+                        },
+                        "default": {
+                            "enabled": true,
+                            "command": "${config:amiga-assembly.binDir}/vlink",
+                            "includes": "*.{s,S,asm,ASM}",
+                            "excludes": "",
+                            "createStartupSequence": true,
+                            "createExeFileParentDir": true,
+                            "exefilename": "../uae/dh0/myprogram",
+                            "args": [
+                                "-bamigahunk",
+                                "-Bstatic"
+                            ]
+                        },
+                        "description": "VLINK linker configuration"
+                    },
+                    "adfgenerator": {
+                        "type": "object",
+                        "scope": "window",
+                        "properties": {
+                            "ADFToolsParentDir": {
+                                "type": "string",
+                                "description": "Path to the parent dir of the adftools binaries"
+                            },
+                            "outputADFFile": {
+                                "type": "string",
+                                "description": "File with absolute path to new ADF disk file"
+                            },
+                            "sourceRootDir": {
+                                "type": "string",
+                                "description": "Path to the root dir of the files to copy"
+                            },
+                            "includes": {
+                                "type": "string",
+                                "description": "GlobPattern to select the files to include in the ADF disk"
+                            },
+                            "excludes": {
+                                "type": "string",
+                                "description": "GlobPattern to select the files to exclude in the ADF disk"
+                            },
+                            "adfCreateOptions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "title": "adfCreate option"
+                                },
+                                "default": [],
+                                "description": "adfCreate options"
+                            },
+                            "bootBlockSourceFile": {
+                                "type": "string",
+                                "description": "Source file containing the code of the bootblock"
+                            }
+                        },
+                        "default": {
+                            "ADFToolsParentDir": "${config:amiga-assembly.binDir}",
+                            "sourceRootDir": "uae/dh0",
+                            "outputADFFile": "./build/disk.adf",
+                            "includes": "**/*",
+                            "excludes": "**/.*",
+                            "adfCreateOptions": [
+                                "--label=MYDISK"
+                            ]
+                        },
+                        "description": "ADFFile generation from the destination build dir"
+                    }
+                }
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "webpack --mode production",
+        "webpack": "webpack --mode development",
+        "webpack-dev": "webpack --mode development --watch",
+        "test-compile": "tsc -p ./ && npm run webpack",
+        "lint": "eslint -f json src --ext ts > lint-report.json",
+        "test": "node ./out/test/runTest.js",
+        "package": "vsce package",
+        "publish": "vsce publish"
+    },
+    "devDependencies": {
+        "@johanblumenberg/ts-mockito": "^1.0.32",
+        "@types/chai": "^4.3.0",
+        "@types/chai-as-promised": "^7.1.4",
+        "@types/glob": "^7.2.0",
+        "@types/mocha": "^9.1.0",
+        "@types/node": "^16",
+        "@types/rimraf": "^3.0.2",
+        "@types/temp": "^0.9.1",
+        "@types/unzipper": "^0.10.5",
+        "@types/uuid": "^8.3.4",
+        "@types/vscode": "^1.64.0",
+        "@typescript-eslint/eslint-plugin": "^5.10.2",
+        "@typescript-eslint/parser": "^5.10.2",
+        "chai": "^4.3.6",
+        "chai-as-promised": "^7.1.1",
+        "copy-webpack-plugin": "^11.0.0",
+        "decache": "^4.6.1",
+        "del": "^6.0.0",
+        "eslint": "^8.8.0",
+        "eslint-plugin-mocha-no-only": "^1.1.1",
+        "mocha": "^9.2.0",
+        "mocha-junit-reporter": "^2.0.2",
+        "mocha-multi-reporters": "^1.5.1",
+        "temp": "^0.9.4",
+        "ts-loader": "^9.2.6",
+        "tty": "^1.0.1",
+        "typescript": "^4.5.5",
+        "vscode-debugadapter-testsupport": "^1.51.0",
+        "vscode-test": "^1.6.1",
+        "webpack": "^5.68.0",
+        "webpack-cli": "^4.9.2"
+    },
+    "dependencies": {
+        "await-notify": "^1.0.1",
+        "axios": "^0.25.0",
+        "extract-zip": "^2.0.1",
+        "glob": "^7.2.0",
+        "rimraf": "^3.0.2",
+        "uae-dap": "^0.5.2",
+        "uuid": "^8.3.2",
+        "vscode-debugadapter": "^1.51.0",
+        "vscode-debugprotocol": "^1.51.0",
+        "winston": "^3.5.1",
+        "winston-transport": "^4.5.0"
+    }
 }
