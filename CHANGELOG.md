@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+### [1.5.0] - 
+- [Feat #221](https://github.com/prb28/vscode-amiga-assembly/pull/221) *grahambates* Use of external debugger
+    - Conditional breakpoints
+    - Log points
+    - Custom registers in variables list, including named sub-fields for specific bit ranges
+    - Additional formats for variables, including signed and size variants
+    - Label offset annotations for address registers
+
 ### [1.4.0] - 2022-05-08
 - [Feat #215](https://github.com/prb28/vscode-amiga-assembly/pull/215) *grahambates* Substitute variables in config args
 - [Feat #213](https://github.com/prb28/vscode-amiga-assembly/issues/213) multi-root workspace integration

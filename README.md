@@ -8,24 +8,13 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
-## New in 1.4
-- Fix binaries download issues
-- Substitute variables in config args by *grahambates*
-- Use of default vscode disassembly view non source debugging
-- Add vscode hex editor for memory editing
-- Bug fixes
-
-## Breaking change 1.0!
-
-The build system has been reviewed :
-- 3 commands have been replaced by tasks:
-    - `amigaassembly: build`: to build the workspace
-    - `amigaassembly: build current file`: to build the current file as an executable
-    - `amigaassembly: compile current file`: to compile the current file (creates a .o file)
-    - `amigaassembly: create ADF`: to create an ADF file
-- Builds are triggered in a terminal to show the output
-- There is no more the "Build" button in the bottom of the window
-- The *launch.json* parameter `"buildWorkspace": true,` is replaced by `"preLaunchTask": "amigaassembly: build"`
+## New in 1.5
+- *grahambates* Use of external debugger
+- *grahambates* Conditional breakpoints
+- *grahambates* Log points
+- *grahambates* Custom registers in variables list, including named sub-fields for specific bit ranges
+- *grahambates* Additional formats for variables, including signed and size variants
+- *grahambates* Label offset annotations for address registers
 
 ### Other features
 ### Run and Debug with FS-UAE or WinUAE
