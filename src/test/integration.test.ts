@@ -100,6 +100,9 @@ describe('WinUAE Integration test', () => {
         if (dc) {
             await dc.stop();
         }
+        await new Promise((resolve): void => {
+            setTimeout(resolve, 100);
+        });
     });
 
     describe('complete workspace test', function () {
@@ -108,7 +111,7 @@ describe('WinUAE Integration test', () => {
                 return Promise.all([
                     dc.configurationSequence(),
                     dc.launch(launchArgs),
-                    dc.assertStoppedLocation('step', { line: 1 })
+                    dc.assertStoppedLocation('entry', { line: 20 })
                 ]);
             });
         }
