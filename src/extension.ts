@@ -554,48 +554,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
         setDisplayFormat(variableInfo, NumberFormat.DECIMAL);
     });
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDecSigned', (variableInfo) => {
-        setDisplayFormat(variableInfo, NumberFormat.DECIMAL_SIGNED);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDecWord', (variableInfo) => {
-        setDisplayFormat(variableInfo, NumberFormat.DECIMAL_WORD);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDecWordSigned', (variableInfo) => {
-        setDisplayFormat(variableInfo, NumberFormat.DECIMAL_WORD_SIGNED);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDecByte', (variableInfo) => {
-        setDisplayFormat(variableInfo, NumberFormat.DECIMAL_BYTE);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsDecByteSigned', (variableInfo) => {
-        setDisplayFormat(variableInfo, NumberFormat.DECIMAL_BYTE_SIGNED);
-    });
-    context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHex', (variableInfo) => {
         setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHexSigned', (variableInfo) => {
-        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL_SIGNED);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHexWord', (variableInfo) => {
-        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL_WORD);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHexWordSigned', (variableInfo) => {
-        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL_WORD_SIGNED);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHexByte', (variableInfo) => {
-        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL_BYTE);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('amiga-assembly.showVariableAsHexByteSigned', (variableInfo) => {
-        setDisplayFormat(variableInfo, NumberFormat.HEXADECIMAL_BYTE_SIGNED);
     });
     context.subscriptions.push(disposable);
 

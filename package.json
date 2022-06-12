@@ -290,51 +290,11 @@
 			},
 			{
 				"command": "amiga-assembly.showVariableAsDec",
-				"title": "View as Decimal (unsigned longword)"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsDecSigned",
-				"title": "View as Decimal (signed longword)"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsDecWord",
-				"title": "View as Decimal (unsigned word)"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsDecWordSigned",
-				"title": "View as Decimal (signed word)"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsDecByte",
-				"title": "View as Decimal (unsigned byte)"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsDecByteSigned",
-				"title": "View as Decimal (signed byte)"
+				"title": "View as Decimal"
 			},
 			{
 				"command": "amiga-assembly.showVariableAsHex",
-				"title": "View as Hex (unsigned longword)"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsHexSigned",
-				"title": "View as Hex (signed longword)"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsHexWord",
-				"title": "View as Hex (unsigned word)"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsHexWordSigned",
-				"title": "View as Hex (signed word)"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsHexByte",
-				"title": "View as Hex (unsigned byte)"
-			},
-			{
-				"command": "amiga-assembly.showVariableAsHexByteSigned",
-				"title": "View as Hex (signed byte)"
+				"title": "View as Hex"
 			},
 			{
 				"command": "amiga-assembly.showVariableAsBin",
@@ -816,67 +776,17 @@
 				{
 					"command": "amiga-assembly.showVariableAsDec",
 					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@1"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsDecSigned",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@2"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsDecWord",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@3"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsDecWordSigned",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@4"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsDecByte",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@5"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsDecByteSigned",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@6"
+					"group": "1_view"
 				},
 				{
 					"command": "amiga-assembly.showVariableAsHex",
 					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@7"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsHexSigned",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@8"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsHexWord",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@9"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsHexWordSigned",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@10"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsHexByte",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@11"
-				},
-				{
-					"command": "amiga-assembly.showVariableAsHexByteSigned",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@12"
+					"group": "1_view"
 				},
 				{
 					"command": "amiga-assembly.showVariableAsBin",
 					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
-					"group": "1_view@13"
+					"group": "1_view"
 				}
 			]
 		},
@@ -1088,7 +998,7 @@
 		"extract-zip": "^2.0.1",
 		"glob": "^7.2.0",
 		"rimraf": "^3.0.2",
-		"uae-dap": "^0.6.0",
+		"uae-dap": "^0.7.0",
 		"uuid": "^8.3.2",
 		"vscode-debugadapter": "^1.51.0",
 		"vscode-debugprotocol": "^1.51.0",
