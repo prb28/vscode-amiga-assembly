@@ -998,7 +998,7 @@
 		"extract-zip": "^2.0.1",
 		"glob": "^7.2.0",
 		"rimraf": "^3.0.2",
-		"uae-dap": "^0.7.0",
+		"uae-dap": "^0.7.2",
 		"uuid": "^8.3.2",
 		"vscode-debugadapter": "^1.51.0",
 		"vscode-debugprotocol": "^1.51.0",
