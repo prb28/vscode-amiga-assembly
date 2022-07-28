@@ -1,0 +1,121 @@
+.top-bar {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--vscode-textSeparator-foreground);
+}
+
+.outputs input {
+  font-family: var(--vscode-editor-font-family);
+  margin-right: 0.5rem;
+}
+
+.register-name {
+  font-weight: bold;
+  flex: 0 0 80px;
+}
+
+.register {
+  margin-bottom: .25rem;
+  display: flex;
+  align-items: center;
+}
+
+.exp {
+  font-family: var(--vscode-editor-font-family);
+  white-space: nowrap;
+}
+
+button {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: 1px solid var(--vscode-button-border);
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+input[type="text"],
+input[type="number"] {
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  outline-color: var(--vscode-focusBorder);
+  border: none;
+  padding: 4px;
+}
+
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+canvas {
+  cursor: pointer;
+}
+
+.content {
+  margin: 1rem 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.minterms {
+  border-spacing: 0;
+  margin-right: 2rem;
+}
+
+.minterms td,
+.minterms th {
+  text-align: left;
+  vertical-align: bottom;
+  padding: 0.25rem;
+}
+
+.minterms tbody td {
+  text-align: center;
+}
+
+.minterms input {
+  vertical-align: middle;
+}
+
+.minterms tbody {
+  font-family: var(--vscode-editor-font-family);
+}
+
+.minterms tbody tr:nth-child(odd) {
+  background-color: var(--vscode-tree-tableOddRowsBackground);
+}
+
+.minterms tbody tr:hover {
+  background-color: var(--vscode-list-hoverBackground);
+  color: var(--vscode-list-hoverForeground);
+}
+
+.minterms-label {
+  font-weight: normal;
+  color: var(--vscode-disabledForeground);
+  width: 7rem;
+}
+
+.minterms-label strong {
+  color: var(--vscode-foreground);
+}
+
+.options {
+  flex: 0 0 50%;
+}
+
+.option {
+  margin-bottom: .25rem;
+}
+
+abbr {
+  cursor: help;
+  vertical-align: middle;
+}
+
+.footer {
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--vscode-textSeparator-foreground);
+}

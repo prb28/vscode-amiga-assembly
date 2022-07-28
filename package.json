@@ -31,6 +31,7 @@
 		"onLanguage:m68k",
 		"onLanguage:c",
 		"onLanguage:amiga-assembly-debug.disassembly",
+		"onCommand:amiga-assembly.bltcon-helper",
 		"onCommand:amiga-assembly.calculator",
 		"onCommand:amiga-assembly.evaluate-selection",
 		"onCommand:amiga-assembly.evaluate-selection-replace",
@@ -233,6 +234,11 @@
 			}
 		},
 		"commands": [
+			{
+				"command": "amiga-assembly.bltcon-helper",
+				"title": "Amiga Assembly: BLTCON Helper",
+				"description": "Calculate values for Blitter custom registers"
+			},
 			{
 				"command": "amiga-assembly.calculator",
 				"title": "Amiga Assembly: Calculator",

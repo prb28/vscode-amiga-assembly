@@ -34,6 +34,7 @@ import FileDownloader from './filedownloader/FileDownloader';
 import OutputLogger from './filedownloader/logging/OutputLogger';
 import { BreakpointStorageWorkspace } from './breakpointStorage';
 import { NumberFormat, VariableDisplayFormatRequest } from 'uae-dap';
+import { createBltconHelperPanel } from './bltconHelper';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
@@ -480,6 +481,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     });
     context.subscriptions.push(disposable);
 
+    disposable = vscode.commands.registerCommand('amiga-assembly.bltcon-helper', async () => {
+        createBltconHelperPanel(context.extensionUri);
+    });
+    context.subscriptions.push(disposable);
 
 
     // Completion provider
