@@ -8,13 +8,8 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
-## New in 1.6
-- *grahambates* Use of external debugger
-- *grahambates* Conditional breakpoints
-- *grahambates* Log points
-- *grahambates* Custom registers in variables list, including named sub-fields for specific bit ranges
-- *grahambates* Additional formats for variables, including signed and size variants
-- *grahambates* Label offset annotations for address registers
+## New in 1.7
+- *grahambates* BLTCON Helper
 
 ### Other features
 ### Run and Debug with FS-UAE or WinUAE
@@ -79,6 +74,9 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+## New in 1.7
+- *grahambates* BLTCON Helper
+
 ## New in 1.6
 - *grahambates* Use of external debugger
 - *grahambates* Conditional breakpoints
