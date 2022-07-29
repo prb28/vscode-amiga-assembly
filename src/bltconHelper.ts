@@ -8,9 +8,9 @@ export function createBltconHelperPanel(extensionUri: vscode.Uri): vscode.Webvie
         { enableScripts: true }
     );
 
-    const cssPath = vscode.Uri.joinPath(extensionUri, 'src', 'bltcon-helper', 'style.css');
+    const cssPath = vscode.Uri.joinPath(extensionUri, 'webviews', 'bltcon-helper', 'style.css');
     const cssUri = panel.webview.asWebviewUri(cssPath);
-    const jsPath = vscode.Uri.joinPath(extensionUri, 'src', 'bltcon-helper', 'main.js');
+    const jsPath = vscode.Uri.joinPath(extensionUri, 'webviews', 'bltcon-helper', 'main.js');
     const jsUri = panel.webview.asWebviewUri(jsPath);
 
     panel.webview.html = /*html*/ `<!DOCTYPE html>
@@ -121,7 +121,7 @@ export function createBltconHelperPanel(extensionUri: vscode.Uri): vscode.Webvie
                                                     id="useSourceC"
                                                 />
                                                 <abbr
-                                                    title="Source C is a thrird source you want to mix with A and B. Often used to point to the screen (destination buffer). For example, to draw a circular Bob over a background screen, you need to use A for the bob image, use B for the bob circular mask, and use C to keep the background data outside of the mask, but inside the blit window. Do not forget to initialize BLTCPT and BLTCMOD."
+                                                    title="Source C is a third source you want to mix with A and B. Often used to point to the screen (destination buffer). For example, to draw a circular Bob over a background screen, you need to use A for the bob image, use B for the bob circular mask, and use C to keep the background data outside of the mask, but inside the blit window. Do not forget to initialize BLTCPT and BLTCMOD."
                                                     >C</abbr
                                                 >
                                             </div>
