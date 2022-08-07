@@ -1,12 +1,12 @@
 {
 	"name": "amiga-assembly",
-	"version": "1.7.0",
+	"version": "1.7.1",
 	"lockfileVersion": 2,
 	"requires": true,
 	"packages": {
 		"": {
 			"name": "amiga-assembly",
-			"version": "1.7.0",
+			"version": "1.7.1",
 			"license": "GNU General Public License v3.0",
 			"dependencies": {
 				"await-notify": "^1.0.1",
@@ -14,7 +14,7 @@
 				"extract-zip": "^2.0.1",
 				"glob": "^7.2.0",
 				"rimraf": "^3.0.2",
-				"uae-dap": "file:../uae-dap",
+				"uae-dap": "^0.7.2",
 				"uuid": "^8.3.2",
 				"vscode-debugadapter": "^1.51.0",
 				"vscode-debugprotocol": "^1.51.0",
