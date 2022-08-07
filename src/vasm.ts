@@ -23,6 +23,7 @@ export interface VasmBuildProperties {
   enabled: boolean;
   command: string;
   args: Array<string>;
+  leaveWarnings: boolean;
 }
 
 /**
@@ -39,7 +40,8 @@ export class VASMCompiler {
       "-m68000",
       "-Fhunk",
       "-linedebug"
-    ]
+    ],
+    leaveWarnings: true
   };
   executor: ExecutorHelper;
   parser: VASMParser;
@@ -96,8 +98,7 @@ export class VASMCompiler {
    * @param errors Errors
    */
   public processGlobalErrors(document: TextDocument, errors: ICheckResult[]): void {
-    for (let i = 0; i < errors.length; i += 1) {
-      const error = errors[i];
+    for (const error of errors) {
       if (error.line <= 0) {
         // match include errors
         const match = /.*[<](.+)[>]/.exec(error.msg);
@@ -168,8 +169,7 @@ export class VASMCompiler {
     warningDiagnosticCollection.clear();
     const buildDir = this.getBuildDir();
     const filesProxies = await buildDir.findFiles("**/*.o", "");
-    for (let i = 0; i < filesProxies.length; i++) {
-      const fileUri = filesProxies[i];
+    for (const fileUri of filesProxies) {
       winston.info(
         `Deleting ${fileUri.getPath()}`
       );
@@ -263,13 +263,26 @@ export class VASMCompiler {
           logEmitter.fire("Compiling_________________________________________\r\n");
         }
         const errorsArray = await Promise.all(promises);
-        for (let i = 0; i < errorsArray.length; i += 1) {
-          let errors: ICheckResult[] = errorsArray[i];
-          if (ASMOneEnabled) {
-            errors = this.asmONE.filterErrors(errors);
+        for (const errors of errorsArray) {
+          let hasWarning = false;
+          let filteredError = new Array<ICheckResult>();
+          for (const error of errors) {
+            if (error.severity === "error") {
+              filteredError.push(error);
+            } else if (error.severity === "warning") {
+              hasWarning = true;
+              if (conf.leaveWarnings === false) {
+                filteredError.push(error);
+              }
+            }
           }
-          if (errors && errors.length > 0) {
+          if (ASMOneEnabled) {
+            filteredError = this.asmONE.filterErrors(filteredError);
+          }
+          if (filteredError && filteredError.length > 0) {
             throw new Error("Build Error");
+          } else if (hasWarning && logEmitter) {
+            logEmitter.fire(`\u001b[33mCompilation has Warnings!\u001b[0m\r\n`);
           }
         }
         // Call the linker
@@ -343,7 +356,7 @@ export class VASMCompiler {
   /**
    * Build the selected file
    * @param conf Vasm configurations
-   * @param filepathname Path of the file to build
+   * @param fileUri Uri of the file to build
    * @param temporaryBuild If true the ile will go to the temp folder
    * @param logEmitter Emitter for logging
    */
@@ -382,7 +395,7 @@ export class VASMCompiler {
         if (extSep > 0) {
           objFilename = path.join(
             buildDir.getPath(),
-            filename.substr(0, filename.lastIndexOf(".")) + ".o"
+            filename.substring(0, filename.lastIndexOf(".")) + ".o"
           );
         } else {
           objFilename = path.join(buildDir.getPath(), filename + ".o");
@@ -414,7 +427,7 @@ export class VASMCompiler {
    * Useful for mocking
    * @param conf Configuration
    */
-  mayCompile(conf: any): boolean {
+  mayCompile(conf: VasmBuildProperties): boolean {
     return conf && conf.enabled;
   }
 
@@ -422,7 +435,7 @@ export class VASMCompiler {
    * Function to check if it is explicitly disabled
    * @param conf Configuration
    */
-  disabledInConf(conf: any): boolean {
+  disabledInConf(conf: VasmBuildProperties): boolean {
     return conf && !conf.enabled;
   }
 
@@ -448,7 +461,7 @@ export class VASMParser implements ExecutorParser {
       const line = lines[lineIndex];
       if (line.length > 1) {
         if (!line.startsWith(">")) {
-          let match = /(error|warning|message)\s([\d]+)\sin\sline\s([\d]+)\sof\s["](.+)["]:\s*(.*)/.exec(
+          let match = /(error|warning|message)\s(\d+)\sin\sline\s(\d+)\sof\s"(.+)":\s*(.*)/.exec(
             line
           );
           if (match) {
@@ -463,7 +476,7 @@ export class VASMParser implements ExecutorParser {
             error.msgData = this.collectErrorData(lines, lineIndex + 1);
             error.severity = match[1];
           } else {
-            match = /.*error\s([\d]+)\s*:\s*(.*)/.exec(line);
+            match = /.*error\s(\d+)\s*:\s*(.*)/.exec(line);
             if (match) {
               if (error !== undefined) {
                 errors.push(error);
@@ -474,7 +487,7 @@ export class VASMParser implements ExecutorParser {
               error.msg = line;
             } else if (error !== undefined) {
               // Errors details parse
-              match = /\s*called from line\s([\d]+)\sof\s["](.+)["]/.exec(
+              match = /\s*called from line\s(\d+)\sof\s"(.+)"/.exec(
                 line
               );
               if (match) {
@@ -482,7 +495,7 @@ export class VASMParser implements ExecutorParser {
                 error.line = parseInt(match[1]);
                 error.msg = lastHeaderLine;
               } else {
-                match = /\s*included from line\s([\d]+)\sof\s["](.+)["]/.exec(
+                match = /\s*included from line\s(\d+)\sof\s"(.+)"/.exec(
                   line
                 );
                 if (match) {

@@ -828,6 +828,10 @@
 								},
 								"default": [],
 								"description": "Compiler options"
+							},
+							"leaveWarnings": {
+								"type": "boolean",
+								"description": "If false the warnings will stop the build"
 							}
 						},
 						"default": {
@@ -837,7 +841,8 @@
 								"-m68000",
 								"-Fhunk",
 								"-linedebug"
-							]
+							],
+							"leaveWarnings": false
 						},
 						"description": "VASM compiler configuration"
 					},

@@ -12,7 +12,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 - *grahambates* BLTCON Helper: provides a webview panel with a tool to help setting BLTCON0/BLTCON1 registers. Based on [BLTCONCheatSheet](http://deadliners.net/BLTCONCheatSheet/index.html) by Soundy/Deadliners.
 
 ![BLTCON Helper](https://github.com/prb28/vscode-amiga-assembly/wiki/images/BLTCONHelper.png)
-
+- Bug fixes
 
 ### Other features
 ### Run and Debug with FS-UAE or WinUAE
@@ -79,6 +79,7 @@ The assembly language will be formatted with the standard shortcuts :
 ## Release Notes
 ## New in 1.7
 - *grahambates* BLTCON Helper
+- Bug fixes
 
 ## New in 1.6
 - *grahambates* Use of external debugger
