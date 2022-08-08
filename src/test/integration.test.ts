@@ -1,5 +1,5 @@
 import * as Path from 'path';
-import { DebugClient } from 'vscode-debugadapter-testsupport/lib/main';
+import { DebugClient } from '@vscode/debugadapter-testsupport';
 import { LaunchRequestArguments } from '../fsUAEDebug';
 import * as vscode from 'vscode';
 import { ExtensionState } from '../extension';

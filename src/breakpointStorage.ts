@@ -1,5 +1,5 @@
 import { BreakpointsChangeEvent } from 'vscode';
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@vscode/debugprotocol';
 import { ExtensionState } from './extension';
 import winston = require('winston');
 import { BreakpointStorage } from 'uae-dap';

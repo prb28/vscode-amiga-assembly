@@ -3,8 +3,8 @@ import * as path from 'path';
 import {
     downloadAndUnzipVSCode,
     runTests
-} from 'vscode-test';
-import { TestOptions } from 'vscode-test/out/runTest';
+} from '@vscode/test-electron';
+import { TestOptions } from '@vscode/test-electron/out/runTest';
 
 async function main() {
     try {

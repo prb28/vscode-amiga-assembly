@@ -6,7 +6,7 @@ import { Calc } from './calc';
 import { ASMLine } from './parser';
 import { FileProxy } from './fsProxy';
 import { StringUtils } from './stringUtils';
-import { logger } from 'vscode-debugadapter';
+import { logger } from '@vscode/debugadapter';
 
 export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvider, DocumentSymbolProvider {
     static readonly SOURCE_FILES_GLOB = "**/*.{asm,s,i,ASM,S,I}";

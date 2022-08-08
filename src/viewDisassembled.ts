@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@vscode/debugprotocol';
 import { ASMLine } from './parser';
 
 export class DisassembledMemoryDataProvider implements vscode.TreeDataProvider<ViewLineItem> {

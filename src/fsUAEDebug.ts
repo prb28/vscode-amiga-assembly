@@ -1,4 +1,4 @@
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@vscode/debugprotocol';
 import * as vscode from 'vscode';
 import {
     FsUAEDebugSession as Base,

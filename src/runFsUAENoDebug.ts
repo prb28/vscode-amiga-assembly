@@ -5,8 +5,8 @@
 import {
 	Logger, logger,
 	InitializedEvent, Scope, TerminatedEvent, DebugSession
-} from 'vscode-debugadapter/lib/main';
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+} from '@vscode/debugadapter';
+import { DebugProtocol } from '@vscode/debugprotocol';
 import { CancellationTokenSource, window, Uri } from 'vscode';
 import { ExecutorHelper } from './execHelper';
 import { FileProxy } from './fsProxy';

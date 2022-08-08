@@ -4,7 +4,7 @@ import {
     WinUAEDebugSession as Base,
 } from 'uae-dap';
 import * as vscode from 'vscode';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@vscode/debugprotocol';
 import { BreakpointStorageWorkspace } from './breakpointStorage';
 import { prepareLaunchRequestArgs } from './fsUAEDebug';
 
@@ -69,16 +69,16 @@ export class WinUAEDebugSession extends Base {
         if (!size) {
             const sizeStr = await vscode.window.showInputBox(<
                 vscode.InputBoxOptions
-            >{
-                prompt: `Enter the size in bytes to watch starting at address '${address}' (variable: '${variable}')`,
-                value: '2',
-                validateInput: (value: string) => {
-                    if (!Number.isInteger(parseInt(value))) {
-                        return 'The value must be an integer.';
-                    }
-                    return null;
-                },
-            });
+                >{
+                    prompt: `Enter the size in bytes to watch starting at address '${address}' (variable: '${variable}')`,
+                    value: '2',
+                    validateInput: (value: string) => {
+                        if (!Number.isInteger(parseInt(value))) {
+                            return 'The value must be an integer.';
+                        }
+                        return null;
+                    },
+                });
             if (sizeStr) {
                 size = parseInt(sizeStr);
                 storage.setSize(id, size);
