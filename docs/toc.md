@@ -16,6 +16,7 @@
 |[bcc](instructions/bcc.md)|Branch on condition cc|
 |[bchg](instructions/bchg.md)|Test a bit and change|
 |[bclr](instructions/bclr.md)|Test a bit and clear|
+|[bkpt](instructions/bkpt.md)|Breakpoint|
 |[bra](instructions/bra.md)|Branch always|
 |[bset](instructions/bset.md)|Test a bit and set|
 |[bsr](instructions/bsr.md)|Branch to subroutine|
@@ -28,10 +29,10 @@
 |[cmpm](instructions/cmpm.md)|Compare memory with memory|
 |[dbcc](instructions/dbcc.md)|Test condition, decrement, and branch|
 |[divs divu](instructions/divs_divu.md)|Signed divide, unsigned divide|
-|[eor](instructions/eor.md)|Exclusive OR logical|
-|[eori](instructions/eori.md)|EOR immediate|
+|[eor](instructions/eor.md)|Exclusive-OR logical|
+|[eori](instructions/eori.md)|Exclusive-OR immediate|
 |[exg](instructions/exg.md)|Exchange registers|
-|[ext](instructions/ext.md)|Sign|
+|[ext](instructions/ext.md)|Sign-extend a data register|
 |[illegal](instructions/illegal.md)|Illegal instruction|
 |[jmp](instructions/jmp.md)|Jump (unconditionally)|
 |[jsr](instructions/jsr.md)|Jump to subroutine|
@@ -40,9 +41,11 @@
 |[lsl lsr](instructions/lsl_lsr.md)|Logical shift left/right|
 |[move](instructions/move.md)|Copy data from source to destination|
 |[movea](instructions/movea.md)|Move address|
+|[movec](instructions/movec.md)|Move Control Register|
 |[movem](instructions/movem.md)|Move multiple registers|
 |[movep](instructions/movep.md)|Move peripheral data|
 |[moveq](instructions/moveq.md)|Move quick (copy a small literal to a destination)|
+|[moves](instructions/moves.md)|Move Address Space|
 |[muls mulu](instructions/muls_mulu.md)|Signed multiply, unsigned multiply|
 |[nbcd](instructions/nbcd.md)|Negate decimal with sign extend|
 |[neg](instructions/neg.md)|Negate|
@@ -55,6 +58,7 @@
 |[reset](instructions/reset.md)|Reset external devices|
 |[rol ror](instructions/rol_ror.md)|Rotate left/right (without extend)|
 |[roxl roxr](instructions/roxl_roxr.md)|Rotate left/right with extend|
+|[rtd](instructions/rtd.md)|Return and Deallocate|
 |[rte](instructions/rte.md)|Return from exception|
 |[rtr](instructions/rtr.md)|Return and restore condition codes|
 |[rts](instructions/rts.md)|Return from subroutine|
@@ -70,7 +74,7 @@
 |[tas](instructions/tas.md)|Test and set an operand|
 |[trap](instructions/trap.md)|Trap|
 |[trapv](instructions/trapv.md)|Trap on overflow|
-|[tst](instructions/tst.md)|# TST Test an operand|
+|[tst](instructions/tst.md)|Test an operand|
 |[unlk](instructions/unlk.md)|Unlink|
 
 ## Assembler directives
@@ -103,14 +107,14 @@
 |[dw](directives/dw.md)|Equivalent to `dc.w` for ArgAsm, BAsm, HX68, Macro68, ProAsm, etc. compatibility|
 |[dx](directives/dx.md)|Tries to allocate space in the DataBss portion of a code or data section|
 |[echo](directives/echo.md)|Prints `<string>` to stdout|
-|[einline](directives/einline.md)|End a block of isolated local labels, started by inline|
-|[else](directives/else.md)|Assemble the following lines if the previous if condition was false|
+|[einline](directives/einline.md)|End a block of isolated local labels, started by [inline](inline.md)|
+|[else](directives/else.md)|Assemble the following lines if the previous `if` condition was false|
 |[end](directives/end.md)|Assembly will terminate behind this line|
 |[endif](directives/endif.md)|Ends a section of conditional assembly|
-|[endm](directives/endm.md)|Ends a macro definition|
-|[endr](directives/endr.md)|Ends a repetition block|
+|[endm](directives/endm.md)|Ends a [macro](macro.md) definition|
+|[endr](directives/endr.md)|Ends a [rept](rept.md) repetition block|
 |[equ](directives/equ.md)|Define a new program symbol with the name `<symbol>` and assign to it the value of `<expression>`|
-|[erem](directives/erem.md)|Ends an outcommented block. Assembly will continue|
+|[erem](directives/erem.md)|Ends an outcommented block from [rem](rem.md). Assembly will continue|
 |[even](directives/even.md)|Aligns to an even address|
 |[fail](directives/fail.md)|Show an error message including the `<message>` string|
 |[fequ](directives/fequ.md)|Define a new program symbol with the name `<symbol>` and assign to it the floating point value of `<expression>`|
@@ -133,16 +137,16 @@
 |[ifnc](directives/ifnc.md)|Conditionally assemble the following lines if `<string1>` does not match `<string2>`|
 |[ifnd](directives/ifnd.md)|Conditionally assemble the following lines if `<symbol>` is undefined|
 |[ifne](directives/ifne.md)|Conditionally assemble the following lines if `<expression>` is non-zero|
-|[ifp1](directives/ifp1.md)|Just for compatibility. Equivalent to if1|
+|[ifp1](directives/ifp1.md)|Just for compatibility. Equivalent to [if1](if1.md)|
 |[iif](directives/iif.md)|Conditionally assemble the `<statement>` following `<expression>`|
 |[incbin](directives/incbin.md)|Inserts the binary contents of `<file>` into the object code at this position|
 |[incdir](directives/incdir.md)|Add another path to search for include files to the list of known paths|
 |[include](directives/include.md)|Include source text of `<file>` at this position|
-|[inline](directives/inline.md)|Local labels in the following block are isolated from previous local labels and those after einline|
+|[inline](directives/inline.md)|Local labels in the following block are isolated from previous local labels and those after [einline](einline.md)|
 |[list](directives/list.md)|The following lines will appear in the listing file, if it was requested|
 |[llen](directives/llen.md)|Set the line length in a listing file to a maximum of `<len>` characters|
 |[macro](directives/macro.md)|Defines a macro which can be referenced by `<name>`|
-|[mexit](directives/mexit.md)|Leave the current macro and continue with assembling the parent context|
+|[mexit](directives/mexit.md)|Leave the current [macro](macro.md) and continue with assembling the parent context|
 |[msource](directives/msource.md)|Enable or disable source level debugging within a macro context|
 |[nolist](directives/nolist.md)|The following lines will not be visible in a listing file|
 |[nopage](directives/nopage.md)|Never start a new page in the listing file|
@@ -157,11 +161,11 @@
 |[printt](directives/printt.md)|Prints `<string>` to stdout|
 |[printv](directives/printv.md)|Evaluate `<expression>` and print it to stdout out in hexadecimal, decimal, ASCII and binary format|
 |[public](directives/public.md)|Flag `<symbol>` as an external symbol, which means that `<symbol>` is visible to all modules in the linking process|
-|[pushsection](directives/pushsection.md)|Pushes the current section onto an internal stack, where it may be restored from by the popsection directive|
-|[rem](directives/rem.md)|The assembler will ignore everything from encountering the rem directive until an erem directive was found|
-|[rept](directives/rept.md)|Repeats the assembly of the block between rept and endr `<expression>` number of times|
+|[pushsection](directives/pushsection.md)|Pushes the current section onto an internal stack, where it may be restored from by the [popsection](popsection.md) directive|
+|[rem](directives/rem.md)|The assembler will ignore everything from encountering the rem directive until an [erem](erem.md) directive was found|
+|[rept](directives/rept.md)|Repeats the assembly of the block between rept and [endr](endr.md) `<expression>` number of times|
 |[rorg](directives/rorg.md)|Sets the program counter `<expression>` bytes behind the start of the current section|
-|[rs](directives/rs.md)|Works like the so directive, with the only difference that the offset symbol is named `__RS`|
+|[rs](directives/rs.md)|Works like the [so](so.md) directive, with the only difference that the offset symbol is named `__RS`|
 |[rsreset](directives/rsreset.md)|Equivalent to [clrso](clrso.md), but the symbol manipulated is `__RS`|
 |[rsset](directives/rsset.md)|Sets the structure offset counter (`__RS`) to `<expression>`|
 |[section](directives/section.md)|Starts a new section named `<name>` or reactivates an old one|

@@ -45,7 +45,7 @@ def process_instructions(instructions_path):
         if (fname.endswith(".md")):
             name = fname[:-3]
             filepathname = os.path.join(instructions_path, fname)
-            descElements = read_register_description(filepathname).split("-")
+            descElements = read_register_description(filepathname).split(" - ")
             if descElements and len(descElements) > 1:
                 description = descElements[1]
             else:
