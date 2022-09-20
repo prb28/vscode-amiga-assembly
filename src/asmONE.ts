@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Hunk, HunkParser, Symbol } from "uae-dap";
+import { Hunk, parseHunksFromFile, SourceSymbol } from "uae-dap";
 import { ICheckResult } from "./execHelper";
 import { Uri } from "vscode";
 import * as fs from "fs";
@@ -12,11 +12,9 @@ export class AsmONE {
 	// AUTO example
 	//	AUTO	CS\R_SinCosTable\0\450\5120\32767\0\W1\yy
 	rxAuto: RegExp;
-	hunkParser: HunkParser;
 
 	constructor() {
 		this.rxAuto = RegExp(".*AUTO.*", "gi");
-		this.hunkParser = new HunkParser();
 	}
 
 	/**
@@ -26,7 +24,7 @@ export class AsmONE {
 	 */
 	public async Auto(filesURI: Uri[], exeFile: Uri): Promise<void> {
 		try {
-			let symbols = new Array<Symbol>();
+			let symbols = new Array<SourceSymbol>();
 			for (let i = 0; i < filesURI.length; i++) {
 				const src = filesURI[i].fsPath;
 				const autos = this.findAutos(src);
@@ -104,9 +102,9 @@ export class AsmONE {
 		return line;
 	}
 
-	private async loadExeSymbols(exeFile: Uri): Promise<Symbol[]> {
-		const symbols = new Array<Symbol>();
-		const hunks = await this.hunkParser.readFile(exeFile.fsPath);
+	private async loadExeSymbols(exeFile: Uri): Promise<SourceSymbol[]> {
+		const symbols = new Array<SourceSymbol>();
+		const hunks = await parseHunksFromFile(exeFile.fsPath);
 		for (let i = 0; i < hunks.length; i++) {
 			const hunk: Hunk = hunks[i];
 			if (!hunk.symbols) {
@@ -122,14 +120,14 @@ export class AsmONE {
 		return symbols;
 	}
 
-	private execCommand(cmd: string, args: string[], exeFile: string, symbols: Symbol[]) {
+	private execCommand(cmd: string, args: string[], exeFile: string, symbols: SourceSymbol[]) {
 		if (cmd.toUpperCase() === "CS") {
 			const data = this.CS(Number(args[1]), Number(args[2]), Number(args[3]), Number(args[4]), Number(args[5]), args[6], args[7]);
 			this.writeInFile(args[0], data, exeFile, symbols);
 		}
 	}
 
-	private findExeOffset(dest: string, symbols: Symbol[]): number {
+	private findExeOffset(dest: string, symbols: SourceSymbol[]): number {
 		const offset = -1;
 		for (let i = 0; i < symbols.length; i++) {
 			if (dest === symbols[i].name) {
@@ -139,7 +137,7 @@ export class AsmONE {
 		return offset;
 	}
 
-	private writeInFile(symbol: string, data: Uint8Array, exeFile: string, symbols: Symbol[]) {
+	private writeInFile(symbol: string, data: Uint8Array, exeFile: string, symbols: SourceSymbol[]) {
 		if (0 === data.length) {
 			return;
 		}
