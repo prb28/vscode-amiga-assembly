@@ -1,6 +1,6 @@
 import { window, Uri, workspace } from 'vscode';
 import { disassemble, disassembledFileToPath, HunkType } from 'uae-dap';
-import { HunkParser } from 'uae-dap';
+import { parseHunksFromFile } from 'uae-dap';
 
 export enum DisassembleRequestType {
     MEMORY,
@@ -102,14 +102,13 @@ export class Disassembler {
      * @param filename File to disassemble
      */
     private async disassembleFile(filename: string): Promise<string> {
-        const hunkParser = new HunkParser();
-        const hunks = await hunkParser.readFile(filename);
+        const hunks = await parseHunksFromFile(filename);
         const results = await Promise.all(
             hunks
-                .filter((h) => h.hunkType === HunkType.CODE && h.codeData)
+                .filter((h) => h.hunkType === HunkType.CODE && h.data)
                 .map(async (h) => {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    const buffer = Array.from(h.codeData!)
+                    const buffer = Array.from(h.data!)
                         .map((n) => n.toString(16))
                         .map((n) => this.padStartWith0(n, 8))
                         .join('');

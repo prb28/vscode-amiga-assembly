@@ -1,10 +1,10 @@
 import * as Path from 'path';
 import { DebugClient } from '@vscode/debugadapter-testsupport';
-import { LaunchRequestArguments } from '../fsUAEDebug';
+import { LaunchRequestArguments } from '../debugSession';
 import * as vscode from 'vscode';
 import { ExtensionState } from '../extension';
 import * as Net from 'net';
-import { WinUAEDebugSession } from '../winUAEDebug';
+import { DebugSession } from '../debugSession';
 import temp = require('temp');
 import { Uri } from 'vscode';
 import { WorkspaceManager } from '../workspaceManager';
@@ -79,7 +79,7 @@ describe('WinUAE Integration test', () => {
             launchArgs.options.push(`debugging_features=gdbserver`);
             return new Promise<void>((resolve) => {
                 this.server = Net.createServer(socket => {
-                    this.session = new WinUAEDebugSession();
+                    this.session = new DebugSession();
                     this.session.setRunAsServer(true);
                     this.session.start(<NodeJS.ReadableStream>socket, socket);
                     resolve();

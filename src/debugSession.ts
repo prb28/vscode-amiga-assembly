@@ -1,16 +1,19 @@
 import { DebugProtocol } from '@vscode/debugprotocol';
 import * as vscode from 'vscode';
 import {
-    FsUAEDebugSession as Base,
+    UAEDebugSession as Base,
     LaunchRequestArguments as BaseLaunchRequestArguments,
+    MemoryFormat,
 } from 'uae-dap';
 import { substituteVariables } from './configVariables';
-import { MemoryFormat } from 'uae-dap/out/src/program';
 import { ConfigurationHelper } from './configurationHelper';
+import { DataBreakpointSizesStorage } from './breakpointStorage';
 
 export interface LaunchRequestArguments extends BaseLaunchRequestArguments {
     // Compatibility with original config
     options?: string[];
+    emulator?: string;
+    type: 'fs-uae' | 'winuae';
 }
 
 /**
@@ -22,18 +25,16 @@ export function prepareLaunchRequestArgs(
     const args = {
         ...originalArgs,
     };
-    // Rename options -> emulatorOptions
-    // This property was renamed in the adapter to avoid a naming conflict (and for clarity)
-    // but can be copied here to retain backwards compatibility
-    if (args.options && !args.emulatorOptions) {
-        args.emulatorOptions = args.options;
+
+    // Map original vscode-amiga-assembly launch args schema to uae-dap args
+    if (args.options && !args.emulatorArgs) {
+        args.emulatorArgs = args.options;
     }
-    // Replace config variables in path properties
-    if (args.emulator) {
-        args.emulator = substituteVariables(args.emulator);
+    if (args.emulator && !args.emulatorBin) {
+        args.emulatorBin = substituteVariables(args.emulator);
     }
-    if (args.emulatorWorkingDir) {
-        args.emulatorWorkingDir = substituteVariables(args.emulatorWorkingDir);
+    if (args.type && !args.emulatorType) {
+        args.emulatorType = args.type;
     }
 
     // Add memory format settings:
@@ -86,17 +87,17 @@ function parseMemoryFormat(expression: string): MemoryFormat {
     };
 }
 
-export class FsUAEDebugSession extends Base {
-    protected createDbgasmFiles = false;
+export class DebugSession extends Base {
+    protected static BREAKPOINT_EVENT_SET = false;
     /** Current memory display pc */
     protected currentMemoryViewPc = -1;
+    protected dataBreakpointStorage = new DataBreakpointSizesStorage();
 
     protected async onCpuFrame(address: number): Promise<void> {
         super.onCpuFrame(address);
-        // Update the disassembled memory view when the frame address changes
-        if (address !== this.currentMemoryViewPc && this.program) {
+        if (address !== this.currentMemoryViewPc) {
             this.currentMemoryViewPc = address;
-            const dLines = await this.program.disassemble({
+            const dLines = await this.disassemblyManager().disassemble({
                 memoryReference: address.toString(),
                 instructionCount: 25,
             });
@@ -112,5 +113,28 @@ export class FsUAEDebugSession extends Base {
         args: LaunchRequestArguments
     ): Promise<void> {
         return super.launchRequest(response, prepareLaunchRequestArgs(args));
+    }
+
+    /**
+     * Prompt the user for the size in bytes for a data breakpoint
+     */
+    protected async getDataBreakpointSize(
+        address: string,
+        variable: string
+    ): Promise<number> {
+        const input = await vscode.window.showInputBox(<vscode.InputBoxOptions>{
+            prompt: `Enter the size in bytes to watch starting at address '${address}' (variable: '${variable}')`,
+            value: '2',
+            validateInput: (value: string) => {
+                if (!Number.isInteger(parseInt(value))) {
+                    return 'The value must be an integer.';
+                }
+                if (!value) {
+                    return 'Size must be at lest one byte.';
+                }
+                return null;
+            },
+        });
+        return input ? parseInt(input) : 2;
     }
 }
