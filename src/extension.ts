@@ -7,7 +7,7 @@ import { M68kFormatter } from './formatter';
 import { M68kHoverProvider } from './hover';
 import { M86kColorProvider } from './color';
 import { CalcController, CalcComponent } from './calcComponents';
-import { FsUAEDebugSession } from './fsUAEDebug';
+import { DebugSession } from './debugSession';
 import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
 import { VASMCompiler } from './vasm';
 import { StatusManager } from "./status";
@@ -24,7 +24,6 @@ import { DisassembledMemoryDataProvider } from './viewDisassembled';
 import * as winston from "winston";
 import * as TransportStream from "winston-transport";
 import { FileProxy } from './fsProxy';
-import { WinUAEDebugSession } from './winUAEDebug';
 import { AmigaBuildTaskProvider, CompilerController } from './customTaskProvider';
 import { BinariesManager } from './downloadManager';
 import { ConfigurationHelper } from './configurationHelper';
@@ -32,7 +31,7 @@ import { WorkspaceManager } from './workspaceManager';
 import HttpRequestHandler from './filedownloader/networking/HttpRequestHandler';
 import FileDownloader from './filedownloader/FileDownloader';
 import OutputLogger from './filedownloader/logging/OutputLogger';
-import { BreakpointStorageWorkspace } from './breakpointStorage';
+import { DataBreakpointSizesStorage } from './breakpointStorage';
 import { NumberFormat, VariableDisplayFormatRequest } from 'uae-dap';
 import { createBltconHelperPanel } from './bltconHelper';
 
@@ -646,7 +645,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     // clearing the data breakpoints storage
     context.subscriptions.push(
         vscode.commands.registerCommand('amiga-assembly.clear-data-breakpoints-storage', async () => {
-            const storage = new BreakpointStorageWorkspace();
+            const storage = new DataBreakpointSizesStorage();
             storage.clear();
         })
     );
@@ -717,7 +716,7 @@ class FsUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFac
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
-        return <any>new vscode.DebugAdapterInlineImplementation(new FsUAEDebugSession());
+        return <any>new vscode.DebugAdapterInlineImplementation(new DebugSession());
     }
 }
 
@@ -801,6 +800,6 @@ class WinUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
 class WinUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
-        return <any>new vscode.DebugAdapterInlineImplementation(new WinUAEDebugSession());
+        return <any>new vscode.DebugAdapterInlineImplementation(new DebugSession());
     }
 }

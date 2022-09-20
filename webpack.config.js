@@ -4,7 +4,7 @@
 
 const path = require('path');
 const webpack = require('webpack');
-const CopyPlugin = require("copy-webpack-plugin");
+const CopyPlugin = require('copy-webpack-plugin');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -16,11 +16,11 @@ const config = {
         path: path.resolve(__dirname, 'dist'),
         filename: 'extension.js',
         libraryTarget: 'commonjs2',
-        devtoolModuleFilenameTemplate: '../[resource-path]'
+        devtoolModuleFilenameTemplate: '../[resource-path]',
     },
     devtool: 'source-map',
     externals: {
-        vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
+        vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
     },
     resolve: {
         // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -33,7 +33,7 @@ const config = {
             // Webpack 5 no longer polyfills Node.js core modules automatically.
             // see https://webpack.js.org/configuration/resolve/#resolvefallback
             // for the list of Node.js core module polyfills.
-        }
+        },
     },
     module: {
         rules: [
@@ -42,15 +42,18 @@ const config = {
                 exclude: /node_modules/,
                 use: [
                     {
-                        loader: 'ts-loader'
-                    }
-                ]
-            }
-        ]
+                        loader: 'ts-loader',
+                    },
+                ],
+            },
+        ],
     },
     plugins: [
         new CopyPlugin({
-            patterns: [{ from: "node_modules/uae-dap/wasm", to: "wasm" }],
+            patterns: [
+                { from: 'node_modules/uae-dap/wasm', to: 'wasm' },
+                { from: 'node_modules/uae-dap/bin', to: 'bin' },
+            ],
         }),
     ],
 };

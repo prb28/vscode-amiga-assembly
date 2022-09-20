@@ -1,6 +1,6 @@
 import * as Path from 'path';
 import { DebugClient } from '@vscode/debugadapter-testsupport';
-import { FsUAEDebugSession, LaunchRequestArguments } from '../fsUAEDebug';
+import { DebugSession, LaunchRequestArguments } from '../debugSession';
 import * as vscode from 'vscode';
 import { ExtensionState } from '../extension';
 import * as Net from 'net';
@@ -25,7 +25,7 @@ describe('FS-UAE Integration test', () => {
         serverPort: 6860,
         startEmulator: true,
         trace: true,
-        emulator: "${config:amiga-assembly.binDir}/fs-uae",
+        // emulator: "${config:amiga-assembly.binDir}/fs-uae",
         emulatorWorkingDir: "${config:amiga-assembly.binDir}",
         program: "./uae/dh0/gencop",
         emulatorStartDelay: 3000,
@@ -87,7 +87,7 @@ describe('FS-UAE Integration test', () => {
         launchArgs.options.push("--automatic_input_grab=0");
         return new Promise<void>((resolve) => {
             this.server = Net.createServer(socket => {
-                this.session = new FsUAEDebugSession();
+                this.session = new DebugSession();
                 this.session.setRunAsServer(true);
                 this.session.start(<NodeJS.ReadableStream>socket, socket);
                 resolve();
