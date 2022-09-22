@@ -13,7 +13,7 @@ export interface LaunchRequestArguments extends BaseLaunchRequestArguments {
     // Compatibility with original config
     options?: string[];
     emulator?: string;
-    type: 'fs-uae' | 'winuae';
+    type: 'fs-uae' | 'winuae' | 'uae-run';
 }
 
 /**
@@ -33,8 +33,11 @@ export function prepareLaunchRequestArgs(
     if (args.emulator && !args.emulatorBin) {
         args.emulatorBin = substituteVariables(args.emulator);
     }
-    if (args.type && !args.emulatorType) {
+    if (args.type && !args.emulatorType && (args.type === 'fs-uae' || args.type === 'winuae')) {
         args.emulatorType = args.type;
+    }
+    if (args.type === 'uae-run') {
+        args.noDebug = true;
     }
 
     // Add memory format settings:
