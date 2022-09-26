@@ -8,7 +8,6 @@ import { M68kHoverProvider } from './hover';
 import { M86kColorProvider } from './color';
 import { CalcController, CalcComponent } from './calcComponents';
 import { DebugSession } from './debugSession';
-import { RunFsUAENoDebugSession } from './runFsUAENoDebug';
 import { VASMCompiler } from './vasm';
 import { StatusManager } from "./status";
 import { Disassembler, DisassembleRequestType } from './disassemble';
@@ -568,13 +567,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     vscode.window.registerTreeDataProvider('disassembledMemory', disassembledMemoryDataProvider);
     vscode.commands.registerCommand('disassembledMemory.setDisassembledMemory', (memory: DebugProtocol.DisassembledInstruction[]) => disassembledMemoryDataProvider.setDisassembledMemory(memory));
 
-    // register a configuration provider for 'fs-uae' debug type
+    // register a configuration provider for debug types:
+    // Universal:
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('amiga-assembly', new InlineDebugAdapterFactory()));
+    // Deprecated:
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', new FsUAEConfigurationProvider()));
-    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('fs-uae', new FsUAEInlineDebugAdapterFactory()));
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('fs-uae', new InlineDebugAdapterFactory()));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('uae-run', new RunFsUAEConfigurationProvider()));
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('uae-run', new RunFsUAEInlineDebugAdapterFactory()));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('winuae', new WinUAEConfigurationProvider()));
-    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('winuae', new WinUAEInlineDebugAdapterFactory()));
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('winuae', new InlineDebugAdapterFactory()));
     winston.info("------> done");
 
     context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('disassembly', new DisassemblyContentProvider()));
@@ -712,7 +714,7 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
     }
 }
 
-class FsUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
+class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
@@ -755,7 +757,7 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
 class RunFsUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
-        return <any>new vscode.DebugAdapterInlineImplementation(new RunFsUAENoDebugSession());
+        return <any>new vscode.DebugAdapterInlineImplementation(new DebugSession());
     }
 }
 
@@ -794,12 +796,5 @@ class WinUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
             }
         }
         return config;
-    }
-}
-
-class WinUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
-    createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
-        // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
-        return <any>new vscode.DebugAdapterInlineImplementation(new DebugSession());
     }
 }
