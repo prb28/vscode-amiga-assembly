@@ -89,27 +89,20 @@ describe("Global Extension Tests", function () {
         it("Should clean the current workspace on command", async () => {
             const state = ExtensionState.getCurrent();
             const spiedCompiler = spy(state.getCompiler());
-            const spiedStatus = spy(state.getStatusManager());
             when(spiedCompiler.cleanWorkspace()).thenCall(() => { return Promise.resolve(); });
             await vscode.commands.executeCommand("amiga-assembly.clean-vasm-workspace");
             verify(spiedCompiler.cleanWorkspace()).once();
-            verify(spiedStatus.onDefault()).once();
             // Generating a build error
             resetCalls(spiedCompiler);
-            resetCalls(spiedStatus);
             when(spiedCompiler.cleanWorkspace()).thenReject(new Error("nope"));
-            await vscode.commands.executeCommand("amiga-assembly.clean-vasm-workspace");
-            verify(spiedCompiler.cleanWorkspace()).once();
-            verify(spiedStatus.onDefault()).never();
-            verify(spiedStatus.onSuccess()).never();
-            verify(spiedStatus.onError("nope")).once();
+            expect(vscode.commands.executeCommand("amiga-assembly.clean-vasm-workspace")).to.be.rejected;
         });
     });
     context("Disassemble command", function () {
         it("Should disassemble a file", async () => {
             const uri = vscode.Uri.file(path.join(testFilesPath, "debug", "fs-uae", "hd0", "gencop"));
             const spiedWindow = spy(vscode.window);
-            const promise = new Promise<vscode.Uri[] | undefined>((resolve) => { resolve([uri]); });
+            const promise = Promise.resolve([uri]);
             when(spiedWindow.showOpenDialog(anything())).thenReturn(promise);
             await vscode.commands.executeCommand("amiga-assembly.disassemble-file");
             verify(spiedWindow.showOpenDialog(anything())).once();

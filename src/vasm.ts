@@ -220,7 +220,7 @@ export class VASMCompiler {
       } else if (vlinkConf.exefilename) {
         // Is there an Asm file opened
         const editor = window.activeTextEditor;
-        if (editor) {
+        if (editor && !editor.document.isUntitled) {
           filesURI.push(editor.document.uri);
         }
       }

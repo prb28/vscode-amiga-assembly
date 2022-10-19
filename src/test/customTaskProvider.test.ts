@@ -6,7 +6,6 @@ import {
     resetCalls,
 } from "@johanblumenberg/ts-mockito";
 import { CompilerController } from "../customTaskProvider";
-import { ExtensionState } from "../extension";
 import { DummyTextDocument } from "./dummy";
 import { expect } from "chai";
 
@@ -25,8 +24,6 @@ describe("Task Provider tests", function () {
     });
     context("CompileController", function () {
         it("Should build the current document on save", async () => {
-            const state = ExtensionState.getCurrent();
-            const spiedStatus = spy(state.getStatusManager());
             const controller = new CompilerController();
             const spiedController = spy(controller);
             const document = new DummyTextDocument();
@@ -34,11 +31,8 @@ describe("Task Provider tests", function () {
             when(spiedController.compile()).thenResolve();
             await controller.onSaveDocument(document);
             verify(spiedController.compile()).once();
-            verify(spiedStatus.onDefault()).once();
-            verify(spiedStatus.onSuccess()).never(); // On success is only for the workspace
             // Generating a build error
             resetCalls(spiedController);
-            resetCalls(spiedStatus);
             const error = new Error("nope");
             when(spiedController.compile()).thenReject(error);
             try {
@@ -47,8 +41,6 @@ describe("Task Provider tests", function () {
                 expect(err).to.be.eql(error);
             }
             verify(spiedController.compile()).once();
-            verify(spiedStatus.onDefault()).once();
-            verify(spiedStatus.onError("nope")).once();
         });
     });
 });

@@ -152,16 +152,9 @@ export class CompilerController {
 	}
 
 	public async onSaveDocument(document: TextDocument): Promise<void> {
-		const state = ExtensionState.getCurrent();
-		const statusManager = state.getStatusManager();
 		const checkErrorOnSave = ConfigurationHelper.retrieveBooleanProperty(ConfigurationHelper.getDefaultConfiguration(null), 'checkErrorOnSave', true);
 		if (document.languageId === "m68k" && checkErrorOnSave) {
-			statusManager.onDefault();
-			try {
-				await this.compile();
-			} catch (error) {
-				statusManager.onError(error.message);
-			}
+			await this.compile();
 		}
 	}
 

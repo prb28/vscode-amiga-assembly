@@ -9,7 +9,6 @@ import { M86kColorProvider } from './color';
 import { CalcController, CalcComponent } from './calcComponents';
 import { DebugSession } from './debugSession';
 import { VASMCompiler } from './vasm';
-import { StatusManager } from "./status";
 import { Disassembler, DisassembleRequestType } from './disassemble';
 import { M68kDefinitionHandler } from './definitionHandler';
 import { DisassemblyContentProvider } from './disassemblyContentProvider';
@@ -57,7 +56,6 @@ export class ExtensionState {
     private compiler: VASMCompiler | undefined;
     private errorDiagnosticCollection: vscode.DiagnosticCollection | undefined;
     private warningDiagnosticCollection: vscode.DiagnosticCollection | undefined;
-    private statusManager: StatusManager | undefined;
     private calc: CalcComponent | undefined;
     private disassembler: Disassembler | undefined;
     private definitionHandler: M68kDefinitionHandler | undefined;
@@ -102,12 +100,6 @@ export class ExtensionState {
             this.warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('m68k-warning');
         }
         return this.warningDiagnosticCollection;
-    }
-    public getStatusManager(): StatusManager {
-        if (this.statusManager === undefined) {
-            this.statusManager = new StatusManager();
-        }
-        return this.statusManager;
     }
     public getCalc(): CalcComponent {
         if (this.calc === undefined) {
@@ -359,11 +351,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     const requestHandler = new HttpRequestHandler(logger);
     state.setFileDownloader(new FileDownloader(requestHandler, logger));
 
-    // Preparing the status manager
-    const statusManager = state.getStatusManager();
-    vscode.window.onDidChangeActiveTextEditor(statusManager.showHideStatus, null, context.subscriptions);
-    context.subscriptions.push(statusManager);
-
     winston.info("Starting Amiga Assembly");
     const formatter = new M68kFormatter();
     // Declaring the formatter
@@ -451,11 +438,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
         if (args) {
             formula = args.formula;
         }
-        try {
-            await calc.applyFormulaToSelections(formula);
-        } catch (error) {
-            statusManager.onError(error.message);
-        }
+        await calc.applyFormulaToSelections(formula);
     });
     context.subscriptions.push(disposable);
 
@@ -512,12 +495,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     context.subscriptions.push(vController);
     // Clean the workspace
     disposable = vscode.commands.registerCommand('amiga-assembly.clean-vasm-workspace', async () => {
-        try {
-            await compiler.cleanWorkspace();
-            statusManager.onDefault();
-        } catch (error) {
-            statusManager.onError(error.message);
-        }
+        await compiler.cleanWorkspace();
     });
     context.subscriptions.push(disposable);
 

@@ -372,11 +372,7 @@ describe("VASM Tests", function () {
       const file2 = vscode.Uri.file("/file2");
       when(
         spiedWorkspace.findFiles(anything(), anything(), anything())
-      ).thenReturn(
-        new Promise((resolve) => {
-          resolve([file1, file2]);
-        })
-      );
+      ).thenResolve([file1, file2]);
       when(spiedWorkspace.openTextDocument(file1)).thenReturn(
         new Promise((resolve) => {
           const document = new DummyTextDocument();

@@ -22,7 +22,7 @@ describe("Documentation Tests", function () {
     context("Hover instruction file parsing", function () {
         it("Should read the file correctly", async function () {
             const manager = documentationManger.instructionsManager;
-            expect(manager.getCount()).to.be.equal(127);
+            expect(manager.getCount()).to.be.equal(128);
             let addDocumentation = await manager.getInstructionByName("ADD");
             expect(addDocumentation).to.not.be.undefined;
             if (addDocumentation) {
