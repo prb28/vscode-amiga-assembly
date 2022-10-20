@@ -109,27 +109,13 @@ export class Disassembler {
                 .map(async (h) => {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const buffer = Array.from(h.data!)
-                        .map((n) => n.toString(16))
-                        .map((n) => this.padStartWith0(n, 8))
+                        .map((n) => n.toString(16).padStart(2, '0'))
                         .join('');
                     const { code } = await disassemble(buffer);
                     return code;
                 })
         );
         return results.join('\n');
-    }
-
-    private padStartWith0(stringToPad: string, targetLength: number): string {
-        targetLength = targetLength >> 0; //truncate if number or convert non-number to 0;
-        if (stringToPad.length > targetLength) {
-            return stringToPad;
-        }
-        let padString = '0';
-        targetLength = targetLength - stringToPad.length;
-        if (targetLength > padString.length) {
-            padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
-        }
-        return padString.slice(0, targetLength) + stringToPad;
     }
 
     private createUri(filename: string) {
