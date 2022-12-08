@@ -13,7 +13,7 @@ export interface LaunchRequestArguments extends BaseLaunchRequestArguments {
     // Compatibility with original config
     options?: string[];
     emulator?: string;
-    type: 'fs-uae' | 'winuae' | 'uae-run';
+    type: 'fs-uae' | 'winuae' | 'uae-run' | 'amiga-assembly';
 }
 
 /**

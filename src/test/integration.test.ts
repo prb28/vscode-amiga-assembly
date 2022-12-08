@@ -18,19 +18,15 @@ describe('WinUAE Integration test', () => {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
     const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
     const launchArgs = <LaunchRequestArguments>{
-        type: "winuae",
+        type: "amiga-assembly",
         request: "launch",
         name: "WinUAE Debug",
         stopOnEntry: true,
-        serverName: "localhost",
-        serverPort: 2345,
-        startEmulator: true,
-        emulator: "${config:amiga-assembly.binDir}/winuae.exe",
-        emulatorWorkingDir: "${config:amiga-assembly.binDir}",
         program: "./uae/dh0/gencop",
-        emulatorStartDelay: 3000,
-        options: [
-        ]
+        emulatorType: "winuae",
+        remoteProgram: "SYS:gencop",
+        emulatorArgs: [
+        ],
     };
     let dc: DebugClient;
     let tempDir: string;
@@ -68,15 +64,15 @@ describe('WinUAE Integration test', () => {
             vlinkBuildProperties.exefilename = path.join("..", "uae", "dh0", "gencop");
             await vasm.buildWorkspace(undefined, vasmBuildProperties, vlinkBuildProperties);
             launchArgs.program = path.join(tempDir, "uae", "dh0", "gencop");
-            launchArgs.options = [];
-            launchArgs.options.push("-s");
-            launchArgs.options.push(`quickstart=a500,1`);
-            launchArgs.options.push("-s");
-            launchArgs.options.push(`debugging_trigger=SYS:gencop`);
-            launchArgs.options.push("-s");
-            launchArgs.options.push(`filesystem=rw,dh0:${tempDir}\\uae\\dh0`);
-            launchArgs.options.push("-s");
-            launchArgs.options.push(`debugging_features=gdbserver`);
+            launchArgs.emulatorArgs = [];
+            launchArgs.emulatorArgs.push("-s");
+            launchArgs.emulatorArgs.push(`quickstart=a500,1`);
+            launchArgs.emulatorArgs.push("-s");
+            launchArgs.emulatorArgs.push(`debugging_trigger=SYS:gencop`);
+            launchArgs.emulatorArgs.push("-s");
+            launchArgs.emulatorArgs.push(`filesystem=rw,dh0:${tempDir}\\uae\\dh0`);
+            launchArgs.emulatorArgs.push("-s");
+            launchArgs.emulatorArgs.push(`debugging_features=gdbserver`);
             return new Promise<void>((resolve) => {
                 this.server = Net.createServer(socket => {
                     this.session = new DebugSession();

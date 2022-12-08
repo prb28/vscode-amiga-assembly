@@ -17,19 +17,15 @@ describe('FS-UAE Integration test', () => {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
     const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
     const launchArgs = <LaunchRequestArguments>{
-        type: "fs-uae",
+        type: "amiga-assembly",
         request: "launch",
         name: "FSUAE Debug",
         stopOnEntry: true,
-        serverName: "localhost",
-        serverPort: 6860,
-        startEmulator: true,
-        trace: true,
-        // emulator: "${config:amiga-assembly.binDir}/fs-uae",
-        emulatorWorkingDir: "${config:amiga-assembly.binDir}",
+        emulatorType: "fs-uae",
         program: "./uae/dh0/gencop",
-        emulatorStartDelay: 3000,
-        options: [
+        emulatorArgs: [
+            "--hard_drive_0=./uae/dh0/",
+            "--automatic_input_grab=0"
         ]
     };
     let dc: DebugClient;
@@ -76,15 +72,17 @@ describe('FS-UAE Integration test', () => {
         vlinkBuildProperties.exefilename = path.join("..", "uae", "dh0", "gencop");
         await vasm.buildWorkspace(undefined, vasmBuildProperties, vlinkBuildProperties);
         launchArgs.program = path.join(tempDir, "uae", "dh0", "gencop");
+        launchArgs.emulatorArgs = [
+            "--automatic_input_grab=0",
+            "--chip_memory=1024",
+            `--hard_drive_0=${tempDir}/uae/dh0`,
+            "--joystick_port_1=none",
+            "--amiga_model=A1200",
+            "--slow_memory=1792"
+        ]
+
         launchArgs.options = [];
-        launchArgs.options.push("--chip_memory=1024");
-        launchArgs.options.push(`--hard_drive_0=${tempDir}/uae/dh0`);
-        launchArgs.options.push("--joystick_port_1=none");
-        launchArgs.options.push("--amiga_model=A1200");
-        launchArgs.options.push("--slow_memory=1792");
-        launchArgs.options.push("--remote_debugger=200");
-        launchArgs.options.push("--use_remote_debugger=true");
-        launchArgs.options.push("--automatic_input_grab=0");
+
         return new Promise<void>((resolve) => {
             this.server = Net.createServer(socket => {
                 this.session = new DebugSession();
