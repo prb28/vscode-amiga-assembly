@@ -42,6 +42,7 @@
 		"onCommand:amiga-assembly.list-used-registers",
 		"onCommand:amiga-assembly.view-iff",
 		"onCommand:amiga-assembly.download-binaries",
+		"onCommand:amiga-assembly.clean-downloaded-binaries",
 		"onCommand:amiga-assembly.create-example-workspace",
 		"onCommand:amiga-assembly.clear-data-breakpoints-storage",
 		"onWebviewPanel:iffView",
