@@ -4,7 +4,7 @@
 
 import { expect } from 'chai';
 import { M68kDefinitionHandler } from '../definitionHandler';
-import { Uri, workspace, WorkspaceEdit, window, commands, extensions, Selection, Position } from 'vscode';
+import { Uri, workspace, window, commands, extensions, Selection, Position } from 'vscode';
 import { DummyTextDocument } from './dummy';
 import * as Path from 'path';
 import * as chaiAsPromised from 'chai-as-promised';
@@ -53,18 +53,10 @@ describe("Definition handler Tests", function () {
         });
         context("Editor selection", function () {
             before(async function () {
-                await workspace.openTextDocument(Uri.file(MAIN_SOURCE)).then(async document => {
-                    const edit = new WorkspaceEdit();
-                    await workspace.applyEdit(edit).then(async (success) => {
-                        if (success) {
-                            await window.showTextDocument(document);
-                            await commands.executeCommand("cursorMove", { to: 'up', by: 'line', value: 20, select: false });
-                            await commands.executeCommand("cursorMove", { to: 'down', by: 'line', value: 20, select: true });
-                        } else {
-                            expect.fail("Edit not successful");
-                        }
-                    });
-                });
+                let document = await workspace.openTextDocument(Uri.file(MAIN_SOURCE));
+                await window.showTextDocument(document);
+                await commands.executeCommand("cursorMove", { to: 'up', by: 'line', value: 20, select: false });
+                await commands.executeCommand("cursorMove", { to: 'down', by: 'line', value: 20, select: true });
             });
             after(async () => {
                 await commands.executeCommand('workbench.action.closeActiveEditor');
