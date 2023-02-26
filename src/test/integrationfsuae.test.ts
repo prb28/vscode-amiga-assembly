@@ -1,4 +1,5 @@
 import * as Path from 'path';
+import * as fs from 'fs';
 import { DebugClient } from '@vscode/debugadapter-testsupport';
 import { DebugSession, LaunchRequestArguments } from '../debugSession';
 import * as vscode from 'vscode';
@@ -96,9 +97,20 @@ describe('FS-UAE Integration test', () => {
         if (dc) {
             await dc.stop();
         }
-        await new Promise((resolve): void => {
-            setTimeout(resolve, 100);
-        });
+        let i = 0;
+        let deleted = false;
+        while (i < 50 && !deleted) {
+            try {
+                fs.rmSync(tempDir, { recursive: true });
+                deleted = !fs.existsSync(tempDir);
+            } catch (err) {
+                // do nothing
+            }
+            await new Promise((resolve): void => {
+                setTimeout(resolve, 100);
+            });
+            i++;
+        }
     });
 
     describe('complete workspace test', function () {
