@@ -34,19 +34,11 @@ describe('FS-UAE Integration test', () => {
     before(async function () {
         // Automatically track and cleanup files at exit
         temp.track();
-        if (process.platform === "win32") {
-            launchArgs.emulator = launchArgs.emulator + ".exe";
-        }
         // activate the extension
         const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
         if (ext) {
             await ext.activate();
         }
-        // Wait for downloads
-        //await vscode.commands.executeCommand('amiga-assembly.download-binaries');
-        //console.log("Waiting download");
-        //await ExtensionState.getCurrent().getBinariesManager().waitDownloadEnd();
-        //console.log("Waiting download END");
 
         // Prepare the workspace
         // create a temp dir
@@ -91,7 +83,7 @@ describe('FS-UAE Integration test', () => {
                 resolve();
             }).listen(0);
             // make VS Code connect to debug server instead of launching debug adapter
-            dc = new DebugClient('node', DEBUG_ADAPTER, 'winuae');
+            dc = new DebugClient('node', DEBUG_ADAPTER, 'amiga-assembly');
             const address: any = this.server.address();
             let port = 0;
             if (address instanceof Object) {
