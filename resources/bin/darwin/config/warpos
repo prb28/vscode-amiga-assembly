@@ -1,0 +1,20 @@
+-poweropen
+-sc
+-no-multiple-ccs
+-madd
+-cc=vbccppc -quiet %s -o= %s %s -O=%ld -Ibin/targets/ppc-warpos/include
+-ccv=vbccppc %s -o= %s %s -O=%ld -Ibin/targets/ppc-warpos/include
+-isc=vscppc -quiet %s %s
+-iscv=vscppc %s %s
+-as=vasmppc_std -quiet -Fhunk -sdreg=2 -opt-branch -nowarn=62 %s -o %s
+-asv=vasmppc_std -Fhunk -sdreg=2 -opt-branch -nowarn=62 %s -o %s
+-rm=rm -f %s
+-rmv=rm %s
+-ld=vlink -bamigaehf -x -Bstatic -Cvbcc -mrel -nostdlib bin/targets/ppc-warpos/lib/warpup.o %s %s -Lbin/targets/ppc-warpos/lib -lvc bin/targets/ppc-warpos/lib/x.o -o %s
+-l2=vlink -bamigaehf -x -Bstatic -Cvbcc -mrel -nostdlib %s %s -Lbin/targets/ppc-warpos/lib -o %s
+-ldv=vlink -bamigaehf -x -Bstatic -Cvbcc -mrel -t -nostdlib bin/targets/ppc-warpos/lib/warpup.o %s %s -Lbin/targets/ppc-warpos/lib -lvc bin/targets/ppc-warpos/lib/x.o -o %s
+-l2v=vlink -bamigaehf -x -Bstatic -Cvbcc -mrel -t -nostdlib %s %s -Lbin/targets/ppc-warpos/lib -o %s
+-ldnodb=-s -Rshort
+-ul=-l%s
+-cf=-F%s
+-ml=1000

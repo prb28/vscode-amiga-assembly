@@ -1,0 +1,23 @@
+-elf
+-no-regnames
+-no-multiple-ccs
+-c99
+-setccs
+-use-commons
+-cc=vbccppc -quiet %s -o= %s %s -O=%ld -Ibin/sdk/OS4/Local/newlib/include -Ibin/sdk/OS4/Include/include_h -D__amigaos4__ -D__NEWLIB__
+-ccv=vbccppc %s -o= %s %s -O=%ld -Ibin/sdk/OS4/Local/newlib/include -Ibin/sdk/OS4/Include/include_h -D__amigaos4__ -D__NEWLIB__
+-as=vasmppc_std -quiet -Felf -opt-branch -no-regnames %s -o %s
+-asv=vasmppc_std -Felf -opt-branch -no-regnames %s -o %s
+-isc=vscppc -quiet %s %s
+-iscv=vscppc %s %s
+-rm=rm -f %s
+-rmv=rm %s
+-ld=vlink -belf32ppcbe -q -n -Cvbccelf -P_start -nostdlib -fixunnamed -interp "vbcc0.9" -Tbin/targets/ppc-amigaos/lib/script -Lbin/sdk/OS4/Local/newlib/lib bin/sdk/OS4/Local/newlib/lib/startup.o %s %s -lvbcc -lc -o %s
+-l2=vlink -belf32ppcbe -q -n -Cvbccelf -P_start -nostdlib -fixunnamed -interp "vbcc0.9" -Tbin/targets/ppc-amigaos/lib/script -Lbin/sdk/OS4/Local/newlib/lib %s %s -o %s
+-ldv=vlink -belf32ppcbe -t -q -n -Cvbccelf -P_start -nostdlib -fixunnamed -interp "vbcc0.9" -Tbin/targets/ppc-amigaos/lib/script -Lbin/sdk/OS4/Local/newlib/lib bin/sdk/OS4/Local/newlib/lib/startup.o %s %s -lvbcc -lc -o %s
+-l2v=vlink -belf32ppcbe -t -q -n -Cvbccelf -P_start -nostdlib -fixunnamed -interp "vbcc0.9" -Tbin/targets/ppc-amigaos/lib/script -Lbin/sdk/OS4/Local/newlib/lib %s %s -o %s
+-ldnodb=-s -x
+-ldstatic=-Bstatic
+-ul=-l%s
+-cf=-F%s
+-ml=1000

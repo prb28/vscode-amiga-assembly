@@ -1,0 +1,23 @@
+-elf
+-no-regnames
+-no-multiple-ccs
+-madd
+-c99
+-use-commons
+-cc=vbccppc -quiet %s -o= %s %s -O=%ld -Ibin/targets/ppc-amigaos/include -D__amigaos4__
+-ccv=vbccppc %s -o= %s %s -O=%ld -Ibin/targets/ppc-amigaos/include -D__amigaos4__
+-as=vasmppc_std -quiet -Felf -opt-branch -no-regnames -nowarn=62 %s -o %s
+-asv=vasmppc_std -Felf -opt-branch -no-regnames -nowarn=62 %s -o %s
+-isc=vscppc -quiet %s %s
+-iscv=vscppc %s %s
+-rm=rm -f %s
+-rmv=rm %s
+-ld=vlink -belf32amigaos -q -n -P_start -nostdlib -fixunnamed -Tbin/targets/ppc-amigaos/lib/script bin/targets/ppc-amigaos/lib/startup.o %s %s -Lbin/targets/ppc-amigaos/lib -lvc -o %s
+-l2=vlink -belf32amigaos -q -n -P_start -nostdlib -fixunnamed -Tbin/targets/ppc-amigaos/lib/script %s %s -Lbin/targets/ppc-amigaos/lib -o %s
+-ldv=vlink -belf32amigaos -t -q -n -P_start -nostdlib -fixunnamed -Tbin/targets/ppc-amigaos/lib/script bin/targets/ppc-amigaos/lib/startup.o %s %s -Lbin/targets/ppc-amigaos/lib -lvc -o %s
+-l2v=vlink -belf32amigaos -t -q -n -P_start -nostdlib -fixunnamed -Tbin/targets/ppc-amigaos/lib/script %s %s -Lbin/targets/ppc-amigaos/lib -o %s
+-ldnodb=-s -x
+-ldstatic=-Bstatic
+-ul=-l%s
+-cf=-F%s
+-ml=1000

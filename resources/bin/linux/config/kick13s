@@ -1,0 +1,14 @@
+-cc=vbccm68ks -quiet -hunkdebug %s -o= %s %s -O=%ld -no-cpp-warn -I$VBCC/targets/m68k-kick13/include
+-ccv=vbccm68ks -hunkdebug %s -o= %s %s -O=%ld -no-cpp-warn -I$VBCC/targets/m68k-kick13/include
+-as=vasmm68k_mot -quiet -Fhunk -kick1hunks -nowarn=62 %s -o %s
+-asv=vasmm68k_mot -Fhunk -kick1hunks -nowarn=62 %s -o %s
+-rm=rm -f %s
+-rmv=rm %s
+-ld=vlink -bamigahunk -x -Bstatic -Cvbcc -nostdlib -Z -mrel $VBCC/targets/m68k-kick13/lib/startup16.o %s %s -L$VBCC/targets/m68k-kick13/lib -lvc16 -o %s
+-l2=vlink -bamigahunk -x -Bstatic -Cvbcc -nostdlib -Z -mrel %s %s -L$VBCC/targets/m68k-kick13/lib -o %s
+-ldv=vlink -bamigahunk -t -x -Bstatic -Cvbcc -nostdlib -Z -mrel $VBCC/targets/m68k-kick13/lib/startup16.o %s %s -L$VBCC/targets/m68k-kick13/lib -lvc16 -o %s
+-l2v=vlink -bamigahunk -t -x -Bstatic -Cvbcc -nostdlib -Z -mrel %s %s -L$VBCC/targets/m68k-kick13/lib -o %s
+-ldnodb=-s
+-ul=-l%s
+-cf=-F%s
+-ml=1000

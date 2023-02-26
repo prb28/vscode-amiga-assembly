@@ -1,0 +1,14 @@
+-cc=vbccm68k -quiet -hunkdebug %s -o= %s %s -O=%ld -Ibin/targets/m68k-amigaos/include
+-ccv=vbccm68k -hunkdebug %s -o= %s %s -O=%ld -Ibin/targets/m68k-amigaos/include
+-as=vasmm68k_mot -quiet -Fhunk -phxass -opt-fconst -nowarn=62 %s -o %s
+-asv=vasmm68k_mot -Fhunk -phxass -opt-fconst -nowarn=62 %s -o %s
+-rm=rm -f %s
+-rmv=rm %s
+-ld=vlink -bamigahunk -x -Bstatic -Cvbcc -nostdlib -mrel bin/targets/m68k-amigaos/lib/minstart.o %s %s -Lbin/targets/m68k-amigaos/lib -lvc -o %s
+-l2=vlink -bamigahunk -x -Bstatic -Cvbcc -nostdlib -mrel %s %s -Lbin/targets/m68k-amigaos/lib -o %s
+-ldv=vlink -bamigahunk -t -x -Bstatic -Cvbcc -nostdlib -mrel bin/targets/m68k-amigaos/lib/minstart.o %s %s -Lbin/targets/m68k-amigaos/lib -lvc -o %s
+-l2v=vlink -bamigahunk -t -x -Bstatic -Cvbcc -nostdlib -mrel %s %s -Lbin/targets/m68k-amigaos/lib -o %s
+-ldnodb=-s -Rshort
+-ul=-l%s
+-cf=-F%s
+-ml=1000

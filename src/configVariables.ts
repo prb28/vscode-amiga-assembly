@@ -1,11 +1,13 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import { ExtensionState } from "./extension";
 
 interface Context {
   workspaceFolders?: vscode.WorkspaceFolder[];
   activeTextEditor?: vscode.TextEditor;
   configuration?: vscode.WorkspaceConfiguration;
   environmentVariables?: Record<string, string>;
+  extensionState?: ExtensionState;
 }
 
 /**
@@ -36,6 +38,9 @@ interface Context {
  * - ${selectedText} - the current selected text in the active file
  * - ${pathSeparator} - the character used by the operating system to separate components in file paths
  *
+ * Custom properties
+ * - ${extensionResourcesFolder} - Directory containing the resources
+ * - ${platformName} - name of the current platform os
  * @param str String to process
  * @param recursive Apply substitutions recursively?
  * @param ctx Context
@@ -55,6 +60,7 @@ export function substituteVariables(
   const configuration =
     ctx?.configuration ?? vscode.workspace.getConfiguration();
   const environmentVariables = ctx?.environmentVariables ?? process.env;
+  const extensionState = ctx?.extensionState ?? undefined;
 
   const workspace = workspaceFolders?.[0];
   const activeFile = activeTextEditor?.document;
@@ -101,7 +107,7 @@ export function substituteVariables(
         activeTextEditor.selection.end
       )
     ),
-    pathSeparator: path.sep,
+    pathSeparator: path.sep
   };
 
   let key: keyof typeof replacements;
@@ -121,6 +127,16 @@ export function substituteVariables(
     const varName = variable.match(/\${config:(.*?)}/)?.[1];
     return varName ? configuration.get(varName, "") : "";
   });
+
+  // Custom variables
+  // extensionResourcesFolder
+  if (extensionState) {
+    const pattern = new RegExp("\\${extensionResourcesFolder}", "g");
+    str = str.replace(pattern, extensionState.getResourcesPath() ?? "");
+  }
+  // platformName
+  const pattern = new RegExp("\\${platformName}", "g");
+  str = str.replace(pattern, process.platform ?? "");
 
   // Apply recursive replacements if enabled and string still contains any variables
   if (

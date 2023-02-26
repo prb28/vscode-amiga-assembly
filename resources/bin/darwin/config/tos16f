@@ -1,0 +1,14 @@
+-cc=vbccm68ks -quiet -fastcall -d2scratch -a2scratch %s -o= %s %s -O=%ld -Ibin/targets/m68k-atari/include
+-ccv=vbccm68ks -fastcall -d2scratch -a2scratch %s -o= %s %s -O=%ld -Ibin/targets/m68k-atari/include
+-as=vasmm68k_mot -quiet -Faout -mid=0 -phxass -nowarn=62 %s -o %s
+-asv=vasmm68k_mot -Faout -mid=0 -phxass -nowarn=62 %s -o %s
+-rm=rm -f %s
+-rmv=rm %s
+-ld=vlink -EB -bataritos -x -Bstatic -Cvbcc -nostdlib bin/targets/m68k-atari/lib/startup16f.o %s %s -Lbin/targets/m68k-atari/lib -lvc16f -o %s
+-l2=vlink -EB -bataritos -x -Bstatic -Cvbcc -nostdlib %s %s -Lbin/targets/m68k-atari/lib -o %s
+-ldv=vlink -EB -bataritos -t -x -Bstatic -Cvbcc -nostdlib bin/targets/m68k-atari/lib/startup16f.o %s %s -Lbin/targets/m68k-atari/lib -lvc16f -o %s
+-l2v=vlink -EB -bataritos -t -x -Bstatic -Cvbcc -nostdlib %s %s -Lbin/targets/m68k-atari/lib -o %s
+-ldnodb=-s
+-ul=-l%s
+-cf=-F%s
+-ml=1000

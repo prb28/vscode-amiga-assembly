@@ -1,0 +1,22 @@
+-elf
+-no-regnames
+-no-multiple-ccs
+-madd
+-no-align-args
+-use-commons
+-cc=vbccppc -quiet %s -o= %s %s -O=%ld -Ibin/targets/ppc-powerup/include
+-ccv=vbccppc %s -o= %s %s -O=%ld -Ibin/targets/ppc-powerup/include
+-as=vasmppc_std -quiet -Felf -opt-branch -no-regnames -nowarn=62 %s -o %s
+-asv=vasmppc_std -Felf -opt-branch -no-regnames -nowarn=62 %s -o %s
+-isc=vscppc -quiet %s %s
+-iscv=vscppc %s %s
+-rm=rm -f %s
+-rmv=rm %s
+-ld=vlink -belf32amiga -Cvbccelf -nostdlib bin/targets/ppc-powerup/lib/startup.o %s %s -Lbin/targets/ppc-powerup/lib -lvc -lpowerup -o %s
+-l2=vlink -belf32amiga -Cvbccelf -nostdlib %s %s -Lbin/targets/ppc-powerup/lib -o %s
+-ldv=vlink -belf32amiga -t -Cvbccelf -nostdlib bin/targets/ppc-powerup/lib/startup.o %s %s -Lbin/targets/ppc-powerup/lib -lvc -lpowerup -o %s
+-l2v=vlink -belf32amiga -t -Cvbccelf -nostdlib %s %s -Lbin/targets/ppc-powerup/lib -o %s
+-ldnodb=-s -x
+-ul=-l%s
+-cf=-F%s
+-ml=1000

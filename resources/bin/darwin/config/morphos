@@ -1,0 +1,23 @@
+-elf
+-no-regnames
+-no-multiple-ccs
+-madd
+-c99
+-no-align-args
+-use-commons
+-cc=vbccppc -quiet %s -o= %s %s -O=%ld -Ibin/targets/ppc-morphos/include -D__MORPHOS__ -D__MORPHOS_NODIRECTCALL
+-ccv=vbccppc %s -o= %s %s -O=%ld -Ibin/targets/ppc-morphos/include -D__MORPHOS__ -D__MORPHOS_NODIRECTCALL
+-as=vasmppc_std -quiet -Felf -opt-branch -no-regnames -nowarn=62 %s -o %s
+-asv=vasmppc_std -Felf -opt-branch -no-regnames -nowarn=62 %s -o %s
+-isc=vscppc -quiet %s %s
+-iscv=vscppc %s %s
+-rm=rm -f %s
+-rmv=rm %s
+-ld=vlink -belf32morphos -Cvbccelf -P__amigappc__ -P__abox__ -nostdlib bin/targets/ppc-morphos/lib/startup.o %s %s -Lbin/targets/ppc-morphos/lib -lvc -o %s
+-l2=vlink -belf32morphos -Cvbccelf -P__amigappc__ -P__abox__ -nostdlib %s %s -Lbin/targets/ppc-morphos/lib -o %s
+-ldv=vlink -belf32morphos -Cvbccelf -t -P__amigappc__ -P__abox__ -nostdlib bin/targets/ppc-morphos/lib/startup.o %s %s -Lbin/targets/ppc-morphos/lib -lvc -o %s
+-l2v=vlink -belf32morphos -Cvbccelf -t -P__amigappc__ -P__abox__ -nostdlib %s %s -Lbin/targets/ppc-morphos/lib -o %s
+-ldnodb=-s -x
+-ul=-l%s
+-cf=-F%s
+-ml=1000

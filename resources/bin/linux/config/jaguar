@@ -1,0 +1,14 @@
+-cc=vbccm68k -quiet %s -o= %s %s -O=%ld -Ibin/targets/m68k-jaguar/include
+-ccv=vbccm68k %s -o= %s %s -O=%ld -Ibin/targets/m68k-jaguar/include
+-as=vasmm68k_mot -quiet -Ibin/targets/m68k-jaguar/include -Fvobj -phxass %s -o %s
+-asv=vasmm68k_mot -Ibin/targets/m68k-jaguar/include -Fvobj -phxass %s -o %s
+-rm=rm -f %s
+-rmv=rm %s
+-ld=vlink -bjagsrv -x -minalign 1 -Bstatic -Cvbcc -nostdlib bin/targets/m68k-jaguar/lib/startup.o %s %s -Lbin/targets/m68k-jaguar/lib -ljag -lvc -o %s
+-l2=vlink -bjagsrv -x -minalign 1 -Bstatic -Cvbcc -nostdlib %s %s -Lbin/targets/m68k-jaguar/lib -o %s
+-ldv=vlink -bjagsrv -t -x -minalign 1 -Bstatic -Cvbcc -nostdlib bin/targets/m68k-jaguar/lib/startup.o %s %s -Lbin/targets/m68k-jaguar/lib -ljag -lvc -o %s
+-l2v=vlink -bjagsrv -t -x -minalign 1 -Bstatic -Cvbcc -nostdlib %s %s -Lbin/targets/m68k-jaguar/lib -o %s
+-ldnodb=-s
+-ul=-l%s
+-cf=-F%s
+-ml=1000

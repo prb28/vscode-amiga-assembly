@@ -1,30 +1,9 @@
 import * as vscode from 'vscode';
-import winston = require('winston');
 import { substituteVariables } from './configVariables';
-import { FileProxy } from './fsProxy';
 export class ConfigurationHelper {
     public static readonly CONFIGURATION_NAME = 'amiga-assembly';
     public static readonly BINARIES_PATH_KEY = 'binDir';
     public static readonly BINARIES_PATH_DEFAULT = '${workspaceFolder}/bin';
-
-    /**
-     * Set the current binaries path
-     * @param binariesPath Path of the downloaded binaries
-     */
-    public static async setBinariesPath(binariesPath: string): Promise<void> {
-        // get the last value 
-        const currentValue = ConfigurationHelper.getDefaultConfiguration(null).get<string>(ConfigurationHelper.BINARIES_PATH_KEY);
-        let upCurrent: FileProxy | undefined;
-        if (currentValue) {
-            upCurrent = (new FileProxy(vscode.Uri.file(currentValue))).getParent();
-        }
-        const upBin = (new FileProxy(vscode.Uri.file(binariesPath))).getParent();
-        if (!currentValue || (upCurrent && FileProxy.inSameDir(upCurrent.getPath(), upBin.getPath())) || currentValue === ConfigurationHelper.BINARIES_PATH_DEFAULT) {
-            await ConfigurationHelper.updateProperty(ConfigurationHelper.BINARIES_PATH_KEY, binariesPath, vscode.ConfigurationTarget.Global);
-        } else {
-            winston.info(`Using binary path set by user: ${currentValue}`);
-        }
-    }
 
     /**
      * Retrieve a configuration value

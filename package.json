@@ -41,8 +41,6 @@
 		"onCommand:amiga-assembly.disassemble-memory",
 		"onCommand:amiga-assembly.list-used-registers",
 		"onCommand:amiga-assembly.view-iff",
-		"onCommand:amiga-assembly.download-binaries",
-		"onCommand:amiga-assembly.clean-downloaded-binaries",
 		"onCommand:amiga-assembly.create-example-workspace",
 		"onCommand:amiga-assembly.clear-data-breakpoints-storage",
 		"onWebviewPanel:iffView",
@@ -97,24 +95,6 @@
 		"configuration": {
 			"title": "Amiga Assembly",
 			"properties": {
-				"amiga-assembly.downloadBinaries": {
-					"type": "boolean",
-					"scope": "resource",
-					"default": true,
-					"description": "If true the binaries will be downloaded."
-				},
-				"amiga-assembly.binariesBranchURL": {
-					"type": "string",
-					"scope": "resource",
-					"default": "https://github.com/prb28/vscode-amiga-assembly-binaries/archive/refs/heads",
-					"description": "URL to retrieve the binaries branches"
-				},
-				"amiga-assembly.binariesTagsURL": {
-					"type": "string",
-					"scope": "resource",
-					"default": "https://api.github.com/repos/prb28/vscode-amiga-assembly-binaries/tags",
-					"description": "URL to retrieve the binaries tags"
-				},
 				"amiga-assembly.exampleProjectBranchesURL": {
 					"type": "string",
 					"scope": "resource",
@@ -130,7 +110,7 @@
 				"amiga-assembly.binDir": {
 					"type": "string",
 					"scope": "resource",
-					"default": "${workspaceFolder}/bin",
+					"default": "${extensionResourcesFolder}/bin/${platformName}",
 					"description": "Directory containing the binaries path."
 				},
 				"amiga-assembly.logLevel": {
@@ -315,14 +295,6 @@
 			{
 				"command": "disassembledMemory.setDisassembledMemory",
 				"title": "Set disassembled memory"
-			},
-			{
-				"command": "amiga-assembly.download-binaries",
-				"title": "Amiga Assembly: Download binaries"
-			},
-			{
-				"command": "amiga-assembly.clean-downloaded-binaries",
-				"title": "Amiga Assembly: Clean downloaded binaries"
 			},
 			{
 				"command": "amiga-assembly.create-example-workspace",

@@ -122,7 +122,7 @@ export class ExtensionState {
     public static getCurrent(): ExtensionState {
         // activate the extension
         const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
-        if (ext) {
+        if (ext && ext.exports && ext.exports.getState) {
             return ext.exports.getState();
         }
         return new ExtensionState();
@@ -185,6 +185,9 @@ export class ExtensionState {
     }
     public getExtensionPath(): string {
         return this.extensionPath;
+    }
+    public getResourcesPath(): string {
+        return path.join(this.extensionPath, "resources");
     }
     public async getLanguage(): Promise<M68kLanguage> {
         if (this.language === undefined) {
@@ -578,35 +581,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand('amiga-assembly.download-binaries', async () => {
-            const binariesManager = state.getBinariesManager();
-            const ctx = state.getExtensionContext();
-            const version = state.getExtensionVersion();
-            if (ctx) {
-                try {
-                    console.log("executing command");
-                    ConfigurationHelper.setBinariesPath((await binariesManager.downloadProject(ctx, version)).fsPath);
-                    console.log("executing command END");
-                } catch (error) {
-                    vscode.window.showErrorMessage(error.message);
-                }
-            }
-        })
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand('amiga-assembly.clean-downloaded-binaries', async () => {
-            const binariesManager = state.getBinariesManager();
-            const ctx = state.getExtensionContext();
-            if (ctx) {
-                try {
-                    await binariesManager.deleteAllDownloadedFiles(ctx);
-                } catch (error) {
-                    vscode.window.showErrorMessage(error.message);
-                }
-            }
-        })
-    );
-    context.subscriptions.push(
         vscode.commands.registerCommand('amiga-assembly.create-example-workspace', async (destinationDirectory?: vscode.Uri) => {
             const ctx = state.getExtensionContext();
             if (ctx) {
@@ -635,16 +609,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
             return state;
         }
     };
-
-    if (ConfigurationHelper.retrieveBooleanProperty(ConfigurationHelper.getDefaultConfiguration(null), 'downloadBinaries', true)) {
-        setTimeout(async () => {
-            try {
-                await vscode.commands.executeCommand('amiga-assembly.download-binaries');
-            } catch (error) {
-                // forget it
-            }
-        }, 500);
-    }
     return api;
 }
 

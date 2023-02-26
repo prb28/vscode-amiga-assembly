@@ -43,10 +43,10 @@ describe('FS-UAE Integration test', () => {
             await ext.activate();
         }
         // Wait for downloads
-        await vscode.commands.executeCommand('amiga-assembly.download-binaries');
-        console.log("Waiting download");
-        await ExtensionState.getCurrent().getBinariesManager().waitDownloadEnd();
-        console.log("Waiting download END");
+        //await vscode.commands.executeCommand('amiga-assembly.download-binaries');
+        //console.log("Waiting download");
+        //await ExtensionState.getCurrent().getBinariesManager().waitDownloadEnd();
+        //console.log("Waiting download END");
 
         // Prepare the workspace
         // create a temp dir

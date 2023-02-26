@@ -2,9 +2,17 @@ import { substituteVariables } from "../configVariables";
 import * as vscode from "vscode";
 import * as path from "path";
 import { expect } from "chai";
+import { ExtensionState } from "../extension";
 
 describe("configVariables", () => {
   describe("substituteVariables", () => {
+    before(async function () {
+      // activate the extension
+      const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+      if (ext) {
+        await ext.activate();
+      }
+    });
     it("leaves text unchanged", () => {
       const str = "foo";
       const result = substituteVariables(str);
@@ -35,6 +43,21 @@ describe("configVariables", () => {
           configuration as unknown as vscode.WorkspaceConfiguration,
       });
       expect(result).to.equal("foo bar baz");
+    });
+
+    it("replaces extensionResourcesFolder", () => {
+      const str = "foo ${extensionResourcesFolder} baz";
+      const extensionResourcesPath = ExtensionState.getCurrent().getResourcesPath();
+      const result = substituteVariables(str, true, {
+        extensionState: ExtensionState.getCurrent()
+      });
+      expect(result).to.equal("foo " + extensionResourcesPath + " baz");
+    });
+
+    it("replaces platformName", () => {
+      const str = "foo ${platformName} baz";
+      const result = substituteVariables(str, true);
+      expect(result).to.equal("foo " + process.platform + " baz");
     });
 
     it("replaces workspaceFolder", () => {
