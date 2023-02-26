@@ -57,7 +57,6 @@ describe('FS-UAE Integration test', () => {
         //build the workspace
         const vasm = ExtensionState.getCurrent().getCompiler();
         ExtensionState.getCurrent().forceBuildDir(new FileProxy(Uri.file(path.join(tempDir, "build"))));
-        ExtensionState.getCurrent().getBinariesManager();
         ExtensionState.getCurrent().setWorkspaceRootDir(workspaceRootDir);
         const vasmBuildProperties = { ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION };
         const vlinkBuildProperties = { ...VLINKLinker.DEFAULT_BUILD_CONFIGURATION };

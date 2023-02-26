@@ -1,0 +1,98 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "fs-uae",
+            "request": "launch",
+            "name": "FS-UAE Debug",
+            "stopOnEntry": true,
+            "serverName": "localhost",
+            "serverPort": 6860,
+            "trace": false,
+            "startEmulator": true,
+            "windows": {
+                "emulator": "${config:amiga-assembly.binDir}/fs-uae.exe"
+            },
+            "osx": {
+                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+            },
+            "linux": {
+                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+            },
+            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+            "program": "${workspaceFolder}/uae/dh0/gencop",
+            "options": [
+                "--chip_memory=2048",
+                "--hard_drive_0=${workspaceFolder}/uae/dh0",
+                "--joystick_port_1=none",
+                "--amiga_model=A1200",
+                "--remote_debugger=200",
+                "--use_remote_debugger=true",
+                "--automatic_input_grab=0"
+            ],
+            "preLaunchTask": "amigaassembly: build"
+        },
+        {
+            "type": "winuae",
+            "request": "launch",
+            "name": "WinUAE Debug",
+            "stopOnEntry": true,
+            "serverName": "localhost",
+            "serverPort": 2345,
+            "startEmulator": true,
+            "trace": false,
+            "exceptionMask": 8188,
+            "emulatorStartDelay": 1500,
+            "emulator": "${config:amiga-assembly.binDir}/winuae.exe",
+            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+            "program": "${workspaceFolder}/uae/dh0/gencop",
+            "options": [
+                "-s",
+                "quickstart=a500,1",
+                "-s",
+                "filesystem=rw,dh0:${workspaceFolder}/uae/dh0",
+                "-s",
+                "debugging_trigger=SYS:gencop",
+                "-s",
+                "debugging_features=gdbserver"
+            ],
+            "preLaunchTask": "amigaassembly: build"
+        },
+        {
+            "type": "uae-run",
+            "request": "launch",
+            "name": "FS-UAE Run",
+            "windows": {
+                "emulator": "${config:amiga-assembly.binDir}/fs-uae.exe"
+            },
+            "osx": {
+                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+            },
+            "linux": {
+                "emulator": "${config:amiga-assembly.binDir}/fs-uae"
+            },
+            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+            "options": [
+                "--chip_memory=2048",
+                "--hard_drive_0=${workspaceFolder}/uae/dh0",
+                "--amiga_model=A1200",
+                "--automatic_input_grab=0"
+            ],
+            "preLaunchTask": "amigaassembly: build"
+        },
+        {
+            "type": "uae-run",
+            "request": "launch",
+            "name": "WinUAE Run",
+            "emulator": "${config:amiga-assembly.binDir}/winuae.exe",
+            "emulatorWorkingDir": "${config:amiga-assembly.binDir}",
+            "options": [
+                "-s",
+                "quickstart=a500,1",
+                "-s",
+                "filesystem=rw,dh0:${workspaceFolder}/uae/dh0"
+            ],
+            "preLaunchTask": "amigaassembly: build"
+        }
+    ]
+}

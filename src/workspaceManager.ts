@@ -1,8 +1,8 @@
 import { ExtensionContext, InputBoxOptions, OpenDialogOptions, Uri, window } from "vscode";
-import { ExampleProjectManager } from "./downloadManager";
 import { FileProxy } from "./fsProxy";
 import winston = require('winston');
-import { ConfigurationHelper } from "./configurationHelper";
+import { ExtensionState } from "./extension";
+import * as path from 'path';
 
 export class WorkspaceManager {
     /**
@@ -12,19 +12,18 @@ export class WorkspaceManager {
      * @param destinationURI URI destination of the downloaded files
      */
     public async createExampleWorkspace(context: ExtensionContext, version: string, destinationURI?: Uri): Promise<Uri> {
-        const filesToRemove = [".gitattributes", ".gitignore", "LICENSE", "README.md", "images", "TRU256.IFF"];
         let destURI = destinationURI;
         let programName: string | undefined;
         if (!destURI) {
             [destURI, programName] = await this.showInputPanel();
         }
-        winston.info(`Downloading workspace version ${version} to folder ${destURI}`);
-        // Download example workspace
-        const exampleProjectManager = new ExampleProjectManager(ConfigurationHelper.retrieveStringPropertyInDefaultConf("exampleProjectBranchesURL"), ConfigurationHelper.retrieveStringPropertyInDefaultConf("exampleProjectTagsURL"));
-        const downloadedFile = new FileProxy(await exampleProjectManager.downloadProject(context, version));
+        winston.info(`Copying workspace example workspace to folder ${destURI}`);
+        // Copy the example workspace
+        const exampleProjectPath = Uri.file(path.join(ExtensionState.getCurrent().getResourcesPath(), "examples", "vscode-amiga-wks-example"));
+        const exampleProjectFile = new FileProxy(exampleProjectPath);
         // copy files
         const destDir = new FileProxy(destURI);
-        await downloadedFile.copy(destDir);
+        await exampleProjectFile.copy(destDir);
         const files = await destDir.listFiles();
         let workspaceFileFound: Uri | undefined;
         for (const f of files) {
@@ -35,10 +34,6 @@ export class WorkspaceManager {
                 // renaming the main file
                 const destFile = f.getParent().getRelativeFile(`${programName}.s`)
                 await f.rename(destFile);
-            }
-            // Delete useless files
-            if (filesToRemove.includes(f.getName())) {
-                f.delete();
             }
         }
         // Vscode config files

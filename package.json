@@ -95,18 +95,6 @@
 		"configuration": {
 			"title": "Amiga Assembly",
 			"properties": {
-				"amiga-assembly.exampleProjectBranchesURL": {
-					"type": "string",
-					"scope": "resource",
-					"default": "https://github.com/prb28/vscode-amiga-wks-example/archive/refs/heads",
-					"description": "URL to retrieve the example project branches"
-				},
-				"amiga-assembly.exampleProjectTagsURL": {
-					"type": "string",
-					"scope": "resource",
-					"default": "https://api.github.com/repos/prb28/vscode-amiga-wks-example/tags",
-					"description": "URL to retrieve the example project tags"
-				},
 				"amiga-assembly.binDir": {
 					"type": "string",
 					"scope": "resource",
