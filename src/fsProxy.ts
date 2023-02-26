@@ -235,7 +235,7 @@ export class FileProxy {
     public async delete(): Promise<void> {
         if (this.useDirectAccess || workspace.getWorkspaceFolder(this.uri) === undefined) {
             if (await this.isDirectory()) {
-                fs.rmdirSync(this.uri.fsPath, { recursive: true });
+                fs.rmSync(this.uri.fsPath, { recursive: true });
             } else {
                 fs.unlinkSync(this.uri.fsPath);
             }

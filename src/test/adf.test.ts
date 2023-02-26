@@ -114,7 +114,7 @@ describe("ADFTools test", function () {
             fs.closeSync(fd);
             expect(fileContents).to.be.eql(referenceBootBlock);
             fs.unlinkSync(outputFile);
-            fs.rmdirSync(tempDir);
+            fs.rmSync(tempDir, { recursive: true });
         });
     });
 });

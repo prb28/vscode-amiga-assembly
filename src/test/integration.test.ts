@@ -81,7 +81,7 @@ describe('WinUAE Integration test', () => {
                 }).listen(0);
                 // make VS Code connect to debug server instead of launching debug adapter
                 dc = new DebugClient('node', DEBUG_ADAPTER, 'winuae');
-                const address: any = this.server.address();
+                const address = this.server.address();
                 let port = 0;
                 if (address instanceof Object) {
                     port = address.port;

@@ -83,7 +83,7 @@ describe('FS-UAE Integration test', () => {
             }).listen(0);
             // make VS Code connect to debug server instead of launching debug adapter
             dc = new DebugClient('node', DEBUG_ADAPTER, 'amiga-assembly');
-            const address: any = this.server.address();
+            const address = this.server.address();
             let port = 0;
             if (address instanceof Object) {
                 port = address.port;
@@ -96,6 +96,9 @@ describe('FS-UAE Integration test', () => {
         if (dc) {
             await dc.stop();
         }
+        await new Promise((resolve): void => {
+            setTimeout(resolve, 100);
+        });
     });
 
     describe('complete workspace test', function () {
