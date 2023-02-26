@@ -15,7 +15,7 @@ describe("ConfigurationHelper Tests", function () {
         const conf = ConfigurationHelper.getDefaultConfiguration(null);
         // tslint:disable-next-line: no-unused-expression
         expect(conf).to.be.not.undefined;
-        let value = ConfigurationHelper.retrieveBooleanProperty(conf, "downloadBinaries", false);
+        let value = ConfigurationHelper.retrieveBooleanProperty(conf, "checkErrorOnSave", false);
         expect(value).to.be.equal(true);
         value = ConfigurationHelper.retrieveBooleanProperty(conf, "xxxxx", false);
         expect(value).to.be.equal(false);
