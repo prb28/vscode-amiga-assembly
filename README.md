@@ -9,7 +9,9 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ![Debug](images/debug.gif)
 
 ## New in 1.7
+- *grahambates* new version of fs-uae / winuae with uae-dap version 1.0.0 - unified launch configuration
 - *grahambates* BLTCON Helper: provides a webview panel with a tool to help setting BLTCON0/BLTCON1 registers. Based on [BLTCONCheatSheet](http://deadliners.net/BLTCONCheatSheet/index.html) by Soundy/Deadliners.
+- Binaries are embedded in the extension, no need for additional download
 
 ![BLTCON Helper](https://github.com/prb28/vscode-amiga-assembly/wiki/images/BLTCONHelper.png)
 - Bug fixes
@@ -78,7 +80,9 @@ The assembly language will be formatted with the standard shortcuts :
 
 ## Release Notes
 ## New in 1.7
+- *grahambates* new FS-UAE / WINUAE versions
 - *grahambates* BLTCON Helper
+- binaries are embedded in the extension
 - Bug fixes
 
 ## New in 1.6
