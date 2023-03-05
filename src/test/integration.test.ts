@@ -92,25 +92,25 @@ describe.only('WinUAE Integration test', () => {
         }
     });
 
-    after(async function () {
-        if (dc) {
-            await dc.stop();
-        }
-        let i = 0;
-        let deleted = false;
-        while (i < 50 && !deleted) {
-            try {
-                fs.rmSync(tempDir, { recursive: true });
-                deleted = !fs.existsSync(tempDir);
-            } catch (err) {
-                // do nothing
-            }
-            await new Promise((resolve): void => {
-                setTimeout(resolve, 100);
-            });
-            i++;
-        }
-    });
+    // after(async function () {
+    //     if (dc) {
+    //         await dc.stop();
+    //     }
+    //     let i = 0;
+    //     let deleted = false;
+    //     while (i < 50 && !deleted) {
+    //         try {
+    //             fs.rmSync(tempDir, { recursive: true });
+    //             deleted = !fs.existsSync(tempDir);
+    //         } catch (err) {
+    //             // do nothing
+    //         }
+    //         await new Promise((resolve): void => {
+    //             setTimeout(resolve, 100);
+    //         });
+    //         i++;
+    //     }
+    // });
 
     describe('complete workspace test', function () {
         if (process.platform === "win32") {
@@ -118,7 +118,7 @@ describe.only('WinUAE Integration test', () => {
                 return Promise.all([
                     dc.configurationSequence(),
                     dc.launch(launchArgs),
-                    //                    dc.assertStoppedLocation('entry', { line: 20 })
+                    dc.assertStoppedLocation('entry', { line: 20 })
                 ]);
             });
         }
