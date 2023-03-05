@@ -22,6 +22,7 @@ describe.only('WinUAE Integration test', () => {
         type: "amiga-assembly",
         request: "launch",
         name: "WinUAE Debug",
+        trace: true,
         stopOnEntry: true,
         program: "./uae/dh0/gencop",
         emulatorType: "winuae",
