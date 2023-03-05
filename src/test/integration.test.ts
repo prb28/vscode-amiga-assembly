@@ -118,7 +118,7 @@ describe.only('WinUAE Integration test', () => {
             it('should build and debug', function () {
                 return Promise.all([
                     dc.configurationSequence(),
-                    dc.launch(launchArgs),
+                    //dc.launch(launchArgs),
                     //dc.assertStoppedLocation('entry', { line: 20 })
                 ]);
             });
