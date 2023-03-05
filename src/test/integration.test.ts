@@ -1,5 +1,5 @@
 import * as Path from 'path';
-import * as fs from 'fs';
+//import * as fs from 'fs';
 import { DebugClient } from '@vscode/debugadapter-testsupport';
 import { LaunchRequestArguments } from '../debugSession';
 import * as vscode from 'vscode';
