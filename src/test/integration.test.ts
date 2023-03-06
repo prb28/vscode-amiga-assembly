@@ -1,5 +1,5 @@
 import * as Path from 'path';
-//import * as fs from 'fs';
+import * as fs from 'fs';
 import { DebugClient } from '@vscode/debugadapter-testsupport';
 import { LaunchRequestArguments } from '../debugSession';
 import * as vscode from 'vscode';
@@ -22,7 +22,6 @@ describe.only('WinUAE Integration test', () => {
         type: "amiga-assembly",
         request: "launch",
         name: "WinUAE Debug",
-        trace: true,
         stopOnEntry: true,
         program: "./uae/dh0/gencop",
         emulatorType: "winuae",
@@ -69,11 +68,7 @@ describe.only('WinUAE Integration test', () => {
             launchArgs.emulatorArgs.push("-s");
             launchArgs.emulatorArgs.push(`quickstart=a500,1`);
             launchArgs.emulatorArgs.push("-s");
-            launchArgs.emulatorArgs.push(`debugging_trigger=SYS:gencop`);
-            launchArgs.emulatorArgs.push("-s");
             launchArgs.emulatorArgs.push(`filesystem=rw,dh0:${tempDir}\\uae\\dh0`);
-            launchArgs.emulatorArgs.push("-s");
-            launchArgs.emulatorArgs.push(`debugging_features=gdbserver`);
             return new Promise<void>((resolve) => {
                 this.server = Net.createServer(socket => {
                     this.session = new DebugSession();
@@ -82,7 +77,7 @@ describe.only('WinUAE Integration test', () => {
                     resolve();
                 }).listen(0);
                 // make VS Code connect to debug server instead of launching debug adapter
-                dc = new DebugClient('node', DEBUG_ADAPTER, 'winuae');
+                dc = new DebugClient('node', DEBUG_ADAPTER, 'amiga-assembly');
                 const address = this.server.address();
                 let port = 0;
                 if (address instanceof Object) {
@@ -93,33 +88,33 @@ describe.only('WinUAE Integration test', () => {
         }
     });
 
-    // after(async function () {
-    //     if (dc) {
-    //         await dc.stop();
-    //     }
-    //     let i = 0;
-    //     let deleted = false;
-    //     while (i < 50 && !deleted) {
-    //         try {
-    //             fs.rmSync(tempDir, { recursive: true });
-    //             deleted = !fs.existsSync(tempDir);
-    //         } catch (err) {
-    //             // do nothing
-    //         }
-    //         await new Promise((resolve): void => {
-    //             setTimeout(resolve, 100);
-    //         });
-    //         i++;
-    //     }
-    // });
+    after(async function () {
+        if (dc) {
+            await dc.stop();
+        }
+        let i = 0;
+        let deleted = false;
+        while (i < 50 && !deleted) {
+            try {
+                fs.rmSync(tempDir, { recursive: true });
+                deleted = !fs.existsSync(tempDir);
+            } catch (err) {
+                // do nothing
+            }
+            await new Promise((resolve): void => {
+                setTimeout(resolve, 100);
+            });
+            i++;
+        }
+    });
 
     describe('complete workspace test', function () {
         if (process.platform === "win32") {
             it('should build and debug', function () {
                 return Promise.all([
-                    dc.configurationSequence(),
-                    //dc.launch(launchArgs),
-                    //dc.assertStoppedLocation('entry', { line: 20 })
+                    //dc.configurationSequence(),
+                    dc.launch(launchArgs),
+                    dc.assertStoppedLocation('entry', { line: 20 })
                 ]);
             });
         }
