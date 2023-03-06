@@ -241,10 +241,10 @@ describe("FsProxy test", function () {
         const writtenContents = "test";
         const buf = Buffer.from(writtenContents);
         await f.writeFile(buf);
-        f.rename(new FileProxy(Uri.file(newFilePath)));
+        await f.rename(new FileProxy(Uri.file(newFilePath)));
         const fDest = new FileProxy(Uri.file(newFilePath));
-        expect(f.exists()).to.eventually.be.false;
-        expect(fDest.exists()).to.eventually.be.true;
+        expect(await f.exists()).to.be.false;
+        expect(await fDest.exists()).to.be.true;
     });
     it("Should replace a string in a file", async function () {
         // create a temp dir

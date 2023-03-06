@@ -15,7 +15,7 @@ import path = require('path');
 import { VASMCompiler } from '../vasm';
 import { VLINKLinker } from '../vlink';
 
-describe.only('WinUAE Integration test', () => {
+describe('WinUAE Integration test', () => {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
     const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
     const launchArgs = <LaunchRequestArguments>{
@@ -112,7 +112,7 @@ describe.only('WinUAE Integration test', () => {
         if (process.platform === "win32") {
             it('should build and debug', function () {
                 return Promise.all([
-                    //dc.configurationSequence(),
+                    dc.configurationSequence(),
                     dc.launch(launchArgs),
                     dc.assertStoppedLocation('entry', { line: 20 })
                 ]);
