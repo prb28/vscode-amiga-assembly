@@ -34,7 +34,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 16.x
+          node-version: 18.x
       - run: npm install
       - run: npm run test-compile
       - name: xvfb test
