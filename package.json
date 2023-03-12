@@ -99,7 +99,7 @@
 					"type": "string",
 					"scope": "resource",
 					"default": "${extensionResourcesFolder}/bin/${platformName}",
-					"description": "Directory containing the binaries path."
+					"description": "Directory containing the binaries."
 				},
 				"amiga-assembly.logLevel": {
 					"type": "string",

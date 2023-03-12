@@ -8,10 +8,16 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
-## New in 1.7
+### Breaking changes
+
+- see [Breaking changes](https://github.com/prb28/vscode-amiga-assembly/wiki/Breaking-Changes) for more details
+- Please reset the **amiga-assembly.binDir** setting. 
+- The *launch.json* configuration has changed in 1.7/1.8
+
+## New in 1.7/1.8
 - *grahambates* new version of fs-uae / winuae with uae-dap version 1.0.0 - unified launch configuration
-- *grahambates* BLTCON Helper: provides a webview panel with a tool to help setting BLTCON0/BLTCON1 registers. Based on [BLTCONCheatSheet](http://deadliners.net/BLTCONCheatSheet/index.html) by Soundy/Deadliners.
 - Binaries are embedded in the extension, no need for additional download
+- *grahambates* BLTCON Helper: provides a webview panel with a tool to help setting BLTCON0/BLTCON1 registers. Based on [BLTCONCheatSheet](http://deadliners.net/BLTCONCheatSheet/index.html) by Soundy/Deadliners.
 
 ![BLTCON Helper](https://github.com/prb28/vscode-amiga-assembly/wiki/images/BLTCONHelper.png)
 - Bug fixes

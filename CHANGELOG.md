@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [1.7.0]
+- [Feat #253](https://github.com/prb28/vscode-amiga-assembly/issues/253) *grahambates* New FS-UAE fork
+- [Feat #252](https://github.com/prb28/vscode-amiga-assembly/issues/252) Include binaries and example project in the extension
 - [Issue #233](https://github.com/prb28/vscode-amiga-assembly/issues/233) Build warnings stop the build
 - [Feat #229](https://github.com/prb28/vscode-amiga-assembly/pull/229) *grahambates* BLTCON Helper
 
