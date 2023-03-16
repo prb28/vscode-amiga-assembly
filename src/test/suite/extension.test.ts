@@ -12,6 +12,7 @@ import { spy, verify, when, anything, resetCalls } from '@johanblumenberg/ts-moc
 import { ExtensionState } from '../../extension';
 import { fail } from 'assert';
 import { ConfigurationHelper } from '../../configurationHelper';
+import { FileProxy } from '../../fsProxy';
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Global Extension Tests", function () {
@@ -26,6 +27,19 @@ describe("Global Extension Tests", function () {
         } else {
             fail("Extension not loaded");
         }
+    });
+    context("Initialization", function () {
+        it("Should chmod the resources", async () => {
+            const resourcesPath = ExtensionState.getCurrent().getResourcesPath();
+            const darwinDir = new FileProxy(vscode.Uri.file(path.join(resourcesPath, "bin/darwin")));
+            for (const f of await darwinDir.listFiles()) {
+                expect(f.testPermissions(fs.constants.X_OK)).to.be.true;
+            }
+            const linuxDir = new FileProxy(vscode.Uri.file(path.join(resourcesPath, "bin/linux")));
+            for (const f of await linuxDir.listFiles()) {
+                expect(f.testPermissions(fs.constants.X_OK)).to.be.true;
+            }
+        });
     });
     context("Formatting command", function () {
         it("Should format a simple file", async () => {

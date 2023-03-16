@@ -5,6 +5,7 @@ import * as temp from 'temp';
 import * as path from 'path';
 import * as chaiAsPromised from 'chai-as-promised';
 import { FileProxy } from "../fsProxy";
+import { constants } from 'fs';
 chai.use(chaiAsPromised);
 
 describe("FsProxy test", function () {
@@ -257,5 +258,30 @@ describe("FsProxy test", function () {
         await f.replaceStringInFile(new RegExp("test", "g"), "done");
         const contents = await f.readFile();
         expect(contents.toString()).to.be.eq("my new done is good done")
+    });
+    it("Should apply chmod ", async () => {
+        const tempDir = temp.mkdirSync("chmod_test");
+        const filePath = path.join(tempDir, "test.txt");
+        const f = new FileProxy(Uri.file(filePath));
+        const writtenContents = "test";
+        const buf = Buffer.from(writtenContents);
+        await f.writeFile(buf);
+        f.setPermissions(0o400);
+        expect(f.testPermissions(constants.R_OK)).to.be.true;
+        f.setPermissions(0o755);
+        expect(f.testPermissions(constants.R_OK | constants.X_OK | constants.W_OK)).to.be.true;
+    });
+    it("Should apply chmod in all files in dir", async () => {
+        const tempDir = temp.mkdirSync("chmod_test");
+        const tempDirProxy = new FileProxy(Uri.file(tempDir));
+        const filePath = path.join(tempDir, "test.txt");
+        const f = new FileProxy(Uri.file(filePath));
+        const writtenContents = "test";
+        const buf = Buffer.from(writtenContents);
+        await f.writeFile(buf);
+        await tempDirProxy.setPermissionsInAllFiles(0o400);
+        expect(f.testPermissions(constants.R_OK)).to.be.true;
+        await tempDirProxy.setPermissionsInAllFiles(0o755);
+        expect(f.testPermissions(constants.R_OK | constants.X_OK | constants.W_OK)).to.be.true;
     });
 });

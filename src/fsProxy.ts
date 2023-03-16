@@ -308,4 +308,40 @@ export class FileProxy {
         const parentFile2 = FileProxy.normalize(path.basename(path.dirname(file2)));
         return parentFile1 === parentFile2;
     }
+
+    /**
+     * Set permissions
+     * @param mode Mode to set
+     */
+    public setPermissions(mode: fs.Mode) {
+        fs.chmodSync(this.getPath(), mode);
+    }
+
+    /**
+     * Set permissions in all contained files
+     * @param mode Mode to set
+     */
+    public async setPermissionsInAllFiles(mode: fs.Mode) {
+        if (await this.isDirectory()) {
+            for (const f of await this.listFiles()) {
+                if (await f.isFile()) {
+                    f.setPermissions(mode);
+                }
+            }
+        }
+    }
+
+    /**
+     * Test permissions
+     * @param mode Mode to test fs.constants.R_OK, fs.constants.W_OK, and fs.constants.X_OK
+     * @return True if permissions match
+     */
+    public testPermissions(mode?: number | undefined): boolean {
+        try {
+            fs.accessSync(this.getPath(), mode);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
 }

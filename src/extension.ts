@@ -587,6 +587,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
             return state;
         }
     };
+    if (process.platform !== "win32") {
+        const resourcesPath = state.getResourcesPath();
+        const darwinDir = new FileProxy(vscode.Uri.file(path.join(resourcesPath, "bin/darwin")));
+        await darwinDir.setPermissionsInAllFiles(0o755);
+        const linuxDir = new FileProxy(vscode.Uri.file(path.join(resourcesPath, "bin/linux")));
+        await linuxDir.setPermissionsInAllFiles(0o755);
+    }
     return api;
 }
 
