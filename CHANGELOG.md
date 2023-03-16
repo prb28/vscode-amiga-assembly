@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [1.8.1] - 2023-03-16
+- [Issue #257](https://github.com/prb28/vscode-amiga-assembly/issues/257) Binaries not marked as executable on macOS
+
 ### [1.8.0] - 2023-03-13
 - [Feat #253](https://github.com/prb28/vscode-amiga-assembly/issues/253) *grahambates* New FS-UAE fork
 - [Feat #252](https://github.com/prb28/vscode-amiga-assembly/issues/252) Include binaries and example project in the extension
