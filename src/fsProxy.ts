@@ -149,7 +149,8 @@ export class FileProxy {
         // List the source dir
         const files = glob.sync(includes, <glob.IOptions>{
             cwd: this.uri.fsPath,
-            ignore: excludes
+            ignore: excludes,
+            nosort: true
         });
         for (const f of files) {
             values.push(this.getRelativeFile(f));
