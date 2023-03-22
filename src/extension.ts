@@ -28,6 +28,7 @@ import { WorkspaceManager } from './workspaceManager';
 import { DataBreakpointSizesStorage } from './breakpointStorage';
 import { NumberFormat, VariableDisplayFormatRequest } from 'uae-dap';
 import { createBltconHelperPanel } from './bltconHelper';
+import { ArchHelper } from './archHelper';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
@@ -448,6 +449,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     });
     context.subscriptions.push(disposable);
 
+
+    disposable = vscode.commands.registerCommand('amiga-assembly.select-build-arch', async () => {
+        const helper = new ArchHelper();
+        await helper.collectSyntaxCheckerConfiguration();
+    });
+    context.subscriptions.push(disposable);
 
     // Completion provider
     const language = await state.getLanguage();
