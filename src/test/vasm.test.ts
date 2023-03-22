@@ -195,8 +195,8 @@ describe("VASM Tests", function () {
       };
       files = await compiler.listFilesToBuild(rootDir, vlinkConf);
       expect(files.length).to.be.equal(2);
-      expect(files[0].path.includes("custom.i")).to.be.true;
-      expect(files[1].path.includes("tutorial.s")).to.be.true;
+      expect(files[0].path.includes("tutorial.s")).to.be.true;
+      expect(files[1].path.includes("custom.i")).to.be.true;
       vlinkConf = <VlinkBuildProperties>{
         exefilename: "myExec"
       };
@@ -209,6 +209,18 @@ describe("VASM Tests", function () {
       files = await compiler.listFilesToBuild(rootDir, vlinkConf);
       expect(files.length).to.be.equal(1);
       expect(files[0].path.includes("tutorial.s")).to.be.true;
+    });
+    it("Should preserve file order to build", async function () {
+      const rootDir = vscode.Uri.file(Path.join(__dirname, '..', '..', 'test_files'));
+      const vlinkConf = <VlinkBuildProperties>{
+        includes: "{hw2-toform.s,comment-docs.s,disassemble-exp.s}"
+      };
+      const files = await compiler.listFilesToBuild(rootDir, vlinkConf);
+      expect(files.length).to.be.equal(3);
+      const expectedFileOrder = ["hw2-toform.s", "comment-docs.s", "disassemble-exp.s"];
+      for (let i = 0; i < expectedFileOrder.length; i++) {
+        expect(files[i].fsPath.endsWith(expectedFileOrder[i])).to.be.true;
+      }
     });
     it("Should build all the workspace", async function () {
       ExtensionState.getCurrent().setWorkspaceRootDir(vscode.Uri.parse("file:///workdir"))

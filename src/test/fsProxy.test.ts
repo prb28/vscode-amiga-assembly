@@ -188,6 +188,19 @@ describe("FsProxy test", function () {
         expect(foundWrongFile).to.be.false;
     });
 
+    it("Should order the files when listing it", async function () {
+        const filePath = path.join(__dirname, "..", "..", "test_files");
+        const f = new FileProxy(Uri.file(filePath));
+        const include = "{hw2-toform.s,comment-docs.s,disassemble-exp.s}";
+        const exclude = "";
+        const files = await f.findFiles(include, exclude);
+        expect(files.length).to.be.equal(3);
+        const expectedFileOrder = ["hw2-toform.s", "comment-docs.s", "disassemble-exp.s"];
+        for (let i = 0; i < expectedFileOrder.length; i++) {
+            expect(files[i].getName()).to.be.eql(expectedFileOrder[i]);
+        }
+    });
+
     it("Should find the child path from a directory", async function () {
         const filePath = path.join(__dirname, "..", "..", "test_files");
         const f = new FileProxy(Uri.file(filePath));

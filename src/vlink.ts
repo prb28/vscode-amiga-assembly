@@ -74,8 +74,8 @@ export class VLINKLinker {
         const vlinkExecutableName: string = substituteVariables(conf.command, true, { extensionState: ExtensionState.getCurrent() });
         const confArgs = conf.args.map(a => substituteVariables(a, true));
         const objectPathNames: string[] = [];
-        for (let i = 0; i < filesURI.length; i += 1) {
-            const filename = path.basename(filesURI[i].fsPath);
+        for (const fURI of filesURI) {
+            const filename = path.basename(fURI.fsPath);
             let objFilename;
             const extSep = filename.indexOf(".");
             if (extSep > 0) {
