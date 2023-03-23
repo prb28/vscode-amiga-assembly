@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### [1.8.2] -
+### [1.8.2] - 2023-03-23
+- [Issue #260](https://github.com/prb28/vscode-amiga-assembly/issues/260) Breakpoint not hit and stepping in function not correct
 - [Issue #259](https://github.com/prb28/vscode-amiga-assembly/issues/259) Link order cannot be set
 
 ### [1.8.1] - 2023-03-16
