@@ -74,41 +74,23 @@ export class VLINKLinker {
         const vlinkExecutableName: string = substituteVariables(conf.command, true, { extensionState: ExtensionState.getCurrent() });
         const confArgs = conf.args.map(a => substituteVariables(a, true));
         const objectPathNames: string[] = [];
+        let entrypointNoExt: string | undefined = "empty";
+        if (entrypoint !== undefined) {
+            entrypointNoExt = entrypoint.replace(/\.[^/.]+$/, "");
+        }
         for (const fURI of filesURI) {
             const filename = path.basename(fURI.fsPath);
-            let objFilename;
             const extSep = filename.indexOf(".");
+            let filenameNoExt = filename;
             if (extSep > 0) {
-                objFilename = path.join(buildDir.fsPath, filename.substring(0, filename.lastIndexOf(".")) + ".o");
-            } else {
-                objFilename = path.join(buildDir.fsPath, filename + ".o");
+                filenameNoExt = filename.substring(0, extSep);
             }
-            objectPathNames.push(objFilename);
-        }
-        if (entrypoint !== undefined) {
-            // Vlink is unable to set an entrypoint for Amiga hunk files.
-            // The resulting executable will always start execution at the first
-            // byte of the first section. So, in order to "set" the entrypoint, we
-            // put the object containing the code to be executed first at the
-            // beginning of the objects list.
-            const entrypointNoExt = entrypoint.replace(/\.[^/.]+$/, "");
-            objectPathNames.sort(function (a, b) {
-                if (a === b) {
-                    return 0;
-                }
-                const filename_a = path.basename(a).replace(/\.[^/.]+$/, "");
-                const filename_b = path.basename(b).replace(/\.[^/.]+$/, "");
-                if (filename_a === entrypointNoExt) {
-                    return -1;
-                }
-                if (filename_b === entrypointNoExt) {
-                    return 1;
-                }
-                if (a < b) {
-                    return -1;
-                }
-                return 1;
-            });
+            const objFilename = path.join(buildDir.fsPath, filenameNoExt + ".o");
+            if (filenameNoExt === entrypointNoExt) {
+                objectPathNames.unshift(objFilename);
+            } else {
+                objectPathNames.push(objFilename);
+            }
         }
         const args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathNames);
         return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, null, true, this.parser, undefined, logEmitter);

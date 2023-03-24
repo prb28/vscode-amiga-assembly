@@ -7,8 +7,12 @@ import { VLINKParser, VLINKLinker } from '../vlink';
 import { ExecutorHelper } from '../execHelper';
 
 describe("VLINK Tests", function () {
-    before(function () {
-        // Opening file to activate the extension
+    before(async function () {
+        // activate the extension
+        const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
+        if (ext) {
+            await ext.activate();
+        }
         const newFile = vscode.Uri.parse("untitled://./vlink.s");
         return vscode.window.showTextDocument(newFile);
     });
@@ -73,6 +77,33 @@ describe("VLINK Tests", function () {
             ]);
             reset(spiedFs);
             reset(spiedLinker);
+        });
+        it("Should preserve file order to link", async function () {
+            const vlinkConf = VLINKLinker.DEFAULT_BUILD_CONFIGURATION;
+            vlinkConf.includes = "{hw2-toform.s,comment-docs.s,disassemble-exp.s}"
+            const filesUri = [
+                vscode.Uri.file('hw2-toform.s'),
+                vscode.Uri.file('comment-docs.s'),
+                vscode.Uri.file('disassemble-exp.s'),
+            ];
+            await linker.linkFiles(vlinkConf,
+                filesUri, 'myprog', 'file2', vscode.Uri.file('workdir'),
+                vscode.Uri.file('workdir/build'));
+            let args = capture(executor.runTool).last();
+            const buildPath = '/workdir/build/'.replace(/\/+/g, Path.sep);
+            expect(args[0]).to.be.eql([
+                '-bamigahunk', '-Bstatic', '-o', buildPath + 'myprog',
+                buildPath + 'hw2-toform.o', buildPath + 'comment-docs.o', buildPath + 'disassemble-exp.o'
+            ]);
+            vlinkConf.entrypoint = "comment-docs.s"
+            await linker.linkFiles(vlinkConf,
+                filesUri, 'myprog', vlinkConf.entrypoint, vscode.Uri.file('workdir'),
+                vscode.Uri.file('workdir/build'));
+            args = capture(executor.runTool).last();
+            expect(args[0]).to.be.eql([
+                '-bamigahunk', '-Bstatic', '-o', buildPath + 'myprog',
+                buildPath + 'comment-docs.o', buildPath + 'hw2-toform.o', buildPath + 'disassemble-exp.o'
+            ]);
         });
     });
     context("VLINKParser", function () {
