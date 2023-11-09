@@ -1020,7 +1020,7 @@
 		"extract-zip": "^2.0.1",
 		"glob": "^8.0.3",
 		"rimraf": "^3.0.2",
-		"uae-dap": "^1.0.2",
+		"uae-dap": "^1.0.4",
 		"uuid": "^9.0.0",
 		"winston": "^3.8.2",
 		"winston-transport": "^4.5.0"
