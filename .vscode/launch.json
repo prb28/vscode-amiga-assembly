@@ -43,7 +43,8 @@
                 "--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
             ],
             "outFiles": [
-                "${workspaceFolder}/out/test/**/*.js"
+                "${workspaceFolder}/out/test/**/*.js",
+                "${workspaceFolder}/dist/**/*.js"
             ],
             "preLaunchTask": "npm: test-compile"
         }

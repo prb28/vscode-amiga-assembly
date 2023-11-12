@@ -307,7 +307,7 @@ export class VASMCompiler {
             const sDir = exeParentDir.getRelativeFile("s");
             sDir.mkdir();
             const startupSequenceFile = sDir.getRelativeFile("startup-sequence");
-            if (!startupSequenceFile.exists()) {
+            if (!await startupSequenceFile.exists()) {
               if (logEmitter) {
                 logEmitter.fire(`Creating startup-sequence file: ${startupSequenceFile.getPath()}`);
               }

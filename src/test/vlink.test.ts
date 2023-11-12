@@ -79,8 +79,8 @@ describe("VLINK Tests", function () {
             reset(spiedLinker);
         });
         it("Should preserve file order to link", async function () {
-            const vlinkConf = VLINKLinker.DEFAULT_BUILD_CONFIGURATION;
-            vlinkConf.includes = "{hw2-toform.s,comment-docs.s,disassemble-exp.s}"
+            const vlinkConf = { ...VLINKLinker.DEFAULT_BUILD_CONFIGURATION };
+            vlinkConf.includes = "{hw2-toform.s,comment-docs.s,disassemble-exp.s}";
             const filesUri = [
                 vscode.Uri.file('hw2-toform.s'),
                 vscode.Uri.file('comment-docs.s'),

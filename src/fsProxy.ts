@@ -147,13 +147,15 @@ export class FileProxy {
     public async findFiles(includes: string, excludes: string): Promise<Array<FileProxy>> {
         const values = new Array<FileProxy>();
         // List the source dir
-        const files = glob.sync(includes, <glob.IOptions>{
+        const files = glob.sync(includes, <glob.GlobOptions>{
             cwd: this.uri.fsPath,
             ignore: excludes,
             nosort: true
         });
         for (const f of files) {
-            values.push(this.getRelativeFile(f));
+            if (typeof f === 'string') {
+                values.push(this.getRelativeFile(f));
+            }
         }
         return values;
     }

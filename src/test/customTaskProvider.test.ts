@@ -28,7 +28,7 @@ describe("Task Provider tests", function () {
             const spiedController = spy(controller);
             const document = new DummyTextDocument();
 
-            when(spiedController.compile()).thenResolve();
+            when(spiedController.compile()).thenResolve(null);
             await controller.onSaveDocument(document);
             verify(spiedController.compile()).once();
             // Generating a build error

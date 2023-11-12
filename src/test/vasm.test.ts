@@ -41,6 +41,7 @@ describe("VASM Tests", function () {
     let spiedLinker: VLINKLinker;
     let buildDirMock: FileProxy;
     let tmpDirMock: FileProxy;
+    let spiedExtensionState: ExtensionState;
     before(function () {
       compiler = new VASMCompiler();
       // installing a spy
@@ -88,7 +89,7 @@ describe("VASM Tests", function () {
       when(buildDirMock.mkdir()).thenReturn(Promise.resolve());
       when(buildDirMock.getPath()).thenReturn("/workdir/build");
       when(buildDirMock.getUri()).thenReturn(vscode.Uri.file("/workdir/build"));
-      const spiedExtensionState = spy(ExtensionState.getCurrent());
+      spiedExtensionState = spy(ExtensionState.getCurrent());
       when(spiedExtensionState.getBuildDir()).thenReturn(instance(buildDirMock));
       tmpDirMock = mock(FileProxy);
       when(tmpDirMock.mkdir()).thenReturn(Promise.resolve());
@@ -107,6 +108,7 @@ describe("VASM Tests", function () {
       reset(executorLinker);
       reset(spiedLinker);
       reset(spiedCompiler);
+      reset(spiedExtensionState);
     });
     it("Should call the compiler command", async function () {
       const fileUri = vscode.Uri.file("file1.s");
