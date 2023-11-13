@@ -27,11 +27,11 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         const line = document.lineAt(position.line);
         const asmLine = new ASMLine(line.text, line);
         // Detect where is the cursor
-        if (asmLine.instructionRange && asmLine.instructionRange.contains(position) && (asmLine.instruction.length > 0)) {
+        if (asmLine.instructionRange?.contains(position) && (asmLine.instruction.length > 0)) {
             let keyInstruction = asmLine.instruction;
             const idx = keyInstruction.indexOf('.');
             if (idx > 0) {
-                keyInstruction = keyInstruction.substr(0, idx);
+                keyInstruction = keyInstruction.substring(0, idx);
             }
             if (!token.isCancellationRequested) {
                 const [hoverInstruction, hoverDirective, macro] = await Promise.all([
@@ -39,7 +39,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     this.documentationManager.getDirective(keyInstruction.toUpperCase()),
                     definitionHandler.getMacroByName(keyInstruction)
                 ]);
-                const hoverElement = hoverInstruction || hoverDirective
+                const hoverElement = hoverInstruction ?? hoverDirective
                 if (hoverElement) {
                     const hoverRendered = this.renderHover(hoverElement);
                     return new vscode.Hover(hoverRendered, asmLine.instructionRange);
@@ -56,7 +56,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     return new vscode.Hover(contents, asmLine.instructionRange);
                 }
             }
-        } else if (asmLine.dataRange && asmLine.dataRange.contains(position)) {
+        } else if (asmLine.dataRange?.contains(position)) {
             // get the word
             let word = document.getWordRangeAtPosition(position);
             let prefix = "";
@@ -69,7 +69,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     )
                     // Find previous global label
                     for (let i = word.start.line; i >= 0; i--) {
-                        const match = document.lineAt(i).text.match(/^(\w+)\b/);
+                        const match = RegExp(/^(\w+)\b/).exec(document.lineAt(i).text);
                         if (match) {
                             prefix = match[0];
                             break;
@@ -89,7 +89,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     if (cpuReg) {
                         rendered = new vscode.MarkdownString(cpuReg.detail);
                     } else if (label || xref) {
-                        const symbol = label || xref;
+                        const symbol = label ?? xref;
                         const info = new vscode.MarkdownString();
                         info.appendCodeblock("(label) " + symbol?.getLabel());
                         const description = symbol?.getCommentBlock();
@@ -109,12 +109,12 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     // Is there a value next to the register ?
                     const elms = asmLine.data.split(",");
                     for (const elm of elms) {
-                        if (elm.match(/[$#%@]([\dA-F]+)/i)) {
+                        if (RegExp(/[$#%@]([\dA-F]+)/i).exec(elm)) {
                             renderedLine2 = this.renderRegisterValue(elm);
                             if (renderedLine2) {
                                 break;
                             }
-                        } else if (elm.match(/[$#%@+-/*]([\dA-Z_]+)/i)) {
+                        } else if (RegExp(/[$#%@+-/*]([\dA-Z_]+)/i).exec(elm)) {
                             // Try to evaluate a formula
                             // Evaluate the formula value
                             try {

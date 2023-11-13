@@ -268,7 +268,7 @@ describe("FsProxy test", function () {
         const writtenContents = "my new test is good test";
         const buf = Buffer.from(writtenContents);
         await f.writeFile(buf);
-        await f.replaceStringInFile(new RegExp("test", "g"), "done");
+        await f.replaceStringInFile(/test/g, "done");
         const contents = await f.readFile();
         expect(contents.toString()).to.be.eq("my new done is good done")
     });

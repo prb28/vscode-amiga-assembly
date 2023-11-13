@@ -27,7 +27,7 @@ export class M86kColorProvider implements DocumentColorProvider {
      * @param token Cancellation token
      */
     public provideColorPresentations(
-        color: Color, context: { document: TextDocument, range: Range }, token: CancellationToken):
+        color: Color, context: { document: TextDocument, range: Range }):
         ProviderResult<ColorPresentation[]> {
         return [new ColorPresentation(this.formatColor(color, context.document.getText(context.range)))];
     }
@@ -82,6 +82,6 @@ export class M86kColorProvider implements DocumentColorProvider {
      * @param value Number to format
      */
     private formatColorComponent(value: number): string {
-        return Math.round(value).toString(16).substr(0, 1);
+        return Math.round(value).toString(16).substring(0, 2);
     }
 }

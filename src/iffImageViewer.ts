@@ -22,7 +22,7 @@ export class IFFViewerPanel {
         // And restrict the webview to only loading content from our extension's `media` directory.
         const localResourceRoots = [vscode.Uri.file(path.join(extensionPath, IFFViewerPanel.SCRIPTS_PATH))];
         const folders = vscode.workspace.workspaceFolders;
-        if (folders && folders.length) {
+        if (folders?.length) {
             for (const folder of folders) {
                 localResourceRoots.push(folder.uri);
             }
@@ -32,7 +32,7 @@ export class IFFViewerPanel {
         const panel = vscode.window.createWebviewPanel(
             IFFViewerPanel.VIEW_TYPE,
             'IFF Viewer',
-            column || vscode.ViewColumn.One,
+            column ?? vscode.ViewColumn.One,
             {
                 // Enable javascript in the webview
                 enableScripts: true,
@@ -63,7 +63,6 @@ export class IFFViewerPanel {
             message => {
                 if (message.command === 'alert') {
                     vscode.window.showErrorMessage(message.text);
-                    return;
                 }
             },
             null,

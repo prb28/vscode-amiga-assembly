@@ -63,7 +63,7 @@ export class VASMCompiler {
   public async buildCurrentEditorFile(vasmConf?: VasmBuildProperties, logEmitter?: EventEmitter<string>): Promise<void> {
     const editor = window.activeTextEditor;
     if (editor) {
-      const conf = this.getConfiguration("vasm", vasmConf);
+      const conf: VasmBuildProperties = this.getConfiguration("vasm", vasmConf) as VasmBuildProperties;
       if (this.mayCompile(conf)) {
         await this.buildDocument({ ...conf }, editor.document, true, logEmitter);
       } else {
@@ -110,7 +110,7 @@ export class VASMCompiler {
           );
           for (let k = 0; k < document.lineCount; k += 1) {
             const line = document.lineAt(k).text;
-            if (line.match(regexp)) {
+            if (RegExp(regexp).exec(line)) {
               error.line = k + 1;
               break;
             }
@@ -123,7 +123,7 @@ export class VASMCompiler {
     }
   }
 
-  private getConfiguration(key: string, properties?: any): any {
+  private getConfiguration(key: string, properties?: unknown): unknown {
     if (properties) {
       return properties;
     } else if (key === "vasm") {
@@ -140,9 +140,9 @@ export class VASMCompiler {
     const errorDiagnosticCollection = state.getErrorDiagnosticCollection();
     errorDiagnosticCollection.clear();
     warningDiagnosticCollection.clear();
-    const conf: any = this.getConfiguration("vasm", vasmBuildProperties);
+    const conf: VasmBuildProperties = this.getConfiguration("vasm", vasmBuildProperties) as VasmBuildProperties;
     if (this.mayCompile(conf)) {
-      const confVLINK: any = this.getConfiguration("vlink", vlinkBuildProperties);
+      const confVLINK: VlinkBuildProperties = this.getConfiguration("vlink", vlinkBuildProperties) as VlinkBuildProperties;
       if (confVLINK) {
         await this.buildWorkspaceInner(conf, confVLINK, logEmitter);
       } else {
@@ -410,7 +410,7 @@ export class VASMCompiler {
         if (logEmitter) {
           logEmitter.fire(`building ${objFilename}\r\n`);
         }
-        const results = await this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vasmExecutableName, null, true, this.parser, undefined, logEmitter);
+        const results = await this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vasmExecutableName, undefined, true, this.parser, undefined, logEmitter);
         return [objFilename, results];
       } else if (!this.disabledInConf(conf)) {
         throw VASMCompiler.CONFIGURE_VASM_ERROR;
@@ -428,7 +428,7 @@ export class VASMCompiler {
    * @param conf Configuration
    */
   mayCompile(conf: VasmBuildProperties): boolean {
-    return conf && conf.enabled;
+    return conf?.enabled;
   }
 
   /**

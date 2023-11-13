@@ -292,7 +292,7 @@ export class ExpressionDataGeneratorSerializer {
 }
 
 export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
-    public provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken):
+    public provideCodeLenses(document: vscode.TextDocument):
         vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
         // Search for start keyword
         const codeLensArray = new Array<vscode.CodeLens>();
@@ -322,7 +322,7 @@ export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
         return rangesArray;
     }
 
-    public resolveCodeLens?(codeLens: vscode.CodeLens, token: vscode.CancellationToken):
+    public resolveCodeLens?(codeLens: vscode.CodeLens):
         vscode.CodeLens | Thenable<vscode.CodeLens> {
         codeLens.command = <vscode.Command>{
             "command": "amiga-assembly.generate-data",
@@ -336,7 +336,7 @@ export class DataGeneratorCodeLensProvider implements vscode.CodeLensProvider {
     public async onGenerateData(range: vscode.Range): Promise<void> {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
-            const edited = await editor.edit(async (edit) => {
+            const edited = await editor.edit((edit: vscode.TextEditorEdit) => {
                 let rangesArray = new Array<vscode.Range>();
                 if (range) {
                     rangesArray.push(range);

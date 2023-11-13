@@ -14,7 +14,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         this.definitionHandler = definitionHandler;
         this.language = language;
     }
-    public async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionItem[]> {
+    public async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.CompletionItem[]> {
         let completions = new Array<vscode.CompletionItem>();
         let range = document.getWordRangeAtPosition(position);
         const line = document.lineAt(position.line);
@@ -38,7 +38,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                 );
                 // Find previous global label
                 for (let i = range.start.line; i >= 0; i--) {
-                    const match = document.lineAt(i).text.match(/^(\w+)\b/);
+                    const match = RegExp(/^(\w+)\b/).exec(document.lineAt(i).text);
                     if (match) {
                         prefix = match[0];
                         break;
@@ -61,21 +61,19 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                         if (isInData) {
                             if (isMnemonic) {
                                 continue;
-                            } else {
-                                if (value.type === DocumentationType.REGISTER || value.type === DocumentationType.CPU_REGISTER) {
-                                    if (word[0] === word[0].toLowerCase()) {
-                                        label = label.toLowerCase()
-                                    }
-                                    kind = vscode.CompletionItemKind.Variable;
-                                } else if (word.startsWith("_LVO")) {
-                                    label = "_LVO" + label;
+                            } else if (value.type === DocumentationType.REGISTER || value.type === DocumentationType.CPU_REGISTER) {
+                                if (word.startsWith(word[0].toLowerCase())) {
+                                    label = label.toLowerCase()
                                 }
+                                kind = vscode.CompletionItemKind.Variable;
+                            } else if (word.startsWith("_LVO")) {
+                                label = "_LVO" + label;
                             }
                         } else {
                             if (!isMnemonic) {
                                 continue;
                             }
-                            if (word[0] === word[0].toUpperCase()) {
+                            if (word[0].startsWith(word[0].toUpperCase())) {
                                 label = label.toUpperCase()
                             }
                         }
@@ -98,7 +96,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                         const labels = this.definitionHandler.findLabelStartingWith(word);
                         for (const [label, symbol] of labels.entries()) {
                             const unPrefixed = label.substring(prefix.length);
-                            const isLocalFQ = unPrefixed.match(/.\./);
+                            const isLocalFQ = RegExp(/.\./).exec(unPrefixed);
                             if (!labelsAdded.includes(label) && !isLocalFQ) {
                                 const kind = vscode.CompletionItemKind.Function;
                                 const completion = new vscode.CompletionItem(unPrefixed, kind);
@@ -175,7 +173,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         let start = 0;
         if (range) {
             start = range.start.character;
-            while (start > 0 && !line.text.charAt(start - 1).match(/[\s'"/]/)) {
+            while (start > 0 && !RegExp(/[\s'"/]/).exec(line.text.charAt(start - 1))) {
                 start--;
             }
             range = new vscode.Range(
@@ -195,7 +193,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         let prefix = "";
         let filter: string | undefined;
         if (length > 0) {
-            const typedPath = asmLine.data.substr(start, length);
+            const typedPath = asmLine.data.substring(start, start + length);
 
             // Get absolute or relative path
             let newParent = incDir.getRelativeFile(typedPath);
@@ -212,12 +210,12 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                 const pos = normalizedTypedPath.lastIndexOf("/");
                 if (pos !== -1) {
                     // Typed path is a partial filename in a containing directory
-                    const subPath = normalizedTypedPath.substr(0, Math.max(pos, 1));
+                    const subPath = normalizedTypedPath.substring(0, Math.max(pos, 1) + 1);
                     // Get containing directory
                     newParent = incDir.getRelativeFile(subPath);
                     if (await newParent.exists() && await newParent.isDirectory()) {
                         incDir = newParent;
-                        filter = normalizedTypedPath.substr(pos + 1);
+                        filter = normalizedTypedPath.substring(pos + 1);
                     } else {
                         // containing directory doesn't exist
                         return [];
@@ -257,11 +255,14 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
     }
 
     private cleanAndReorder(completions: vscode.CompletionItem[]): vscode.CompletionItem[] {
-        const fileMap = new Map<string, vscode.CompletionItem>();
-        for (const c of completions) {
-            fileMap.set(c.label.toString(), c);
+        const labelMap = new Map<string, vscode.CompletionItem>();
+
+        for (const completion of completions) {
+            const label = typeof completion.label === "string"
+                ? completion.label : completion.label.label
+            labelMap.set(label, completion);
         }
-        return Array.from(fileMap.values());
+        return Array.from(labelMap.values());
     }
 
     private async provideCompletionForIncludes(asmLine: ASMLine, document: vscode.TextDocument, position: vscode.Position): Promise<vscode.CompletionItem[]> {

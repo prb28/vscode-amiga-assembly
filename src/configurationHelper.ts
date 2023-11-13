@@ -32,7 +32,7 @@ export class ConfigurationHelper {
      * @return New value
      */
     public static retrieveStringProperty(configuration: vscode.WorkspaceConfiguration, key: string, defaultValue: string): string {
-        const confValue = configuration.get(key);
+        const confValue = configuration.get<string>(key);
         if (confValue) {
             return `${confValue}`;
         }

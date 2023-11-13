@@ -117,7 +117,7 @@ export class ExtensionState {
     public static getCurrent(): ExtensionState {
         // activate the extension
         const ext = vscode.extensions.getExtension('prb28.amiga-assembly');
-        if (ext && ext.exports && ext.exports.getState) {
+        if (ext?.exports?.getState) {
             return ext.exports.getState();
         }
         return new ExtensionState();
@@ -225,7 +225,7 @@ export class ExtensionState {
      * Returns the temporary directory
      */
     public getTmpDir(): FileProxy {
-        const tmpDirPath: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('tmpDir');
+        const tmpDirPath: string | undefined = ConfigurationHelper.retrieveStringPropertyInDefaultConf('tmpDir');
         if (tmpDirPath) {
             this.tmpDir = this.getPathOrRelative(tmpDirPath);
         } else {
@@ -250,7 +250,7 @@ export class ExtensionState {
         if (this.forcedBuildDir) {
             return this.forcedBuildDir;
         }
-        const buildDirPath: any = ConfigurationHelper.retrieveStringPropertyInDefaultConf('buildDir');
+        const buildDirPath: string | undefined = ConfigurationHelper.retrieveStringPropertyInDefaultConf('buildDir');
         if (buildDirPath) {
             this.buildDir = this.getPathOrRelative(buildDirPath);
         } else {
@@ -606,7 +606,7 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
      * Massage a debug configuration just before a debug session is being launched,
      * e.g. add all missing attributes to the debug configuration.
      */
-    resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
+    resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): vscode.ProviderResult<vscode.DebugConfiguration> {
 
         // if launch.json is missing or empty
         if (!config.type && !config.request && !config.name) {
@@ -645,7 +645,7 @@ class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
-        return <any>new vscode.DebugAdapterInlineImplementation(new DebugSession());
+        return new vscode.DebugAdapterInlineImplementation(new DebugSession());
     }
 }
 
@@ -654,7 +654,7 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
      * Massage a debug configuration just before a debug session is being launched,
      * e.g. add all missing attributes to the debug configuration.
      */
-    async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
+    async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.DebugConfiguration> {
         // if launch.json is missing or empty
         if (!config.type && !config.request && !config.name) {
             const editor = vscode.window.activeTextEditor;
@@ -682,9 +682,9 @@ class RunFsUAEConfigurationProvider implements vscode.DebugConfigurationProvider
 }
 
 class RunFsUAEInlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
-    createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
+    createDebugAdapterDescriptor(): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
-        return <any>new vscode.DebugAdapterInlineImplementation(new DebugSession());
+        return new vscode.DebugAdapterInlineImplementation(new DebugSession());
     }
 }
 
@@ -693,7 +693,7 @@ class WinUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
      * Massage a debug configuration just before a debug session is being launched,
      * e.g. add all missing attributes to the debug configuration.
      */
-    async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
+    async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.DebugConfiguration> {
 
         // if launch.json is missing or empty
         if (!config.type && !config.request && !config.name) {

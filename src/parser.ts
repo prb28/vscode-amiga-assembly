@@ -98,7 +98,7 @@ export class ASMLine {
             current = next;
         }
         // To test the comment line the regexp needs an eol
-        if ((l.charAt(0) === ';') || (l.charAt(0) === '*')) {
+        if (l.startsWith(';') || l.startsWith('*')) {
             this.comment = l;
             this.commentRange = new Range(new Position(lineNumber, leadingSpacesCount), new Position(lineNumber, leadingSpacesCount + l.length));
             this.lineType = ASMLineType.COMMENT;
@@ -277,7 +277,7 @@ export class ASMLine {
      * @return true if it is an assignment
      */
     public parseAssignment(line: string, lineNumber: number): boolean {
-        const regexp = /^([a-z0-9\-_]*)[\s]*(=|[\s][a-z]?equ(\.[a-z])?[\s])[\s]*(.*)/gi;
+        const regexp = /^([a-z0-9\-_]*)\s*(=|\s[a-z]?equ(\.[a-z])?\s)\s*(.*)/gi;
         const match = regexp.exec(line);
         if (match !== null) {
             this.variable = match[1].trim();
@@ -395,15 +395,13 @@ export class ASMLine {
                             registers.push(r);
                         }
                     }
-                } else {
-                    if (registers.indexOf(value) < 0) {
-                        registers.push(value);
-                    }
+                } else if (registers.indexOf(value) < 0) {
+                    registers.push(value);
                 }
                 match = reg.exec(this.data);
             }
         }
-        return registers.sort();
+        return registers.sort((a: string, b: string) => a.localeCompare(b));
     }
 
     /**
@@ -454,8 +452,8 @@ export class NumberParser {
      * @param word Word to parse
      */
     public parseWithType(word: string): [number, NumberType] | null {
-        const hexValueRegExp = /[#]?\$([\da-z]+)/i;
-        const decValueRegExp = /[#]?([-]?[\d]+)/;
+        const hexValueRegExp = /#?\$([\da-z]+)/i;
+        const decValueRegExp = /#?(-?\d+)/;
         const octValueRegExp = /@(\d+)/;
         const binValueRegExp = /%([01]*)/;
         // look for an hex value
@@ -663,7 +661,7 @@ export class ASMDocument {
         // Parse all the lines
         for (let i = localRange.start.line; i <= localRange.end.line; i++) {
             let isOversized = false;
-            if (token && token.isCancellationRequested) {
+            if (token?.isCancellationRequested) {
                 return;
             }
             const line = document.lineAt(i);

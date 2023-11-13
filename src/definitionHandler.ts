@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Definition, SymbolInformation, DocumentSymbolProvider, DefinitionProvider, TextDocument, Position, CancellationToken, Location, Uri, ReferenceProvider, ReferenceContext, Range, window } from 'vscode';
+import { Definition, SymbolInformation, DocumentSymbolProvider, DefinitionProvider, TextDocument, Position, Location, Uri, ReferenceProvider, Range, window } from 'vscode';
 import * as vscode from 'vscode';
 import { SymbolFile, Symbol } from './symbols';
 import { Calc } from './calc';
@@ -20,7 +20,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     private xrefs = new Map<string, Symbol>();
     private sortedVariablesNames = new Array<string>();
 
-    public async provideDocumentSymbols(document: TextDocument, token: CancellationToken): Promise<SymbolInformation[]> {
+    public async provideDocumentSymbols(document: TextDocument): Promise<SymbolInformation[]> {
         const symbolFile: void | SymbolFile = await this.scanFile(document.uri, document);
         const results = new Array<SymbolInformation>();
         if (symbolFile) {
@@ -73,7 +73,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return results;
     }
 
-    public async provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Promise<Definition> {
+    public async provideDefinition(document: TextDocument, position: Position): Promise<Definition> {
         const rg = document.getWordRangeAtPosition(position);
         if (rg) {
             await this.scanFile(document.uri, document);
@@ -99,7 +99,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         throw new Error("Definition not found");
     }
 
-    public async provideReferences(document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[]> {
+    public async provideReferences(document: TextDocument, position: Position): Promise<Location[]> {
         const rg = document.getWordRangeAtPosition(position);
         if (rg) {
             await this.scanFile(document.uri, document);
@@ -140,7 +140,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 }
             }
         }
-        foundRegisters.sort();
+        foundRegisters.sort((a: string, b: string) => a.localeCompare(b));
         return foundRegisters;
     }
 
@@ -367,7 +367,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         if (v !== undefined) {
             let value = v.getValue();
             if ((value !== undefined) && (value.length > 0)) {
-                if (value.match(/[A-Za-z_]*/)) {
+                if (RegExp(/[A-Za-z_]*/).exec(value)) {
                     value = this.replaceVariablesInFormula(value);
                 }
             }

@@ -80,7 +80,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
             if (token.isCancellationRequested) {
                 return [];
             }
-            edits = edits.concat(this.computeEditsForLine(asmDocument, asmLine, configuration));
+            edits = edits.concat(this.computeEditsForLine(asmDocument, asmLine));
         }
         return edits;
     }
@@ -92,7 +92,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
      * @param configuration Configuration for the formatter
      * @return List of edits
      */
-    public computeEditsForLine(asmDocument: ASMDocument, asmLine: ASMLine, configuration: DocumentFormatterConfiguration): vscode.TextEdit[] {
+    public computeEditsForLine(asmDocument: ASMDocument, asmLine: ASMLine): vscode.TextEdit[] {
         const edits = new Array<vscode.TextEdit>();
         if (!asmDocument.isOversized(asmLine)) {
             let range: vscode.Range;
@@ -194,7 +194,7 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                 }
             }
             // Call standard format
-            edits = this.computeEditsForLine(asmDocument, asmLine, configuration);
+            edits = this.computeEditsForLine(asmDocument, asmLine);
         }
         return edits;
     }

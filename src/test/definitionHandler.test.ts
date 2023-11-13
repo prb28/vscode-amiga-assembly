@@ -53,7 +53,7 @@ describe("Definition handler Tests", function () {
         });
         context("Editor selection", function () {
             before(async function () {
-                let document = await workspace.openTextDocument(Uri.file(MAIN_SOURCE));
+                const document = await workspace.openTextDocument(Uri.file(MAIN_SOURCE));
                 await window.showTextDocument(document);
                 await commands.executeCommand("cursorMove", { to: 'up', by: 'line', value: 20, select: false });
                 await commands.executeCommand("cursorMove", { to: 'down', by: 'line', value: 20, select: true });

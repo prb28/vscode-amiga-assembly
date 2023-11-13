@@ -41,8 +41,8 @@ export class SymbolFile {
                 this.definedSymbols.push(new Symbol(symbol, this, range));
             } else {
                 const results = asmLine.getSymbolFromData();
-                for (let k = 0; k < results.length; k++) {
-                    [symbol, range] = results[k];
+                for (const element of results) {
+                    [symbol, range] = element;
                     if ((symbol !== undefined) && (range !== undefined)) {
                         this.referredSymbols.push(new Symbol(symbol, this, range));
                     }
@@ -51,13 +51,13 @@ export class SymbolFile {
             const instruct = asmLine.instruction.toLowerCase();
             if (asmLine.label.length > 0) {
                 let label = asmLine.label.replace(":", "");
-                const isLocal = label.indexOf(".") === 0;
+                const isLocal = label.startsWith(".");
                 if (isLocal) {
                     label = lastLabel?.getLabel() + label;
                 }
                 const s = new Symbol(label, this, asmLine.labelRange);
                 // Is this actually a macro definition in `<name> macro` syntax?
-                if (instruct.indexOf("macro") === 0) {
+                if (instruct.startsWith("macro")) {
                     this.macros.push(s);
                     this.definedSymbols.push(s);
                 } else {
@@ -66,11 +66,11 @@ export class SymbolFile {
                         lastLabel = s;
                     }
                 }
-            } else if (instruct.indexOf("xref") === 0) {
+            } else if (instruct.startsWith("xref")) {
                 const s = new Symbol(asmLine.data, this, asmLine.dataRange);
                 this.xrefs.push(s);
                 this.definedSymbols.push(s);
-            } else if (instruct.indexOf("macro") === 0) {
+            } else if (instruct.startsWith("macro")) {
                 // Handle ` macro <name>` syntax
                 const s = new Symbol(asmLine.data, this, asmLine.dataRange);
                 this.macros.push(s);
@@ -81,7 +81,7 @@ export class SymbolFile {
             }
             if (instruct.indexOf("bsr") >= 0) {
                 this.subroutines.push(asmLine.data);
-            } else if ((instruct.indexOf("dc") === 0) || (instruct.indexOf("ds") === 0) || (instruct.indexOf("incbin") === 0)) {
+            } else if (instruct.startsWith("dc") || instruct.startsWith("ds") || instruct.startsWith("incbin")) {
                 if (lastLabel) {
                     this.dcLabel.push(lastLabel);
                 }
@@ -210,13 +210,13 @@ export class Symbol {
                 const line = this.range.start.line;
                 // Current line comment:
                 const currentLine = doc.lineAt(line).text;
-                const currentLineMatch = currentLine.match(/;\s?(.*)/);
+                const currentLineMatch = RegExp(/;\s?(.*)/).exec(currentLine);
                 if (currentLineMatch) {
                     commentLines.push(currentLineMatch[1].trim());
                 } else {
                     // Preceding line comments:
                     for (let i = line - 1; i >= 0; i--) {
-                        const match = doc.lineAt(i).text.match(/^[;*]+-*\s?(.*)/);
+                        const match = RegExp(/^[;*]+-*\s?(.*)/).exec(doc.lineAt(i).text);
                         if (!match) {
                             break;
                         }
@@ -224,7 +224,7 @@ export class Symbol {
                     }
                     // Subsequent line comments:
                     for (let i = line + 1; i < doc.lineCount; i++) {
-                        const match = doc.lineAt(i).text.match(/^[;*]+-*\s?(.*)/);
+                        const match = RegExp(/^[;*]+-*\s?(.*)/).exec(doc.lineAt(i).text);
                         if (!match) {
                             break;
                         }

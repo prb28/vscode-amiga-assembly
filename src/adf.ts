@@ -111,14 +111,12 @@ export class ADFTools {
             let pFile = new FileProxy(bUri);
             if (await pFile.exists()) {
                 sourceFullPath = bUri;
-            } else {
+            } else if (workspaceRootDir) {
                 // file not exists
-                if (workspaceRootDir) {
-                    sourceFullPath = Uri.file(path.join(workspaceRootDir.fsPath, bootBlockSourceFilename));
-                    pFile = new FileProxy(sourceFullPath);
-                    if (!pFile.exists()) {
-                        sourceFullPath = null;
-                    }
+                sourceFullPath = Uri.file(path.join(workspaceRootDir.fsPath, bootBlockSourceFilename));
+                pFile = new FileProxy(sourceFullPath);
+                if (!await pFile.exists()) {
+                    sourceFullPath = null;
                 }
             }
             if (sourceFullPath) {
@@ -127,7 +125,7 @@ export class ADFTools {
                 const vasmBuildProperties = { ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION };
                 vasmBuildProperties.args = ["-m68000", "-Fbin"];
                 const results = await compiler.buildFile(vasmBuildProperties, sourceFullPath, true);
-                if (results && results[0]) {
+                if (results?.[0]) {
                     const bootBlockDataFilename = results[0];
                     bootBlockFilename = bootBlockDataFilename.replace(".o", ".bb");
                     const bootBlockDataFilenameUri = Uri.file(bootBlockDataFilename);
@@ -156,13 +154,11 @@ export class ADFTools {
             let rootSourceDirUri: Uri;
             if (!path.isAbsolute(rootSourceDir) && workspace.workspaceFolders) {
                 rootSourceDirUri = Uri.file(path.join(workspace.workspaceFolders[0].uri.fsPath, rootSourceDir));
+            } else if (workspace.workspaceFolders) {
+                const relativePath = path.relative(workspace.workspaceFolders[0].uri.fsPath, rootSourceDir);
+                rootSourceDirUri = Uri.file(path.join(workspace.workspaceFolders[0].uri.fsPath, relativePath));
             } else {
-                if (workspace.workspaceFolders) {
-                    const relativePath = path.relative(workspace.workspaceFolders[0].uri.fsPath, rootSourceDir);
-                    rootSourceDirUri = Uri.file(path.join(workspace.workspaceFolders[0].uri.fsPath, relativePath));
-                } else {
-                    rootSourceDirUri = Uri.file(rootSourceDir);
-                }
+                rootSourceDirUri = Uri.file(rootSourceDir);
             }
             const sourceRootFileProxy = new FileProxy(rootSourceDirUri, true);
             files = await sourceRootFileProxy.findFiles(includes, excludes);
@@ -275,7 +271,7 @@ export class ADFTools {
         if (workspaceRootDir) {
             rootPath = workspaceRootDir.fsPath;
         }
-        const stdout = await this.executor.runToolRetrieveStdout(args, rootPath, commandFilename, null, cancellationToken);
+        const stdout = await this.executor.runToolRetrieveStdout(args, rootPath, commandFilename, undefined, cancellationToken);
         if (stdout.indexOf("Done.") < 0) {
             throw new Error(stdout);
         }

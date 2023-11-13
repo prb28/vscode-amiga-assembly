@@ -18,7 +18,7 @@ interface Context {
  * The built-in logic in vscode only applies to specific properties and is not currently exposed in the public API
  * https://github.com/Microsoft/vscode/issues/46471
  *
- * For now we need to re-create the behaviour in order to apply it to custom properties.
+ * For now we need to re-create the behavior in order to apply it to custom properties.
  *
  * Supported variables:
  * - ${env:Name} - environment variable
@@ -118,36 +118,34 @@ export function substituteVariables(
 
   // Environment variables:
   str = str.replace(/\${env:(.*?)}/g, (variable) => {
-    const varName = variable.match(/\${env:(.*?)}/)?.[1];
+    const varName = RegExp(/\${env:(.*?)}/).exec(variable)?.[1];
     return varName ? environmentVariables[varName] ?? "" : "";
   });
 
   // Config keys:
   str = str.replace(/\${config:(.*?)}/g, (variable) => {
-    const varName = variable.match(/\${config:(.*?)}/)?.[1];
+    const varName = RegExp(/\${config:(.*?)}/).exec(variable)?.[1];
     return varName ? configuration.get(varName, "") : "";
   });
 
   // Custom variables
   // extensionResourcesFolder
   if (extensionState) {
-    const pattern = new RegExp("\\${extensionResourcesFolder}", "g");
+    const pattern = /\${extensionResourcesFolder}/g;
     str = str.replace(pattern, extensionState.getResourcesPath() ?? "");
   }
   // platformName
-  const pattern = new RegExp("\\${platformName}", "g");
+  const pattern = /\${platformName}/g;
   str = str.replace(pattern, process.platform ?? "");
 
   // Apply recursive replacements if enabled and string still contains any variables
   if (
     recursive &&
-    str.match(
-      new RegExp(
-        "\\${(" +
-        Object.keys(replacements).join("|") +
-        "|env:(.*?)|config:(.*?))}"
-      )
-    )
+    RegExp(new RegExp(
+      "\\${(" +
+      Object.keys(replacements).join("|") +
+      "|env:(.*?)|config:(.*?))}"
+    )).exec(str)
   ) {
     str = substituteVariables(str, recursive, ctx);
   }

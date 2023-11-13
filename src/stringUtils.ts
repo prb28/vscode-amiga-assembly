@@ -98,7 +98,7 @@ export class StringUtils {
      */
     public static convertHexUTF8StringToUTF8(value: string): string {
         // split input into groups of two
-        const hex = value.match(/[\s\S]{2}/g) || [];
+        const hex = value.match(/[\s\S]{2}/g) ?? [];
         let output = '';
         // build a hex-encoded representation of your string
         const j = hex.length;
@@ -156,7 +156,7 @@ export class StringUtils {
     public static hexToBytes(hex: string): Array<number> {
         const bytes = new Array<number>();
         for (let c = 0; c < hex.length; c += 2) {
-            bytes.push(parseInt(hex.substr(c, 2), 16));
+            bytes.push(parseInt(hex.substring(c, c + 2), 16));
         }
         return bytes;
     }
@@ -166,8 +166,8 @@ export class StringUtils {
      **/
     public static bytesToHex(bytes: Array<number>): string {
         const hex = Array<string>();
-        for (let i = 0; i < bytes.length; i++) {
-            const current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+        for (const element of bytes) {
+            const current = element < 0 ? element + 256 : element;
             hex.push((current >>> 4).toString(16));
             hex.push((current & 0xF).toString(16));
         }

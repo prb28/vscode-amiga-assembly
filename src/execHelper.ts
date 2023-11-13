@@ -33,17 +33,18 @@ export class ExecutorHelper {
      * @param parser Parser for the output
      * @param logEmitter Log event emitter
      */
-    runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: any, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken, logEmitter?: vscode.EventEmitter<string>): Promise<ICheckResult[]> {
+    runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: NodeJS.ProcessEnv | undefined, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken, logEmitter?: vscode.EventEmitter<string>): Promise<ICheckResult[]> {
         return new Promise((resolve, reject) => {
-            const options: any = {
-                env: env
+            const options: cp.ExecFileOptionsWithBufferEncoding = {
+                env: env,
+                encoding: null
             };
             if (cwd) {
                 options.cwd = cwd;
             }
             const p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
                 try {
-                    if (err && (<any>err).code === 'ENOENT') {
+                    if (err && err.code === 'ENOENT') {
                         const errorMessage = `Cannot find ${cmd} : ${err.message}`;
                         if (logEmitter) {
                             logEmitter.fire(errorMessage + '\r\n');
@@ -100,7 +101,7 @@ export class ExecutorHelper {
     private addKillToCancellationToken(p: cp.ChildProcess, token?: vscode.CancellationToken) {
         if (token) {
             token.onCancellationRequested(() => {
-                if (p && p.pid) {
+                if (p?.pid) {
                     this.killTree(p.pid);
                 }
             });
@@ -115,19 +116,19 @@ export class ExecutorHelper {
      * @param env Environment variables
      * @param token Cancellation token
      */
-    runToolRetrieveStdout(args: string[], cwd: string | null, cmd: string, env: any, token?: vscode.CancellationToken): Promise<string> {
+    runToolRetrieveStdout(args: string[], cwd: string | null, cmd: string, env: NodeJS.ProcessEnv | undefined, token?: vscode.CancellationToken): Promise<string> {
         return new Promise((resolve, reject) => {
-            const options: any = {
+            const options: cp.ExecFileOptions = {
                 env: env
             };
             if (cwd) {
                 options.cwd = cwd;
             }
-            const p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
+            const p = cp.execFile(cmd, args, options, (err, stdout) => {
                 try {
                     let bufferOut = "";
                     if (err) {
-                        if ((<any>err).code === 'ENOENT') {
+                        if (err.code === 'ENOENT') {
                             throw new Error(`Cannot find ${cmd}`);
                         } else if (err.message) {
                             bufferOut += err.message;
@@ -152,7 +153,7 @@ export class ExecutorHelper {
                 vscode.window.showErrorMessage(error.msg);
             } else {
                 let canonicalFile;
-                if (document && document.fileName.endsWith(error.file)) {
+                if (document?.fileName.endsWith(error.file)) {
                     canonicalFile = document.uri.toString();
                 } else {
                     canonicalFile = vscode.Uri.file(error.file).toString();
@@ -312,7 +313,7 @@ export class ExecutorHelper {
         }
         // fall back to the first workspace
         const folders = vscode.workspace.workspaceFolders;
-        if (folders && folders.length) {
+        if (folders?.length) {
             return folders[0].uri.fsPath;
         }
         return ".";

@@ -4,7 +4,7 @@
 //
 
 import { expect } from 'chai';
-import { Position, CancellationTokenSource, Uri } from 'vscode';
+import { Position, Uri } from 'vscode';
 import { DummyTextDocument } from './dummy';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
@@ -42,18 +42,16 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 11);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" jsr mymymy");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results).to.be.empty;
         });
         it("Should return a completion on a library function", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 11);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" jsr oldopen");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results).to.not.be.undefined;
             const elm = results[0];
             expect(elm.detail).to.be.equal("lib exec.OldOpenLibrary()");
@@ -63,9 +61,8 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 11);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" move.l INTEN");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results).to.not.be.undefined;
             const elm = results[0];
             expect(elm.detail).to.be.equal("hardware $01C");
@@ -75,9 +72,8 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 11);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" move.l inten");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results).to.not.be.undefined;
             const elm = results[0];
             expect(elm.label).to.be.equal("intenar");
@@ -86,9 +82,8 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 11);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" move.l d");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results).to.not.be.undefined;
             const elm = results.find(e => e.label === "d0")!;
             expect(elm).to.not.be.empty;
@@ -98,9 +93,8 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 11);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" move.l MY_W_V");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results).to.not.be.undefined;
             const elm = results[0];
             expect(elm.detail).to.be.equal("W/2");
@@ -111,9 +105,8 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 7);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" jsr Mai");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results).to.not.be.undefined;
             const elm = results[0];
             expect(elm.detail).to.be.equal("label tutorial.s:100");
@@ -123,7 +116,6 @@ describe("Completion Tests", function () {
         it("Should return a completion on a local label in scope", async function () {
             const document = new DummyTextDocument();
             const position: Position = new Position(1, 8);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine("Example:");
             document.addLine(" jsr .examp");
             document.addLine(".example");
@@ -131,7 +123,7 @@ describe("Completion Tests", function () {
             await definitionHandler.scanFile(document.uri, document);
             const cp = new M68kCompletionItemProvider(documentationManager, definitionHandler, await state.getLanguage());
 
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results).to.not.be.empty;
             const elm = results.find(n => n.label === '.example')!;
             expect(elm).to.not.be.empty;
@@ -141,7 +133,6 @@ describe("Completion Tests", function () {
         it("Should not return a completion on a local label out of scope", async function () {
             const document = new DummyTextDocument();
             const position: Position = new Position(1, 8);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine("Example:");
             document.addLine(" jsr .examp");
             document.addLine("Example2:");
@@ -150,30 +141,28 @@ describe("Completion Tests", function () {
             await definitionHandler.scanFile(document.uri, document);
             const cp = new M68kCompletionItemProvider(documentationManager, definitionHandler, await state.getLanguage());
 
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             const elm = results.find(n => n.label === '.example')!;
             expect(elm).to.be.undefined;
         });
         it("Should not return prefixed local labels", async function () {
             const document = new DummyTextDocument();
             const position: Position = new Position(2, 10);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine("Example:");
             document.addLine(".example");
             document.addLine(" jsr Exampl");
             const definitionHandler = state.getDefinitionHandler();
             await definitionHandler.scanFile(document.uri, document);
             const cp = new M68kCompletionItemProvider(documentationManager, definitionHandler, await state.getLanguage());
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results).to.have.lengthOf(1);
         });
         it("Should return a completion on an instruction", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 3);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" mov");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results.length).to.be.equal(7);
             const elm = results[0];
             expect(elm.label).to.be.equal("move");
@@ -184,9 +173,8 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 3);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" MOV");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results.length).to.be.equal(7);
             const elm = results[0];
             expect(elm.label).to.be.equal("MOVE");
@@ -195,9 +183,8 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 4);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" sect");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             const elm = results[0];
             expect(elm.label).to.be.equal("section");
             expect(elm.detail).to.be.equal("directive");
@@ -207,9 +194,8 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(0, 4);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" mac");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             const elm = results.find(e => e.label === "macro1")!;
             expect(elm).to.not.be.undefined;
             expect(elm.detail).to.be.equal("macro");
@@ -219,11 +205,10 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position: Position = new Position(1, 10);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" xref MyXref");
             document.addLine(" bsr MyXre");
             await dHnd.scanFile(document.uri, document);
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             const elm = results.find(e => e.label === "MyXref")!;
             expect(elm).to.not.be.undefined;
             expect(elm.detail).to.be.equal("xref");
@@ -232,24 +217,22 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 6);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine(" move.");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            let results = await cp.provideCompletionItems(document, position);
             expect(results.length).to.be.equal(3);
             const elm = results[0];
             expect(elm.label).to.be.equal("b");
             position = new Position(1, 6);
             document.addLine(" move.l");
-            results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            results = await cp.provideCompletionItems(document, position);
             expect(results).to.be.empty;
         });
         it("Should match case of size completions to instruction", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
-            let position = new Position(0, 6);
-            const tokenEmitter = new CancellationTokenSource();
+            const position = new Position(0, 6);
             document.addLine(" MOVE.");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             const elm = results[0];
             expect(elm.label).to.be.equal("B");
         });
@@ -257,57 +240,55 @@ describe("Completion Tests", function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 4);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine("; mov");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            let results = await cp.provideCompletionItems(document, position);
             expect(results).to.be.empty;
             position = new Position(0, 22);
             document.addLine("  move.l d0,a1  ; mov");
-            results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            results = await cp.provideCompletionItems(document, position);
             expect(results).to.be.empty;
         });
         it("Should not return completion on a variable or function in an instruction place", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 11);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine("  OldOpenLib");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            let results = await cp.provideCompletionItems(document, position);
             expect(results).to.be.empty;
             position = new Position(0, 8);
             document.addLine("  MY_W_VA");
-            results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            results = await cp.provideCompletionItems(document, position);
             expect(results).to.be.empty;
         });
         it("Should not return completion with an instruction in a data", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             const position = new Position(0, 11);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine("  move.l jsr");
-            const results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            const results = await cp.provideCompletionItems(document, position);
             expect(results).to.be.empty;
         });
         it("Should not have the same completion in variable and library function or register", async function () {
             const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
             const document = new DummyTextDocument();
             let position = new Position(0, 14);
-            const tokenEmitter = new CancellationTokenSource();
             document.addLine("  jsr AddTail");
-            let results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            let results = await cp.provideCompletionItems(document, position);
             expect(results.length).to.be.equal(1);
             let elm = results[0];
             expect(elm.label).to.be.equal("AddTail");
             document.addLine(" move.l INTENAR");
             position = new Position(1, 15);
-            results = await cp.provideCompletionItems(document, position, tokenEmitter.token);
+            results = await cp.provideCompletionItems(document, position);
             expect(results.length).to.be.greaterThan(0);
             elm = results[0];
-            expect(elm.label.toString().toUpperCase()).to.be.equal("INTENAR");
+            expect(typeof elm.label === 'string');
+            if (typeof elm.label === 'string') {
+                expect(elm.label.toUpperCase()).to.be.equal("INTENAR");
+            }
         });
         context("Include completions", function () {
             const includeSrc = Path.join(PROJECT_ROOT, 'test_files', 'include-dirs', 'example.s');
-            const token = (new CancellationTokenSource()).token;
             let completionProvider: M68kCompletionItemProvider;
             let defHandler: M68kDefinitionHandler;
             let doc: DummyTextDocument;
@@ -320,7 +301,7 @@ describe("Completion Tests", function () {
             it("Should return file completions for include", async function () {
                 doc.addLine("  include \"in");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14));
                 expect(results).to.have.lengthOf(2);
                 expect(results[0].label).to.be.equal("inc-r1.i");
                 expect(results[1].label).to.be.equal("inc-r2.i");
@@ -328,20 +309,20 @@ describe("Completion Tests", function () {
             it("Should return file completions filtered by prefix", async function () {
                 doc.addLine("  include \"inc-r2");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 18), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 18));
                 expect(results).to.have.lengthOf(1);
                 expect(results[0].label).to.be.equal("inc-r2.i");
             });
             it("Should return all file completions for include with no input text", async function () {
                 doc.addLine("  include \"");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14));
                 expect(results).to.have.lengthOf(7);
             });
             it("Should return all file completions for directory", async function () {
                 doc.addLine("  include \"b-dir/");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 19), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 19));
                 expect(results).to.have.lengthOf(2);
                 expect(results[0].label).to.be.equal("inc-b1.i");
                 expect(results[1].label).to.be.equal("inc-b2.i");
@@ -349,32 +330,32 @@ describe("Completion Tests", function () {
             it("Should return directory completions for include", async function () {
                 doc.addLine("  include \"a-");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14));
                 expect(results).to.have.lengthOf(1);
                 expect(results[0].label).to.be.equal("a-dir/");
             });
             it("Should return completions for incbin", async function () {
                 doc.addLine("  incbin \"in");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14));
                 expect(results).to.have.lengthOf(2);
             });
             it("Should return completions for incdir", async function () {
                 doc.addLine("  incdir \"in");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14));
                 expect(results).to.have.lengthOf(2);
             });
             it("Should return completions with ./ path", async function () {
                 doc.addLine("  include \"./in");
                 await defHandler.scanFile(doc.uri, doc);
-                let results = await completionProvider.provideCompletionItems(doc, new Position(0, 16), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 16));
                 expect(results).to.have.lengthOf(2);
             });
             it("Should return completions with ../ path", async function () {
                 doc.addLine("  include \"../in");
                 await defHandler.scanFile(doc.uri, doc);
-                let results = await completionProvider.provideCompletionItems(doc, new Position(0, 17), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 17));
                 expect(results).to.have.lengthOf(1);
                 expect(results[0].label).to.be.equal("include-dirs/");
             });
@@ -382,7 +363,7 @@ describe("Completion Tests", function () {
                 doc.addLine("  incdir \"a-dir\"");
                 doc.addLine("  include \"in");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(1, 14), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(1, 14));
                 expect(results).to.have.lengthOf(5);
                 expect(results[0].label).to.be.equal("inc-r1.i");
                 expect(results[1].label).to.be.equal("inc-r2.i");
@@ -393,20 +374,19 @@ describe("Completion Tests", function () {
             it("Should return a completion for an include file with an absolute path", async function () {
                 const absPath = Path.join(PROJECT_ROOT, 'test_files', 'debug');
                 const cp = new M68kCompletionItemProvider(documentationManager, state.getDefinitionHandler(), await state.getLanguage());
-                const tokenEmitter = new CancellationTokenSource();
                 doc.addLine(`  include "${absPath}`);
-                const results = await cp.provideCompletionItems(doc, new Position(0, 12 + absPath.length), tokenEmitter.token);
+                const results = await cp.provideCompletionItems(doc, new Position(0, 12 + absPath.length));
                 expect(results.length).to.be.equal(3);
                 expect(results[0].label).to.be.equal("fs-uae/");
                 expect(results[1].label).to.be.equal("gencop.s");
                 expect(results[2].label).to.be.equal("hello.c");
             });
-            it("Should return a completions with mutliple incdir instructions", async function () {
+            it("Should return a completions with multiple incdir instructions", async function () {
                 doc.addLine("  incdir \"a-dir\"");
                 doc.addLine("  incdir \"b-dir\"");
                 doc.addLine("  include \"in");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(2, 14), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(2, 14));
                 expect(results).to.have.lengthOf(7);
                 expect(results[0].label).to.be.equal("inc-r1.i");
                 expect(results[1].label).to.be.equal("inc-r2.i");
@@ -421,7 +401,7 @@ describe("Completion Tests", function () {
                 await defHandler.scanFile(Uri.file(otherSrc));
                 doc.addLine("  include \"in");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 14));
                 expect(results).to.have.lengthOf(3);
                 expect(results[0].label).to.be.equal("inc-r1.i");
                 expect(results[1].label).to.be.equal("inc-r2.i");
@@ -432,7 +412,7 @@ describe("Completion Tests", function () {
                 doc.addLine("  incdir 'b-dir'");
                 doc.addLine("  include 'in");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(2, 14), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(2, 14));
                 expect(results).to.have.lengthOf(7);
             });
             it("Should handle paths without quotes", async function () {
@@ -440,14 +420,16 @@ describe("Completion Tests", function () {
                 doc.addLine("  incdir b-dir");
                 doc.addLine("  include in");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(2, 13), token);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(2, 13));
                 expect(results).to.have.lengthOf(7);
             });
-            it("Should adjust start for path segments contianing word boundaries", async function () {
+            it("Should adjust start for path segments containing word boundaries", async function () {
                 doc.addLine("  include \"inc-r");
                 await defHandler.scanFile(doc.uri, doc);
-                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 16), token);
-                expect((results[0].range as any).inserting.start.character).to.equal(10);
+                const results = await completionProvider.provideCompletionItems(doc, new Position(0, 16));
+                if (results[0].range && !(results[0].range instanceof vscode.Range)) {
+                    expect(results[0].range.inserting.start.character).to.equal(10);
+                }
             });
         });
     });

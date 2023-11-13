@@ -14,7 +14,7 @@ export class AsmONE {
 	rxAuto: RegExp;
 
 	constructor() {
-		this.rxAuto = RegExp(".*AUTO.*", "gi");
+		this.rxAuto = /.*AUTO.*/gi;
 	}
 
 	/**
@@ -25,8 +25,8 @@ export class AsmONE {
 	public async Auto(filesURI: Uri[], exeFile: Uri): Promise<void> {
 		try {
 			let symbols = new Array<SourceSymbol>();
-			for (let i = 0; i < filesURI.length; i++) {
-				const src = filesURI[i].fsPath;
+			for (const element of filesURI) {
+				const src = element.fsPath;
 				const autos = this.findAutos(src);
 				if (0 === autos.length) {
 					continue;
@@ -58,7 +58,7 @@ export class AsmONE {
 		for (const err of errToFilter) {
 			if (err.severity.toUpperCase() === "WARNING") {
 				// remove auto warning message
-				if (err.msgData.match(this.rxAuto)) {
+				if (RegExp(this.rxAuto).exec(err.msgData)) {
 					continue;
 				}
 			}
@@ -105,8 +105,8 @@ export class AsmONE {
 	private async loadExeSymbols(exeFile: Uri): Promise<SourceSymbol[]> {
 		const symbols = new Array<SourceSymbol>();
 		const hunks = await parseHunksFromFile(exeFile.fsPath);
-		for (let i = 0; i < hunks.length; i++) {
-			const hunk: Hunk = hunks[i];
+		for (const element of hunks) {
+			const hunk: Hunk = element;
 			if (!hunk.symbols) {
 				continue;
 			}
@@ -129,9 +129,9 @@ export class AsmONE {
 
 	private findExeOffset(dest: string, symbols: SourceSymbol[]): number {
 		const offset = -1;
-		for (let i = 0; i < symbols.length; i++) {
-			if (dest === symbols[i].name) {
-				return symbols[i].offset;
+		for (const element of symbols) {
+			if (dest === element.name) {
+				return element.offset;
 			}
 		}
 		return offset;

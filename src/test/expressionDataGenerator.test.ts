@@ -1,7 +1,7 @@
 // The module 'chai' provides assertion methods from node
 import { expect } from 'chai';
 import { ExpressionDataGenerator, ExpressionDataVariable, OutputDataType, ExpressionDataGeneratorSerializer, DataGeneratorCodeLensProvider } from '../expressionDataGenerator';
-import { Uri, Position, window, CancellationTokenSource, commands } from "vscode";
+import { Uri, Position, window, commands } from "vscode";
 import { fail } from 'assert';
 
 describe("Expression data generator", function () {
@@ -202,13 +202,12 @@ describe("Expression data generator", function () {
             await commands.executeCommand('workbench.action.closeActiveEditor');
         });
         it("should locate codelens / resolve and apply", async () => {
-            const tokenEmitter = new CancellationTokenSource();
             const prov = new DataGeneratorCodeLensProvider();
             const editor = window.activeTextEditor;
             // tslint:disable-next-line:no-unused-expression
             expect(editor).to.not.be.undefined;
             if (editor) {
-                const codeLens = await prov.provideCodeLenses(editor.document, tokenEmitter.token);
+                const codeLens = await prov.provideCodeLenses(editor.document);
                 expect(codeLens.length).to.be.equal(1);
                 const range = codeLens[0].range;
                 expect(range.start).to.be.eql(new Position(0, 0));
@@ -217,7 +216,7 @@ describe("Expression data generator", function () {
                 // resolve
                 const cl = codeLens[0];
                 if (cl && prov.resolveCodeLens) {
-                    const resolved = await prov.resolveCodeLens(cl, tokenEmitter.token);
+                    const resolved = await prov.resolveCodeLens(cl);
                     // tslint:disable-next-line: no-unused-expression
                     expect(resolved.isResolved).to.be.true;
                     if (resolved.command) {

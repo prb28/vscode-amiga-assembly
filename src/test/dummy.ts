@@ -47,7 +47,6 @@ export class DummyTextDocument implements TextDocument {
         let s = "";
         let startLine = 0;
         let endLine = this.lineCount;
-        let startChar = -1;
         let endChar = -1;
         if (range) {
             if (range.start.line === range.end.line) {
@@ -56,22 +55,17 @@ export class DummyTextDocument implements TextDocument {
             } else {
                 startLine = range.start.line;
                 endLine = range.end.line;
-                startChar = range.start.character;
                 endChar = range.end.character;
             }
         }
-        if (startChar >= 0) {
-            s += this.lineAt(startLine).text;
-        } else {
-            s += this.lineAt(startLine).text;
-        }
+        s += this.lineAt(startLine).text;
         for (let i = startLine + 1; i < endLine - 1; i++) {
             s += this.lineAt(startLine).text;
         }
         if (endChar >= 0) {
             s += this.lineAt(startLine).text.substring(0, endChar);
         } else {
-            s += this.lineAt(startLine);
+            s += this.lineAt(startLine).text;
         }
         return s;
     }

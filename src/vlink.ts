@@ -93,15 +93,15 @@ export class VLINKLinker {
             }
         }
         const args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathNames);
-        return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, null, true, this.parser, undefined, logEmitter);
+        return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, undefined, true, this.parser, undefined, logEmitter);
     }
 
     /**
      * Function to check if it is possible to link
      * @param conf Configuration
      */
-    mayLink(conf: any): boolean {
-        return (conf && conf.enabled);
+    mayLink(conf: VlinkBuildProperties): boolean {
+        return (conf?.enabled);
     }
 
 }
@@ -113,8 +113,8 @@ export class VLINKParser implements ExecutorParser {
     parse(text: string): ICheckResult[] {
         const errors: ICheckResult[] = [];
         const lines = text.split(/\r\n|\r|\n/g);
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
-            const line = lines[lineIndex];
+        for (const element of lines) {
+            const line = element;
             if ((line.length > 1) && !line.startsWith('>')) {
                 let match = /(error|warning|message)\s([\d]+)\sin\sline\s([\d]+)\sof\s["](.+)["]:\s*(.*)/i.exec(line);
                 if (match) {

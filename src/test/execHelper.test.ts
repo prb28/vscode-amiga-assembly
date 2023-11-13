@@ -112,7 +112,7 @@ describe("Executor Tests", function () {
             warning2.line = 1;
             warning2.msg = "warn0";
             warning2.severity = "warning";
-            await ex.handleDiagnosticErrors(document, [error, warning, warning2], undefined);
+            await ex.handleDiagnosticErrors(document, [error, warning, warning2]);
             verify(spiedErrorDiagnosticCollection.clear()).never();
             verify(spiedWarningDiagnosticCollection.clear()).never();
             let [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
@@ -188,7 +188,7 @@ describe("Executor Tests", function () {
                 includedFileError.line = 1;
                 includedFileError.msg = "errorin0";
                 includedFileError.severity = "error";
-                await ex.handleDiagnosticErrors(sourceDocument, [includedFileError], undefined);
+                await ex.handleDiagnosticErrors(sourceDocument, [includedFileError]);
                 const [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
                 if (newErrors instanceof Array) {
                     expect(newErrors.length).to.be.equal(1);

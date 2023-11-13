@@ -159,7 +159,7 @@ export interface DocumentationLazy {
     loadDescription(): Promise<void>;
 }
 
-export function isDocumentationLazy(el: any): el is DocumentationLazy {
+export function isDocumentationLazy(el: unknown): el is DocumentationLazy {
     return (el as DocumentationLazy).loadDescription !== undefined;
 }
 
