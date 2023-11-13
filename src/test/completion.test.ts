@@ -282,7 +282,7 @@ describe("Completion Tests", function () {
             results = await cp.provideCompletionItems(document, position);
             expect(results.length).to.be.greaterThan(0);
             elm = results[0];
-            expect(typeof elm.label === 'string');
+            expect(typeof elm.label).to.be.eq('string');
             if (typeof elm.label === 'string') {
                 expect(elm.label.toUpperCase()).to.be.equal("INTENAR");
             }
