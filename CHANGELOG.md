@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [1.8.5] - 2023-11-15
+- [Issue #263](https://github.com/prb28/vscode-amiga-assembly/issues/263) Traps are not processed properly
+
 ### [1.8.4] - 2023-11-14
 - [Issue #274](https://github.com/prb28/vscode-amiga-assembly/issues/274) Error message in disassembly view
 
