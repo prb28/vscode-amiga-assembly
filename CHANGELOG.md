@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [1.8.6] - 2023-11-18
+- [Issue #263](https://github.com/prb28/vscode-amiga-assembly/issues/263) Traps are not processed properly / regression stop on start
+
 ### [1.8.5] - 2023-11-15
 - [Issue #263](https://github.com/prb28/vscode-amiga-assembly/issues/263) Traps are not processed properly
 
