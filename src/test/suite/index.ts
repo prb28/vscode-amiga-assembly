@@ -28,7 +28,7 @@ export async function run(): Promise<void> {
             }
         },
         color: true,
-        timeout: 120000
+        timeout: 60000
     });
 
     // Add all files to the test suite
