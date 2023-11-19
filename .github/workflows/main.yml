@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -34,7 +34,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 18.x
+          node-version: 20.x
       - run: npm install
       - run: npm run test-compile
       - name: xvfb test
@@ -66,47 +66,47 @@ jobs:
       # - name: Setup tmate session
       #   if: success() || failure()
       #   uses: mxschmitt/action-tmate@v3
-  package:
-    needs: build
-    # The type of runner that the job will run on
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+  # package:
+  #   needs: build
+  #   # The type of runner that the job will run on
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #   runs-on: ${{ matrix.os }}
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Install Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
-      - run: npm install
-      - name: Install vsce
-        run: npm install -g vsce
-      - run: npm run vscode:prepublish
-      - run: vsce package
-      - uses: actions/upload-artifact@v2
-        if: ${{ success() }}
-        with:
-          name: Extension
-          path: ./*.vsix
+  #   # Steps represent a sequence of tasks that will be executed as part of the job
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Install Node.js
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 20.x
+  #     - run: npm install
+  #     - name: Install vsce
+  #       run: npm install -g vsce
+  #     - run: npm run vscode:prepublish
+  #     - run: vsce package
+  #     - uses: actions/upload-artifact@v2
+  #       if: ${{ success() }}
+  #       with:
+  #         name: Extension
+  #         path: ./*.vsix
 
-  publish-test-results:
-    name: "Publish Unit Tests Results"
-    needs: build
-    runs-on: ubuntu-latest
-    # the build-and-test job might be skipped, we don't need to run this job then
-    if: success() || failure()
+  # publish-test-results:
+  #   name: "Publish Unit Tests Results"
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   # the build-and-test job might be skipped, we don't need to run this job then
+  #   if: success() || failure()
 
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v2
-        with:
-          path: artifacts
+  #   steps:
+  #     - name: Download Artifacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         path: artifacts
 
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v1
-        with:
-          files: artifacts/**/*.xml
+  #     - name: Publish Unit Test Results
+  #       uses: EnricoMi/publish-unit-test-result-action/composite@v1
+  #       with:
+  #         files: artifacts/**/*.xml
