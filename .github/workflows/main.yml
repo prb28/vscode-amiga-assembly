@@ -30,9 +30,9 @@ jobs:
         run: sudo apt-get update; sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libopenal-dev libalut-dev libsdl2-2.0-0 libpng-dev mpeg2dec libmpeg2-4 libmpeg2-4-dev libsdl2-dev libsdl2-ttf-2.0-0 libopenal-dev libopenal-data libopenal1
         if: runner.os == 'Linux'
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 20.x
       - run: npm install
@@ -53,7 +53,7 @@ jobs:
         run: mv test-results.xml test-results-${{ matrix.os }}.xml
       - name: Upload Unit Test Results
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Unit Test Results
           path: test-results*.xml
