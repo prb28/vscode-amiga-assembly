@@ -1005,7 +1005,7 @@
 		"axios": "^1.6.1",
 		"extract-zip": "^2.0.1",
 		"glob": "^10.3.10",
-		"uae-dap": "^1.0.7",
+		"uae-dap": "^1.1.4",
 		"uuid": "^9.0.1",
 		"winston": "^3.11.0",
 		"winston-transport": "^4.6.0"
