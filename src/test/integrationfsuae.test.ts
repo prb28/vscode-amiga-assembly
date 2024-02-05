@@ -65,12 +65,8 @@ describe('FS-UAE Integration test', () => {
         await vasm.buildWorkspace(undefined, vasmBuildProperties, vlinkBuildProperties);
         launchArgs.program = path.join(tempDir, "uae", "dh0", "gencop");
         launchArgs.emulatorArgs = [
-            "--automatic_input_grab=0",
-            "--chip_memory=1024",
             `--hard_drive_0=${tempDir}/uae/dh0`,
-            "--joystick_port_1=none",
-            "--amiga_model=A1200",
-            "--slow_memory=1792"
+            "--automatic_input_grab=0"
         ]
 
         launchArgs.options = [];
