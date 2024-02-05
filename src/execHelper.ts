@@ -37,7 +37,8 @@ export class ExecutorHelper {
         return new Promise((resolve, reject) => {
             const options: cp.ExecFileOptionsWithBufferEncoding = {
                 env: env,
-                encoding: null
+                encoding: null,
+                shell: true
             };
             if (cwd) {
                 options.cwd = cwd;
@@ -75,7 +76,13 @@ export class ExecutorHelper {
 
                     let ret: ICheckResult[] = [];
                     if (stdout || (useStdErr && stderr)) {
-                        const text = ((useStdErr && stderr) ? stderr : stdout).toString();
+                        let text = ""
+                        if (stdout) {
+                            text += stdout.toString()
+                        }
+                        if (useStdErr && stderr) {
+                            text += stderr.toString()
+                        }
                         if (logEmitter) {
                             logEmitter.fire(text + '\r\n');
                         }
