@@ -27,7 +27,7 @@ describe("Executor Tests", function () {
         const spiedCp = spy(cp);
         const cpMock: cp.ChildProcess = imock();
         const cpMockInstance: cp.ChildProcess = instance(cpMock);
-        const f = (cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
+        const f = (cmd: string, args: string[], options: unknown, callback: ((error: Error, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
             callback(new Error('notgood'), stdoutText, null);
             return cpMockInstance;
         };
@@ -52,7 +52,7 @@ describe("Executor Tests", function () {
         const spiedCp = spy(cp);
         const cpMock: cp.ChildProcess = imock();
         const cpMockInstance: cp.ChildProcess = instance(cpMock);
-        const f = (cmd: string, args: string[], options: any, callback: ((error: Error, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
+        const f = (cmd: string, args: string[], options: unknown, callback: ((error: Error, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
             callback(new Error('notgood'), "", stderrText);
             return cpMockInstance;
         };
@@ -115,7 +115,7 @@ describe("Executor Tests", function () {
             await ex.handleDiagnosticErrors(document, [error, warning, warning2]);
             verify(spiedErrorDiagnosticCollection.clear()).never();
             verify(spiedWarningDiagnosticCollection.clear()).never();
-            let [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
+            let [fileUri, newErrors] = capture<vscode.Uri, readonly vscode.Diagnostic[] | undefined>(spiedErrorDiagnosticCollection.set).last();
             if (newErrors instanceof Array) {
                 expect(newErrors.length).to.be.equal(1);
                 expect(newErrors[0].message).to.be.equal(error.msg);
@@ -127,7 +127,7 @@ describe("Executor Tests", function () {
             } else {
                 expect.fail("FileUri should be defined and be a uri");
             }
-            [fileUri, newErrors] = capture(spiedWarningDiagnosticCollection.set).last();
+            [fileUri, newErrors] = capture<vscode.Uri, readonly vscode.Diagnostic[] | undefined>(spiedWarningDiagnosticCollection.set).last();
             if (newErrors instanceof Array) {
                 expect(newErrors.length).to.be.equal(1);
                 expect(newErrors[0].message).to.be.equal(warning.msg);
@@ -144,7 +144,7 @@ describe("Executor Tests", function () {
             await ex.handleDiagnosticErrors(document, errors, vscode.DiagnosticSeverity.Error);
             verify(spiedErrorDiagnosticCollection.clear()).never();
             verify(spiedWarningDiagnosticCollection.clear()).never();
-            const [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
+            const [fileUri, newErrors] = capture<vscode.Uri, readonly vscode.Diagnostic[] | undefined>(spiedErrorDiagnosticCollection.set).last();
             if (newErrors instanceof Array) {
                 expect(newErrors.length).to.be.equal(1);
                 expect(newErrors[0].message).to.be.equal(error.msg);
@@ -162,7 +162,7 @@ describe("Executor Tests", function () {
             await ex.handleDiagnosticErrors(document, errors, vscode.DiagnosticSeverity.Warning);
             verify(spiedErrorDiagnosticCollection.clear()).never();
             verify(spiedWarningDiagnosticCollection.clear()).never();
-            const [fileUri, newErrors] = capture(spiedWarningDiagnosticCollection.set).last();
+            const [fileUri, newErrors] = capture<vscode.Uri, readonly vscode.Diagnostic[] | undefined>(spiedWarningDiagnosticCollection.set).last();
             if (newErrors instanceof Array) {
                 expect(newErrors.length).to.be.equal(1);
                 expect(newErrors[0].message).to.be.equal(warning.msg);
@@ -189,7 +189,7 @@ describe("Executor Tests", function () {
                 includedFileError.msg = "errorin0";
                 includedFileError.severity = "error";
                 await ex.handleDiagnosticErrors(sourceDocument, [includedFileError]);
-                const [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
+                const [fileUri, newErrors] = capture<vscode.Uri, readonly vscode.Diagnostic[] | undefined>(spiedErrorDiagnosticCollection.set).last();
                 if (newErrors instanceof Array) {
                     expect(newErrors.length).to.be.equal(1);
                     expect(newErrors[0].message).to.be.equal(error.msg);
@@ -214,7 +214,7 @@ describe("Executor Tests", function () {
                 error2.msg = "Link Error 21(CODE+0xc): Reference to undefined symbol _LVOCloseLibrary.";
                 error2.severity = "error";
                 await ex.handleDiagnosticErrors(undefined, [error, error2], vscode.DiagnosticSeverity.Error);
-                const [fileUri, newErrors] = capture(spiedErrorDiagnosticCollection.set).last();
+                const [fileUri, newErrors] = capture<vscode.Uri, readonly vscode.Diagnostic[] | undefined>(spiedErrorDiagnosticCollection.set).last();
                 if (newErrors instanceof Array) {
                     expect(newErrors.length).to.be.equal(2);
                     expect(newErrors[0].message).to.be.equal(error.msg);
@@ -236,6 +236,7 @@ describe("Executor Tests", function () {
 });
 
 class DummyParser implements ExecutorParser {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     parse(text: string): ICheckResult[] {
         return [];
     }
