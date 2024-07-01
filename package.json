@@ -11,7 +11,7 @@
 		"type": "git",
 		"url": "https://github.com/prb28/vscode-amiga-assembly"
 	},
-	"version": "1.8.9",
+	"version": "1.8.10",
 	"publisher": "prb28",
 	"engines": {
 		"vscode": "^1.90.0"
