@@ -1,4 +1,4 @@
-# DBC
+# DCB
 
 ## Syntax
 ```assembly

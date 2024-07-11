@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [1.8.11] - pre-release
+- [Issue #308](https://github.com/prb28/vscode-amiga-assembly/issues/308) *neildavis* No documentation for DCB directive 
+
 ### [1.8.10] - stable-release - 2023-07-01
 
 ### [1.8.9] - pre-release

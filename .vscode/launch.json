@@ -7,7 +7,7 @@
     "configurations": [
         {
             "name": "Generate summary",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/scripts/build/genDocSummary.py",
             "console": "integratedTerminal",

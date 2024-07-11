@@ -100,8 +100,8 @@
 |[data_c](directives/data_c.md)|Equivalent to `section data_c,data,chip`|
 |[data_f](directives/data_f.md)|Equivalent to `section data_f,data,fast`|
 |[db](directives/db.md)|Equivalent to `dc.b` for ArgAsm, BAsm, HX68, Macro68, ProAsm, etc. compatibility|
-|[dbc](directives/dbc.md)|Insert `<exp>` zero or `<fill>` bytes/words into the current section|
 |[dc](directives/dc.md)|Assign the integer or string constant operands into successive bytes/words of memory in the current section|
+|[dcb](directives/dcb.md)|Insert `<exp>` zero or `<fill>` bytes/words into the current section|
 |[dl](directives/dl.md)|Equivalent to `dc.l` for ArgAsm, BAsm, HX68, Macro68, ProAsm, etc. compatibility|
 |[dr](directives/dr.md)|Calculates `<expN> - <current pc value>` and stores it into successive bytes/words of memory in the current section|
 |[dw](directives/dw.md)|Equivalent to `dc.w` for ArgAsm, BAsm, HX68, Macro68, ProAsm, etc. compatibility|
