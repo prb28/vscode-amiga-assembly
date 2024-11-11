@@ -84,6 +84,7 @@ export class ExecutorHelper {
                             text += stderr.toString()
                         }
                         if (logEmitter) {
+                            text = text.replace(/\n/g, '\r\n');
                             logEmitter.fire(text + '\r\n');
                         }
                         if (parser) {
@@ -142,7 +143,7 @@ export class ExecutorHelper {
                         }
                     }
                     if (stdout) {
-                        bufferOut += "\n" + stdout.toString();
+                        bufferOut += stdout.toString() + '\n';
                     }
                     resolve(bufferOut);
                 } catch (e) {
