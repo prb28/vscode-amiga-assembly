@@ -11,7 +11,7 @@
 		"type": "git",
 		"url": "https://github.com/prb28/vscode-amiga-assembly"
 	},
-	"version": "1.8.11",
+	"version": "1.8.12",
 	"publisher": "prb28",
 	"engines": {
 		"vscode": "^1.90.0"
@@ -967,24 +967,24 @@
 		"publish": "vsce publish"
 	},
 	"devDependencies": {
-		"@johanblumenberg/ts-mockito": "^1.0.43",
+		"@johanblumenberg/ts-mockito": "^1.0.45",
 		"@types/chai": "^4.3.10",
 		"@types/chai-as-promised": "^7.1.8",
-		"@types/mocha": "^10.0.7",
+		"@types/mocha": "^10.0.10",
 		"@types/node": "^20",
 		"@types/temp": "^0.9.4",
-		"@types/unzipper": "^0.10.9",
+		"@types/unzipper": "^0.10.10",
 		"@types/uuid": "^10.0.0",
-		"@types/vscode": "^1.90.0",
-		"@typescript-eslint/eslint-plugin": "^6.20.0",
-		"@typescript-eslint/parser": "^6.20.0",
-		"@vscode/debugadapter-testsupport": "^1.65.0",
-		"@vscode/test-electron": "^2.4.0",
+		"@types/vscode": "^1.95.0",
+		"@typescript-eslint/eslint-plugin": "^8.17.0",
+		"@typescript-eslint/parser": "^8.17.0",
+		"@vscode/debugadapter-testsupport": "^1.68.0",
+		"@vscode/test-electron": "^2.4.1",
 		"chai": "^4.3.10",
 		"chai-as-promised": "^7.1.1",
 		"copy-webpack-plugin": "^12.0.2",
 		"decache": "^4.6.2",
-		"del": "^7.1.0",
+		"del": "^8.0.0",
 		"eslint": "^8.56.0",
 		"eslint-plugin-mocha-no-only": "^1.1.1",
 		"mocha": "^10.2.0",
@@ -993,20 +993,20 @@
 		"temp": "^0.9.4",
 		"ts-loader": "^9.5.1",
 		"tty": "^1.0.1",
-		"typescript": "^5.5.2",
-		"webpack": "^5.92.1",
+		"typescript": "^5.7.2",
+		"webpack": "^5.97.1",
 		"webpack-cli": "^5.1.4"
 	},
 	"dependencies": {
-		"@vscode/debugadapter": "^1.65.0",
-		"@vscode/debugprotocol": "^1.65.0",
+		"@vscode/debugadapter": "^1.68.0",
+		"@vscode/debugprotocol": "^1.68.0",
 		"await-notify": "^1.0.1",
-		"axios": "^1.7.2",
+		"axios": "^1.7.9",
 		"extract-zip": "^2.0.1",
 		"glob": "^10.4.2",
 		"uae-dap": "^1.1.5",
-		"uuid": "^10.0.0",
-		"winston": "^3.13.0",
-		"winston-transport": "^4.7.0"
+		"uuid": "^11.0.3",
+		"winston": "^3.17.0",
+		"winston-transport": "^4.9.0"
 	}
 }
