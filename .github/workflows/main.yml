@@ -51,13 +51,13 @@ jobs:
           CI: true  # This explicitly sets the CI environment variable, although GitHub Actions does this automatically
       - name: Rename Unit Test Results
         if: always()
-        run: mv test-results.xml test-results-${{ matrix.os }}.xml
+        run: mv test-results.xml test-results-${{ matrix.os }}-${{ github.run_id }}.xml
       - name: Upload Unit Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Unit Test Results
-          path: test-results-${{ matrix.os }}.xml
+          path: test-results-*.xml
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
