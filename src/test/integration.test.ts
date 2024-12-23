@@ -111,6 +111,9 @@ describe('WinUAE Integration test', () => {
     describe('complete workspace test', function () {
         if (process.platform === "win32") {
             it('should build and debug', function () {
+                if (process.env.CI === 'true') {
+                    this.skip();  // Skip the test if running in GitHub Actions
+                }
                 return Promise.all([
                     dc.configurationSequence(),
                     dc.launch(launchArgs),

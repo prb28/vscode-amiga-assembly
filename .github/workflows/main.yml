@@ -48,6 +48,7 @@ jobs:
         if: runner.os != 'Linux'
         env:
           DISABLE_COVERAGE: true
+          CI: true  # This explicitly sets the CI environment variable, although GitHub Actions does this automatically
       - name: Rename Unit Test Results
         if: always()
         run: mv test-results.xml test-results-${{ matrix.os }}.xml

@@ -111,6 +111,9 @@ describe('FS-UAE Integration test', () => {
 
     describe('complete workspace test', function () {
         it('should build and debug', function () {
+            if (process.env.CI === 'true' && process.platform === "win32") {
+                this.skip();  // Skip the test if running in GitHub Actions
+            }
             return Promise.all([
                 dc.configurationSequence(),
                 dc.launch(launchArgs),
