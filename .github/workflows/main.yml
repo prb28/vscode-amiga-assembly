@@ -34,7 +34,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
       - run: npm install
       - run: npm run test-compile
       - name: xvfb test
@@ -59,7 +59,7 @@ jobs:
           name: Unit-Test-Results-${{ matrix.os }}-${{ github.run_id }}
           path: test-results-${{ matrix.os }}-${{ github.run_id }}.xml
       - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -82,7 +82,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20.x
       - run: npm install
       - name: Install vsce
         run: npm install -g vsce
@@ -105,7 +105,6 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: Unit-Test-Results-${{ matrix.os }}-${{ github.run_id }}
           path: artifacts
 
       - name: Publish Unit Test Results
