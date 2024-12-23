@@ -1008,5 +1008,8 @@
 		"uuid": "^11.0.3",
 		"winston": "^3.17.0",
 		"winston-transport": "^4.9.0"
+	},
+	"resolutions": {
+		"lru-cache": "10.4.3"
 	}
 }
