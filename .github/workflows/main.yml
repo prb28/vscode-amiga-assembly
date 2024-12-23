@@ -56,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Unit Test Results
-          path: test-results*.xml
+          path: test-results-${{ matrix.os }}.xml
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
@@ -92,22 +92,3 @@ jobs:
         with:
           name: Extension
           path: ./*.vsix
-
-  publish-test-results:
-    name: "Publish Unit Tests Results"
-    needs: build
-    runs-on: ubuntu-latest
-    # the build-and-test job might be skipped, we don't need to run this job then
-    if: success() || failure()
-
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: test-results-${{ matrix.os }}.xml
-          path: artifacts
-
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: artifacts/**/*.xml
