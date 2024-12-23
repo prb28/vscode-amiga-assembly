@@ -57,7 +57,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Unit Test Results
-          path: test-results-*.xml
+          path: test-results-${{ matrix.os }}-${{ github.run_id }}.xml
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
