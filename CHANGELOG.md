@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [1.8.13] - stable-release - 2025-02-17
+- [Issue #319](https://github.com/prb28/vscode-amiga-assembly/pull/319) Build task fails with spaces in filename
+
 ### [1.8.12] - stable-release - 2024-12-23
 - [Issue #313](https://github.com/prb28/vscode-amiga-assembly/pull/313) *mojzesh* vasm console output skewed on macos
 

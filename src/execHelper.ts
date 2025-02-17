@@ -43,7 +43,11 @@ export class ExecutorHelper {
             if (cwd) {
                 options.cwd = cwd;
             }
-            const p = cp.execFile(cmd, args, options, (err, stdout, stderr) => {
+
+            // Quote arguments that contain spaces
+            const quotedArgs = args.map(arg => (arg.includes(' ') ? `"${arg}"` : arg));
+
+            const p = cp.execFile(cmd, quotedArgs, options, (err, stdout, stderr) => {
                 try {
                     if (err && err.code === 'ENOENT') {
                         const errorMessage = `Cannot find ${cmd} : ${err.message}`;
@@ -94,7 +98,7 @@ export class ExecutorHelper {
                     winston.info('');
                     resolve(ret);
                 } catch (e) {
-                    reject(e);
+                    reject(new Error(e));
                 }
             });
             this.addKillToCancellationToken(p, token);
@@ -147,7 +151,7 @@ export class ExecutorHelper {
                     }
                     resolve(bufferOut);
                 } catch (e) {
-                    reject(e);
+                    reject(new Error(e));
                 }
             });
             this.addKillToCancellationToken(p, token);

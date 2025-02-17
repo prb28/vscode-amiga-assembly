@@ -71,6 +71,37 @@ describe("Executor Tests", function () {
         expect(ret[0]).to.be.equal(error);
         expect(capture(mockedDummy.parse).last()[0]).to.be.equal(stderrText);
     });
+    it("Should execute a command with quoted arguments", async () => {
+        const stdoutText = 'My Stdout\ntext';
+        const spiedCp = spy(cp);
+        const cpMock: cp.ChildProcess = imock();
+        const cpMockInstance: cp.ChildProcess = instance(cpMock);
+        const f = (cmd: string, args: string[], options: unknown, callback: ((error: Error, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
+            callback(new Error(), stdoutText, null);
+            return cpMockInstance;
+        };
+        when(spiedCp.execFile('ls', anything(), anything(), anything())).thenCall(f);
+        const ex = new ExecutorHelper();
+        const mockedDummy = mock(DummyParser);
+        const error: ICheckResult = new ICheckResult();
+        error.file = "file";
+        error.line = 0;
+        error.msg = "errorin0";
+        error.severity = "error";
+        when(mockedDummy.parse(anyString())).thenReturn([error]);
+        const spiedParser = instance(mockedDummy);
+        const ret = await ex.runTool(['arg with spaces', 'arg2'], 'mydir', 'error', false, 'ls', {}, false, spiedParser);
+        verify(mockedDummy.parse(anyString())).once();
+        expect(ret[0]).to.be.equal(error);
+        expect(capture(mockedDummy.parse).last()[0]).to.be.equal(stdoutText);
+
+        // Verify that the arguments are quoted correctly
+        const [capturedCmd, capturedArgs] = capture(spiedCp.execFile).last();
+        expect(capturedCmd).to.be.equal('ls');
+        expect(capturedArgs).to.deep.equal(['"arg with spaces"', 'arg2']);
+
+        reset(spiedCp);
+    });
     describe("Diagnostics handle", () => {
         let ex: ExecutorHelper;
         let errorDiagnosticCollection: vscode.DiagnosticCollection;
