@@ -128,7 +128,7 @@ export class ADFTools {
                 if (results?.[0]) {
                     const bootBlockDataFilename = results[0];
                     bootBlockFilename = bootBlockDataFilename.replace(".o", ".bb");
-                    const bootBlockDataFilenameUri = Uri.file(bootBlockDataFilename);
+                    const bootBlockDataFilenameUri = Uri.file(bootBlockFilename);
                     const bootBlockFile = new FileProxy(bootBlockDataFilenameUri);
                     // create the bootblock
                     try {
@@ -136,7 +136,7 @@ export class ADFTools {
                         logEmitter?.fire(`Adding bootblock to ADF\r\n`);
                         await this.writeBootBlockFile(Buffer.from(bootBlock), Uri.file(bootBlockFilename));
                     } catch (err) {
-                        throw new Error(`Error writing boot block '${bootBlockSourceFilename}'`);
+                        throw new Error(`Error writing boot block '${bootBlockSourceFilename}': ${err}`);
                     }
                 }
             } else {
