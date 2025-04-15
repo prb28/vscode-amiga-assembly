@@ -60,7 +60,7 @@ describe("ADFTools test", function () {
         [args, , commandFilename, ,] = capture(mockedExecutor.runToolRetrieveStdout).byCallIndex(i);
         expect(commandFilename).to.be.equal(path.join(rootToolsDir, "adfcopy"));
         expect(args[0]).to.be.equal(adfDiskName);
-        // tslint:disable-next-line:no-unused-expression
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         expect(args[1].indexOf("Startup") >= 0).to.be.true;
         expect(args[2]).to.be.equal("s");
     });

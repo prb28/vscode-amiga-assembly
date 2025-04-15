@@ -228,6 +228,7 @@ describe("Executor Tests", function () {
                     expect.fail("Diagnostic errors should be an array");
                 }
                 if (fileUri instanceof vscode.Uri) {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                     expect(fileUri.path.includes("test_files/sources/include/hw.i")).to.be.true;
                 } else {
                     expect.fail("FileUri should be defined and be a uri");
@@ -256,6 +257,7 @@ describe("Executor Tests", function () {
                     expect.fail("Diagnostic errors should be an array");
                 }
                 if (fileUri instanceof vscode.Uri) {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                     expect(fileUri.path.includes("tutorial.s")).to.be.true;
                 } else {
                     expect.fail("FileUri should be defined and be a uri");
