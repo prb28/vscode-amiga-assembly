@@ -4,13 +4,15 @@
 
 import { expect } from 'chai';
 import { M68kDefinitionHandler } from '../definitionHandler';
-import { Uri, workspace, window, commands, extensions, Selection, Position } from 'vscode';
+import { Uri, workspace, window, commands, extensions, Selection, Position, FoldingRangeKind, SymbolKind } from 'vscode';
 import { DummyTextDocument } from './dummy';
 import * as Path from 'path';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
 import { ExtensionState } from '../extension';
 import { ASMLine } from '../parser';
+import * as sinon from 'sinon';
+import { SymbolFile } from '../symbols';
 
 chai.use(chaiAsPromised);
 
@@ -35,7 +37,7 @@ describe("Definition handler Tests", function () {
         it("Should get a value for a variable", function () {
             expect(dHnd.getVariableValue("COPPER_WAIT")).to.be.equal("$FFFE");
             expect(dHnd.getVariableValue("BPLSIZE")).to.be.equal("(W*H)/8");
-            // tslint:disable-next-line:no-unused-expression
+            // eslint-disable-next-line no-unused-expressions
             expect(dHnd.getVariableValue("XXXXX")).to.be.undefined;
         });
         it("Should evaluate a variable", async function () {
@@ -106,6 +108,89 @@ describe("Definition handler Tests", function () {
             selections = new Array<Selection>();
             selections.push(new Selection(new Position(3, 0), new Position(5, 0)));
             expect(dHnd.findUsedRegisters(document, selections)).to.be.eql(["d0", "d4"]);
+        });
+    });
+    describe("Folding Ranges", function () {
+        const dHnd = new M68kDefinitionHandler();
+        afterEach(() => {
+            // Restore all sinon stubs after each test
+            sinon.restore();
+        });
+        it("Should provide folding ranges for a document", async () => {
+            // Create a dummy document with some content
+            const document = new DummyTextDocument();
+            document.addLine("; Comment line 1");
+            document.addLine("; Comment line 2");
+            document.addLine(" include \"test.i\"");
+            document.addLine(" include \"test3.i\"");
+            document.addLine("label1:");
+            document.addLine("    move.w d0,d1");
+            document.addLine(".label2:");
+            document.addLine("    move.l d1,d2");
+
+            const symbolFile = new SymbolFile(Uri.file("test.s"));
+            symbolFile.readDocument(document);
+
+            sinon.stub(dHnd, "scanFile").resolves(symbolFile);
+
+            // Call the provideFoldingRanges function
+            const foldingRanges = await dHnd.provideFoldingRanges(document);
+
+            // Verify the folding ranges
+            expect(foldingRanges).to.have.length(4);
+            foldingRanges.sort((a, b) => a.start - b.start);
+            expect(foldingRanges[0].start).to.equal(0);
+            expect(foldingRanges[0].end).to.equal(1);
+            expect(foldingRanges[0].kind).to.equal(FoldingRangeKind.Comment);
+            expect(foldingRanges[1].start).to.equal(2);
+            expect(foldingRanges[1].end).to.equal(3);
+            expect(foldingRanges[1].kind).to.equal(FoldingRangeKind.Imports);
+            expect(foldingRanges[2].start).to.equal(4);
+            expect(foldingRanges[2].end).to.equal(7);
+            expect(foldingRanges[2].kind).to.equal(FoldingRangeKind.Region);
+            expect(foldingRanges[3].start).to.equal(6);
+            expect(foldingRanges[3].end).to.equal(7);
+            expect(foldingRanges[3].kind).to.equal(FoldingRangeKind.Region);
+        });
+
+        it("Should provide document symbols for a document", async () => {
+            // Create a dummy document with some content
+            const document = new DummyTextDocument();
+            document.addLine("; Comment line 1");
+            document.addLine("; Comment line 2");
+            document.addLine(" include \"test.i\"");
+            document.addLine(" include \"test3.i\"");
+            document.addLine("FOO = 0x1234");
+            document.addLine("label1:");
+            document.addLine("    move.w d0,d1");
+            document.addLine(".label2:");
+            document.addLine("    move.l d1,d2");
+
+            const symbolFile = new SymbolFile(Uri.file("test.s"));
+            symbolFile.readDocument(document);
+
+            sinon.stub(dHnd, "scanFile").resolves(symbolFile);
+
+            // Call the provideDocumentSymbols function
+            const documentSymbols = await dHnd.provideDocumentSymbols(document);
+
+            // Verify the folding ranges
+            expect(documentSymbols).to.have.length(4);
+            documentSymbols.sort((a, b) => a.range.start.line - b.range.start.line);
+            expect(documentSymbols[0].name).to.equal("test.i");
+            expect(documentSymbols[0].range.start.line).to.equal(2);
+            expect(documentSymbols[1].name).to.equal("test3.i");
+            expect(documentSymbols[1].range.start.line).to.equal(3);
+            expect(documentSymbols[1].kind).to.equal(SymbolKind.File);
+            expect(documentSymbols[2].name).to.equal("FOO");
+            expect(documentSymbols[2].range.start.line).to.equal(4);
+            expect(documentSymbols[2].kind).to.equal(SymbolKind.Constant);
+            expect(documentSymbols[3].name).to.equal("label1");
+            expect(documentSymbols[3].range.start.line).to.equal(5);
+            expect(documentSymbols[3].kind).to.equal(SymbolKind.Class);
+            expect(documentSymbols[3].children[0].name).to.equal("label2");
+            expect(documentSymbols[3].children[0].range.start.line).to.equal(7);
+            expect(documentSymbols[3].children[0].kind).to.equal(SymbolKind.Method);
         });
     });
 });

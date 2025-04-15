@@ -11,7 +11,7 @@
 		"type": "git",
 		"url": "https://github.com/prb28/vscode-amiga-assembly"
 	},
-	"version": "1.8.13",
+	"version": "1.8.14",
 	"publisher": "prb28",
 	"engines": {
 		"vscode": "^1.95.0"
@@ -972,6 +972,7 @@
 		"@types/chai-as-promised": "^7.1.8",
 		"@types/mocha": "^10.0.10",
 		"@types/node": "^20",
+		"@types/sinon": "^17.0.4",
 		"@types/temp": "^0.9.4",
 		"@types/unzipper": "^0.10.10",
 		"@types/uuid": "^10.0.0",
@@ -990,6 +991,7 @@
 		"mocha": "^10.2.0",
 		"mocha-junit-reporter": "^2.2.1",
 		"mocha-multi-reporters": "^1.5.1",
+		"sinon": "^20.0.0",
 		"temp": "^0.9.4",
 		"ts-loader": "^9.5.1",
 		"tty": "^1.0.1",

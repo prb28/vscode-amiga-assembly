@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-types */
-import { Definition, SymbolInformation, DocumentSymbolProvider, DefinitionProvider, TextDocument, Position, Location, Uri, ReferenceProvider, Range, window } from 'vscode';
+import { Definition, FoldingRange, FoldingRangeKind, DocumentSymbol, DocumentSymbolProvider, DefinitionProvider, TextDocument, Position, Location, Uri, ReferenceProvider, Range, window } from 'vscode';
 import * as vscode from 'vscode';
 import { SymbolFile, Symbol } from './symbols';
 import { Calc } from './calc';
@@ -8,71 +7,197 @@ import { FileProxy } from './fsProxy';
 import { StringUtils } from './stringUtils';
 import { logger } from '@vscode/debugadapter';
 
+/**
+ * The M68kDefinitionHandler class provides functionalities to scan, analyze,
+ * and handle Amiga Assembly source files by extracting and managing symbols,
+ * definitions, references, document symbols, folding ranges, and register usage.
+ *
+ * @remarks
+ * This class implements several provider interfaces including DefinitionProvider,
+ * ReferenceProvider, and DocumentSymbolProvider to integrate with VS Code.
+ * It supports:
+ *
+ * - Scanning individual files and entire workspaces for source files matching a
+ *   configurable glob pattern.
+ * - Extracting symbols such as variables, labels, macros, include directories, and
+ *   cross-references from source files.
+ * - Resolving definitions, references, and includes to support navigation and refactoring.
+ * - Generating folding ranges for code regions and comments.
+ * - Evaluating variable formulas including replacing variables within formulas and
+ *   calculating their runtime values.
+ * - Identifying used registers within selected editor regions and formatting results.
+ *
+ * @example
+ * ```typescript
+ * const handler = new M68kDefinitionHandler();
+ * await handler.scanWorkspace();
+ * const symbols = await handler.provideDocumentSymbols(document);
+ * const definition = await handler.provideDefinition(document, position);
+ * ```
+ *
+ * @public
+ */
 export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvider, DocumentSymbolProvider {
     static readonly SOURCE_FILES_GLOB = "**/*.{asm,s,i,ASM,S,I}";
-    private files = new Map<string, SymbolFile>();
-    private definedSymbols = new Map<string, Symbol>();
-    private referredSymbols = new Map<string, Map<string, Array<Symbol>>>();
-    private variables = new Map<string, Symbol>();
-    private labels = new Map<string, Symbol>();
-    private macros = new Map<string, Symbol>();
-    private includeDirs = new Map<string, Symbol>();
-    private xrefs = new Map<string, Symbol>();
+    private readonly files = new Map<string, SymbolFile>();
+    private readonly definedSymbols = new Map<string, Symbol>();
+    private readonly referredSymbols = new Map<string, Map<string, Array<Symbol>>>();
+    private readonly variables = new Map<string, Symbol>();
+    private readonly labels = new Map<string, Symbol>();
+    private readonly macros = new Map<string, Symbol>();
+    private readonly includeDirs = new Map<string, Symbol>();
+    private readonly xrefs = new Map<string, Symbol>();
     private sortedVariablesNames = new Array<string>();
 
-    public async provideDocumentSymbols(document: TextDocument): Promise<SymbolInformation[]> {
+    /**
+     * Provides folding ranges for the given document.
+     * @param document The text document to analyze.
+     * @returns An array of folding ranges.
+     */
+    public async provideFoldingRanges(document: TextDocument): Promise<FoldingRange[]> {
         const symbolFile: void | SymbolFile = await this.scanFile(document.uri, document);
-        const results = new Array<SymbolInformation>();
+        let results = new Array<FoldingRange>();
         if (symbolFile) {
-            let symbols = symbolFile.getVariables();
-            for (const symbol of symbols) {
-                results.push(new SymbolInformation(symbol.getLabel(), vscode.SymbolKind.Constant, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
-            }
-            symbols = symbolFile.getLabels();
-            for (let i = 0; i < symbols.length; i++) {
-                const symbol = symbols[i];
-                let symbolKind = vscode.SymbolKind.Function;
-                const isLocal = symbol.getLabel().includes(".");
-                const label = symbol.getLabel().replace(/$.+\./, ".");
-                if (symbolFile.getSubRoutines().indexOf(label) >= 0) {
-                    symbolKind = vscode.SymbolKind.Class;
-                } else if (symbolFile.getDcLabels().indexOf(symbol) >= 0) {
-                    symbolKind = vscode.SymbolKind.Variable;
-                }
-                if (label) {
-                    // Extend range to next label:
-                    let nextLabel: Symbol | null = null;
-                    for (let j = i + 1; j < symbols.length; j++) {
-                        const l = symbols[j];
-                        // Next global label unless current label is local
-                        if (isLocal || !l.getLabel().includes(".")) {
-                            nextLabel = l;
-                            break;
-                        }
-                    }
-                    const end = nextLabel?.getRange().start ?? document.lineAt(document.lineCount - 1).range.end;
-                    const range = new Range(symbol.getRange().start, end);
-                    results.push(new SymbolInformation(label, symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), range)));
+            results = results.concat(this.createFoldingRanges(symbolFile.getLabels(), FoldingRangeKind.Region, false));
+            results = results.concat(this.createFoldingRanges(symbolFile.getMacros(), FoldingRangeKind.Region, false));
+            results = results.concat(this.createFoldingRanges(symbolFile.getIncludeDirs().concat(symbolFile.getIncludedFiles()), FoldingRangeKind.Imports, true));
+            results = results.concat(this.createFoldingRangesForComments(symbolFile.getCommentLines()));
+        }
+        return results;
+    }
+
+    /**
+     * Creates folding ranges for comment lines.
+     * @param commentLines An array of line numbers containing comments.
+     * @returns An array of folding ranges for comments.
+     */
+    private createFoldingRangesForComments(commentLines: Array<number>): Array<FoldingRange> {
+        const results = new Array<FoldingRange>();
+        let lastFoldingRange: FoldingRange | undefined = undefined;
+        let createNewRange = true;
+        for (const commentLine of commentLines) {
+            if (lastFoldingRange) {
+                createNewRange = (lastFoldingRange.end != commentLine - 1);
+                if (!createNewRange) {
+                    lastFoldingRange.end = commentLine;
                 }
             }
-            symbols = symbolFile.getMacros();
-            for (const symbol of symbols) {
-                const symbolKind = vscode.SymbolKind.Function;
-                results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
-            }
-            symbols = symbolFile.getXrefs();
-            for (const symbol of symbols) {
-                const symbolKind = vscode.SymbolKind.Function;
-                results.push(new SymbolInformation(symbol.getLabel(), symbolKind, symbol.getParent(), new Location(symbol.getFile().getUri(), symbol.getRange())));
-            }
-            const includedFiles = symbolFile.getIncludedFiles();
-            for (const includedFile of includedFiles) {
-                results.push(new SymbolInformation(includedFile.getLabel(), vscode.SymbolKind.File, includedFile.getParent(), new Location(includedFile.getFile().getUri(), includedFile.getRange())));
+            if (createNewRange) {
+                lastFoldingRange = new FoldingRange(commentLine, commentLine, FoldingRangeKind.Comment);
+                results.push(lastFoldingRange);
             }
         }
         return results;
     }
 
+    /**
+     * Creates folding ranges for symbols.
+     * @param symbols An array of symbols to create folding ranges for.
+     * @param foldingKind The kind of folding range (e.g., region, imports).
+     * @param concatRegions Whether to concatenate adjacent regions.
+     * @returns An array of folding ranges.
+     */
+    private createFoldingRanges(symbols: Array<Symbol>, foldingKind: FoldingRangeKind, concatRegions: boolean): Array<FoldingRange> {
+        const results = new Array<FoldingRange>();
+        let lastFoldingRange: FoldingRange | undefined = undefined;
+        let createNewRange = true;
+        symbols.sort((a, b) => a.getFullRange().start.line - b.getFullRange().start.line);
+        for (const symbol of symbols) {
+            const startLine = symbol.getFullRange().start.line;
+            const endLine = symbol.getFullRange().end.line;
+            if (concatRegions && lastFoldingRange) {
+                createNewRange = (lastFoldingRange.end != startLine - 1);
+                if (!createNewRange) {
+                    lastFoldingRange.end = endLine;
+                }
+            }
+            if (createNewRange) {
+                lastFoldingRange = new FoldingRange(startLine, endLine, foldingKind);
+                results.push(lastFoldingRange);
+            }
+        }
+        return results;
+    }
+
+    /**
+     * Creates document symbols for a label and its children.
+     * @param symbol The label symbol to process.
+     * @param addedSymbols A set of already added symbols to avoid duplicates.
+     * @returns An array of document symbols.
+     */
+    private createLabelDocumentSymbol(symbol: Symbol, addedSymbols: Set<Symbol>): Array<DocumentSymbol> {
+        const results = new Array<DocumentSymbol>();
+        if (!addedSymbols.has(symbol)) {
+            let symbolKind = vscode.SymbolKind.Class;
+            let label = symbol.getLabel();
+            if (symbol.isLocalLabel()) {
+                symbolKind = vscode.SymbolKind.Method;
+                label = label.split(".")[1];
+            }
+            const dSymbol = new DocumentSymbol(label, "", symbolKind, symbol.getFullRange(), symbol.getRange());
+            results.push(dSymbol);
+            addedSymbols.add(symbol);
+            const children = symbol.getChildren();
+            let childrenResults = new Array<DocumentSymbol>();
+            for (const child of children) {
+                const symbolsArray = this.createLabelDocumentSymbol(child, addedSymbols);
+                childrenResults = childrenResults.concat(symbolsArray);
+            }
+            dSymbol.children = childrenResults;
+        }
+        return results;
+    }
+
+    /**
+     * Creates document symbols for a given set of symbols.
+     * @param symbols An array of symbols to process.
+     * @param symbolKind The kind of symbol (e.g., constant, function).
+     * @returns An array of document symbols.
+     */
+    private createDocumentSymbols(symbols: Array<Symbol>, symbolKind: vscode.SymbolKind): Array<DocumentSymbol> {
+        const results = new Array<DocumentSymbol>();
+        for (const symbol of symbols) {
+            let detail = "";
+            const value = symbol.getValue();
+            if (value) {
+                detail = value;
+            }
+            const dSymbol = new DocumentSymbol(symbol.getLabel(), detail, symbolKind, symbol.getFullRange(), symbol.getRange());
+            results.push(dSymbol);
+        }
+        return results;
+    }
+
+    /**
+     * Provides document symbols for the given document.
+     * @param document The text document to analyze.
+     * @returns An array of document symbols.
+     */
+    public async provideDocumentSymbols(document: TextDocument): Promise<DocumentSymbol[]> {
+        const symbolFile: void | SymbolFile = await this.scanFile(document.uri, document);
+        let results = new Array<DocumentSymbol>();
+        if (symbolFile) {
+            results = results.concat(this.createDocumentSymbols(symbolFile.getVariables(), vscode.SymbolKind.Constant));
+            results = results.concat(this.createDocumentSymbols(symbolFile.getMacros(), vscode.SymbolKind.Function));
+            results = results.concat(this.createDocumentSymbols(symbolFile.getXrefs(), vscode.SymbolKind.Function));
+            results = results.concat(this.createDocumentSymbols(symbolFile.getIncludedFiles(), vscode.SymbolKind.File));
+            results = results.concat(this.createDocumentSymbols(symbolFile.getIncludeDirs(), vscode.SymbolKind.File));
+            const symbols = symbolFile.getLabels();
+            const addedSymbols = new Set<Symbol>();
+            for (const symbol of symbols) {
+                const symbolsArray = this.createLabelDocumentSymbol(symbol, addedSymbols);
+                results = results.concat(symbolsArray);
+            }
+        }
+        return results;
+    }
+
+    /**
+     * Provides the definition of a symbol at the given position in the document.
+     * @param document The text document to analyze.
+     * @param position The position of the symbol.
+     * @returns The definition location of the symbol.
+     */
     public async provideDefinition(document: TextDocument, position: Position): Promise<Definition> {
         const rg = document.getWordRangeAtPosition(position);
         if (rg) {
@@ -99,6 +224,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         throw new Error("Definition not found");
     }
 
+    /**
+     * Provides references to a symbol at the given position in the document.
+     * @param document The text document to analyze.
+     * @param position The position of the symbol.
+     * @returns An array of locations where the symbol is referenced.
+     */
     public async provideReferences(document: TextDocument, position: Position): Promise<Location[]> {
         const rg = document.getWordRangeAtPosition(position);
         if (rg) {
@@ -118,6 +249,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         throw new Error("Reference not found");
     }
 
+    /**
+     * Finds all registers used in the selected regions of the document.
+     * @param document The text document to analyze.
+     * @param selections The selected regions in the document.
+     * @returns An array of used register names.
+     */
     public findUsedRegisters(document: TextDocument, selections: readonly vscode.Selection[]): Array<string> {
         const foundRegisters = Array<string>();
         for (const selection of selections) {
@@ -144,6 +281,11 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return foundRegisters;
     }
 
+    /**
+     * Formats the response for used registers, listing used and free registers.
+     * @param registers An array of used register names.
+     * @returns A formatted string summarizing used and free registers.
+     */
     public formatUsedRegistersResponse(registers: Array<string>): string {
         const used = registers.filter((x, i, a) => !i || x !== a[i - 1]);
         const aUsed = Array<number>();
@@ -180,6 +322,10 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return result;
     }
 
+    /**
+     * Provides a formatted string of used registers in the current editor.
+     * @returns A formatted string summarizing used registers.
+     */
     public async provideUsedRegistersSymbols(): Promise<string> {
         // Get the current text editor
         const editor = window.activeTextEditor;
@@ -191,6 +337,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         }
     }
 
+    /**
+     * Prints a summary of used registers for a given type (e.g., "a" or "d").
+     * @param aregs An array of used "a" registers.
+     * @param dregs An array of used "d" registers.
+     * @returns A formatted string summarizing the registers.
+     */
     public printRegisters(aregs: Array<number>, dregs: Array<number>): string {
         // checking registers "a"
         let results = this.printRegistersForRegType("d", dregs);
@@ -202,6 +354,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return results;
     }
 
+    /**
+     * Prints a summary of registers for a specific type (e.g., "a" or "d").
+     * @param regkey The register type key (e.g., "a" or "d").
+     * @param regs An array of register indices.
+     * @returns A formatted string summarizing the registers.
+     */
     public printRegistersForRegType(regkey: string, regs: Array<number>): string {
         let result = "";
         let startRange = -1;
@@ -229,6 +387,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return result;
     }
 
+    /**
+     * Retrieves the label at the given range in the document.
+     * @param document The text document to analyze.
+     * @param range The range of the label.
+     * @returns The label as a string.
+     */
     private getLabel(document: TextDocument, range: Range): string {
         let pos = range.start;
         let label;
@@ -244,6 +408,9 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return label;
     }
 
+    /**
+     * Scans the entire workspace for source files and extracts symbols.
+     */
     public async scanWorkspace(): Promise<void> {
         await vscode.workspace.findFiles(M68kDefinitionHandler.SOURCE_FILES_GLOB, null).then(async (filesURI) => {
             const promises = [];
@@ -254,6 +421,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         });
     }
 
+    /**
+     * Scans a specific file for symbols and updates internal data structures.
+     * @param uri The URI of the file to scan.
+     * @param document Optional text document to read from.
+     * @returns The symbol file object.
+     */
     public async scanFile(uri: Uri, document: TextDocument | undefined = undefined): Promise<SymbolFile> {
         try {
             let file = this.files.get(uri.fsPath);
@@ -329,6 +502,10 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         }
     }
 
+    /**
+     * Deletes a file and clears its associated symbols from internal data structures.
+     * @param uri The URI of the file to delete.
+     */
     public deleteFile(uri: Uri) {
         const file = this.files.get(uri.fsPath);
         if (file !== undefined) {
@@ -337,6 +514,11 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         }
     }
 
+    /**
+     * Retrieves the value of a variable by its name.
+     * @param variable The name of the variable.
+     * @returns The value of the variable, or undefined if not found.
+     */
     public getVariableValue(variable: string): string | undefined {
         const v = this.variables.get(variable);
         if (v !== undefined) {
@@ -345,6 +527,10 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return undefined;
     }
 
+    /**
+     * Clears all symbols associated with a specific file.
+     * @param file The symbol file to clear.
+     */
     private clearSymbolsForFile(file: SymbolFile): void {
         const symbolMaps = [
             this.definedSymbols,
@@ -362,6 +548,11 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         });
     }
 
+    /**
+     * Evaluates the formula of a variable and replaces variables within it.
+     * @param variable The name of the variable.
+     * @returns The evaluated formula as a string, or undefined if not found.
+     */
     private evaluateVariableFormula(variable: string): string | undefined {
         const v = this.variables.get(variable);
         if (v !== undefined) {
@@ -376,6 +567,11 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return undefined;
     }
 
+    /**
+     * Replaces variables in a formula with their evaluated values.
+     * @param formula The formula to process.
+     * @returns The formula with variables replaced.
+     */
     private replaceVariablesInFormula(formula: string): string {
         let newFormula = formula;
         const variables = this.findVariablesInFormula(newFormula);
@@ -389,7 +585,11 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return newFormula;
     }
 
-
+    /**
+     * Finds all variables referenced in a formula.
+     * @param formula The formula to analyze.
+     * @returns An array of variable names.
+     */
     public findVariablesInFormula(formula: string): Array<string> {
         const variables = new Array<string>();
         for (const vn of this.sortedVariablesNames) {
@@ -400,6 +600,11 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         return variables;
     }
 
+    /**
+     * Evaluates a variable and calculates its numeric value.
+     * @param variable The name of the variable.
+     * @returns The evaluated numeric value.
+     */
     public async evaluateVariable(variable: string): Promise<number> {
         const calc = new Calc();
         const formula = this.evaluateVariableFormula(variable);
@@ -412,6 +617,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         throw new Error(`Variable ${variable} cannot be evaluated`);
     }
 
+    /**
+     * Evaluates a formula and calculates its numeric value.
+     * @param formula The formula to evaluate.
+     * @param replaceVariables Whether to replace variables in the formula.
+     * @returns The evaluated numeric value.
+     */
     public async evaluateFormula(formula: string, replaceVariables?: boolean): Promise<number> {
         let newFormula: string;
         if (replaceVariables === false) {
@@ -430,10 +641,10 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     /**
-     * Resolves an included file
-     * @param currentPath Path of the current file
-     * @param filename Filename to include
-     * @returns Resolved file
+     * Resolves an included file relative to the current file or include directories.
+     * @param currentPath The path of the current file.
+     * @param filename The name of the file to include.
+     * @returns The resolved file proxy, or null if not found.
      */
     private async resolveIncludedFile(currentPath: FileProxy, filename: string): Promise<FileProxy | null> {
         const rootUri = vscode.workspace.getWorkspaceFolder(currentPath.getUri())?.uri;
@@ -456,7 +667,9 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     /**
-     * Retrieves the file includes graph
+     * Retrieves the list of files included by a given file.
+     * @param uri The URI of the file to analyze.
+     * @returns An array of included file paths.
      */
     public async getIncludedFiles(uri: Uri): Promise<Array<string>> {
         const symbolFile = await this.scanFile(uri);
@@ -472,20 +685,20 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     /**
-     * Get variable by name
-     * @param name Name of variable
-     * @returns Variable symbol
+     * Retrieves a variable by its name.
+     * @param name The name of the variable.
+     * @returns The variable symbol, or undefined if not found.
      */
-    getVariableByName(name: string): Symbol | undefined {
+    public getVariableByName(name: string): Symbol | undefined {
         return this.variables.get(name);
     }
 
     /**
-     * Find all the variables starting by word
-     * @param word Word to search
-     * @return variables found.
+     * Finds all variables starting with a given word.
+     * @param word The prefix to search for.
+     * @returns A map of matching variables.
      */
-    findVariableStartingWith(word: string): Map<string, Symbol> {
+    public findVariableStartingWith(word: string): Map<string, Symbol> {
         const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
         for (const [key, value] of this.variables.entries()) {
@@ -497,20 +710,20 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     /**
-     * Get label by name
-     * @param name Name of label
-     * @returns Label symbol
+     * Retrieves a label by its name.
+     * @param name The name of the label.
+     * @returns The label symbol, or undefined if not found.
      */
-    getLabelByName(name: string): Symbol | undefined {
+    public getLabelByName(name: string): Symbol | undefined {
         return this.labels.get(name);
     }
 
     /**
-     * Find all the labels starting by word
-     * @param word Word to search
-     * @return labels found.
+     * Finds all labels starting with a given word.
+     * @param word The prefix to search for.
+     * @returns A map of matching labels.
      */
-    findLabelStartingWith(word: string): Map<string, Symbol> {
+    public findLabelStartingWith(word: string): Map<string, Symbol> {
         const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
         for (const [key, value] of this.labels.entries()) {
@@ -522,20 +735,20 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     /**
-     * Get xref by name
-     * @param name Name of label
-     * @returns Xref symbol
+     * Retrieves a cross-reference (xref) by its name.
+     * @param name The name of the xref.
+     * @returns The xref symbol, or undefined if not found.
      */
-    getXrefByName(name: string): Symbol | undefined {
+    public getXrefByName(name: string): Symbol | undefined {
         return this.xrefs.get(name);
     }
 
     /**
-     * Find all the xrefs starting by word
-     * @param word Word to search
-     * @return xrefs found.
+     * Finds all cross-references (xrefs) starting with a given word.
+     * @param word The prefix to search for.
+     * @returns A map of matching xrefs.
      */
-    findXrefStartingWith(word: string): Map<string, Symbol> {
+    public findXrefStartingWith(word: string): Map<string, Symbol> {
         const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
         for (const [key, value] of this.xrefs.entries()) {
@@ -547,20 +760,20 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     /**
-     * Get macro by name
-     * @param name Name of macro
-     * @returns Macro symbol
+     * Retrieves a macro by its name.
+     * @param name The name of the macro.
+     * @returns The macro symbol, or undefined if not found.
      */
-    getMacroByName(name: string): Symbol | undefined {
+    public getMacroByName(name: string): Symbol | undefined {
         return this.macros.get(name);
     }
 
     /**
-     * Find all the macros starting by word
-     * @param word Word to search
-     * @return labels found.
+     * Finds all macros starting with a given word.
+     * @param word The prefix to search for.
+     * @returns A map of matching macros.
      */
-    findMacroStartingWith(word: string): Map<string, Symbol> {
+    public findMacroStartingWith(word: string): Map<string, Symbol> {
         const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
         for (const [key, value] of this.macros.entries()) {
@@ -572,10 +785,10 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     }
 
     /**
-     * Get all include directories
-     * @returns include dir symbols
+     * Retrieves all include directories.
+     * @returns A map of include directory symbols.
      */
-    getIncludeDirs(): Map<string, Symbol> {
+    public getIncludeDirs(): Map<string, Symbol> {
         return this.includeDirs;
     }
 }

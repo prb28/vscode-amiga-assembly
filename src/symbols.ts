@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-types */
-import { Range, Uri, workspace, TextDocument } from 'vscode';
-import { ASMLine } from './parser';
+import { Range, Uri, workspace, TextDocument, TextLine } from 'vscode';
+import { ASMLine, ASMLineType } from './parser';
 import { StringUtils } from './stringUtils';
 
 export class SymbolFile {
-    private uri: Uri;
+    private readonly uri: Uri;
     private document: TextDocument | null = null;
     private definedSymbols = new Array<Symbol>();
     private referredSymbols = new Array<Symbol>();
@@ -16,6 +15,7 @@ export class SymbolFile {
     private dcLabel = new Array<Symbol>();
     private includeDirs = new Array<Symbol>();
     private includedFiles = new Array<Symbol>();
+    private readonly commentLines = new Array<number>();
 
     constructor(uri: Uri) {
         this.uri = uri;
@@ -28,14 +28,34 @@ export class SymbolFile {
         return this;
     }
 
+    /**
+     * Processes the provided text document by parsing each line and identifying various assembly components such as labels,
+     * macros, variables, subroutines, and include directives. The function clears any existing symbol data before beginning
+     * the scan, then iterates through all lines in the document to:
+     *
+     * - Extract symbols from labels or variables using pattern matching.
+     * - Identify macro definitions in both `<name> macro` and `macro <name>` forms.
+     * - Collect data symbols for xref, and include directives.
+     * - Track subroutine calls and manage parent-child relationships between labels.
+     * - Maintain multiple lists (definedSymbols, referredSymbols, labels, macros, variables, subroutines, includeDirs, includedFiles)
+     *   to organize and reference symbols accurately.
+     * - Update symbol ranges to cover the correct region in the document, especially for macros and include symbols.
+     *
+     * @param document - The text document to be analyzed and from which assembly symbols are extracted.
+     */
     public readDocument(document: TextDocument): void {
         this.clear();
         this.document = document;
         let lastLabel: Symbol | null = null;
-        const labelsBeforeRts = Array<Symbol>();
+        let lastParentLabel: Symbol | null = null;
+        let lastNonEmptyLine: TextLine | null = null;
         for (let i = 0; i < document.lineCount; i++) {
             const line = document.lineAt(i);
             const asmLine = new ASMLine(line.text, line);
+            if (asmLine.lineType == ASMLineType.COMMENT) {
+                this.commentLines.push(line.lineNumber);
+                continue;
+            }
             let [symbol, range] = asmLine.getSymbolFromLabelOrVariable();
             if ((symbol !== undefined) && (range !== undefined)) {
                 this.definedSymbols.push(new Symbol(symbol, this, range));
@@ -53,7 +73,7 @@ export class SymbolFile {
                 let label = asmLine.label.replace(":", "");
                 const isLocal = label.startsWith(".");
                 if (isLocal) {
-                    label = lastLabel?.getLabel() + label;
+                    label = lastParentLabel?.getLabel() + label;
                 }
                 const s = new Symbol(label, this, asmLine.labelRange);
                 // Is this actually a macro definition in `<name> macro` syntax?
@@ -62,9 +82,17 @@ export class SymbolFile {
                     this.definedSymbols.push(s);
                 } else {
                     this.labels.push(s);
-                    if (!isLocal) {
-                        lastLabel = s;
+                    if (lastNonEmptyLine) {
+                        lastLabel?.setFullRange(new Range(lastLabel.getRange().start, lastNonEmptyLine.range.end));
+                        lastParentLabel?.setFullRange(new Range(lastParentLabel.getRange().start, lastNonEmptyLine.range.end));
                     }
+                    if (!isLocal || !lastParentLabel) {
+                        lastParentLabel = s;
+                    } else if (isLocal && lastParentLabel) {
+                        s.setParent(lastParentLabel.getLabel());
+                        lastParentLabel.addChild(s);
+                    }
+                    lastLabel = s;
                 }
             } else if (instruct.startsWith("xref")) {
                 const s = new Symbol(asmLine.data, this, asmLine.dataRange);
@@ -75,44 +103,41 @@ export class SymbolFile {
                 const s = new Symbol(asmLine.data, this, asmLine.dataRange);
                 this.macros.push(s);
                 this.definedSymbols.push(s);
+            } else if (instruct.startsWith("endm")) {
+                const lastMacro = this.macros.at(this.macros.length - 1);
+                if (lastMacro) {
+                    lastMacro.setFullRange(new Range(lastMacro.getRange().start, line.range.end));
+                }
             }
             if (asmLine.variable.length > 0) {
-                this.variables.push(new Symbol(asmLine.variable, this, asmLine.variableRange, asmLine.value));
+                const variableSymbol = new Symbol(asmLine.variable, this, asmLine.variableRange, asmLine.value)
+                variableSymbol.setFullRange(new Range(line.range.start, line.range.end));
+                this.variables.push(variableSymbol);
             }
             if (instruct.indexOf("bsr") >= 0) {
                 this.subroutines.push(asmLine.data);
             } else if (instruct.startsWith("dc") || instruct.startsWith("ds") || instruct.startsWith("incbin")) {
-                if (lastLabel) {
-                    this.dcLabel.push(lastLabel);
-                }
-            } else if (instruct.indexOf("rts") >= 0) {
-                if (lastLabel) {
-                    labelsBeforeRts.push(lastLabel);
+                if (lastParentLabel) {
+                    this.dcLabel.push(lastParentLabel);
                 }
             } else if (instruct === "incdir") {
                 const includeSymbol = new Symbol(StringUtils.parseQuoted(asmLine.data), this, asmLine.dataRange);
                 this.includeDirs.push(includeSymbol);
                 this.definedSymbols.push(includeSymbol);
+                includeSymbol.setFullRange(new Range(asmLine.instructionRange.start, line.range.end));
             } else if (instruct === "include") {
                 const includeSymbol = new Symbol(StringUtils.parseQuoted(asmLine.data), this, asmLine.dataRange);
                 this.includedFiles.push(includeSymbol);
                 this.definedSymbols.push(includeSymbol);
+                includeSymbol.setFullRange(new Range(asmLine.instructionRange.start, line.range.end));
+            }
+            if (!line.isEmptyOrWhitespace) {
+                lastNonEmptyLine = line;
             }
         }
-        let inSub = false;
-        let lastParent: Symbol | undefined;
-        for (const l of this.labels) {
-            if (this.subroutines.indexOf(l.getLabel()) >= 0) {
-                inSub = true;
-                lastParent = l;
-            } else if (inSub && lastParent) {
-                l.setParent(lastParent.getLabel());
-                const range = lastParent.getRange();
-                lastParent.setRange(range.union(l.getRange()));
-            }
-            if (labelsBeforeRts.indexOf(l) >= 0) {
-                inSub = false;
-            }
+        if (lastNonEmptyLine) {
+            lastLabel?.setFullRange(new Range(lastLabel.getRange().start, lastNonEmptyLine.range.end));
+            lastParentLabel?.setFullRange(new Range(lastParentLabel.getRange().start, lastNonEmptyLine.range.end));
         }
     }
 
@@ -165,21 +190,27 @@ export class SymbolFile {
     public getDocument(): TextDocument | null {
         return this.document;
     }
+    public getCommentLines(): Array<number> {
+        return this.commentLines;
+    }
 }
 
 export class Symbol {
-    private label: string;
-    private file: SymbolFile;
+    private readonly label: string;
+    private readonly file: SymbolFile;
     private range: Range;
-    private value?: string;
+    private fullRange: Range;
+    private readonly value?: string;
     private parent = "";
     private commentBlock: string | null = null;
+    private readonly children: Array<Symbol> = new Array<Symbol>();
     constructor(label: string, file: SymbolFile, range: Range, value?: string) {
         this.label = label;
         this.file = file;
         this.range = range;
         this.value = value;
         this.parent = label;
+        this.fullRange = new Range(range.start, range.end);
     }
     public getFile(): SymbolFile {
         return this.file;
@@ -189,6 +220,18 @@ export class Symbol {
     }
     public setRange(range: Range): void {
         this.range = range;
+    }
+    public getFullRange(): Range {
+        return this.fullRange;
+    }
+    public setFullRange(range: Range): void {
+        this.fullRange = range;
+    }
+    public getChildren(): Array<Symbol> {
+        return this.children;
+    }
+    public addChild(child: Symbol): void {
+        this.children.push(child);
     }
     public getLabel(): string {
         return this.label;
@@ -201,6 +244,9 @@ export class Symbol {
     }
     public setParent(parent: string): void {
         this.parent = parent;
+    }
+    public isLocalLabel(): boolean {
+        return this.label.includes(".");
     }
     public getCommentBlock(): string {
         if (this.commentBlock === null) {
