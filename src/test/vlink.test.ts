@@ -87,7 +87,7 @@ describe("VLINK Tests", function () {
                 vscode.Uri.file('disassemble-exp.s'),
             ];
             await linker.linkFiles(vlinkConf,
-                filesUri, 'myprog', 'file2', vscode.Uri.file('workdir'),
+                filesUri, 'myprog', undefined, vscode.Uri.file('workdir'),
                 vscode.Uri.file('workdir/build'));
             let args = capture(executor.runTool).last();
             const buildPath = '/workdir/build/'.replace(/\/+/g, Path.sep);
@@ -104,6 +104,38 @@ describe("VLINK Tests", function () {
                 '-bamigahunk', '-Bstatic', '-o', buildPath + 'myprog',
                 buildPath + 'comment-docs.o', buildPath + 'hw2-toform.o', buildPath + 'disassemble-exp.o'
             ]);
+        });
+        it("Should work with an entrypoint on a relative path", async function () {
+            const vlinkConf = { ...VLINKLinker.DEFAULT_BUILD_CONFIGURATION };
+            const buildPath = '/workdir/build/'.replace(/\/+/g, Path.sep);
+            vlinkConf.entrypoint = "sources/tutorial.s";
+            const filesUri = [
+                vscode.Uri.file('hw2-toform.s'),
+                vscode.Uri.file(vlinkConf.entrypoint),
+                vscode.Uri.file('disassemble-exp.s'),
+            ];
+            await linker.linkFiles(vlinkConf, filesUri, 'myprog', vlinkConf.entrypoint, vscode.Uri.file('workdir'), vscode.Uri.file('workdir/build'));
+            const args = capture(executor.runTool).last();
+            expect(args[0]).to.be.eql([
+                '-bamigahunk', '-Bstatic', '-o', buildPath + 'myprog',
+                buildPath + 'tutorial.o', buildPath + 'hw2-toform.o', buildPath + 'disassemble-exp.o'
+            ]);
+        });
+        it("Should throw an error if the entrypoint file is not found", async function () {
+            const vlinkConf = { ...VLINKLinker.DEFAULT_BUILD_CONFIGURATION };
+            vlinkConf.entrypoint = "nonexistent.s";
+            const filesUri = [
+                vscode.Uri.file('hw2-toform.s'),
+                vscode.Uri.file('comment-docs.s'),
+                vscode.Uri.file('disassemble-exp.s'),
+            ];
+            try {
+                await linker.linkFiles(vlinkConf, filesUri, 'myprog', vlinkConf.entrypoint, vscode.Uri.file('workdir'), vscode.Uri.file('workdir/build'));
+                throw new Error("Expected an error to be thrown");
+            } catch (err) {
+                expect(err).to.be.instanceOf(Error);
+                expect(err.message).to.be.equal("Entry point nonexistent.s not found in the provided files");
+            }
         });
     });
     context("VLINKParser", function () {

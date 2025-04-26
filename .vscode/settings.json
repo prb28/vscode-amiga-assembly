@@ -206,4 +206,8 @@
         "workdir",
         "zipball"
     ],
+    "sonarlint.connectedMode.project": {
+        "connectionId": "prb28-github",
+        "projectKey": "prb28_vscode-amiga-assembly"
+    },
 }

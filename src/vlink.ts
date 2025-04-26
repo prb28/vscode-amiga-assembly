@@ -57,6 +57,21 @@ export class VLINKLinker {
     }
 
     /**
+     * Get the name of the file without the extension
+     * @param file Path of the file to be built
+     * @returns The name of the executable file
+     */
+    private static getBaseFileNameNoExt(file: string): string {
+        const filename = path.basename(file);
+        const extSep = filename.indexOf(".");
+        let filenameNoExt = filename;
+        if (extSep > 0) {
+            filenameNoExt = filename.substring(0, extSep);
+        }
+        return filenameNoExt;
+    }
+
+    /**
      * Build the selected file
      * @param conf Vlink configuration
      * @param filepathname Path of the file to build
@@ -75,22 +90,23 @@ export class VLINKLinker {
         const confArgs = conf.args.map(a => substituteVariables(a, true));
         const objectPathNames: string[] = [];
         let entrypointNoExt: string | undefined = "empty";
+        let entrypointFound = true;
         if (entrypoint !== undefined) {
-            entrypointNoExt = entrypoint.replace(/\.[^/.]+$/, "");
+            entrypointNoExt = VLINKLinker.getBaseFileNameNoExt(entrypoint);
+            entrypointFound = false;
         }
         for (const fURI of filesURI) {
-            const filename = path.basename(fURI.fsPath);
-            const extSep = filename.indexOf(".");
-            let filenameNoExt = filename;
-            if (extSep > 0) {
-                filenameNoExt = filename.substring(0, extSep);
-            }
+            const filenameNoExt = VLINKLinker.getBaseFileNameNoExt(fURI.fsPath);
             const objFilename = path.join(buildDir.fsPath, filenameNoExt + ".o");
             if (filenameNoExt === entrypointNoExt) {
                 objectPathNames.unshift(objFilename);
+                entrypointFound = true;
             } else {
                 objectPathNames.push(objFilename);
             }
+        }
+        if (!entrypointFound) {
+            throw new Error(`Entry point ${entrypoint} not found in the provided files`);
         }
         const args: Array<string> = confArgs.concat(['-o', path.join(buildDir.fsPath, exeFilepathname)]).concat(objectPathNames);
         return this.executor.runTool(args, workspaceRootDir.fsPath, "warning", true, vlinkExecutableName, undefined, true, this.parser, undefined, logEmitter);

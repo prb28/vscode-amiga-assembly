@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [1.8.15] - pre-release
+- [Issue #325](https://github.com/prb28/vscode-amiga-assembly/issues/325) When entrypoint is not found an error should be sent
+
 ### [1.8.14] - pre-release
 - [Issue #147](https://github.com/prb28/vscode-amiga-assembly/issues/147) Label folding including local labels
 
