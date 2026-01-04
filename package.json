@@ -358,6 +358,10 @@
 								"type": "string",
 								"description": "Path of emulator executable (default: use bundled version)"
 							},
+							"emulatorPrefix": {
+							    "type": "string",
+							    "description": "Prefix to prepend to the emulator command line (default: none)"
+							},
 							"emulatorArgs": {
 								"type": "array",
 								"items": {
