@@ -104,6 +104,7 @@
 |[dcb](directives/dcb.md)|Insert `<exp>` zero or `<fill>` bytes/words into the current section|
 |[dl](directives/dl.md)|Equivalent to `dc.l` for ArgAsm, BAsm, HX68, Macro68, ProAsm, etc. compatibility|
 |[dr](directives/dr.md)|Calculates `<expN> - <current pc value>` and stores it into successive bytes/words of memory in the current section|
+|[ds](directives/ds.md)|Defines a space in memory of N elements, the size of each element depends on the specified size, the content of the space is undefined|
 |[dw](directives/dw.md)|Equivalent to `dc.w` for ArgAsm, BAsm, HX68, Macro68, ProAsm, etc. compatibility|
 |[dx](directives/dx.md)|Tries to allocate space in the DataBss portion of a code or data section|
 |[echo](directives/echo.md)|Prints `<string>` to stdout|

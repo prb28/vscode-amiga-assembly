@@ -52,6 +52,7 @@ describe("Language Tests", function () {
             expect(l.getExtensions('bcc')).to.be.eql(['b', 'w', 'l', 's']);
             expect(l.getExtensions('dc')).to.be.eql(['b', 'd', 'l', 'q', 's', 'w', 'x']);
             expect(l.getExtensions('dr')).to.be.eql(['b', 'w', 'l']);
+            expect(l.getExtensions('ds')).to.be.eql(['b', 'd', 'l', 'q', 's', 'w', 'x']);
         });
     });
     context("HoverInstruction Tests", function () {
