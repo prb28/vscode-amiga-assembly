@@ -8,6 +8,9 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 ### Run and Debug with FS-UAE or WinUAE
 ![Debug](images/debug.gif)
 
+[Debugging with Copperline](docs/copperline.md) is also available by selecting
+`emulatorType: "copperline"` in an Amiga Assembly launch or attach configuration.
+
 ### Breaking changes
 
 - see [Breaking changes](https://github.com/prb28/vscode-amiga-assembly/wiki/Breaking-Changes) for more details

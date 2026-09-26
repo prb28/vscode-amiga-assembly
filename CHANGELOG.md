@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [1.8.15] - pre-release
+- [Issue #372](https://github.com/prb28/vscode-amiga-assembly/issues/372) Add Copperline as a launch and attach debug target
 - [Issue #325](https://github.com/prb28/vscode-amiga-assembly/issues/325) When entrypoint is not found an error should be sent
 
 ### [1.8.14] - pre-release
