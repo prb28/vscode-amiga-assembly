@@ -38,10 +38,7 @@ jobs:
       - run: npm ci
       - run: npm run test-compile
       - name: xvfb test
-        uses: GabrielBB/xvfb-action@v1.7
-        with:
-          run: npm run test
-          options: -screen 0 1600x1200x24
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" npm run test
         if: runner.os == 'Linux'
       - name: test
         run: npm run test
@@ -94,7 +91,7 @@ jobs:
 
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
 
