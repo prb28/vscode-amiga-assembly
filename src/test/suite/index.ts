@@ -14,12 +14,25 @@ if (!tty.getWindowSize) {
     };
 }
 
+class SpecAndXunitReporter extends Mocha.reporters.Spec {
+    private readonly xunitReporter: Mocha.reporters.XUnit;
+
+    constructor(runner: Mocha.Runner, options: Mocha.MochaOptions) {
+        super(runner, options);
+        this.xunitReporter = new Mocha.reporters.XUnit(runner, options);
+    }
+
+    override done(failures: number, callback: (failures: number) => void): void {
+        this.xunitReporter.done(failures, callback);
+    }
+}
+
 export async function run(): Promise<void> {
     const testsRoot = path.resolve(__dirname, '..');
     // Create the mocha test
     const mocha = new Mocha({
         ui: 'bdd',
-        reporter: 'xunit',
+        reporter: SpecAndXunitReporter,
         reporterOptions: {
             output: path.resolve(__dirname, '../../../test-results.xml')
         },

@@ -28,7 +28,6 @@
 	},
 	"activationEvents": [
 		"onDebug",
-		"onLanguage:m68k",
 		"onLanguage:c",
 		"onLanguage:amiga-assembly-debug.disassembly",
 		"onWebviewPanel:iffView"
