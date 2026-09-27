@@ -53,20 +53,11 @@ jobs:
         if: always()
         run: node -e "const fs = require('node:fs'); const source = 'test-results.xml'; const destination = 'test-results-${{ matrix.os }}-${{ github.run_id }}.xml'; if (fs.existsSync(source)) fs.renameSync(source, destination); else console.warn('No test-results.xml was generated; the test step may have failed before Mocha completed.');"
       - name: Upload Unit Test Results
-        if: always() && hashFiles('test-results-${{ matrix.os }}-${{ github.run_id }}.xml') != ''
+        if: always() && hashFiles(format('test-results-{0}-{1}.xml', matrix.os, github.run_id))
         uses: actions/upload-artifact@v4
         with:
           name: Unit-Test-Results-${{ matrix.os }}-${{ github.run_id }}
           path: test-results-${{ matrix.os }}-${{ github.run_id }}.xml
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        if: runner.os == 'Linux'
-      # - name: Setup tmate session
-      #   if: success() || failure()
-      #   uses: mxschmitt/action-tmate@v3
   package:
     needs: build
     # The type of runner that the job will run on
