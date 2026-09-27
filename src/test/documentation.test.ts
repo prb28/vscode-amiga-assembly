@@ -77,7 +77,7 @@ describe("Documentation Tests", function () {
     context("Hover directive file parsing", function () {
         it("Should read the file correctly", async function () {
             const manager = documentationManger.directivesManager;
-            expect(manager.getCount()).to.be.equal(98);
+            expect(manager.getCount()).to.be.equal(99);
             const documentation = await manager.getDirectiveByName("SECTION");
             expect(documentation).to.not.be.undefined;
             if (documentation) {
