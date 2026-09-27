@@ -30,9 +30,9 @@ jobs:
         run: sudo apt-get update; sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libopenal-dev libalut-dev libsdl2-2.0-0 libpng-dev mpeg2dec libmpeg2-4 libmpeg2-4-dev libsdl2-dev libsdl2-ttf-2.0-0 libopenal-dev libopenal-data libopenal1
         if: runner.os == 'Linux'
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24.x
       - run: npm ci
@@ -54,7 +54,7 @@ jobs:
         run: node -e "const fs = require('node:fs'); const source = 'test-results.xml'; const destination = 'test-results-${{ matrix.os }}-${{ github.run_id }}.xml'; if (fs.existsSync(source)) fs.renameSync(source, destination); else console.warn('No test-results.xml was generated; the test step may have failed before Mocha completed.');"
       - name: Upload Unit Test Results
         if: always() && hashFiles(format('test-results-{0}-{1}.xml', matrix.os, github.run_id))
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Unit-Test-Results-${{ matrix.os }}-${{ github.run_id }}
           path: test-results-${{ matrix.os }}-${{ github.run_id }}.xml
@@ -69,9 +69,9 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24.x
       - run: npm ci
@@ -79,7 +79,7 @@ jobs:
         run: npm install -g vsce
       - run: npm run vscode:prepublish
       - run: vsce package
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: ${{ success() }}
         with:
           name: Extension
@@ -94,7 +94,7 @@ jobs:
 
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: artifacts
 
