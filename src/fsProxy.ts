@@ -1,6 +1,6 @@
 import { Uri, workspace, FileStat, FileType, FileSystemError } from "vscode";
 import * as fs from 'fs';
-import * as glob from 'glob';
+import { globSync } from 'glob';
 import * as path from 'path';
 
 /**
@@ -147,10 +147,9 @@ export class FileProxy {
     public async findFiles(includes: string, excludes: string): Promise<Array<FileProxy>> {
         const values = new Array<FileProxy>();
         // List the source dir
-        const files = glob.sync(includes, <glob.GlobOptions>{
+        const files = globSync(includes, {
             cwd: this.uri.fsPath,
-            ignore: excludes,
-            nosort: true
+            ignore: excludes
         });
         for (const f of files) {
             if (typeof f === 'string') {

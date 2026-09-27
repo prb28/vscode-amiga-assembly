@@ -2,12 +2,12 @@
 
 import * as path from 'path';
 import * as Mocha from 'mocha';
-import * as glob from 'glob';
+import { globSync } from 'glob';
 
 // Linux: prevent a weird NPE when mocha on Linux requires the window size from the TTY
 // Since we are not running in a tty environment, we just implement he method statically
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const tty = require('tty');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const tty = require('tty') as { getWindowSize?: () => number[] };
 if (!tty.getWindowSize) {
     tty.getWindowSize = (): number[] => {
         return [80, 75];
@@ -25,7 +25,7 @@ export async function run(): Promise<void> {
     });
 
     // Add all files to the test suite
-    const files = glob.sync('**/*.test.js', { cwd: testsRoot });
+    const files = globSync('**/*.test.js', { cwd: testsRoot });
     files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)));
 
     const failures: number = await new Promise(resolve => mocha.run(resolve));

@@ -12,6 +12,7 @@ export class DummyTextDocument implements TextDocument {
     readonly version: number = 1;
     readonly isDirty: boolean = false;
     readonly isClosed: boolean = false;
+    readonly encoding: string = "utf8";
     readonly eol: EndOfLine = EndOfLine.LF;
     static readonly SEPARATORS = [',', '.', ';', ' ', '$', '#'];
     lineCount = 0;
