@@ -13,3 +13,5 @@ lint-report.json
 dist
 .nyc_output
 test-result*
+resources/examples/vscode-amiga-wks-example/build
+resources/examples/vscode-amiga-wks-example/uae/dh0/gencop
