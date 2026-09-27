@@ -35,14 +35,23 @@ export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
 export const AMIGA_DEBUG_ASM_MODE: vscode.DocumentFilter = { language: 'amiga-assembly-debug.disassembly', scheme: 'disassembly' };
 
 class SimpleConsoleTransport extends TransportStream {
-    private outputChannel: vscode.OutputChannel;
-    constructor(outputChannel: vscode.OutputChannel) {
+    private outputChannel: vscode.LogOutputChannel;
+    constructor(outputChannel: vscode.LogOutputChannel) {
         super();
         this.outputChannel = outputChannel;
     }
     public log(info: any, callback: any) {
         setImmediate(() => this.emit("logged", info));
-        this.outputChannel.appendLine(`[${info.level}] ${info.message}`);
+        const level = (info.level || '').toLowerCase();
+        if (level === 'error') {
+            this.outputChannel.error(info.message);
+        } else if (level === 'warn' || level === 'warning') {
+            this.outputChannel.warn(info.message);
+        } else if (level === 'debug') {
+            this.outputChannel.debug(info.message);
+        } else {
+            this.outputChannel.info(info.message);
+        }
         if (callback) {
             callback();
         }
@@ -60,7 +69,7 @@ export class ExtensionState {
     private documentationManager: DocumentationManager | undefined;
     private language: M68kLanguage | undefined;
     private watcher: vscode.FileSystemWatcher | undefined;
-    private outputChannel: vscode.OutputChannel;
+    private outputChannel: vscode.LogOutputChannel;
     private buildDir: FileProxy | undefined;
     private tmpDir: FileProxy | undefined;
     private context: vscode.ExtensionContext | undefined;
@@ -72,7 +81,7 @@ export class ExtensionState {
     private extensionPath: string = path.join(__dirname, "..");
 
     public constructor() {
-        this.outputChannel = vscode.window.createOutputChannel('Amiga Assembly');
+        this.outputChannel = vscode.window.createOutputChannel('Amiga Assembly', { log: true });
         const transport = new SimpleConsoleTransport(this.outputChannel);
         const level: string | undefined = this.getLogLevel();
         if (level) {
@@ -189,7 +198,7 @@ export class ExtensionState {
         }
         return this.language;
     }
-    public getOutputChannel(): vscode.OutputChannel {
+    public getOutputChannel(): vscode.LogOutputChannel {
         return this.outputChannel;
     }
     public dispose(): void {
@@ -530,7 +539,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
 
     // register a configuration provider for debug types:
     // Universal:
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('amiga-assembly', new CopperlineConfigurationProvider()));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('amiga-assembly', new AmigaAssemblyConfigurationProvider()));
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('amiga-assembly', new InlineDebugAdapterFactory()));
     // Deprecated:
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', new FsUAEConfigurationProvider()));
@@ -644,12 +653,87 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
     }
 }
 
+export class AmigaAssemblyConfigurationProvider implements vscode.DebugConfigurationProvider {
+    private copperlineProvider = new CopperlineConfigurationProvider();
+
+    provideDebugConfigurations(_folder?: vscode.WorkspaceFolder): vscode.ProviderResult<vscode.DebugConfiguration[]> {
+        return [
+            {
+                type: 'amiga-assembly',
+                request: 'launch',
+                name: 'FS-UAE Debug',
+                stopOnEntry: false,
+                program: '${workspaceFolder}/uae/dh0/myprogram',
+                remoteProgram: 'SYS:myprogram',
+                emulatorType: 'fs-uae',
+                emulatorArgs: [
+                    '--hard_drive_0=${workspaceFolder}/uae/dh0',
+                    '--automatic_input_grab=0'
+                ],
+                preLaunchTask: AmigaBuildTaskProvider.AMIGA_BUILD_PRELAUNCH_TASK_NAME
+            },
+            {
+                type: 'amiga-assembly',
+                request: 'launch',
+                name: 'WinUAE Debug',
+                stopOnEntry: false,
+                program: '${workspaceFolder}/uae/dh0/myprogram',
+                remoteProgram: 'SYS:myprogram',
+                emulatorType: 'winuae',
+                emulatorArgs: [
+                    '-s',
+                    'filesystem=rw,dh0:${workspaceFolder}/uae/dh0'
+                ],
+                preLaunchTask: AmigaBuildTaskProvider.AMIGA_BUILD_PRELAUNCH_TASK_NAME
+            }
+        ];
+    }
+
+    resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): vscode.ProviderResult<vscode.DebugConfiguration> {
+        // if launch.json is missing or empty
+        if (!config.type && !config.request && !config.name) {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document.languageId === 'm68k') {
+                config.type = 'amiga-assembly';
+                config.name = 'Amiga Assembly: Debug';
+                config.request = 'launch';
+                config.stopOnEntry = false;
+                config.program = '${workspaceFolder}/uae/dh0/myprogram';
+                config.remoteProgram = 'SYS:myprogram';
+                config.emulatorType = process.platform === 'win32' ? 'winuae' : 'fs-uae';
+                config.preLaunchTask = AmigaBuildTaskProvider.AMIGA_BUILD_PRELAUNCH_TASK_NAME;
+                if (config.emulatorType === 'winuae') {
+                    config.emulatorArgs = [
+                        '-s',
+                        'filesystem=rw,dh0:${workspaceFolder}/uae/dh0'
+                    ];
+                } else {
+                    config.emulatorArgs = [
+                        '--hard_drive_0=${workspaceFolder}/uae/dh0',
+                        '--automatic_input_grab=0'
+                    ];
+                }
+            }
+        }
+        return config;
+    }
+
+    resolveDebugConfigurationWithSubstitutedVariables(
+        folder: vscode.WorkspaceFolder | undefined,
+        config: vscode.DebugConfiguration
+    ): vscode.ProviderResult<vscode.DebugConfiguration> {
+        if (config.emulatorType === 'copperline') {
+            return this.copperlineProvider.resolveDebugConfigurationWithSubstitutedVariables(folder, config);
+        }
+        return config;
+    }
+}
+
 export class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         if (session.type === 'amiga-assembly' && session.configuration.emulatorType === 'copperline') {
             return createCopperlineDebugAdapter(session.configuration);
         }
-        // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
         return new vscode.DebugAdapterInlineImplementation(new DebugSession());
     }
 }

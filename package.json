@@ -28,10 +28,10 @@
 	},
 	"activationEvents": [
 		"onDebug",
+		"onLanguage:m68k",
 		"onLanguage:c",
 		"onLanguage:amiga-assembly-debug.disassembly",
-		"onWebviewPanel:iffView",
-		"workspaceContains:**/*.{s,S,asm,ASM}"
+		"onWebviewPanel:iffView"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -298,8 +298,6 @@
 			{
 				"type": "amiga-assembly",
 				"label": "Amiga-Assembly: Debug",
-				"program": "./out/debugAdapter.js",
-				"runtime": "node",
 				"configurationAttributes": {
 					"launch": {
 						"required": [
@@ -772,8 +770,6 @@
 			{
 				"type": "fs-uae",
 				"label": "Amiga-Assembly: FS-UAE Debug (Deprecated)",
-				"program": "./out/debugAdapter.js",
-				"runtime": "node",
 				"configurationAttributes": {
 					"launch": {
 						"required": [
@@ -862,8 +858,6 @@
 			{
 				"type": "uae-run",
 				"label": "Amiga-Assembly: Run (Deprecated)",
-				"program": "./out/debugAdapter.js",
-				"runtime": "node",
 				"configurationAttributes": {
 					"launch": {
 						"required": [
@@ -901,8 +895,6 @@
 			{
 				"type": "winuae",
 				"label": "Amiga-Assembly: WinUAE Debug  (Deprecated)",
-				"program": "./out/debugAdapter.js",
-				"runtime": "node",
 				"configurationAttributes": {
 					"launch": {
 						"required": [
@@ -1006,17 +998,17 @@
 			"debug/variables/context": [
 				{
 					"command": "amiga-assembly.showVariableAsDec",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
+					"when": "debugType == 'winuae' || debugType == 'fs-uae' || debugType == 'amiga-assembly'",
 					"group": "1_view"
 				},
 				{
 					"command": "amiga-assembly.showVariableAsHex",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
+					"when": "debugType == 'winuae' || debugType == 'fs-uae' || debugType == 'amiga-assembly'",
 					"group": "1_view"
 				},
 				{
 					"command": "amiga-assembly.showVariableAsBin",
-					"when": "debugType == 'winuae' || debugType == 'fs-uae'",
+					"when": "debugType == 'winuae' || debugType == 'fs-uae' || debugType == 'amiga-assembly'",
 					"group": "1_view"
 				}
 			]
@@ -1029,6 +1021,40 @@
 				}
 			]
 		},
+		"problemMatchers": [
+			{
+				"name": "vasm",
+				"owner": "m68k",
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
+				"pattern": {
+					"regexp": "^(error|warning|message)\\s+(\\d+)\\s+in\\s+line\\s+(\\d+)\\s+of\\s+\"([^\"]+)\":\\s*(.*)$",
+					"severity": 1,
+					"code": 2,
+					"line": 3,
+					"file": 4,
+					"message": 5
+				}
+			},
+			{
+				"name": "vlink",
+				"owner": "m68k",
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
+				"pattern": {
+					"regexp": "^(error|warning|message)\\s+(\\d+)\\s+in\\s+line\\s+(\\d+)\\s+of\\s+\"([^\"]+)\":\\s*(.*)$",
+					"severity": 1,
+					"code": 2,
+					"line": 3,
+					"file": 4,
+					"message": 5
+				}
+			}
+		],
 		"taskDefinitions": [
 			{
 				"type": "amigaassembly",

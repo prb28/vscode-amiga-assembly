@@ -1,4 +1,4 @@
-import { commands, CustomExecution, Disposable, Event, EventEmitter, Pseudoterminal, Task, TaskDefinition, TaskProvider, TaskScope, TextDocument, workspace } from 'vscode';
+import { CustomExecution, Disposable, Event, EventEmitter, Pseudoterminal, Task, TaskDefinition, TaskGroup, TaskProvider, TaskScope, TextDocument, window, workspace } from 'vscode';
 import { AdfGeneratorProperties, ADFTools } from './adf';
 import { ConfigurationHelper } from './configurationHelper';
 import { ExtensionState } from './extension';
@@ -33,7 +33,13 @@ export class AmigaBuildTaskProvider implements TaskProvider {
 
 	public resolveTask(_task: Task): Task | undefined {
 		const definition: AmigaBuildTaskDefinition = _task.definition;
-		return this.getTask(definition);
+		if (definition) {
+			const isBuildWithADF = !!definition.adfgenerator;
+			const isCompileTask = !!definition.vasm && !definition.vlink && !definition.adfgenerator;
+			const isBuildCurrentTask = definition.vlink?.includes === undefined && !!definition.vlink?.exefilename;
+			return this.getTask(definition, isCompileTask, isBuildWithADF, isBuildCurrentTask);
+		}
+		return undefined;
 	}
 
 	private getTasks(): Task[] {
@@ -76,11 +82,15 @@ export class AmigaBuildTaskProvider implements TaskProvider {
 		} else {
 			taskName = AmigaBuildTaskProvider.AMIGA_BUILD_TASK_NAME;
 		}
-		const task = new AmigaBuildTaskTerminal(this.extensionState, lDefinition.vasm, lDefinition.vlink, lDefinition.adfgenerator);
-		return new Task(lDefinition, TaskScope.Workspace, taskName,
+		const taskTerminal = new AmigaBuildTaskTerminal(this.extensionState, lDefinition.vasm, lDefinition.vlink, lDefinition.adfgenerator);
+		const vTask = new Task(lDefinition, TaskScope.Workspace, taskName,
 			AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE, new CustomExecution(async (): Promise<Pseudoterminal> => {
-				return task;
-			}));
+				return taskTerminal;
+			}), ['$vasm']);
+		if (taskName === AmigaBuildTaskProvider.AMIGA_BUILD_TASK_NAME) {
+			vTask.group = TaskGroup.Build;
+		}
+		return vTask;
 	}
 }
 
@@ -148,7 +158,11 @@ export class CompilerController {
 	}
 
 	public compile(): Thenable<unknown> {
-		return commands.executeCommand("workbench.action.tasks.runTask", AmigaBuildTaskProvider.AMIGA_COMPILE_FULL_TASK_NAME);
+		if (window.activeTextEditor) {
+			const compiler = ExtensionState.getCurrent().getCompiler();
+			return compiler.buildCurrentEditorFile();
+		}
+		return Promise.resolve();
 	}
 
 	public async onSaveDocument(document: TextDocument): Promise<void> {

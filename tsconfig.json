@@ -1,10 +1,9 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es2019",
+        "target": "es2022",
         "lib": [
-            "ES2019",
-            "dom" // for error : TS2304: Cannot find name 'AbortSignal'
+            "es2022"
         ],
         "outDir": "out",
         "sourceMap": true,
