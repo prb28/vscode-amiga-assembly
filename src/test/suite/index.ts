@@ -19,7 +19,10 @@ export async function run(): Promise<void> {
     // Create the mocha test
     const mocha = new Mocha({
         ui: 'bdd',
-        reporter: 'spec',
+        reporter: 'xunit',
+        reporterOptions: {
+            output: path.resolve(__dirname, '../../../test-results.xml')
+        },
         color: true,
         timeout: 60000
     });
