@@ -34,8 +34,8 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
-      - run: npm install
+          node-version: 24.x
+      - run: npm ci
       - run: npm run test-compile
       - name: xvfb test
         uses: GabrielBB/xvfb-action@v1.7
@@ -51,9 +51,9 @@ jobs:
           CI: true  # This explicitly sets the CI environment variable, although GitHub Actions does this automatically
       - name: Rename Unit Test Results
         if: always()
-        run: mv test-results.xml test-results-${{ matrix.os }}-${{ github.run_id }}.xml
+        run: node -e "const fs = require('node:fs'); const source = 'test-results.xml'; const destination = 'test-results-${{ matrix.os }}-${{ github.run_id }}.xml'; if (fs.existsSync(source)) fs.renameSync(source, destination); else console.warn('No test-results.xml was generated; the test step may have failed before Mocha completed.');"
       - name: Upload Unit Test Results
-        if: always()
+        if: always() && hashFiles('test-results-${{ matrix.os }}-${{ github.run_id }}.xml') != ''
         uses: actions/upload-artifact@v4
         with:
           name: Unit-Test-Results-${{ matrix.os }}-${{ github.run_id }}
@@ -82,8 +82,8 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
-      - run: npm install
+          node-version: 24.x
+      - run: npm ci
       - name: Install vsce
         run: npm install -g vsce
       - run: npm run vscode:prepublish

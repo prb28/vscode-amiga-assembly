@@ -1226,7 +1226,7 @@
 		"@types/chai": "^4.3.10",
 		"@types/chai-as-promised": "^7.1.8",
 		"@types/mocha": "^10.0.10",
-		"@types/node": "^26",
+		"@types/node": "^24",
 		"@types/sinon": "^22.0.0",
 		"@types/temp": "^0.9.4",
 		"@types/unzipper": "^0.10.11",
