@@ -1230,7 +1230,7 @@
 		"@types/sinon": "^22.0.0",
 		"@types/temp": "^0.9.4",
 		"@types/unzipper": "^0.10.11",
-		"@types/vscode": "^1.138.0",
+		"@types/vscode": "^1.95.0",
 		"@typescript-eslint/eslint-plugin": "^8.70.1",
 		"@typescript-eslint/parser": "^8.70.1",
 		"@vscode/debugadapter-testsupport": "^1.68.0",
