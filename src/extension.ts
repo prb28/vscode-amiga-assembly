@@ -28,6 +28,7 @@ import { WorkspaceManager } from './workspaceManager';
 import { DataBreakpointSizesStorage } from './breakpointStorage';
 import { NumberFormat, VariableDisplayFormatRequest } from 'uae-dap';
 import { createBltconHelperPanel } from './bltconHelper';
+import { CopperlineConfigurationProvider, createCopperlineDebugAdapter } from './copperlineDebug';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
@@ -529,6 +530,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
 
     // register a configuration provider for debug types:
     // Universal:
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('amiga-assembly', new CopperlineConfigurationProvider()));
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('amiga-assembly', new InlineDebugAdapterFactory()));
     // Deprecated:
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', new FsUAEConfigurationProvider()));
@@ -642,9 +644,11 @@ class FsUAEConfigurationProvider implements vscode.DebugConfigurationProvider {
     }
 }
 
-class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createDebugAdapterDescriptor(_session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
+export class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
+    createDebugAdapterDescriptor(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
+        if (session.type === 'amiga-assembly' && session.configuration.emulatorType === 'copperline') {
+            return createCopperlineDebugAdapter(session.configuration);
+        }
         // since DebugAdapterInlineImplementation is proposed API, a cast to <any> is required for now
         return new vscode.DebugAdapterInlineImplementation(new DebugSession());
     }

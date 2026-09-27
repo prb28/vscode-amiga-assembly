@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
-import * as fs from "fs";
 import * as Path from 'path';
 import { capture, reset, spy, verify, anyString, when, anything } from '@johanblumenberg/ts-mockito';
 import { VLINKParser, VLINKLinker } from '../vlink';
@@ -33,8 +32,6 @@ describe("VLINK Tests", function () {
         });
         it("Should call the link command", async function () {
             const spiedLinker = spy(linker);
-            const spiedFs = spy(fs);
-            when(spiedFs.existsSync(anyString())).thenReturn(true);
             when(spiedLinker.mayLink(anything())).thenReturn(true);
             const filesUri = [vscode.Uri.parse("file:///file1.s"), vscode.Uri.parse("file:///file2")];
             await linker.linkFiles(VLINKLinker.DEFAULT_BUILD_CONFIGURATION, filesUri, "myprog", undefined, vscode.Uri.parse("file:///workdir"), vscode.Uri.parse("file:///workdir/build"));
@@ -42,13 +39,10 @@ describe("VLINK Tests", function () {
             const args = capture(executor.runTool).last();
             const buildPath = "/workdir/build/".replace(/\/+/g, Path.sep);
             expect(args[0]).to.be.eql(["-bamigahunk", "-Bstatic", "-o", buildPath + "myprog", buildPath + "file1.o", buildPath + "file2.o"]);
-            reset(spiedFs);
             reset(spiedLinker);
         });
         it('Should sort objects according to the entrypoint', async function () {
             const spiedLinker = spy(linker);
-            const spiedFs = spy(fs);
-            when(spiedFs.existsSync(anyString())).thenReturn(true);
             when(spiedLinker.mayLink(anything())).thenReturn(true);
             const filesUri = [
                 vscode.Uri.parse('file:///file1.s'),
@@ -75,7 +69,6 @@ describe("VLINK Tests", function () {
                 '-bamigahunk', '-Bstatic', '-o', buildPath + 'myprog',
                 buildPath + 'file2.o', buildPath + 'file1.o', buildPath + 'file3.o', buildPath + 'file4.o'
             ]);
-            reset(spiedFs);
             reset(spiedLinker);
         });
         it("Should preserve file order to link", async function () {

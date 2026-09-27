@@ -317,7 +317,7 @@
 							},
 							"stopOnEntry": {
 								"type": "boolean",
-								"description": "Automatically stop target after launch",
+								"description": "Automatically stop target after launch (Copperline defaults to true when omitted)",
 								"default": false
 							},
 							"noDebug": {
@@ -349,14 +349,15 @@
 								"type": "string",
 								"enum": [
 									"fs-uae",
-									"winuae"
+									"winuae",
+									"copperline"
 								],
 								"description": "Emulator program type",
 								"default": "fs-uae"
 							},
 							"emulatorBin": {
 								"type": "string",
-								"description": "Path of emulator executable (default: use bundled version)"
+								"description": "Path of emulator executable (UAE: use bundled version; Copperline: discover beside copperline-ctl or on PATH)"
 							},
 							"emulatorArgs": {
 								"type": "array",
@@ -366,6 +367,139 @@
 								},
 								"default": [],
 								"description": "Additional CLI args to pass to emulator program. Remote debugger args are added automatically"
+							},
+							"copperlineAdapter": {
+								"type": "string",
+								"description": "Path to copperline-ctl, or its command name on PATH. Do not include --dap. Used only with emulatorType: copperline.",
+								"default": "copperline-ctl"
+							},
+							"copperlineOptions": {
+								"type": "object",
+								"description": "Options for the Copperline debug adapter. Used only with emulatorType: copperline.",
+								"properties": {
+									"entryPoint": {
+										"type": "string",
+										"description": "Symbol to stop at instead of the first instruction, for example main."
+									},
+									"symbolFile": {
+										"type": "string",
+										"description": "ELF file with DWARF debug information. Copperline also tries program.elf."
+									},
+									"sourceMap": {
+										"type": "object",
+										"description": "Map source path prefixes recorded at build time to local directories.",
+										"additionalProperties": {
+											"type": "string"
+										}
+									},
+									"cwd": {
+										"type": "string",
+										"description": "Working directory for the adapter and emulator. Defaults to the workspace folder."
+									},
+									"timeoutMs": {
+										"type": "integer",
+										"description": "Time to wait for the emulator control endpoint, in milliseconds.",
+										"minimum": 1,
+										"default": 60000
+									},
+									"args": {
+										"type": [
+											"string",
+											"array"
+										],
+										"description": "Arguments for the Amiga program.",
+										"items": {
+											"type": "string"
+										}
+									},
+									"config": {
+										"type": "string",
+										"description": "Copperline TOML configuration file."
+									},
+									"rom": {
+										"type": "string",
+										"description": "Kickstart ROM path. Omit to use the configured ROM or bundled AROS ROM."
+									},
+									"factory": {
+										"type": "boolean",
+										"description": "Ignore the saved default Copperline configuration.",
+										"default": false
+									},
+									"model": {
+										"type": "string",
+										"description": "Amiga model, for example A500, A1200 or CD32."
+									},
+									"chipset": {
+										"type": "string",
+										"description": "Amiga chipset.",
+										"enum": [
+											"OCS",
+											"ECS",
+											"AGA"
+										]
+									},
+									"cpu": {
+										"type": "string",
+										"description": "CPU model, from 68000 to 68060."
+									},
+									"chip": {
+										"type": "string",
+										"description": "Chip RAM size, for example 512K or 2M."
+									},
+									"fast": {
+										"type": "string",
+										"description": "Fast RAM size, for example 8M."
+									},
+									"slow": {
+										"type": "string",
+										"description": "Slow RAM size, for example 512K."
+									},
+									"memoryFill": {
+										"type": "string",
+										"description": "Initial RAM contents: zero, random[:SEED], pattern:WORD, or 0xWORD."
+									},
+									"fpu": {
+										"type": "boolean",
+										"description": "Fit or omit an FPU."
+									},
+									"stack": {
+										"type": "integer",
+										"description": "AmigaDOS stack size in bytes.",
+										"minimum": 2048,
+										"maximum": 2147483644
+									},
+									"ntsc": {
+										"type": "boolean",
+										"description": "Use NTSC timing when true, PAL when false."
+									},
+									"detach": {
+										"type": "boolean",
+										"description": "Run the guest program asynchronously and close its boot CLI."
+									},
+									"emulatorLog": {
+										"type": "boolean",
+										"description": "Show emulator output in the Debug Console."
+									},
+									"rtcTime": {
+										"type": "string",
+										"description": "Guest clock seed as Unix seconds or YYYY-MM-DD HH:MM:SS."
+									},
+									"headless": {
+										"type": "boolean",
+										"description": "Run without an emulator window or audio.",
+										"default": false
+									},
+									"noAudio": {
+										"type": "boolean",
+										"description": "Disable audio in a windowed session.",
+										"default": false
+									},
+									"coverage": {
+										"type": "string",
+										"description": "Write instruction coverage as an lcov file when the session ends."
+									}
+								},
+								"additionalProperties": false
 							}
 						}
 					},
@@ -381,7 +515,7 @@
 							},
 							"stopOnEntry": {
 								"type": "boolean",
-								"description": "Automatically stop target after launch",
+								"description": "Stop at the program entry point when it loads (Copperline defaults to false when omitted)",
 								"default": false
 							},
 							"trace": {
@@ -403,6 +537,58 @@
 								"type": "number",
 								"description": "Mask used to catch the exceptions",
 								"default": 60
+							},
+							"emulatorType": {
+								"type": "string",
+								"description": "Select copperline to attach through its control protocol. Omit for the existing UAE adapter.",
+								"enum": [
+									"fs-uae",
+									"winuae",
+									"copperline"
+								]
+							},
+							"copperlineAdapter": {
+								"type": "string",
+								"description": "Path to copperline-ctl, or its command name on PATH. Do not include --dap. Used only with emulatorType: copperline.",
+								"default": "copperline-ctl"
+							},
+							"copperlineOptions": {
+								"type": "object",
+								"description": "Options for the Copperline debug adapter. Used only with emulatorType: copperline.",
+								"properties": {
+									"entryPoint": {
+										"type": "string",
+										"description": "Symbol to stop at instead of the first instruction, for example main."
+									},
+									"symbolFile": {
+										"type": "string",
+										"description": "ELF file with DWARF debug information. Copperline also tries program.elf."
+									},
+									"sourceMap": {
+										"type": "object",
+										"description": "Map source path prefixes recorded at build time to local directories.",
+										"additionalProperties": {
+											"type": "string"
+										}
+									},
+									"cwd": {
+										"type": "string",
+										"description": "Working directory for the adapter and emulator. Defaults to the workspace folder."
+									},
+									"controlInfo": {
+										"type": "string",
+										"description": "File written by Copperline --control-info. Use this or address and token."
+									},
+									"address": {
+										"type": "string",
+										"description": "Control endpoint as host:port; requires token."
+									},
+									"token": {
+										"type": "string",
+										"description": "Authentication token for the control endpoint; requires address."
+									}
+								},
+								"additionalProperties": false
 							}
 						}
 					}
@@ -462,6 +648,18 @@
 							"-s",
 							"filesystem=rw,dh0:${workspaceFolder}/uae/dh0"
 						],
+						"preLaunchTask": "amigaassembly: build"
+					},
+					{
+						"type": "amiga-assembly",
+						"request": "launch",
+						"name": "Copperline Debug",
+						"emulatorType": "copperline",
+						"program": "${workspaceFolder}/uae/dh0/myprogram",
+						"stopOnEntry": true,
+						"copperlineOptions": {
+							"factory": true
+						},
 						"preLaunchTask": "amigaassembly: build"
 					}
 				],
@@ -536,6 +734,37 @@
 								"^\"filesystem=rw,dh0:\\${workspaceFolder\\}/uae/dh0\""
 							],
 							"preLaunchTask": "amigaassembly: build"
+						}
+					},
+					{
+						"label": "Amiga-Assembly: Copperline Debug",
+						"description": "A new configuration to debug a program in Copperline.",
+						"body": {
+							"type": "amiga-assembly",
+							"request": "launch",
+							"name": "Copperline Debug",
+							"emulatorType": "copperline",
+							"program": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\"",
+							"stopOnEntry": true,
+							"copperlineOptions": {
+								"factory": true
+							},
+							"preLaunchTask": "amigaassembly: build"
+						}
+					},
+					{
+						"label": "Amiga-Assembly: Copperline Attach",
+						"description": "A new configuration to attach to Copperline.",
+						"body": {
+							"type": "amiga-assembly",
+							"request": "attach",
+							"name": "Copperline Attach",
+							"emulatorType": "copperline",
+							"program": "^\"\\${workspaceFolder\\}/uae/dh0/myprogram\"",
+							"stopOnEntry": true,
+							"copperlineOptions": {
+								"controlInfo": "^\"\\${workspaceFolder\\}/copperline-control.json\""
+							}
 						}
 					}
 				]
