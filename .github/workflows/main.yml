@@ -37,6 +37,8 @@ jobs:
           node-version: 24.x
       - run: npm ci
       - run: npm run test-compile
+      - name: Grammar tests
+        run: npm run test:grammar
       - name: xvfb test
         run: xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" npm run test
         if: runner.os == 'Linux'

@@ -46,8 +46,14 @@ export class ASMLine {
     public static init(language: M68kLanguage): void {
         if (!ASMLine.m68kLang) {
             ASMLine.m68kLang = language;
-            ASMLine.keywordsRegExps = ASMLine.m68kLang.getAllRegExps(/keyword.*/g);
-            ASMLine.macrosRegExps = ASMLine.m68kLang.getAllRegExps(/macro.*/g);
+            // Mnemonics (instructions and directives), operators used in the operands are excluded
+            ASMLine.keywordsRegExps = ASMLine.m68kLang.getAllRegExps(/^keyword\.(?!operator\.(immediate|arithmetic)\.)/);
+            ASMLine.macrosRegExps = [
+                // macro definition
+                /(^([a-zA-Z0-9_.]+)(:[ \t]*|[ \t]+)macro|^[ \t]+macro[ \t]+([a-zA-Z0-9_.]+))[ \t]*$/i,
+                // macro call
+                /^([a-zA-Z0-9_][a-zA-Z0-9_\\.]*)\b/i
+            ];
         }
     }
 

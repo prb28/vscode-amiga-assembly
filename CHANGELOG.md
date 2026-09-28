@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [1.8.16] - pre-release
+- Syntax coloring: the TextMate grammar is rewritten around the line layout (label / mnemonic / operands / comment)
+  - [Issue #343](https://github.com/prb28/vscode-amiga-assembly/issues/343) `macro`, `ds`, `dc`, `rs.x` directives are colored as directives
+  - [Issue #346](https://github.com/prb28/vscode-amiga-assembly/issues/346) Immediate `#` and expression operators have their own colors
+  - [Issue #347](https://github.com/prb28/vscode-amiga-assembly/issues/347) Operands named like instructions (`bsr Move`) are no longer colored as instructions
+  - [Issue #348](https://github.com/prb28/vscode-amiga-assembly/issues/348) `sr`, `ccr`, `usp` and control registers, `__RS`, `__SO`, `__FO`, `NARG` are colored
+  - [Issue #349](https://github.com/prb28/vscode-amiga-assembly/issues/349) Digits inside a symbol (`color00`) are no longer colored as numbers
+  - [Issue #350](https://github.com/prb28/vscode-amiga-assembly/issues/350) Macro invocations are colored like macro definitions
+  - [Issue #352](https://github.com/prb28/vscode-amiga-assembly/issues/352) `*` in an expression is the program counter, not a comment
+  - [Issue #355](https://github.com/prb28/vscode-amiga-assembly/issues/355) `if` directive is colored
+  - [Issue #363](https://github.com/prb28/vscode-amiga-assembly/issues/363) `rseven` directive is colored
+  - Size suffixes (`move.l`, `dc.w`, `$dff180.w`) have their own color (`support.type.size.m68k`)
+  - Renamed scopes (for `editor.tokenColorCustomizations` users): `keyword.other.opcode.mem.m68k` → `keyword.control.directive.data.m68k`, `keyword.other.opcode.pc.m68k` → `keyword.control.directive.data.pc.m68k`, `keyword.operator.assignment.stack.*.m68k` → `keyword.control.directive.storage.m68k`, `meta.label.global.m68k` → `entity.name.label.m68k`, `variable.other.macro.m68k` → `entity.name.function.macro.m68k`
+
 ### [1.8.15] - pre-release
 - [Issue #372](https://github.com/prb28/vscode-amiga-assembly/issues/372) Add Copperline as a launch and attach debug target
 - [Issue #325](https://github.com/prb28/vscode-amiga-assembly/issues/325) When entrypoint is not found an error should be sent

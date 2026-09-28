@@ -3,6 +3,15 @@ import { FileProxy } from './fsProxy';
 import { Uri } from 'vscode';
 
 /**
+ * Rule of the TextMate grammar
+ */
+interface GrammarRule {
+    name?: string;
+    match?: string;
+    patterns?: Array<GrammarRule>;
+}
+
+/**
  * Class to manage the language file
  */
 export class M68kLanguage {
@@ -39,24 +48,44 @@ export class M68kLanguage {
             "keyword.other.opcode.cpu.wl.m68k", "keyword.other.opcode.cpu.bwls.m68k", "keyword.other.opcode.cpu.ld.m68k",
             "keyword.other.opcode.cpu.l.m68k", "keyword.other.opcode.cpu.w.m68k", "keyword.other.opcode.cpu.b.m68k",
             "keyword.other.opcode.cpu.bw.m68k", "keyword.other.opcode.cpu.bwld.m68k", "keyword.other.opcode.cpu.ldx.m68k",
-            "keyword.other.opcode.fpu.x.m68k", "keyword.other.opcode.fpu.bwlsdxp.m68k", "keyword.other.opcode.mem.m68k",
-            "keyword.other.opcode.pc.m68k"];
+            "keyword.other.opcode.fpu.x.m68k", "keyword.other.opcode.fpu.bwlsdxp.m68k", "keyword.control.directive.data.m68k",
+            "keyword.control.directive.data.pc.m68k"];
+        // Matches the "(inst1|inst2|...)(\.[exts])" part of an instruction pattern
+        const instructionsRegExp = /\(([a-z0-9_|]+)\)\(\\\.\[([a-z]+)\]\)/i;
         for (const s of syntaxes) {
-            let p: string = this.getPattern(s);
-            p = p.substring(6, p.length - 3);
-            const elms = p.split("(");
-            if (elms.length === 3) {
-                const inst = elms[1].replace(")", "").split("|");
-                const extensionsStr = elms[2].replace(/[[\])\\.]/g, "");
-                const extensions = new Array<string>();
-                for (let j = 0; j < extensionsStr.length; j++) {
-                    extensions.push(extensionsStr.charAt(j));
-                }
-                for (const i of inst) {
-                    this.extensionsMap.set(i, extensions);
+            for (const p of this.getAllPatterns(new RegExp(`^${s.replace(/\./g, "\\.")}$`))) {
+                const elms = instructionsRegExp.exec(p);
+                if (elms) {
+                    const extensions = elms[2].split("");
+                    for (const i of elms[1].split("|")) {
+                        this.extensionsMap.set(i, extensions);
+                    }
                 }
             }
         }
+    }
+    /**
+     * Retrieves all the named match rules of the grammar,
+     * from the top level patterns and the repository
+     * @return list of the rules
+     */
+    private getAllRules(): Array<{ name: string; match: string }> {
+        const rules = new Array<{ name: string; match: string }>();
+        const visit = (patterns: Array<GrammarRule> | undefined) => {
+            if (patterns) {
+                for (const p of patterns) {
+                    if (p.name && p.match) {
+                        rules.push({ name: p.name, match: p.match });
+                    }
+                    visit(p.patterns);
+                }
+            }
+        };
+        visit(this.languageMap.patterns);
+        if (this.languageMap.repository) {
+            visit(Object.values(this.languageMap.repository));
+        }
+        return rules;
     }
     /**
      * Getting a pattern from it's name
@@ -64,7 +93,7 @@ export class M68kLanguage {
      * @return the pattern match field or null
      */
     getPattern(name: string): any {
-        for (const p of this.languageMap.patterns) {
+        for (const p of this.getAllRules()) {
             if (p.name === name) {
                 return p.match;
             }
@@ -90,7 +119,7 @@ export class M68kLanguage {
      */
     getAllPatterns(nameRegExp: RegExp): Array<string> {
         const list = new Array<string>();
-        for (const p of this.languageMap.patterns) {
+        for (const p of this.getAllRules()) {
             if (p.name.match(nameRegExp)) {
                 list.push(p.match);
             }

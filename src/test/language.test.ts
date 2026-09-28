@@ -53,6 +53,16 @@ describe("Language Tests", function () {
             expect(l.getExtensions('dc')).to.be.eql(['b', 'd', 'l', 'q', 's', 'w', 'x']);
             expect(l.getExtensions('dr')).to.be.eql(['b', 'w', 'l']);
             expect(l.getExtensions('ds')).to.be.eql(['b', 'd', 'l', 'q', 's', 'w', 'x']);
+            expect(l.getExtensions('rts')).to.be.undefined;
+        });
+        it("Should get a pattern declared in the grammar repository", function () {
+            const r: RegExp | null = l.getRegExp("keyword.control.condition.m68k");
+            if (r !== null) {
+                expect(r.test(" if")).to.be.true;
+                expect(r.test(" IFNE")).to.be.true;
+            } else {
+                fail("Regexp not found");
+            }
         });
     });
     context("HoverInstruction Tests", function () {
