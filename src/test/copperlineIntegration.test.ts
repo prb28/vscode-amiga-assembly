@@ -23,6 +23,15 @@ describe('Copperline integration', function () {
     const adapter = process.env.COPPERLINE_CTL ?? 'copperline-ctl';
     const binary = process.env.COPPERLINE_BIN ?? 'copperline';
 
+    // Windows paths are case-insensitive and the adapter may report a lowercase drive letter.
+    function samePath(actual: string, expected: string): void {
+        const normalize = (value: string): string => {
+            const real = fs.realpathSync(value);
+            return process.platform === 'win32' ? real.toLowerCase() : real;
+        };
+        expect(normalize(actual)).to.equal(normalize(expected));
+    }
+
     async function until<T>(read: () => T | undefined, description: string): Promise<T> {
         const deadline = Date.now() + 90000;
         while (Date.now() < deadline) {
@@ -115,7 +124,7 @@ describe('Copperline integration', function () {
         expect(session!.configuration.sourceMap['/unused/build/path']).to.equal(os.homedir());
         const first: DebugProtocol.StackTraceResponse['body'] = await session!.customRequest('stackTrace', { threadId: 1 });
         expect(first.stackFrames[0].line).to.equal(3);
-        expect(fs.realpathSync(first.stackFrames[0].source!.path!)).to.equal(fs.realpathSync(source));
+        samePath(first.stackFrames[0].source!.path!, source);
 
         let cursor = events.length;
         await session!.customRequest('continue', { threadId: 1 });
