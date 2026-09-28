@@ -6,7 +6,7 @@ import { globSync } from 'glob';
 
 // Linux: prevent a weird NPE when mocha on Linux requires the window size from the TTY
 // Since we are not running in a tty environment, we just implement he method statically
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const tty = require('tty') as { getWindowSize?: () => number[] };
 if (!tty.getWindowSize) {
     tty.getWindowSize = (): number[] => {

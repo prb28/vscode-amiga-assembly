@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
@@ -53,8 +54,51 @@ export class CopperlineConfigurationProvider implements vscode.DebugConfiguratio
     }
 }
 
+// copperline-ctl ships in the same folder as copperline, so emulatorBin is enough to find it.
+function adapterBesideEmulator(emulatorBin: unknown): string {
+    if (typeof emulatorBin !== 'string' || !emulatorBin.trim()) {
+        return 'copperline-ctl';
+    }
+    const dir = path.dirname(emulatorBin);
+    if (dir === '.' && !/^\.[\\/]/.test(emulatorBin)) {
+        return 'copperline-ctl'; // bare command name: both are looked up on PATH
+    }
+    const ext = path.extname(emulatorBin).toLowerCase() === '.exe' ? '.exe' : '';
+    return path.join(dir, `copperline-ctl${ext}`);
+}
+
+function executableExists(command: string): boolean {
+    const isPath = path.isAbsolute(command) || /[\\/]/.test(command);
+    const candidates = isPath
+        ? [command]
+        : (process.env.PATH ?? '').split(path.delimiter).filter(Boolean).map((dir) => path.join(dir, command));
+    const exts = process.platform === 'win32' && !path.extname(command)
+        ? (process.env.PATHEXT ?? '.EXE;.CMD;.BAT').split(';').concat('')
+        : [''];
+    return candidates.some((candidate) => exts.some((ext) => {
+        try {
+            return fs.statSync(candidate + ext).isFile();
+        } catch {
+            return false;
+        }
+    }));
+}
+
+/**
+ * Throws a user-facing error when the copperline-ctl adapter cannot be found,
+ * so VS Code shows an error dialog instead of the session dying silently.
+ */
+export function checkCopperlineAdapterExists(adapter: vscode.DebugAdapterExecutable): void {
+    if (!executableExists(adapter.command)) {
+        throw new Error(
+            `Copperline debug adapter not found: '${adapter.command}'. ` +
+            "Install Copperline and set 'emulatorBin' (or 'copperlineAdapter') in your launch configuration."
+        );
+    }
+}
+
 export function createCopperlineDebugAdapter(config: vscode.DebugConfiguration): vscode.DebugAdapterExecutable {
-    const command = config.copperlineAdapter ?? 'copperline-ctl';
+    const command = config.copperlineAdapter ?? adapterBesideEmulator(config.emulatorBin);
     if (typeof command !== 'string' || !command.trim()) {
         throw new Error('copperlineAdapter must name the copperline-ctl executable (without --dap).');
     }

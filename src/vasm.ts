@@ -383,7 +383,7 @@ export class VASMCompiler {
             if (logEmitter) {
               logEmitter.fire(message);
             }
-            throw new Error(message);
+            throw new Error(message, { cause: err });
           }
         }
         const state = ExtensionState.getCurrent();

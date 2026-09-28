@@ -25,6 +25,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
+                "--disable-workspace-trust",
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "${workspaceFolder}/resources/examples/vscode-amiga-wks-example"
             ],
@@ -43,6 +44,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
+                "--disable-workspace-trust",
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "${workspaceFolder}/resources/examples/vscode-amiga-wks-example"
             ],

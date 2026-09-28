@@ -28,7 +28,7 @@ import { WorkspaceManager } from './workspaceManager';
 import { DataBreakpointSizesStorage } from './breakpointStorage';
 import { NumberFormat, VariableDisplayFormatRequest } from 'uae-dap';
 import { createBltconHelperPanel } from './bltconHelper';
-import { CopperlineConfigurationProvider, createCopperlineDebugAdapter } from './copperlineDebug';
+import { CopperlineConfigurationProvider, checkCopperlineAdapterExists, createCopperlineDebugAdapter } from './copperlineDebug';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
@@ -732,7 +732,9 @@ export class AmigaAssemblyConfigurationProvider implements vscode.DebugConfigura
 export class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         if (session.type === 'amiga-assembly' && session.configuration.emulatorType === 'copperline') {
-            return createCopperlineDebugAdapter(session.configuration);
+            const adapter = createCopperlineDebugAdapter(session.configuration);
+            checkCopperlineAdapterExists(adapter);
+            return adapter;
         }
         return new vscode.DebugAdapterInlineImplementation(new DebugSession());
     }

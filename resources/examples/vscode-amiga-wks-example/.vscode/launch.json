@@ -28,6 +28,19 @@
                 "--automatic_input_grab=0"
             ],
             "preLaunchTask": "amigaassembly: build"
+        },
+        {
+            "type": "amiga-assembly",
+            "request": "launch",
+            "name": "Copperline Debug",
+            "emulatorType": "copperline",
+            "program": "${workspaceFolder}/uae/dh0/gencop",
+            "stopOnEntry": true,
+            "copperlineOptions": {
+                "factory": true
+            },
+            //"emulatorBin": "${workspaceFolder}/emulator/copperline/copperline.exe",
+            "preLaunchTask": "amigaassembly: build"
         }
     ]
 }

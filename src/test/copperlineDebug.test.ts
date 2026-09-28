@@ -99,13 +99,31 @@ describe('Copperline debug configuration', () => {
         expect(() => createCopperlineDebugAdapter(resolve({ copperlineAdapter: '' }))).to.throw('copperlineAdapter must name');
     });
 
+    it('finds copperline-ctl beside emulatorBin unless copperlineAdapter overrides it', () => {
+        const dir = path.resolve('Tools with spaces');
+        const beside = (bin: string, extra = {}) => createCopperlineDebugAdapter(resolve({ emulatorBin: bin, ...extra })).command;
+        expect(beside(path.join(dir, 'copperline'))).to.equal(path.join(dir, 'copperline-ctl'));
+        expect(beside(path.join(dir, 'copperline.exe'))).to.equal(path.join(dir, 'copperline-ctl.exe'));
+        expect(beside('copperline')).to.equal('copperline-ctl');
+        expect(beside(path.join(dir, 'copperline'), { copperlineAdapter: '/other/copperline-ctl' })).to.equal('/other/copperline-ctl');
+    });
+
     it('selects an executable adapter only for the Copperline target', () => {
         const factory = new InlineDebugAdapterFactory();
-        const descriptor = (type: string, emulatorType?: string) => factory.createDebugAdapterDescriptor({ type, configuration: config({ type, emulatorType }) } as vscode.DebugSession);
+        // Any existing file works as the adapter: only its presence is checked.
+        const copperlineAdapter = __filename;
+        const descriptor = (type: string, emulatorType?: string) => factory.createDebugAdapterDescriptor({ type, configuration: config({ type, emulatorType, copperlineAdapter }) } as vscode.DebugSession);
         expect(descriptor('amiga-assembly', 'copperline')).to.be.instanceOf(vscode.DebugAdapterExecutable);
         for (const type of ['amiga-assembly', 'fs-uae', 'winuae']) {
             expect(descriptor(type)).to.be.instanceOf(vscode.DebugAdapterInlineImplementation);
         }
         expect(descriptor('fs-uae', 'copperline')).to.be.instanceOf(vscode.DebugAdapterInlineImplementation);
+    });
+
+    it('reports a missing adapter instead of failing silently', () => {
+        const factory = new InlineDebugAdapterFactory();
+        const missing = path.join(path.resolve('does not exist'), 'copperline-ctl');
+        const session = { type: 'amiga-assembly', configuration: config({ copperlineAdapter: missing }) } as vscode.DebugSession;
+        expect(() => factory.createDebugAdapterDescriptor(session)).to.throw('Copperline debug adapter not found');
     });
 });

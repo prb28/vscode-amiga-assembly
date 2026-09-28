@@ -23,7 +23,7 @@ export class DummyTextDocument implements TextDocument {
         this.lineCount += 1;
     }
     public save(): Thenable<boolean> {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+         
         return new Promise((resolve, reject) => { });
     }
     public lineAt(positionOrNumberParameter: number | Position): TextLine {
@@ -172,7 +172,7 @@ export class DummyWorkspaceConfiguration implements WorkspaceConfiguration {
     }
     update(section: string, value: any): Thenable<void> {
         this.map.set(section, value);
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+         
         return new Promise((resolve, reject) => { });
     }
 

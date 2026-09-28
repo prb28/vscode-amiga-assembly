@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { Hunk, parseHunksFromFile, SourceSymbol } from "uae-dap";
 import { ICheckResult } from "./execHelper";
 import { Uri } from "vscode";

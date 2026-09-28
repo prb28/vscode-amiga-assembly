@@ -116,7 +116,7 @@ export class ExpressionDataGenerator {
         return value;
     }
     public decimalToHexString(n: number): string {
-        let padSize = 0;
+        let padSize: number;
         if (n < 0) {
             if (this.outputDataType === OutputDataType.BYTE) {
                 if (n < -0x80) {

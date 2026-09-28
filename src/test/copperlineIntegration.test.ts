@@ -87,8 +87,8 @@ describe('Copperline integration', function () {
 
     function configuration(request: string, copperlineOptions = {}): vscode.DebugConfiguration {
         return { type: 'amiga-assembly', request, name: `Copperline ${request} test`,
-            emulatorType: 'copperline', program, copperlineAdapter: adapter,
-            emulatorBin: binary, stopOnEntry: true, copperlineOptions };
+            emulatorType: 'copperline', program,
+            copperlineAdapter: adapter, emulatorBin: binary, stopOnEntry: true, copperlineOptions };
     }
 
     async function startEmulator() {

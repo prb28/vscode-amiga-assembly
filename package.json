@@ -354,7 +354,7 @@
 							},
 							"emulatorBin": {
 								"type": "string",
-								"description": "Path of emulator executable (UAE: use bundled version; Copperline: discover beside copperline-ctl or on PATH)"
+								"description": "Path of emulator executable (UAE: use bundled version; Copperline: path of copperline, copperline-ctl is looked up beside it, or both on PATH)"
 							},
 							"emulatorArgs": {
 								"type": "array",
@@ -367,8 +367,7 @@
 							},
 							"copperlineAdapter": {
 								"type": "string",
-								"description": "Path to copperline-ctl, or its command name on PATH. Do not include --dap. Used only with emulatorType: copperline.",
-								"default": "copperline-ctl"
+								"description": "Optional override: path to copperline-ctl when it is not beside emulatorBin. Do not include --dap. Used only with emulatorType: copperline."
 							},
 							"copperlineOptions": {
 								"type": "object",
@@ -546,8 +545,7 @@
 							},
 							"copperlineAdapter": {
 								"type": "string",
-								"description": "Path to copperline-ctl, or its command name on PATH. Do not include --dap. Used only with emulatorType: copperline.",
-								"default": "copperline-ctl"
+								"description": "Optional override: path to copperline-ctl when it is not beside emulatorBin. Do not include --dap. Used only with emulatorType: copperline."
 							},
 							"copperlineOptions": {
 								"type": "object",

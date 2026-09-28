@@ -73,7 +73,7 @@ export class ADFTools {
         const state = ExtensionState.getCurrent();
         this.setToolsRootPath(substituteVariables(conf.ADFToolsParentDir, true, { extensionState: state }));
         const filename = substituteVariables(conf.outputADFFile, true, { extensionState: state });
-        let rootSourceDir = "";
+        let rootSourceDir: string;
         if (conf.sourceRootDir) {
             rootSourceDir = substituteVariables(conf.sourceRootDir, true, { extensionState: state });
         } else {
@@ -136,7 +136,7 @@ export class ADFTools {
                         logEmitter?.fire(`Adding bootblock to ADF\r\n`);
                         await this.writeBootBlockFile(Buffer.from(bootBlock), Uri.file(bootBlockFilename));
                     } catch (err) {
-                        throw new Error(`Error writing boot block '${bootBlockSourceFilename}': ${err}`);
+                        throw new Error(`Error writing boot block '${bootBlockSourceFilename}': ${err}`, { cause: err });
                     }
                 }
             } else {

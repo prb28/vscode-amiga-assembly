@@ -37,7 +37,7 @@ describe("Definition handler Tests", function () {
         it("Should get a value for a variable", function () {
             expect(dHnd.getVariableValue("COPPER_WAIT")).to.be.equal("$FFFE");
             expect(dHnd.getVariableValue("BPLSIZE")).to.be.equal("(W*H)/8");
-            // eslint-disable-next-line no-unused-expressions
+             
             expect(dHnd.getVariableValue("XXXXX")).to.be.undefined;
         });
         it("Should evaluate a variable", async function () {

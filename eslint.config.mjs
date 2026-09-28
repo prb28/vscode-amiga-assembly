@@ -6,7 +6,7 @@ import globals from "globals";
 
 export default [
     {
-        ignores: ["out/**", "dist/**"]
+        ignores: ["out/**", "dist/**", "src/mathcalc.js"]
     },
     js.configs.recommended,
     {
@@ -20,7 +20,8 @@ export default [
             globals: {
                 ...globals.browser,
                 ...globals.es2021,
-                ...globals.node
+                ...globals.node,
+                ...globals.mocha
             }
         },
         plugins: {
@@ -29,7 +30,20 @@ export default [
         },
         rules: {
             ...tsPlugin.configs.recommended.rules,
-            "mocha-no-only/mocha-no-only": "error"
+            "mocha-no-only/mocha-no-only": "error",
+            // TypeScript already checks undefined names (and no-undef misses types like Thenable/NodeJS)
+            "no-undef": "off",
+            "@typescript-eslint/no-unused-vars": ["error", { args: "none", caughtErrors: "none" }],
+            "@typescript-eslint/no-explicit-any": "warn",
+            "@typescript-eslint/no-require-imports": "off"
+        }
+    },
+    {
+        // chai assertions such as `expect(x).to.be.true;` are expressions
+        files: ["src/test/**/*.ts"],
+        rules: {
+            "@typescript-eslint/no-unused-expressions": "off",
+            "no-useless-assignment": "off"
         }
     }
 ];

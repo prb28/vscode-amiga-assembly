@@ -72,7 +72,7 @@ export class Disassembler {
             await window.showTextDocument(document);
         } catch (err) {
             window.showErrorMessage(err.message);
-            throw new Error(err.message);
+            throw new Error(err.message, { cause: err });
         }
     }
 
@@ -107,7 +107,7 @@ export class Disassembler {
             hunks
                 .filter((h) => h.hunkType === HunkType.CODE && h.data)
                 .map(async (h) => {
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                     
                     const buffer = Array.from(h.data!)
                         .map((n) => n.toString(16).padStart(2, '0'))
                         .join('');

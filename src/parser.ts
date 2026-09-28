@@ -351,7 +351,7 @@ export class ASMLine {
             const end = match[2];
             const startKey = start.charAt(0);
             const startIndex = parseInt(start.charAt(1));
-            let endIndex = 0;
+            let endIndex: number;
             let endKey;
             if (end.length > 1) {
                 endKey = end.charAt(0);

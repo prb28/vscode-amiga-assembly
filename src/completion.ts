@@ -170,9 +170,8 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
         // Extend range for replacement where path component contains word boundaries
         let range = document.getWordRangeAtPosition(position);
         const line = document.lineAt(position.line);
-        let start = 0;
         if (range) {
-            start = range.start.character;
+            let start = range.start.character;
             while (start > 0 && !RegExp(/[\s'"/]/).exec(line.text.charAt(start - 1))) {
                 start--;
             }
@@ -184,7 +183,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
 
         // filtering the path from the include
         let length = position.character - asmLine.dataRange.start.character;
-        start = 0;
+        let start = 0;
         if (asmLine.data.startsWith('"') || asmLine.data.startsWith("'")) {
             start = 1;
             length--;
