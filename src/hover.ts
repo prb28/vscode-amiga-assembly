@@ -3,6 +3,7 @@ import { ASMLine, NumberParser } from './parser';
 import { DocumentationManager, DocumentationInstruction } from './documentation';
 import { ExtensionState } from './extension';
 import { ConfigurationHelper } from './configurationHelper';
+import { Symbol } from './symbols';
 
 /**
  * Hover provider class for le assembly language
@@ -37,7 +38,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 const [hoverInstruction, hoverDirective, macro] = await Promise.all([
                     this.documentationManager.getInstruction(keyInstruction.toUpperCase()),
                     this.documentationManager.getDirective(keyInstruction.toUpperCase()),
-                    definitionHandler.getMacroByName(keyInstruction)
+                    definitionHandler.getMacroByName(keyInstruction, document.uri)
                 ]);
                 const hoverElement = hoverInstruction ?? hoverDirective
                 if (hoverElement) {
@@ -52,6 +53,10 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                         const renderedLine2 = new vscode.MarkdownString();
                         renderedLine2.appendText(description);
                         contents.push(renderedLine2);
+                    }
+                    const definitions = this.renderDefinitions(await definitionHandler.getMacroDefinitions(keyInstruction, document.uri), false, document.uri);
+                    if (definitions) {
+                        contents.push(definitions);
                     }
                     return new vscode.Hover(contents, asmLine.instructionRange);
                 }
@@ -80,10 +85,11 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 let text = prefix + document.getText(word);
                 let rendered = await this.renderWordHover(text.toUpperCase());
                 let renderedLine2 = null;
+                let renderedDefinitions = null;
                 if (!rendered) {
                     const [cpuReg, label, xref] = await Promise.all([
                         this.documentationManager.getCpuRegister(text.toUpperCase()),
-                        definitionHandler.getLabelByName(text),
+                        definitionHandler.getLabelByName(text, document.uri),
                         definitionHandler.getXrefByName(text)
                     ]);
                     if (cpuReg) {
@@ -99,6 +105,9 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                             renderedLine2 = info;
                         } else {
                             rendered = info
+                        }
+                        if (label) {
+                            renderedDefinitions = this.renderDefinitions(await definitionHandler.getLabelDefinitions(text, document.uri), false, document.uri);
                         }
                     } else {
                         // Translate to get the control character
@@ -118,7 +127,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                             // Try to evaluate a formula
                             // Evaluate the formula value
                             try {
-                                const value = await definitionHandler.evaluateFormula(elm);
+                                const value = await definitionHandler.evaluateFormula(elm, true, document.uri);
                                 if (value || value === 0) {
                                     renderedLine2 = this.renderRegisterValueNumber(value);
                                     if (renderedLine2) {
@@ -132,29 +141,33 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                     }
                 }
                 if (rendered) {
-                    if (renderedLine2) {
-                        return new vscode.Hover([renderedLine2, rendered], word);
-                    } else {
-                        return new vscode.Hover(rendered, word);
+                    const contents = renderedLine2 ? [renderedLine2, rendered] : [rendered];
+                    if (renderedDefinitions) {
+                        contents.push(renderedDefinitions);
                     }
+                    return new vscode.Hover(contents, word);
                 } else {
                     // try to evaluate a formula
                     const match = /\w+/.exec(text);
                     if (match) {
                         const variable = match[0];
                         try {
-                            const value = await definitionHandler.evaluateVariable(variable);
+                            const value = await definitionHandler.evaluateVariable(variable, document.uri);
                             const renderedNumber = this.renderNumber(value, numberDisplayFormat);
                             if (renderedNumber) {
-                                const searchedVar = definitionHandler.getVariableByName(document.getText(word));
-                                const desc = searchedVar?.getCommentBlock();
+                                const contents = [renderedNumber];
+                                const definitions = await definitionHandler.getVariableDefinitions(document.getText(word), document.uri);
+                                const desc = definitions[0]?.getCommentBlock();
                                 if (desc) {
                                     rendered = new vscode.MarkdownString();
                                     rendered.appendText(desc);
-                                    return new vscode.Hover([renderedNumber, rendered]);
-                                } else {
-                                    return new vscode.Hover(renderedNumber);
+                                    contents.push(rendered);
                                 }
+                                const renderedLocations = this.renderDefinitions(definitions, true, document.uri);
+                                if (renderedLocations) {
+                                    contents.push(renderedLocations);
+                                }
+                                return new vscode.Hover(contents);
                             }
                         } catch (err) {
                             // nothing to do
@@ -172,7 +185,7 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 if (match) {
                     const variable = match[0];
                     try {
-                        const value = await definitionHandler.evaluateVariable(variable);
+                        const value = await definitionHandler.evaluateVariable(variable, document.uri);
                         const rendered = this.renderNumber(value, numberDisplayFormat);
                         if (rendered) {
                             return new vscode.Hover(rendered);
@@ -184,6 +197,45 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             }
         }
         return null;
+    }
+
+    /**
+     * Renders where a symbol is defined, and the other definitions visible from the document
+     * @param definitions Definitions: the used one first
+     * @param withValue Shows the value of the other definitions
+     * @param currentUri Document being hovered: a single definition in it is not rendered
+     * @return Markdown string, or null if there is nothing to render
+     */
+    public renderDefinitions(definitions: Array<Symbol>, withValue: boolean, currentUri: vscode.Uri): vscode.MarkdownString | null {
+        if (definitions.length === 0) {
+            return null;
+        }
+        if (definitions.length === 1 && definitions[0].getFile().getUri().fsPath === currentUri.fsPath) {
+            // Defined only in the current file: that is where it is expected
+            return null;
+        }
+        const lines = definitions.map((s, i) => {
+            let line = (i === 0 ? "Defined in " : "Also defined in ") + this.renderLocation(s);
+            const value = s.getValue();
+            if (withValue && i > 0 && value !== undefined) {
+                line += " = `" + value + "`";
+            }
+            return line;
+        });
+        // Two trailing spaces: markdown line break
+        return new vscode.MarkdownString(lines.join("  \n"));
+    }
+
+    /**
+     * Renders a link to the location of a symbol
+     * @param symbol Symbol to locate
+     * @return Markdown link: 'file:line'
+     */
+    private renderLocation(symbol: Symbol): string {
+        const uri = symbol.getFile().getUri();
+        const line = symbol.getRange().start.line + 1;
+        const filename = (uri.path.split("/").pop() ?? uri.path).replace(/([[\]\\])/g, "\\$1");
+        return `[${filename}:${line}](${uri.with({ fragment: `L${line}` }).toString()})`;
     }
 
     /**

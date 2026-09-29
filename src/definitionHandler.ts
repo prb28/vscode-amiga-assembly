@@ -42,9 +42,10 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     private readonly files = new Map<string, SymbolFile>();
     private readonly definedSymbols = new Map<string, Symbol>();
     private readonly referredSymbols = new Map<string, Map<string, Array<Symbol>>>();
-    private readonly variables = new Map<string, Symbol>();
-    private readonly labels = new Map<string, Symbol>();
-    private readonly macros = new Map<string, Symbol>();
+    // A name can be defined in several files: all definitions are kept
+    private readonly variables = new Map<string, Array<Symbol>>();
+    private readonly labels = new Map<string, Array<Symbol>>();
+    private readonly macros = new Map<string, Array<Symbol>>();
     private readonly includeDirs = new Map<string, Symbol>();
     private readonly xrefs = new Map<string, Symbol>();
     private sortedVariablesNames = new Array<string>();
@@ -458,24 +459,15 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 lst.push(s);
             }
             this.referredSymbols.set(uri.fsPath, refs);
-            symbol = file.getVariables();
-            for (const s of symbol) {
-                this.variables.set(s.getLabel(), s);
-            }
+            this.addDefinitions(this.variables, file.getVariables());
             // sort variables
             this.sortedVariablesNames = Array.from(this.variables.keys());
             this.sortedVariablesNames.sort((a, b) => {
                 return b.length - a.length;
             });
 
-            symbol = file.getLabels();
-            for (const s of symbol) {
-                this.labels.set(s.getLabel(), s);
-            }
-            symbol = file.getMacros();
-            for (const s of symbol) {
-                this.macros.set(s.getLabel(), s);
-            }
+            this.addDefinitions(this.labels, file.getLabels());
+            this.addDefinitions(this.macros, file.getMacros());
             symbol = file.getIncludeDirs();
             for (const s of symbol) {
                 this.includeDirs.set(s.getLabel(), s);
@@ -520,7 +512,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
      * @returns The value of the variable, or undefined if not found.
      */
     public getVariableValue(variable: string): string | undefined {
-        const v = this.variables.get(variable);
+        const v = this.selectDefinition(this.variables, variable);
         if (v !== undefined) {
             return v.getValue();
         }
@@ -534,9 +526,6 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     private clearSymbolsForFile(file: SymbolFile): void {
         const symbolMaps = [
             this.definedSymbols,
-            this.variables,
-            this.labels,
-            this.macros,
             this.includeDirs
         ];
         symbolMaps.forEach(map => {
@@ -546,20 +535,98 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
                 }
             });
         });
+        // Only remove this file's definitions: other files may define the same name
+        for (const map of [this.variables, this.labels, this.macros]) {
+            map.forEach((definitions, key) => {
+                const remaining = definitions.filter(s => s.getFile() !== file);
+                if (remaining.length > 0) {
+                    map.set(key, remaining);
+                } else {
+                    map.delete(key);
+                }
+            });
+        }
+    }
+
+    /**
+     * Adds symbols to a map keeping all the definitions of a name.
+     * @param map The map of definitions.
+     * @param symbols The symbols to add.
+     */
+    private addDefinitions(map: Map<string, Array<Symbol>>, symbols: Array<Symbol>): void {
+        for (const s of symbols) {
+            let definitions = map.get(s.getLabel());
+            if (definitions === undefined) {
+                definitions = new Array<Symbol>();
+                map.set(s.getLabel(), definitions);
+            }
+            definitions.push(s);
+        }
+    }
+
+    /**
+     * Selects the definition of a name to use in a context.
+     * Definitions from the context file come first, then from the files it includes
+     * (directly or not), and then the last scanned definition.
+     * @param map The map of definitions.
+     * @param name The name of the symbol.
+     * @param scope Paths of the context file and its included files (first is the context file).
+     * @returns The selected definition, or undefined if not found.
+     */
+    private selectDefinition(map: Map<string, Array<Symbol>>, name: string, scope?: Array<string>): Symbol | undefined {
+        const definitions = map.get(name);
+        if (definitions === undefined || definitions.length === 0) {
+            return undefined;
+        }
+        if (scope) {
+            for (const path of scope) {
+                const found = definitions.find(s => s.getFile().getUri().fsPath === path);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return definitions[definitions.length - 1];
+    }
+
+    /**
+     * Computes the file and all the files it includes, directly or not.
+     * @param uri The URI of the context file.
+     * @returns The paths of the files, starting with the context file.
+     */
+    private async getIncludeScope(uri: Uri): Promise<Array<string>> {
+        const scope = [uri.fsPath];
+        for (let i = 0; i < scope.length; i++) {
+            const file = this.files.get(scope[i]);
+            if (file) {
+                const current = new FileProxy(file.getUri());
+                for (const included of file.getIncludedFiles()) {
+                    const fp = await this.resolveIncludedFile(current, included.getLabel());
+                    if (fp) {
+                        const path = fp.getUri().fsPath;
+                        if (!scope.includes(path)) {
+                            scope.push(path);
+                        }
+                    }
+                }
+            }
+        }
+        return scope;
     }
 
     /**
      * Evaluates the formula of a variable and replaces variables within it.
      * @param variable The name of the variable.
+     * @param scope Files used to select the variables definitions.
      * @returns The evaluated formula as a string, or undefined if not found.
      */
-    private evaluateVariableFormula(variable: string): string | undefined {
-        const v = this.variables.get(variable);
+    private evaluateVariableFormula(variable: string, scope?: Array<string>): string | undefined {
+        const v = this.selectDefinition(this.variables, variable, scope);
         if (v !== undefined) {
             let value = v.getValue();
             if ((value !== undefined) && (value.length > 0)) {
                 if (RegExp(/[A-Za-z_]*/).exec(value)) {
-                    value = this.replaceVariablesInFormula(value);
+                    value = this.replaceVariablesInFormula(value, scope);
                 }
             }
             return value;
@@ -570,13 +637,14 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     /**
      * Replaces variables in a formula with their evaluated values.
      * @param formula The formula to process.
+     * @param scope Files used to select the variables definitions.
      * @returns The formula with variables replaced.
      */
-    private replaceVariablesInFormula(formula: string): string {
+    private replaceVariablesInFormula(formula: string, scope?: Array<string>): string {
         let newFormula = formula;
         const variables = this.findVariablesInFormula(newFormula);
         for (const vn of variables) {
-            const evaluatedFormula = this.evaluateVariableFormula(vn);
+            const evaluatedFormula = this.evaluateVariableFormula(vn, scope);
             if (evaluatedFormula !== undefined) {
                 // replace all
                 newFormula = newFormula.split(vn).join('(' + evaluatedFormula + ')');
@@ -603,11 +671,12 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     /**
      * Evaluates a variable and calculates its numeric value.
      * @param variable The name of the variable.
+     * @param contextUri Optional file from which the variable is used: its definitions (or the ones of its includes) are preferred.
      * @returns The evaluated numeric value.
      */
-    public async evaluateVariable(variable: string): Promise<number> {
+    public async evaluateVariable(variable: string, contextUri?: Uri): Promise<number> {
         const calc = new Calc();
-        const formula = this.evaluateVariableFormula(variable);
+        const formula = this.evaluateVariableFormula(variable, await this.getScope(contextUri));
         if (formula) {
             const result = calc.calculate(formula);
             if (!Number.isNaN(result)) {
@@ -621,14 +690,15 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
      * Evaluates a formula and calculates its numeric value.
      * @param formula The formula to evaluate.
      * @param replaceVariables Whether to replace variables in the formula.
+     * @param contextUri Optional file from which the formula is used: its variables definitions (or the ones of its includes) are preferred.
      * @returns The evaluated numeric value.
      */
-    public async evaluateFormula(formula: string, replaceVariables?: boolean): Promise<number> {
+    public async evaluateFormula(formula: string, replaceVariables?: boolean, contextUri?: Uri): Promise<number> {
         let newFormula: string;
         if (replaceVariables === false) {
             newFormula = formula;
         } else {
-            newFormula = this.replaceVariablesInFormula(formula);
+            newFormula = this.replaceVariablesInFormula(formula, await this.getScope(contextUri));
         }
         if (newFormula) {
             const calc = new Calc();
@@ -687,48 +757,122 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     /**
      * Retrieves a variable by its name.
      * @param name The name of the variable.
+     * @param contextUri Optional file from which the variable is used: its definitions (or the ones of its includes) are preferred.
      * @returns The variable symbol, or undefined if not found.
      */
-    public getVariableByName(name: string): Symbol | undefined {
-        return this.variables.get(name);
+    public async getVariableByName(name: string, contextUri?: Uri): Promise<Symbol | undefined> {
+        return this.selectDefinition(this.variables, name, await this.getScope(contextUri));
     }
 
     /**
      * Finds all variables starting with a given word.
      * @param word The prefix to search for.
+     * @param contextUri Optional file from which the variables are used: its definitions (or the ones of its includes) are preferred.
      * @returns A map of matching variables.
      */
-    public findVariableStartingWith(word: string): Map<string, Symbol> {
-        const values = new Map<string, Symbol>();
-        const upper = word.toUpperCase();
-        for (const [key, value] of this.variables.entries()) {
-            if (key.toUpperCase().startsWith(upper)) {
-                values.set(key, value);
-            }
-        }
-        return values;
+    public async findVariableStartingWith(word: string, contextUri?: Uri): Promise<Map<string, Symbol>> {
+        return this.findDefinitionsStartingWith(this.variables, word, await this.getScope(contextUri));
     }
 
     /**
      * Retrieves a label by its name.
      * @param name The name of the label.
+     * @param contextUri Optional file from which the label is used: its definitions (or the ones of its includes) are preferred.
      * @returns The label symbol, or undefined if not found.
      */
-    public getLabelByName(name: string): Symbol | undefined {
-        return this.labels.get(name);
+    public async getLabelByName(name: string, contextUri?: Uri): Promise<Symbol | undefined> {
+        return this.selectDefinition(this.labels, name, await this.getScope(contextUri));
     }
 
     /**
      * Finds all labels starting with a given word.
      * @param word The prefix to search for.
+     * @param contextUri Optional file from which the labels are used: its definitions (or the ones of its includes) are preferred.
      * @returns A map of matching labels.
      */
-    public findLabelStartingWith(word: string): Map<string, Symbol> {
+    public async findLabelStartingWith(word: string, contextUri?: Uri): Promise<Map<string, Symbol>> {
+        return this.findDefinitionsStartingWith(this.labels, word, await this.getScope(contextUri));
+    }
+
+    /**
+     * Lists the definitions of a variable visible from a file.
+     * @param name The name of the variable.
+     * @param contextUri Optional file from which the variable is used.
+     * @returns The used definition first, then the other definitions from the file or its includes.
+     */
+    public async getVariableDefinitions(name: string, contextUri?: Uri): Promise<Array<Symbol>> {
+        return this.listDefinitions(this.variables, name, await this.getScope(contextUri));
+    }
+
+    /**
+     * Lists the definitions of a label visible from a file.
+     * @param name The name of the label.
+     * @param contextUri Optional file from which the label is used.
+     * @returns The used definition first, then the other definitions from the file or its includes.
+     */
+    public async getLabelDefinitions(name: string, contextUri?: Uri): Promise<Array<Symbol>> {
+        return this.listDefinitions(this.labels, name, await this.getScope(contextUri));
+    }
+
+    /**
+     * Lists the definitions of a macro visible from a file.
+     * @param name The name of the macro.
+     * @param contextUri Optional file from which the macro is used.
+     * @returns The used definition first, then the other definitions from the file or its includes.
+     */
+    public async getMacroDefinitions(name: string, contextUri?: Uri): Promise<Array<Symbol>> {
+        return this.listDefinitions(this.macros, name, await this.getScope(contextUri));
+    }
+
+    /**
+     * Lists the definitions of a name visible in a context.
+     * @param map The map of definitions.
+     * @param name The name of the symbol.
+     * @param scope Files used to select the definitions.
+     * @returns The selected definition first, then the other definitions in the scope order.
+     */
+    private listDefinitions(map: Map<string, Array<Symbol>>, name: string, scope?: Array<string>): Array<Symbol> {
+        const selected = this.selectDefinition(map, name, scope);
+        if (selected === undefined) {
+            return [];
+        }
+        const results = [selected];
+        const definitions = map.get(name) ?? [];
+        for (const path of scope ?? []) {
+            for (const s of definitions) {
+                if (s !== selected && s.getFile().getUri().fsPath === path) {
+                    results.push(s);
+                }
+            }
+        }
+        return results;
+    }
+
+    /**
+     * Computes the include scope of an optional context file.
+     * @param contextUri The context file.
+     * @returns The scope, or undefined if there is no context file.
+     */
+    private async getScope(contextUri?: Uri): Promise<Array<string> | undefined> {
+        return contextUri ? this.getIncludeScope(contextUri) : undefined;
+    }
+
+    /**
+     * Finds all names starting with a given word, with the definition to use in a context.
+     * @param map The map of definitions.
+     * @param word The prefix to search for.
+     * @param scope Files used to select the definitions.
+     * @returns A map of matching definitions.
+     */
+    private findDefinitionsStartingWith(map: Map<string, Array<Symbol>>, word: string, scope?: Array<string>): Map<string, Symbol> {
         const values = new Map<string, Symbol>();
         const upper = word.toUpperCase();
-        for (const [key, value] of this.labels.entries()) {
+        for (const key of map.keys()) {
             if (key.toUpperCase().startsWith(upper)) {
-                values.set(key, value);
+                const value = this.selectDefinition(map, key, scope);
+                if (value) {
+                    values.set(key, value);
+                }
             }
         }
         return values;
@@ -762,26 +906,21 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
     /**
      * Retrieves a macro by its name.
      * @param name The name of the macro.
+     * @param contextUri Optional file from which the macro is used: its definitions (or the ones of its includes) are preferred.
      * @returns The macro symbol, or undefined if not found.
      */
-    public getMacroByName(name: string): Symbol | undefined {
-        return this.macros.get(name);
+    public async getMacroByName(name: string, contextUri?: Uri): Promise<Symbol | undefined> {
+        return this.selectDefinition(this.macros, name, await this.getScope(contextUri));
     }
 
     /**
      * Finds all macros starting with a given word.
      * @param word The prefix to search for.
+     * @param contextUri Optional file from which the macros are used: its definitions (or the ones of its includes) are preferred.
      * @returns A map of matching macros.
      */
-    public findMacroStartingWith(word: string): Map<string, Symbol> {
-        const values = new Map<string, Symbol>();
-        const upper = word.toUpperCase();
-        for (const [key, value] of this.macros.entries()) {
-            if (key.toUpperCase().startsWith(upper)) {
-                values.set(key, value);
-            }
-        }
-        return values;
+    public async findMacroStartingWith(word: string, contextUri?: Uri): Promise<Map<string, Symbol>> {
+        return this.findDefinitionsStartingWith(this.macros, word, await this.getScope(contextUri));
     }
 
     /**

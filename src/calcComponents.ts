@@ -1,4 +1,4 @@
-import { StatusBarAlignment, StatusBarItem, window, Disposable, TextDocument, Selection, Range } from 'vscode';
+import { StatusBarAlignment, StatusBarItem, window, Disposable, TextDocument, Selection, Range, Uri } from 'vscode';
 import { NumberParser, ASMLine } from './parser';
 import { ExtensionState } from './extension';
 
@@ -32,7 +32,7 @@ export class CalcComponent {
                 if (docContent.length > 0) {
                     const definitionHandler = ExtensionState.getCurrent().getDefinitionHandler();
                     try {
-                        const result = await definitionHandler.evaluateFormula(docContent);
+                        const result = await definitionHandler.evaluateFormula(docContent, true, editor.document.uri);
                         // Update the status bar
                         statusBarItemConst.text = this.formatResult(docContent, result);
                         statusBarItemConst.show();
@@ -66,11 +66,12 @@ export class CalcComponent {
     /**
      * Performs the calculation
      * @param expression Expression to calculate
+     * @param contextUri Optional file from which the variables definitions (or the ones of its includes) are preferred
      */
-    public async calculate(expression: string): Promise<number> {
+    public async calculate(expression: string, contextUri?: Uri): Promise<number> {
         // call the function to calculate the expression
         const dHnd = ExtensionState.getCurrent().getDefinitionHandler();
-        return await dHnd.evaluateFormula(expression);
+        return await dHnd.evaluateFormula(expression, true, contextUri);
     }
 
     /**
@@ -92,7 +93,7 @@ export class CalcComponent {
                     continue;
                 }
                 const text = document.getText(selection);
-                const value = await this.calculate(text);
+                const value = await this.calculate(text, document.uri);
                 if (value !== undefined) {
                     let result: string;
                     if (replace) {
@@ -133,7 +134,7 @@ export class CalcComponent {
         });
         if (value) {
             try {
-                const result = await this.calculate(value);
+                const result = await this.calculate(value, window.activeTextEditor?.document.uri);
                 window.showInformationMessage(this.formatResult(value, result));
             } catch (err) {
                 // do nothing
@@ -161,7 +162,7 @@ export class CalcComponent {
                                 const num = result[0];
                                 const tp = result[1];
                                 const modifiedFormula = formula.replace('x', num.toString());
-                                const resultValue = await this.calculate(modifiedFormula);
+                                const resultValue = await this.calculate(modifiedFormula, document.uri);
                                 replaceValues.push([numberParser.numberToTypedString(resultValue, tp), range]);
                             }
                         }

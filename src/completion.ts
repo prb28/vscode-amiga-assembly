@@ -93,7 +93,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                         completions = await this.provideCompletionForIncludes(asmLine, document, position);
                     } else {
                         // In the current symbols
-                        const labels = this.definitionHandler.findLabelStartingWith(word);
+                        const labels = await this.definitionHandler.findLabelStartingWith(word, document.uri);
                         for (const [label, symbol] of labels.entries()) {
                             const unPrefixed = label.substring(prefix.length);
                             const isLocalFQ = RegExp(/.\./).exec(unPrefixed);
@@ -119,7 +119,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                                 labelsAdded.push(xref);
                             }
                         }
-                        const variables = this.definitionHandler.findVariableStartingWith(word);
+                        const variables = await this.definitionHandler.findVariableStartingWith(word, document.uri);
                         for (const [variable, symbol] of variables.entries()) {
                             if (!labelsAdded.includes(variable)) {
                                 const kind = vscode.CompletionItemKind.Variable;
@@ -132,7 +132,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                         }
                     }
                 } else {
-                    const macros = this.definitionHandler.findMacroStartingWith(word);
+                    const macros = await this.definitionHandler.findMacroStartingWith(word, document.uri);
                     for (const [label, symbol] of macros.entries()) {
                         if (!labelsAdded.includes(label)) {
                             const kind = vscode.CompletionItemKind.Function;

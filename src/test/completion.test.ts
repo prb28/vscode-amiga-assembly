@@ -432,5 +432,39 @@ describe("Completion Tests", function () {
                 }
             });
         });
+        context("Symbol defined in several files (#376)", function () {
+            const ISSUE_DIR = Path.join(PROJECT_ROOT, 'test_files', 'issue-376');
+            const ISSUE_MAIN = Path.join(ISSUE_DIR, 'only-custom.s');
+            let completionProvider: M68kCompletionItemProvider;
+            let document: vscode.TextDocument;
+            before(async function () {
+                const defHandler = new M68kDefinitionHandler();
+                completionProvider = new M68kCompletionItemProvider(documentationManager, defHandler, await state.getLanguage());
+                // only-custom.s includes custom.i (CUSTOM, MyWait, MYMACRO)
+                await defHandler.scanFile(Uri.file(ISSUE_MAIN));
+                // A file not included by only-custom.s, scanned afterwards, redefines the same symbols
+                await defHandler.scanFile(Uri.file(Path.join(ISSUE_DIR, 'ndk', 'preferences.i')));
+                document = await vscode.workspace.openTextDocument(Uri.file(ISSUE_MAIN));
+            });
+            async function findCompletion(position: Position, label: string): Promise<vscode.CompletionItem> {
+                const results = await completionProvider.provideCompletionItems(document, position);
+                const found = results.find(c => c.label === label);
+                expect(found, `completion ${label}`).to.not.be.undefined;
+                return found as vscode.CompletionItem;
+            }
+            it("Should complete the variable from the included file", async function () {
+                const completion = await findCompletion(new Position(4, 19), "CUSTOM");
+                expect(completion.detail).to.be.equal("$dff000");
+            });
+            it("Should complete the label from the included file", async function () {
+                const completion = await findCompletion(new Position(5, 18), "MyWait");
+                expect(completion.detail).to.be.equal("label custom.i:3");
+                expect(completion.documentation).to.be.equal("MyWait from custom.i");
+            });
+            it("Should complete the macro from the included file", async function () {
+                const completion = await findCompletion(new Position(6, 10), "MYMACRO");
+                expect(completion.documentation).to.be.equal("MYMACRO from custom.i");
+            });
+        });
     });
 });

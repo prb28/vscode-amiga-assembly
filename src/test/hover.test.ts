@@ -14,6 +14,8 @@ import { ExtensionState } from '../extension';
 import * as Path from 'path';
 import { M68kDefinitionHandler } from '../definitionHandler';
 import * as vscode from 'vscode';
+import * as sinon from 'sinon';
+import { ASMLine } from '../parser';
 
 chai.use(chaiAsPromised);
 // tslint:disable:no-unused-expression
@@ -175,6 +177,103 @@ describe("Hover Tests", function () {
                 expect(elm.value).to.be.equal("#`4096000` - $`3e.8000` - %`111110.10000000.00000000` .>..");
             }
         }
+    });
+    describe("Symbol defined in several files (#376)", function () {
+        const ISSUE_DIR = Path.join(PROJECT_ROOT, 'test_files', 'issue-376');
+        const ISSUE_MAIN = Path.join(ISSUE_DIR, 'only-custom.s');
+        const OTHER_DEFINITION = Path.join(ISSUE_DIR, 'ndk', 'preferences.i');
+        const EXPECTED = "#`14675968` - $`df.f000`";
+        let localHandler: M68kDefinitionHandler;
+        before(async function () {
+            ASMLine.init(await state.getLanguage());
+        });
+        beforeEach(async function () {
+            localHandler = new M68kDefinitionHandler();
+            sinon.stub(state, "getDefinitionHandler").returns(localHandler);
+            // only-custom.s includes custom.i (CUSTOM, MyWait, MYMACRO)
+            await localHandler.scanFile(Uri.file(ISSUE_MAIN));
+            // A file not included by only-custom.s, scanned afterwards, redefines the same symbols
+            await localHandler.scanFile(Uri.file(OTHER_DEFINITION));
+        });
+        afterEach(function () {
+            sinon.restore();
+        });
+        async function hoverContents(position: Position, filePath = ISSUE_MAIN): Promise<string[]> {
+            const document = await vscode.workspace.openTextDocument(Uri.file(filePath));
+            const hp = new M68kHoverProvider(documentationManager);
+            const result = await hp.provideHover(document, position, new CancellationTokenSource().token);
+            expect(result instanceof Hover).to.be.true;
+            return (result as Hover).contents.map(elm => (elm as MarkdownString).value);
+        }
+        async function hoverOnCustom(): Promise<string> {
+            return (await hoverContents(new Position(4, 19)))[0];
+        }
+        it("Should tell where the variable is defined", async function () {
+            const contents = (await hoverContents(new Position(4, 19))).join("\n");
+            expect(contents).to.contain("Defined in [custom.i:1]");
+            expect(contents).to.not.contain("preferences");
+        });
+        it("Should not tell where the symbol is defined when it is only in the current file", async function () {
+            const document = new DummyTextDocument();
+            document.addLine("LOCAL_VAR = 3");
+            document.addLine("localLabel:");
+            document.addLine("  lea        LOCAL_VAR,a0");
+            document.addLine("  bsr        localLabel");
+            await localHandler.scanFile(document.uri, document);
+            const hp = new M68kHoverProvider(documentationManager);
+            for (const position of [new Position(2, 15), new Position(3, 15)]) {
+                const result = await hp.provideHover(document, position, new CancellationTokenSource().token);
+                expect(result instanceof Hover).to.be.true;
+                const all = (result as Hover).contents.map(elm => (elm as MarkdownString).value).join("\n");
+                expect(all).to.not.contain("Defined in");
+            }
+        });
+        context("when both files are included", function () {
+            // both-included.s includes custom.i and then ndk/preferences.i
+            const BOTH_MAIN = Path.join(ISSUE_DIR, 'both-included.s');
+            beforeEach(async function () {
+                await localHandler.scanFile(Uri.file(BOTH_MAIN));
+            });
+            it("Should list all the files defining the variable", async function () {
+                const contents = await hoverContents(new Position(5, 15), BOTH_MAIN);
+                expect(contents[0]).to.contain(EXPECTED);
+                const all = contents.join("\n");
+                expect(all).to.contain("Defined in [custom.i:1]");
+                expect(all).to.contain("Also defined in [preferences.i:2]");
+                // The value of the other definition is shown
+                expect(all).to.contain("= `2`");
+            });
+            it("Should list all the files defining the label", async function () {
+                const all = (await hoverContents(new Position(6, 15), BOTH_MAIN)).join("\n");
+                expect(all).to.contain("Defined in [custom.i:4]");
+                expect(all).to.contain("Also defined in [preferences.i:5]");
+            });
+            it("Should list all the files defining the macro", async function () {
+                const all = (await hoverContents(new Position(7, 4), BOTH_MAIN)).join("\n");
+                expect(all).to.contain("Defined in [custom.i:8]");
+                expect(all).to.contain("Also defined in [preferences.i:9]");
+            });
+        });
+        it("Should use the label from the included file", async function () {
+            const contents = (await hoverContents(new Position(5, 18))).join("\n");
+            // The comment block is escaped markdown: only check the file name
+            expect(contents).to.contain("custom");
+            expect(contents).to.not.contain("preferences");
+        });
+        it("Should use the macro from the included file", async function () {
+            const contents = (await hoverContents(new Position(6, 10))).join("\n");
+            expect(contents).to.contain("custom");
+            expect(contents).to.not.contain("preferences");
+        });
+        it("Should use the definition from the included file", async function () {
+            expect(await hoverOnCustom()).to.contain(EXPECTED);
+        });
+        it("Should keep the definition after the other file is rescanned", async function () {
+            await localHandler.scanFile(Uri.file(OTHER_DEFINITION));
+            await localHandler.scanFile(Uri.file(Path.join(ISSUE_DIR, 'include', 'custom.i')));
+            await localHandler.scanFile(Uri.file(OTHER_DEFINITION));
+            expect(await hoverOnCustom()).to.contain(EXPECTED);
+        });
     });
     it("Should render a command", function () {
         const hp = new M68kHoverProvider(documentationManager);

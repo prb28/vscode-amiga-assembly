@@ -67,7 +67,7 @@ describe("Definition handler Tests", function () {
                 await expect(dHnd.provideUsedRegistersSymbols()).to.be.eventually.equal("Registers used: none - free: d0-d7/a0-a7");
             });
             it("Should find the variables beginning by a work", async () => {
-                const vars = dHnd.findVariableStartingWith("MY_");
+                const vars = await dHnd.findVariableStartingWith("MY_");
                 expect(vars.size).to.be.equal(2);
                 expect(vars.get("MY_W_VAR")?.getValue()).to.be.equal("W/2");
                 expect(vars.get("MY_H_VAR")?.getValue()).to.be.equal("W*MY_W_VAR/2*(MY_W_VAR)");

@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [1.8.17] - pre-release
+- [Issue #376](https://github.com/prb28/vscode-amiga-assembly/issues/376) A symbol defined in several files resolves to the definition visible from the current file
+
 ### [1.8.16] - pre-release
 - Syntax coloring: the TextMate grammar is rewritten around the line layout (label / mnemonic / operands / comment)
   - [Issue #343](https://github.com/prb28/vscode-amiga-assembly/issues/343) `macro`, `ds`, `dc`, `rs.x` directives are colored as directives
