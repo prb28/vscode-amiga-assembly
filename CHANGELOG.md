@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - [Issue #267](https://github.com/prb28/vscode-amiga-assembly/issues/267) New option `amiga-assembly.format.spaceAfterComma` to put a space after the commas separating the operands (needs the vasm `-spaces` option)
   - A `;` inside a single quoted string is no longer taken as a comment start (the string was modified by the formatter)
   - Indented labels ending with `:` (`    label:  nop`) and labels glued to the instruction (`label:move.l d0,d1`) are correctly parsed
+- Build
+  - [Issue #377](https://github.com/prb28/vscode-amiga-assembly/issues/377) A tool path containing spaces (vasm / vlink in a `binDir` with spaces) is now quoted, it made the build fail on Windows
+  - The build now fails with the tool error message when vasm / vlink cannot be run (e.g. an invalid `binDir`), instead of ending with `Build Success`
 
 ### [1.8.15] - pre-release
 - [Issue #372](https://github.com/prb28/vscode-amiga-assembly/issues/372) Add Copperline as a launch and attach debug target

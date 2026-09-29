@@ -47,7 +47,10 @@ export class ExecutorHelper {
             // Quote arguments that contain spaces
             const quotedArgs = args.map(arg => (arg.includes(' ') ? `"${arg}"` : arg));
 
-            const p = cp.execFile(cmd, quotedArgs, options, (err, stdout, stderr) => {
+            // With shell: true the command is not quoted by node, so a path with spaces must be
+            const quotedCmd = cmd.includes(' ') && !cmd.startsWith('"') ? `"${cmd}"` : cmd;
+
+            const p = cp.execFile(quotedCmd, quotedArgs, options, (err, stdout, stderr) => {
                 try {
                     if (err && err.code === 'ENOENT') {
                         const errorMessage = `Cannot find ${cmd} : ${err.message}`;
@@ -96,6 +99,12 @@ export class ExecutorHelper {
                         }
                     }
                     winston.info('');
+                    if (err && useStdErr && stderr && ret.length === 0) {
+                        // The tool failed and its output is not a diagnostic (e.g. tool not found)
+                        const errorMessage = `Error while running tool: ${cmd} : ${stderr.toString().trim()}`;
+                        winston.error(errorMessage);
+                        throw new Error(errorMessage);
+                    }
                     resolve(ret);
                 } catch (e) {
                     reject(new Error(e));

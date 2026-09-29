@@ -102,6 +102,46 @@ describe("Executor Tests", function () {
 
         reset(spiedCp);
     });
+    it("Should quote a command path that contains spaces (issue #377)", async () => {
+        const spiedCp = spy(cp);
+        const cpMock: cp.ChildProcess = imock();
+        const cpMockInstance: cp.ChildProcess = instance(cpMock);
+        const f = (cmd: string, args: string[], options: unknown, callback: ((error: Error | null, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
+            callback(null, "", null);
+            return cpMockInstance;
+        };
+        const cmdWithSpaces = 'C:\\Users\\John Doe\\bin\\vasmm68k_mot.exe';
+        when(spiedCp.execFile(cmdWithSpaces, anything(), anything(), anything())).thenCall(f);
+        when(spiedCp.execFile(`"${cmdWithSpaces}"`, anything(), anything(), anything())).thenCall(f);
+        const ex = new ExecutorHelper();
+        await ex.runTool(['arg1'], 'mydir', 'error', false, cmdWithSpaces, {}, false, null);
+
+        const [capturedCmd] = capture(spiedCp.execFile).last();
+        expect(capturedCmd).to.be.equal(`"${cmdWithSpaces}"`);
+        reset(spiedCp);
+    });
+    it("Should fail when the tool cannot be run and stderr is not a diagnostic", async () => {
+        const spiedCp = spy(cp);
+        const cpMock: cp.ChildProcess = imock();
+        const cpMockInstance: cp.ChildProcess = instance(cpMock);
+        const f = (cmd: string, args: string[], options: unknown, callback: ((error: Error, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
+            callback(new Error('exit 1'), "", "The system cannot find the path specified.");
+            return cpMockInstance;
+        };
+        when(spiedCp.execFile('missing', anything(), anything(), anything())).thenCall(f);
+        const ex = new ExecutorHelper();
+        const mockedDummy = mock(DummyParser);
+        when(mockedDummy.parse(anyString())).thenReturn([]);
+        let failure: Error | undefined;
+        try {
+            await ex.runTool(['arg1'], 'mydir', 'error', true, 'missing', {}, false, instance(mockedDummy));
+        } catch (e) {
+            failure = e as Error;
+        }
+        expect(failure).to.not.be.undefined;
+        expect(failure?.message).to.contain('The system cannot find the path specified.');
+        reset(spiedCp);
+    });
     describe("Diagnostics handle", () => {
         let ex: ExecutorHelper;
         let errorDiagnosticCollection: vscode.DiagnosticCollection;
