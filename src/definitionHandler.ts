@@ -133,7 +133,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
             let label = symbol.getLabel();
             if (symbol.isLocalLabel()) {
                 symbolKind = vscode.SymbolKind.Method;
-                label = label.split(".")[1];
+                label = symbol.getLocalName();
             }
             const dSymbol = new DocumentSymbol(label, "", symbolKind, symbol.getFullRange(), symbol.getRange());
             results.push(dSymbol);
@@ -400,7 +400,7 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         if (pos.character > 0) {
             pos = pos.translate(0, -1);
             label = document.getText(range.with(pos));
-            if (!label.startsWith('.')) {
+            if (!Symbol.isLocalLabelName(label)) {
                 label = document.getText(range);
             }
         } else {

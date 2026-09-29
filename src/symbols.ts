@@ -71,7 +71,7 @@ export class SymbolFile {
             const instruct = asmLine.instruction.toLowerCase();
             if (asmLine.label.length > 0) {
                 let label = asmLine.label.replace(":", "");
-                const isLocal = label.startsWith(".");
+                const isLocal = Symbol.isLocalLabelName(label);
                 if (isLocal) {
                     label = lastParentLabel?.getLabel() + label;
                 }
@@ -196,6 +196,8 @@ export class SymbolFile {
 }
 
 export class Symbol {
+    /** Fully qualified local label: `<parent>.<name>` or `<parent>@<name>` (not the `\@` macro unique label) */
+    private static readonly LOCAL_LABEL_REGEXP = /^([^.@\\]*)[.@](.+)$/;
     private readonly label: string;
     private readonly file: SymbolFile;
     private range: Range;
@@ -246,7 +248,20 @@ export class Symbol {
         this.parent = parent;
     }
     public isLocalLabel(): boolean {
-        return this.label.includes(".");
+        return Symbol.LOCAL_LABEL_REGEXP.test(this.label);
+    }
+    /**
+     * @return the name of a local label without its parent and its prefix
+     */
+    public getLocalName(): string {
+        return Symbol.LOCAL_LABEL_REGEXP.exec(this.label)?.[2] ?? this.label;
+    }
+    /**
+     * Local labels in the source start with "." or "@" (issue #369)
+     * @param label label as written in the source
+     */
+    public static isLocalLabelName(label: string): boolean {
+        return label.startsWith(".") || label.startsWith("@");
     }
     public getCommentBlock(): string {
         if (this.commentBlock === null) {

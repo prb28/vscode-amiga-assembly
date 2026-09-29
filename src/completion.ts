@@ -4,6 +4,7 @@ import { M68kDefinitionHandler } from './definitionHandler';
 import { ASMLine } from './parser';
 import { M68kLanguage } from './language';
 import { FileProxy } from './fsProxy';
+import { Symbol } from './symbols';
 
 export class M68kCompletionItemProvider implements vscode.CompletionItemProvider {
     documentationManager: DocumentationManager;
@@ -30,8 +31,8 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
 
         if (range) {
             let prefix = "";
-            if (line.text.charAt(range.start.character - 1) === ".") {
-                // Extend range to include leading dot
+            if (Symbol.isLocalLabelName(line.text.charAt(range.start.character - 1))) {
+                // Extend range to include leading dot or @
                 range = new vscode.Range(
                     new vscode.Position(range.start.line, range.start.character - 1),
                     range.end
@@ -96,7 +97,7 @@ export class M68kCompletionItemProvider implements vscode.CompletionItemProvider
                         const labels = await this.definitionHandler.findLabelStartingWith(word, document.uri);
                         for (const [label, symbol] of labels.entries()) {
                             const unPrefixed = label.substring(prefix.length);
-                            const isLocalFQ = RegExp(/.\./).exec(unPrefixed);
+                            const isLocalFQ = RegExp(/.[.@]/).exec(unPrefixed);
                             if (!labelsAdded.includes(label) && !isLocalFQ) {
                                 const kind = vscode.CompletionItemKind.Function;
                                 const completion = new vscode.CompletionItem(unPrefixed, kind);

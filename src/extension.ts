@@ -11,6 +11,7 @@ import { DebugSession } from './debugSession';
 import { VASMCompiler } from './vasm';
 import { Disassembler, DisassembleRequestType } from './disassemble';
 import { M68kDefinitionHandler } from './definitionHandler';
+import { M68kLocalLabelsCodeActionProvider } from './localLabels';
 import { DisassemblyContentProvider } from './disassemblyContentProvider';
 import { DataGeneratorCodeLensProvider } from './expressionDataGenerator';
 import { IFFViewerPanel } from './iffImageViewer';
@@ -473,6 +474,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     context.subscriptions.push(vscode.languages.registerReferenceProvider(AMIGA_ASM_MODE, definitionHandler));
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(AMIGA_ASM_MODE, definitionHandler));
     context.subscriptions.push(vscode.languages.registerFoldingRangeProvider(AMIGA_ASM_MODE, definitionHandler));
+
+    // Quick fix of the '@' local labels
+    context.subscriptions.push(vscode.languages.registerCodeActionsProvider(AMIGA_ASM_MODE, new M68kLocalLabelsCodeActionProvider(), { providedCodeActionKinds: M68kLocalLabelsCodeActionProvider.providedCodeActionKinds }));
 
     // Diagnostics
     const errorDiagnosticCollection = state.getErrorDiagnosticCollection();

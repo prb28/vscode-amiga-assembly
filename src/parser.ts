@@ -340,7 +340,7 @@ export class ASMLine {
     public getSymbolFromData(): Array<[string, Range]> {
         const symbols = new Array<[string, Range]>();
         if (this.data.length > 0) {
-            const reg = /([a-z.]+[a-z0-9_.]*|\d+[a-z]+[a-z0-9_.]*)/gi;
+            const reg = /(@?[a-z.]+[a-z0-9_.]*|\d+[a-z]+[a-z0-9_.]*)/gi;
             let match = reg.exec(this.data);
             while (match) {
                 const symbol = match[0];

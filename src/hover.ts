@@ -66,8 +66,8 @@ export class M68kHoverProvider implements vscode.HoverProvider {
             let word = document.getWordRangeAtPosition(position);
             let prefix = "";
             if (word) {
-                if (line.text.charAt(word.start.character - 1) === '.') {
-                    // Extend range to include leading dot
+                if (Symbol.isLocalLabelName(line.text.charAt(word.start.character - 1))) {
+                    // Extend range to include leading dot or @
                     word = new vscode.Range(
                         new vscode.Position(word.start.line, word.start.character - 1),
                         word.end
