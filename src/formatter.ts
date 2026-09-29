@@ -99,10 +99,14 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
             let s: string;
             if (asmLine.instruction.length > 0) {
                 if (asmLine.data.length > 0) {
+                    const formattedData = asmDocument.getFormattedData(asmLine);
                     if (asmLine.comment.length > 0) {
-                        s = this.getEndPad(asmLine.data, asmDocument.dataColumn, asmDocument.commentColumn, asmDocument.useTabs, asmDocument.tabSize);
+                        s = this.getEndPad(formattedData, asmDocument.dataColumn, asmDocument.commentColumn, asmDocument.useTabs, asmDocument.tabSize);
                         range = new vscode.Range(asmLine.dataRange.end, asmLine.commentRange.start);
                         edits.push(vscode.TextEdit.replace(range, s));
+                    }
+                    if (formattedData !== asmLine.data) {
+                        edits.push(vscode.TextEdit.replace(asmLine.dataRange, formattedData));
                     }
                     s = this.getEndPad(asmLine.instruction, asmDocument.instructionColumn, asmDocument.dataColumn, asmDocument.useTabs, asmDocument.tabSize);
                     range = new vscode.Range(asmLine.instructionRange.end, asmLine.dataRange.start);

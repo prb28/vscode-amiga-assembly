@@ -111,13 +111,18 @@ export class ASMLine {
         } else {
             // Extract comments
             let searchAssignmentString = line;
-            let inQuotes = false;
+            // Current quote character ("\"" or "'") when inside a string
+            let quote: string | undefined = undefined;
             let commentPosInInputLine = -1;
             for (let i = 0; i < line.length; i++) {
                 const c = line.charAt(i);
-                if (c === "\"") {
-                    inQuotes = !inQuotes;
-                } else if (!inQuotes && (c === ";")) {
+                if (quote) {
+                    if (c === quote) {
+                        quote = undefined;
+                    }
+                } else if (c === "\"" || c === "'") {
+                    quote = c;
+                } else if (c === ";") {
                     commentPosInInputLine = i;
                     break;
                 }
@@ -137,7 +142,13 @@ export class ASMLine {
             // remove quotes
             let searchInstructionString = l;
             let keywordIndex = 0;
-            if (leadingSpacesCount === 0) {
+            // A label ending with colons can be indented or directly followed by the instruction
+            const labelWithColon = /^[^\s:;"'=]+::?/.exec(l);
+            if (labelWithColon) {
+                const afterLabel = l.substring(labelWithColon[0].length);
+                searchInstructionString = afterLabel.trimStart();
+                keywordIndex = l.length - searchInstructionString.length;
+            } else if (leadingSpacesCount === 0) {
                 // Fist word must be a label
                 const sPos = line.search(/\s/);
                 if (sPos > 0) {
@@ -157,8 +168,8 @@ export class ASMLine {
             if (ASMLine.keywordsRegExps) {
                 keyword = this.search(ASMLine.keywordsRegExps, searchInstructionString);
             }
-            if ((!keyword || !searchInstructionString.startsWith(keyword[0])) && leadingSpacesCount !== 0 && ASMLine.macrosRegExps) {
-                // it's not a keyword - this could be a macro if there are leading spaces
+            if ((!keyword || !searchInstructionString.startsWith(keyword[0])) && (leadingSpacesCount !== 0 || labelWithColon) && ASMLine.macrosRegExps) {
+                // it's not a keyword - this could be a macro if there are leading spaces or after a label
                 // Consider it is a label if there are no leading spaces
                 keyword = this.search(ASMLine.macrosRegExps, searchInstructionString);
             }
@@ -209,7 +220,7 @@ export class ASMLine {
                     const spacesCount = startPos - lastPos;
                     const range = new Range(new Position(lineNumber, startPos), new Position(lineNumber, endPos));
                     if (pos === 0) {
-                        if (leadingSpacesCount <= 0) {
+                        if (leadingSpacesCount <= 0 || labelWithColon) {
                             this.label = word;
                             this.labelRange = range;
                         } else {
@@ -646,6 +657,54 @@ export class ASMDocument {
     public operatorColumn = 0;
     public valueColumn = 0;
     public assignmentCommentColumn = 0;
+    public spaceAfterComma = false;
+
+    /**
+     * Puts one space after the commas separating the operands
+     * (the commas inside strings, parenthesis, brackets and braces are unchanged)
+     * @param data Data of the instruction
+     * @return formatted data
+     */
+    public static addSpaceAfterCommas(data: string): string {
+        let result = "";
+        let quote: string | undefined = undefined;
+        let depth = 0;
+        for (let i = 0; i < data.length; i++) {
+            const c = data.charAt(i);
+            result += c;
+            if (quote) {
+                if (c === quote) {
+                    quote = undefined;
+                }
+            } else if (c === "\"" || c === "'") {
+                quote = c;
+            } else if ("([{".includes(c)) {
+                depth++;
+            } else if (")]}".includes(c)) {
+                depth = Math.max(0, depth - 1);
+            } else if (c === "," && depth === 0) {
+                while (i + 1 < data.length && /\s/.test(data.charAt(i + 1))) {
+                    i++;
+                }
+                if (i + 1 < data.length) {
+                    result += " ";
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Retrieves the data of the line as it should be once formatted
+     * @param asmLine Line
+     * @return formatted data
+     */
+    public getFormattedData(asmLine: ASMLine): string {
+        if (this.spaceAfterComma) {
+            return ASMDocument.addSpaceAfterCommas(asmLine.data);
+        }
+        return asmLine.data;
+    }
 
     /**
      * Main range parse function
@@ -657,6 +716,7 @@ export class ASMDocument {
      */
     public parse(document: TextDocument, formatterConfiguration: DocumentFormatterConfiguration, token?: CancellationToken, range?: Range, position?: Position): void {
         this.useTabs = formatterConfiguration.useTabs;
+        this.spaceAfterComma = formatterConfiguration.spaceAfterComma;
         let localRange = range;
         if (document.lineCount <= 0) {
             return;
@@ -679,7 +739,7 @@ export class ASMDocument {
             }
             if ((formatterConfiguration.preferredCommentPosition > 0) || (formatterConfiguration.preferredInstructionPosition > 0)) {
                 // Check if it is a oversized line
-                const endOfLineCommentPositionInst = asmLine.label.length + asmLine.instruction.length + asmLine.data.length +
+                const endOfLineCommentPositionInst = asmLine.label.length + asmLine.instruction.length + this.getFormattedData(asmLine).length +
                     formatterConfiguration.labelToInstructionDistance + formatterConfiguration.instructionToDataDistance + formatterConfiguration.dataToCommentsDistance;
                 if (((formatterConfiguration.preferredCommentPosition > 0) && (endOfLineCommentPositionInst > formatterConfiguration.preferredCommentPosition)) ||
                     ((formatterConfiguration.preferredInstructionPosition > 0) && (asmLine.label.length + formatterConfiguration.labelToInstructionDistance >= formatterConfiguration.preferredInstructionPosition))) {
@@ -695,8 +755,9 @@ export class ASMDocument {
                     if (this.maxInstructionSize < asmLine.instruction.length) {
                         this.maxInstructionSize = asmLine.instruction.length;
                     }
-                    if (this.maxDataSize < asmLine.data.length) {
-                        this.maxDataSize = asmLine.data.length;
+                    const dataSize = this.getFormattedData(asmLine).length;
+                    if (this.maxDataSize < dataSize) {
+                        this.maxDataSize = dataSize;
                     }
                 } else if (asmLine.variable.length > 0) {
                     if (this.maxVariableSize < asmLine.variable.length) {

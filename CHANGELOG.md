@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - [Issue #363](https://github.com/prb28/vscode-amiga-assembly/issues/363) `rseven` directive is colored
   - Size suffixes (`move.l`, `dc.w`, `$dff180.w`) have their own color (`support.type.size.m68k`)
   - Renamed scopes (for `editor.tokenColorCustomizations` users): `keyword.other.opcode.mem.m68k` → `keyword.control.directive.data.m68k`, `keyword.other.opcode.pc.m68k` → `keyword.control.directive.data.pc.m68k`, `keyword.operator.assignment.stack.*.m68k` → `keyword.control.directive.storage.m68k`, `meta.label.global.m68k` → `entity.name.label.m68k`, `variable.other.macro.m68k` → `entity.name.function.macro.m68k`
+- Formatter
+  - [Issue #267](https://github.com/prb28/vscode-amiga-assembly/issues/267) New option `amiga-assembly.format.spaceAfterComma` to put a space after the commas separating the operands (needs the vasm `-spaces` option)
+  - A `;` inside a single quoted string is no longer taken as a comment start (the string was modified by the formatter)
+  - Indented labels ending with `:` (`    label:  nop`) and labels glued to the instruction (`label:move.l d0,d1`) are correctly parsed
 
 ### [1.8.15] - pre-release
 - [Issue #372](https://github.com/prb28/vscode-amiga-assembly/issues/372) Add Copperline as a launch and attach debug target

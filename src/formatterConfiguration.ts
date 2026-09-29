@@ -20,13 +20,15 @@ export class DocumentFormatterConfiguration {
     useTabs: boolean;
     /** Tab size */
     tabSize: number;
+    /** Put a space after the commas separating the operands (needs the vasm -spaces option) */
+    spaceAfterComma: boolean;
 
     /**
      * Constructor
      */
     public constructor(labelToInstructionDistance: number, instructionToDataDistance: number, dataToCommentsDistance: number,
         variableToOperatorDistance: number, operatorToValueDistance: number, preferredInstructionPosition: number,
-        preferredCommentPosition: number, useTabs: boolean, tabSize: number) {
+        preferredCommentPosition: number, useTabs: boolean, tabSize: number, spaceAfterComma = false) {
         this.labelToInstructionDistance = labelToInstructionDistance;
         this.instructionToDataDistance = instructionToDataDistance;
         this.dataToCommentsDistance = dataToCommentsDistance;
@@ -37,6 +39,7 @@ export class DocumentFormatterConfiguration {
         this.preferredCommentPosition = preferredCommentPosition;
         this.useTabs = useTabs;
         this.tabSize = tabSize;
+        this.spaceAfterComma = spaceAfterComma;
     }
 
     /**
@@ -54,6 +57,7 @@ export class DocumentFormatterConfiguration {
         const preferredInstructionPosition = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.preferredInstructionPosition', 0);
         const preferredCommentPosition = ConfigurationHelper.retrieveNumberProperty(configuration, 'format.preferredCommentPosition', 0);
         const useTabs = ConfigurationHelper.retrieveBooleanProperty(configuration, 'format.useTabs', false);
-        return new DocumentFormatterConfiguration(labelToInstructionDistance, instructionToDataDistance, dataToCommentsDistance, variableToOperatorDistance, operatorToValueDistance, preferredInstructionPosition, preferredCommentPosition, useTabs, tabSize);
+        const spaceAfterComma = ConfigurationHelper.retrieveBooleanProperty(configuration, 'format.spaceAfterComma', false);
+        return new DocumentFormatterConfiguration(labelToInstructionDistance, instructionToDataDistance, dataToCommentsDistance, variableToOperatorDistance, operatorToValueDistance, preferredInstructionPosition, preferredCommentPosition, useTabs, tabSize, spaceAfterComma);
     }
 }

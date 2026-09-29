@@ -141,6 +141,12 @@
 					"default": false,
 					"description": "Format document with tabs and not with spaces"
 				},
+				"amiga-assembly.format.spaceAfterComma": {
+					"type": "boolean",
+					"scope": "resource",
+					"default": false,
+					"markdownDescription": "Put a space after the commas separating the operands (`lea $dff000, a5`). **vasm must be called with the `-spaces` option** (`vasm.args` of the `amigaassembly` build task), otherwise the text after the space is considered as a comment. Note that with `-spaces` the comments must start with `;`, and some include files (like the official NDK ones using `*` comments after the operands) do not assemble anymore."
+				},
 				"amiga-assembly.hover.numberDisplayFormat": {
 					"type": "string",
 					"scope": "resource",
