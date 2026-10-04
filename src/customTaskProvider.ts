@@ -4,6 +4,7 @@ import { ConfigurationHelper } from './configurationHelper';
 import { ExtensionState } from './extension';
 import { VasmBuildProperties, VASMCompiler } from './vasm';
 import { VlinkBuildProperties, VLINKLinker } from './vlink';
+import * as winston from 'winston';
 
 interface AmigaBuildTaskDefinition extends TaskDefinition {
 	vasm?: VasmBuildProperties;
@@ -147,7 +148,10 @@ export class CompilerController {
 		const subscriptions: Disposable[] = [];
 		workspace.onDidSaveTextDocument(
 			document => {
-				this.onSaveDocument(document);
+				this.onSaveDocument(document).catch(err => {
+					// The error must not be left as an unhandled rejection of the save event
+					winston.error(`Compile on save error: ${err.message}`);
+				});
 			},
 			null,
 			subscriptions
@@ -157,10 +161,15 @@ export class CompilerController {
 		this.disposable = Disposable.from(...subscriptions);
 	}
 
-	public compile(): Thenable<unknown> {
-		if (window.activeTextEditor) {
+	/**
+	 * Compiles a document to show its errors
+	 * @param document Document to compile, if not set the document of the active editor is compiled
+	 */
+	public compile(document?: TextDocument): Thenable<unknown> {
+		const documentToCompile = document ?? window.activeTextEditor?.document;
+		if (documentToCompile) {
 			const compiler = ExtensionState.getCurrent().getCompiler();
-			return compiler.buildCurrentEditorFile();
+			return compiler.buildEditorDocument(documentToCompile);
 		}
 		return Promise.resolve();
 	}
@@ -168,7 +177,8 @@ export class CompilerController {
 	public async onSaveDocument(document: TextDocument): Promise<void> {
 		const checkErrorOnSave = ConfigurationHelper.retrieveBooleanProperty(ConfigurationHelper.getDefaultConfiguration(null), 'checkErrorOnSave', true);
 		if (document.languageId === "m68k" && checkErrorOnSave) {
-			await this.compile();
+			// The saved document is not always the document of the active editor (save all, save from an other extension)
+			await this.compile(document);
 		}
 	}
 
