@@ -102,6 +102,21 @@ describe("Documentation Tests", function () {
             }
             expect(registerByName).to.be.eql(registerByAddress);
         });
+        it("Should describe each blitter control register with its own title (issue #208)", async function () {
+            const manager = documentationManger.registersManager;
+            const expected: Array<[string, string]> = [
+                ["BLTCON0", "**BLTCON0($dff040) - Blitter control register 0**"],
+                ["BLTCON1", "**BLTCON1($dff042) - Blitter control register 1**"],
+                ["BLTCON0L", "**BLTCON0L($dff05a) - Blitter control register 0 (lower 8 bits)"]
+            ];
+            for (const [name, title] of expected) {
+                const register = await manager.getRegistersByName(name);
+                expect(register).to.not.be.undefined;
+                if (register) {
+                    expect(register.description.startsWith(title), `${name}: ${register.description.substring(0, 60)}`).to.be.true;
+                }
+            }
+        });
     });
     context("Hover library file parsing", function () {
         it("Should read the files correctly", async function () {

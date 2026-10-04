@@ -1,19 +1,18 @@
-**Pot pin data read**
+**Blitter control register 0 (lower 8 bits) This is to speed up software - the upper bits are often the same.**
 
-These two control registers are used together to control blitter operations. There are 2 basic modes, are and line, which are selected by bit 0 of BLTCON1, as show below.
+These two control registers are used together to control blitter operations. There are 2 basic modes, area and line, which are selected by bit 0 of BLTCON1, as shown below.
 
-| AREA MODE| LINE MODE  |
-|---|---  |
-|Bit| BLTCON0| BLTCON1| Bit| BLTCON0| BLTCON1  |
+|AREA MODE Bit| BLTCON0| BLTCON1|LINE MODE Bit| BLTCON0| BLTCON1  |
+|---:|---|---|---:|---|---|
 |15| ASH3| BSH3| 15| ASH3| BSH3  |
 |14| ASH2| BSH2| 14| ASH2| BSH2  |
 |13| ASH1| BSH1| 13| ASH1| BSH1  |
-|12| ASA0| BSH0| 12| ASH0| BSH0  |
+|12| ASH0| BSH0| 12| ASH0| BSH0  |
 |11| USEA| 0| 11| 1| 0  |
 |10| USEB| 0| 10| 0| 0  |
 |09| USEC| 0| 09| 1| 0  |
 |08| USED| 0| 08| 1| 0  |
-|07| LF7| DOFF| 07| LF7| DPFF  |
+|07| LF7| DOFF| 07| LF7| DOFF  |
 |06| LF6| 0| 06| LF6| SIGN  |
 |05| LF5| 0| 05| LF5| OVF  |
 |04| LF4| EFE| 04| LF4| SUD  |
