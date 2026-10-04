@@ -77,11 +77,22 @@ describe("Documentation Tests", function () {
     context("Hover directive file parsing", function () {
         it("Should read the file correctly", async function () {
             const manager = documentationManger.directivesManager;
-            expect(manager.getCount()).to.be.equal(99);
+            expect(manager.getCount()).to.be.equal(100);
             const documentation = await manager.getDirectiveByName("SECTION");
             expect(documentation).to.not.be.undefined;
             if (documentation) {
                 expect(documentation.name).to.be.equal("section");
+            }
+        });
+        it("Should document the rseven and ds directives (issue #358)", async function () {
+            const manager = documentationManger.directivesManager;
+            for (const name of ["rseven", "ds"]) {
+                const documentation = await manager.getDirectiveByName(name.toUpperCase());
+                expect(documentation).to.not.be.undefined;
+                if (documentation) {
+                    expect(documentation.name).to.be.equal(name);
+                    expect(documentation.description).to.contain(`# ${name.toUpperCase()}`);
+                }
             }
         });
     });
