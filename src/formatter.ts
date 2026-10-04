@@ -141,11 +141,12 @@ export class M68kFormatter implements vscode.DocumentFormattingEditProvider, vsc
                 }
                 range = new vscode.Range(asmLine.operatorRange.end, asmLine.valueRange.start);
                 edits.push(vscode.TextEdit.replace(range, s));
-                s = this.getEndPad(asmLine.variable, asmDocument.variableColumn, asmDocument.operatorColumn, asmDocument.useTabs, asmDocument.tabSize);
+                // The colons following the name are kept: `NAME:: = 1`
+                s = this.getEndPad(asmLine.variable + asmLine.variableColons, asmDocument.variableColumn, asmDocument.operatorColumn, asmDocument.useTabs, asmDocument.tabSize);
                 if (!asmDocument.useTabs && operatorLeftPadSize > 0) {
                     s = StringUtils.padStart(s, s.length + operatorLeftPadSize);
                 }
-                range = new vscode.Range(asmLine.variableRange.end, asmLine.operatorRange.start);
+                range = new vscode.Range(asmLine.variableRange.end.translate(undefined, asmLine.variableColons.length), asmLine.operatorRange.start);
                 edits.push(vscode.TextEdit.replace(range, s));
             }
         }
