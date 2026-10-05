@@ -4,6 +4,7 @@ import { ConfigurationHelper } from './configurationHelper';
 import { ExtensionState } from './extension';
 import { VasmBuildProperties, VASMCompiler } from './vasm';
 import { VlinkBuildProperties, VLINKLinker } from './vlink';
+import * as winston from 'winston';
 
 interface AmigaBuildTaskDefinition extends TaskDefinition {
 	vasm?: VasmBuildProperties;
@@ -141,13 +142,20 @@ class AmigaBuildTaskTerminal implements Pseudoterminal {
 
 export class CompilerController {
 	private disposable: Disposable;
+	/** Last compile on save error shown to the user */
+	private lastErrorMessage?: string;
 
 	constructor() {
 		// subscribe to selection change and editor activation events
 		const subscriptions: Disposable[] = [];
 		workspace.onDidSaveTextDocument(
 			document => {
-				this.onSaveDocument(document);
+				this.onSaveDocument(document).then(() => {
+					this.lastErrorMessage = undefined;
+				}, err => {
+					// The error must not be left as an unhandled rejection of the save event
+					this.onCompileError(err);
+				});
 			},
 			null,
 			subscriptions
@@ -157,18 +165,41 @@ export class CompilerController {
 		this.disposable = Disposable.from(...subscriptions);
 	}
 
-	public compile(): Thenable<unknown> {
-		if (window.activeTextEditor) {
+	/**
+	 * Compiles a document to show its errors
+	 * @param document Document to compile, if not set the document of the active editor is compiled
+	 */
+	public compile(document?: TextDocument): Thenable<unknown> {
+		const documentToCompile = document ?? window.activeTextEditor?.document;
+		if (documentToCompile) {
 			const compiler = ExtensionState.getCurrent().getCompiler();
-			return compiler.buildCurrentEditorFile();
+			return compiler.buildEditorDocument(documentToCompile);
 		}
 		return Promise.resolve();
+	}
+
+	/**
+	 * Reports an error of the compilation on save
+	 * @param err Error thrown by the compilation
+	 * @returns true if the error is shown to the user
+	 */
+	public onCompileError(err: unknown): boolean {
+		const message = err instanceof Error ? err.message : String(err);
+		winston.error(`Compile on save error: ${message}`);
+		// The same error is shown once, not at each save
+		if (message === this.lastErrorMessage) {
+			return false;
+		}
+		this.lastErrorMessage = message;
+		window.showErrorMessage(`Compile on save error: ${message}`);
+		return true;
 	}
 
 	public async onSaveDocument(document: TextDocument): Promise<void> {
 		const checkErrorOnSave = ConfigurationHelper.retrieveBooleanProperty(ConfigurationHelper.getDefaultConfiguration(null), 'checkErrorOnSave', true);
 		if (document.languageId === "m68k" && checkErrorOnSave) {
-			await this.compile();
+			// The saved document is not always the document of the active editor (save all, save from an other extension)
+			await this.compile(document);
 		}
 	}
 
