@@ -72,7 +72,8 @@ export class SymbolFile {
             }
             const instruct = asmLine.instruction.toLowerCase();
             if (asmLine.label.length > 0) {
-                let label = asmLine.label.replace(":", "");
+                // The label can end with ":" or "::" (exported label)
+                let label = asmLine.label.replace(/:+$/, "");
                 const isLocal = Symbol.isLocalLabelName(label);
                 if (isLocal) {
                     label = lastParentLabel?.getLabel() + label;
