@@ -249,7 +249,7 @@
 |DFF03C|[STRHOR](hardware/DFF03C_STRHOR.md)|Strobe for horiz sync|
 |DFF03E|[STRLONG](hardware/DFF03E_STRLONG.md)|Strobe for identification of long horiz line (228CC)|
 |DFF040|[BLTCON0](hardware/DFF040_BLTCON0.md)|Blitter control register 0|
-|DFF042|[BLTCON1](hardware/DFF042_BLTCON1.md)|Blitter control register 0 (lower 8 bits) This is to speed up software - the upper bits are often the same.|
+|DFF042|[BLTCON1](hardware/DFF042_BLTCON1.md)|Blitter control register 1|
 |DFF044|[BLTAFWM](hardware/DFF044_BLTAFWM.md)|Blitter first word mask for source A|
 |DFF046|[BLTALWM](hardware/DFF046_BLTALWM.md)|Blitter last word mask for source A|
 |DFF048|[BLTCPT](hardware/DFF048_BLTCPT.md)|Blitter pointer to source C (high 5 bits)|
@@ -265,7 +265,7 @@
 |DFF054|[BLTDPTH](hardware/DFF054_BLTDPTH.md)|Blitter pointer to destination D (high 5 bits)|
 |DFF056|[BLTDPTL](hardware/DFF056_BLTDPTL.md)|Blitter pointer to destination D (low 15 bits)|
 |DFF058|[BLTSIZE](hardware/DFF058_BLTSIZE.md)|Blitter start and size (width, height)|
-|DFF05A|[BLTCON0L](hardware/DFF05A_BLTCON0L.md)|Pot pin data read|
+|DFF05A|[BLTCON0L](hardware/DFF05A_BLTCON0L.md)|Blitter control 0, lower 8 bits (minterms)|
 |DFF05C|[BLTSIZV](hardware/DFF05C_BLTSIZV.md)|Blitter vertical size (15 bit height)|
 |DFF05E|[BLTSIZH](hardware/DFF05E_BLTSIZH.md)|Blitter horizontal size & start (11 bit width)|
 |DFF060|[BLTCMOD](hardware/DFF060_BLTCMOD.md)|Blitter modulo for source C|
