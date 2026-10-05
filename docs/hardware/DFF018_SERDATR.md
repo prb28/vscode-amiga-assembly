@@ -1,4 +1,4 @@
-**Pot pin data read**
+**Serial port data and status read**
 
 SERDATR - Serial port data and status read.  
   

@@ -153,6 +153,37 @@ describe("Definition handler Tests", function () {
             expect(foldingRanges[3].kind).to.equal(FoldingRangeKind.Region);
         });
 
+        it("Should not provide folding ranges for the structure offsets and the constants (issue #356)", async () => {
+            const document = new DummyTextDocument();
+            document.addLine("        rsreset");
+            document.addLine("obj_x   rs.w    1");
+            document.addLine("obj_f:  rs.b    1");
+            document.addLine("        rseven");
+            document.addLine("obj_len rs.b    0");
+            document.addLine("");
+            document.addLine("HEIGHT: equ     256");
+            document.addLine("frame   so.l    1");
+            document.addLine("        section code,code");
+            document.addLine("start:");
+            document.addLine("        rts");
+            document.addLine("data:   dc.w    1");
+            document.addLine("        dc.w    2");
+
+            const symbolFile = new SymbolFile(Uri.file("test.s"));
+            symbolFile.readDocument(document);
+
+            sinon.stub(dHnd, "scanFile").resolves(symbolFile);
+
+            const foldingRanges = await dHnd.provideFoldingRanges(document);
+
+            // Only the labels of the code and the data are folded
+            const regions = foldingRanges.filter(r => r.kind === FoldingRangeKind.Region).map(r => [r.start, r.end]);
+            expect(regions).to.be.eql([[9, 10], [11, 12]]);
+            // The symbols are still listed
+            const labels = symbolFile.getLabels().map(l => l.getLabel());
+            expect(labels).to.include.members(["obj_x", "obj_f", "obj_len", "frame", "start", "data"]);
+        });
+
         it("Should provide document symbols for a document", async () => {
             // Create a dummy document with some content
             const document = new DummyTextDocument();

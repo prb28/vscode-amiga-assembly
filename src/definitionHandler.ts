@@ -59,7 +59,9 @@ export class M68kDefinitionHandler implements DefinitionProvider, ReferenceProvi
         const symbolFile: void | SymbolFile = await this.scanFile(document.uri, document);
         let results = new Array<FoldingRange>();
         if (symbolFile) {
-            results = results.concat(this.createFoldingRanges(symbolFile.getLabels(), FoldingRangeKind.Region, false));
+            // The labels of the structure offsets and the constants (rs, equ, ...) are not folded
+            const foldableLabels = symbolFile.getLabels().filter(label => label.isFoldable());
+            results = results.concat(this.createFoldingRanges(foldableLabels, FoldingRangeKind.Region, false));
             results = results.concat(this.createFoldingRanges(symbolFile.getMacros(), FoldingRangeKind.Region, false));
             results = results.concat(this.createFoldingRanges(symbolFile.getIncludeDirs().concat(symbolFile.getIncludedFiles()), FoldingRangeKind.Imports, true));
             results = results.concat(this.createFoldingRangesForComments(symbolFile.getCommentLines()));

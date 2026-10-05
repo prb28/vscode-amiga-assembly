@@ -1,4 +1,4 @@
-**CIAB Peripheral Data Register A**
+**CIAB Peripheral Data Register B**
 
 | Bit| 07  | 06  | 05 | 04 | 03  | 02  | 01 | 00 |
 |--- |---  |---  |--- |--- |---  |---  |--- |--- |

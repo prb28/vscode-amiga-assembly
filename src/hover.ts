@@ -117,10 +117,12 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                 } else {
                     // Is there a value next to the register ?
                     const elms = asmLine.data.split(",");
+                    let registerValue: number | undefined;
                     for (const elm of elms) {
                         if (RegExp(/[$#%@]([\dA-F]+)/i).exec(elm)) {
-                            renderedLine2 = this.renderRegisterValue(elm);
-                            if (renderedLine2) {
+                            const value = this.numberParser.parse(elm);
+                            if (value) {
+                                registerValue = value;
                                 break;
                             }
                         } else if (RegExp(/[$#%@+-/*]([\dA-Z_]+)/i).exec(elm)) {
@@ -129,15 +131,19 @@ export class M68kHoverProvider implements vscode.HoverProvider {
                             try {
                                 const value = await definitionHandler.evaluateFormula(elm, true, document.uri);
                                 if (value || value === 0) {
-                                    renderedLine2 = this.renderRegisterValueNumber(value);
-                                    if (renderedLine2) {
-                                        break;
-                                    }
+                                    registerValue = value;
+                                    break;
                                 }
                             } catch (err) {
                                 // nothing to do
                             }
                         }
+                    }
+                    if (registerValue !== undefined) {
+                        renderedLine2 = this.renderRegisterValueNumber(registerValue);
+                        const marked = new vscode.MarkdownString(this.markRegisterBits(rendered.value, registerValue));
+                        marked.isTrusted = rendered.isTrusted;
+                        rendered = marked;
                     }
                 }
                 if (rendered) {
@@ -277,6 +283,71 @@ export class M68kHoverProvider implements vscode.HoverProvider {
         sep += "|\n";
         row += "|\n\n";
         return new vscode.MarkdownString(head + sep + row);
+    }
+
+    /**
+     * Marks the bits of a value in the bit tables of a register documentation.
+     * - Vertical tables (a header column named 'Bit', one bit or a bits range per row):
+     *   the set bits are marked and the value of the ranges is shown.
+     *   Non-breaking spaces keep the marks on the line of the bit number in the narrow 'Bit' column.
+     * - Horizontal tables (header 'Bit | 15 | 14 | ...'): a row with the value of each bit is added.
+     * @param markdown Documentation of the register
+     * @param value Value written to the register
+     * @return Documentation with the bits marked
+     */
+    public markRegisterBits(markdown: string, value: number): string {
+        const bits = value >>> 0;
+        const isSeparator = (line: string | undefined) => line !== undefined && /^\|?\s*:?-{2,}/.test(line);
+        const isBitHeader = (cell: string) => /\bbit#?$/i.test(cell.trim());
+        const bitNumber = /^(\d{1,2})(?:-(\d{1,2}))?$/;
+        const lines = markdown.split(/\r?\n/);
+        const result: Array<string> = [];
+        let bitColumns: Array<number> = [];
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (!line.startsWith("|")) {
+                bitColumns = [];
+                result.push(line);
+                continue;
+            }
+            const cells = line.replace(/\|\s*$/, "").substring(1).split("|");
+            if (isSeparator(lines[i + 1])) {
+                // Table header
+                const columnBits = cells.slice(1).map((c) => c.trim());
+                if (isBitHeader(cells[0]) && columnBits.length > 0 && columnBits.every((c) => /^\d{1,2}$/.test(c))) {
+                    // Horizontal table: add a row with the value of each bit after the separator
+                    result.push(line, lines[++i]);
+                    result.push("|Value|" + columnBits.map((c) => (bits >>> Number.parseInt(c)) & 1).join("|") + "|");
+                    bitColumns = [];
+                } else {
+                    bitColumns = cells.map((c, idx) => (isBitHeader(c) ? idx : -1)).filter((idx) => idx >= 0);
+                    result.push(line);
+                }
+                continue;
+            }
+            let modified = false;
+            for (const col of bitColumns) {
+                const cell = cells[col]?.trim().replace(/\s/g, "");
+                const match = cell ? bitNumber.exec(cell) : null;
+                const high = match ? Number.parseInt(match[1]) : 32;
+                if (match && high < 32) {
+                    if (match[2]) {
+                        const low = Number.parseInt(match[2]);
+                        const width = high - low + 1;
+                        if (width > 0) {
+                            const field = (bits >>> low) & ((2 ** width) - 1);
+                            cells[col] = `${cell} = %${field.toString(2).padStart(width, "0")}`;
+                            modified = true;
+                        }
+                    } else if ((bits >>> high) & 1) {
+                        cells[col] = `**${cell} ●**`;
+                        modified = true;
+                    }
+                }
+            }
+            result.push(modified ? "|" + cells.join("|") + "|" : line);
+        }
+        return result.join("\n");
     }
 
     /**
