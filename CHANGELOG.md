@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - [Issue #356](https://github.com/prb28/vscode-amiga-assembly/issues/356) No more folding icon on the structure offsets and the constants (`rs`, `so`, `fo`, `equ`, `set`, `equr`, `reg`, `=`): they were folded like a label of code
 - [Issue #353](https://github.com/prb28/vscode-amiga-assembly/issues/353) Compile on save no longer opens the tasks picker, compiles the saved document (not the document of the active editor), and shows its failure in an error message
 - [Issue #354](https://github.com/prb28/vscode-amiga-assembly/issues/354) Constants defined with colons (`NAME:: = 2`, `NAME: equ 2`) are recognized as constants (hover, completion, outline, formatting)
+- [Issue #328](https://github.com/prb28/vscode-amiga-assembly/issues/328) ADF generation with a custom boot block source (`bootBlockSourceFile`) failed: the `.bb` file was not created. The compile errors of the boot block source are now reported
 - [Issue #376](https://github.com/prb28/vscode-amiga-assembly/issues/376) A symbol defined in several files resolves to the definition visible from the current file
 - [Issue #369](https://github.com/prb28/vscode-amiga-assembly/issues/369) Local labels starting with `@` (`@loop`) are scoped to their parent label (outline, definitions, references, hover, completion). vasm does not support them (`label <@loop> redefined`): a quick fix converts them to `.` local labels
 
