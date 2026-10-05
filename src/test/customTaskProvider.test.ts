@@ -38,12 +38,20 @@ describe("Task Provider tests", function () {
             resetCalls(spiedController);
             const error = new Error("nope");
             when(spiedController.compile(anything())).thenReject(error);
+            let thrown: unknown;
             try {
                 await controller.onSaveDocument(document);
             } catch (err) {
-                expect(err).to.be.eql(error);
+                thrown = err;
             }
+            expect(thrown).to.be.equal(error);
             verify(spiedController.compile(document)).once();
+        });
+        it("Should show a compile on save error once", function () {
+            const controller = new CompilerController();
+            expect(controller.onCompileError(new Error("nope"))).to.be.equal(true);
+            expect(controller.onCompileError(new Error("nope"))).to.be.equal(false);
+            expect(controller.onCompileError("other")).to.be.equal(true);
         });
         it("Should not build a document of an other language on save", async () => {
             const controller = new CompilerController();

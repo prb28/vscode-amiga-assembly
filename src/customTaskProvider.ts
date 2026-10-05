@@ -142,15 +142,19 @@ class AmigaBuildTaskTerminal implements Pseudoterminal {
 
 export class CompilerController {
 	private disposable: Disposable;
+	/** Last compile on save error shown to the user */
+	private lastErrorMessage?: string;
 
 	constructor() {
 		// subscribe to selection change and editor activation events
 		const subscriptions: Disposable[] = [];
 		workspace.onDidSaveTextDocument(
 			document => {
-				this.onSaveDocument(document).catch(err => {
+				this.onSaveDocument(document).then(() => {
+					this.lastErrorMessage = undefined;
+				}, err => {
 					// The error must not be left as an unhandled rejection of the save event
-					winston.error(`Compile on save error: ${err.message}`);
+					this.onCompileError(err);
 				});
 			},
 			null,
@@ -172,6 +176,23 @@ export class CompilerController {
 			return compiler.buildEditorDocument(documentToCompile);
 		}
 		return Promise.resolve();
+	}
+
+	/**
+	 * Reports an error of the compilation on save
+	 * @param err Error thrown by the compilation
+	 * @returns true if the error is shown to the user
+	 */
+	public onCompileError(err: unknown): boolean {
+		const message = err instanceof Error ? err.message : String(err);
+		winston.error(`Compile on save error: ${message}`);
+		// The same error is shown once, not at each save
+		if (message === this.lastErrorMessage) {
+			return false;
+		}
+		this.lastErrorMessage = message;
+		window.showErrorMessage(`Compile on save error: ${message}`);
+		return true;
 	}
 
 	public async onSaveDocument(document: TextDocument): Promise<void> {
