@@ -36,3 +36,5 @@ test-result*
 webpack.config.js
 .github
 node_modules
+CLAUDE.md
+CLAUDE.local.md
