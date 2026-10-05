@@ -167,6 +167,7 @@
 |[rept](directives/rept.md)|Repeats the assembly of the block between rept and [endr](endr.md) `<expression>` number of times|
 |[rorg](directives/rorg.md)|Sets the program counter `<expression>` bytes behind the start of the current section|
 |[rs](directives/rs.md)|Works like the [so](so.md) directive, with the only difference that the offset symbol is named `__RS`|
+|[rseven](directives/rseven.md)|Aligns the structure offset counter (`__RS`) to an even count|
 |[rsreset](directives/rsreset.md)|Equivalent to [clrso](clrso.md), but the symbol manipulated is `__RS`|
 |[rsset](directives/rsset.md)|Sets the structure offset counter (`__RS`) to `<expression>`|
 |[section](directives/section.md)|Starts a new section named `<name>` or reactivates an old one|
