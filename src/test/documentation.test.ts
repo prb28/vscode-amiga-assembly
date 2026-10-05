@@ -117,6 +117,28 @@ describe("Documentation Tests", function () {
                 }
             }
         });
+        it("Should describe each register with its own name and title", async function () {
+            const manager = documentationManger.registersManager;
+            const expected: Array<[string, string]> = [
+                ["SERDATR", "**SERDATR($dff018) - Serial port data and status read**"],
+                ["DSKDAT", "**DSKDAT($dff026) - Disk DMA data write**"],
+                ["BPLHSTRT", "**BPLHSTRT($dff1d4) - UHRES bit plane vertical start**"],
+                ["HSSTRT", "**HSSTRT($dff1de) - Horizontal sync start (VARHSY)**"],
+                ["POTINP", "**POTINP($dff016) - Pot pin data read**"]
+            ];
+            for (const [name, title] of expected) {
+                const register = await manager.getRegistersByName(name);
+                expect(register, name).to.not.be.undefined;
+                if (register) {
+                    expect(register.description.startsWith(title), `${name}: ${register.description.substring(0, 60)}`).to.be.true;
+                }
+            }
+            for (const name of ["DKSDAT", "BLTHSTRT"]) {
+                expect(await manager.getRegistersByName(name), name).to.be.undefined;
+            }
+            const intena = await manager.getRegistersByAddress("DFF09A");
+            expect(intena?.name).to.be.equal("INTENA");
+        });
     });
     context("Hover library file parsing", function () {
         it("Should read the files correctly", async function () {

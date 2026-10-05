@@ -186,7 +186,7 @@
 | Address  | Name | Description |
 |:---|:---|:---|
 |BFD000|[PRA](hardware/BFD000_PRA.md)|CIAB Peripheral Data Register A|
-|BFD100|[PRB](hardware/BFD100_PRB.md)|CIAB Peripheral Data Register A|
+|BFD100|[PRB](hardware/BFD100_PRB.md)|CIAB Peripheral Data Register B|
 |BFD200|[DDRA](hardware/BFD200_DDRA.md)|CIAB Data Direction Register A|
 |BFD300|[DDRB](hardware/BFD300_DDRB.md)|CIAB Data Direction Register B|
 |BFD400|[TALO](hardware/BFD400_TALO.md)|CIAB Timer A LOw register|
@@ -227,7 +227,7 @@
 |DFF012|[POT0DAT](hardware/DFF012_POT0DAT.md)|Pot counter data left pair (vert, horiz)|
 |DFF014|[POT1DAT](hardware/DFF014_POT1DAT.md)|Pot counter data right pair (vert, horiz)|
 |DFF016|[POTINP](hardware/DFF016_POTINP.md)|Pot pin data read|
-|DFF018|[SERDATR](hardware/DFF018_SERDATR.md)|Pot pin data read|
+|DFF018|[SERDATR](hardware/DFF018_SERDATR.md)|Serial port data and status read|
 |DFF01A|[DSKBYTR](hardware/DFF01A_DSKBYTR.md)|Disk data byte and status read|
 |DFF01C|[INTENAR](hardware/DFF01C_INTENAR.md)|Interrupt enable bits (read)|
 |DFF01E|[INTREQR](hardware/DFF01E_INTREQR.md)|Interrupt request bits (read)|
@@ -235,7 +235,7 @@
 |DFF020|[DSKPTH](hardware/DFF020_DSKPTH.md)|Disk Pointer (high 5 bits) (old-3 bits)|
 |DFF022|[DSKPTL](hardware/DFF022_DSKPTL.md)|Disk Pointer (low 15 bits)|
 |DFF024|[DSKLEN](hardware/DFF024_DSKLEN.md)|Disk length|
-|DFF026|[DKSDAT](hardware/DFF026_DKSDAT.md)|Disk DMA data write|
+|DFF026|[DSKDAT](hardware/DFF026_DSKDAT.md)|Disk DMA data write|
 |DFF028|[REFPTR](hardware/DFF028_REFPTR.md)|Refresh pointer|
 |DFF02A|[VPOSW](hardware/DFF02A_VPOSW.md)|Write most sig. bits (and frame flop)|
 |DFF02C|[VHPOSW](hardware/DFF02C_VHPOSW.md)|Write vert and horiz position of beam, or lightpen|
@@ -295,7 +295,6 @@
 |DFF096|[DMACON](hardware/DFF096_DMACON.md)|DMA Control write (clear or set)|
 |DFF098|[CLXCON](hardware/DFF098_CLXCON.md)|Collision control|
 |DFF09A|[INTENA](hardware/DFF09A_INTENA.md)|Interrupt enable bits (clear or set bits)|
-|DFF09A|[POTINP](hardware/DFF09A_POTINP.md)|Interrupt enable bits (clear or set bits)|
 |DFF09C|[INTREQ](hardware/DFF09C_INTREQ.md)|Interrupt request bits (clear or set)|
 |DFF09E|[ADKCON](hardware/DFF09E_ADKCON.md)|Audio, Disk, UART Control Write|
 |DFF0A0|[AUD0LC](hardware/DFF0A0_AUD0LC.md)|Audio Channel 0 Location (high 5 bits)|
@@ -464,12 +463,12 @@
 |DFF1CE|[VBSTOP](hardware/DFF1CE_VBSTOP.md)|Vertical line for VBLANK stop|
 |DFF1D0|[SPRHSTRT](hardware/DFF1D0_SPRHSTRT.md)|UHRES sprite vertical display start|
 |DFF1D2|[SPRHSTOP](hardware/DFF1D2_SPRHSTOP.md)|UHRES sprite vertical display stop|
-|DFF1D4|[BLTHSTRT](hardware/DFF1D4_BLTHSTRT.md)|UHRES bit plane vertical stop|
+|DFF1D4|[BPLHSTRT](hardware/DFF1D4_BPLHSTRT.md)|UHRES bit plane vertical start|
 |DFF1D6|[BPLHSTOP](hardware/DFF1D6_BPLHSTOP.md)|UHRES bit plane vertical stop|
 |DFF1D8|[HHPOSW](hardware/DFF1D8_HHPOSW.md)|DUAL mode hires Hbeam counter write|
 |DFF1DA|[HHPOSR](hardware/DFF1DA_HHPOSR.md)|DUAL mode hires Hbeam counter read|
 |DFF1DC|[BEAMCON0](hardware/DFF1DC_BEAMCON0.md)|Beam Counter Control Bits|
-|DFF1DE|[HSSTRT](hardware/DFF1DE_HSSTRT.md)|Horiz line position for HSYNC stop|
+|DFF1DE|[HSSTRT](hardware/DFF1DE_HSSTRT.md)|Horizontal sync start (VARHSY)|
 |DFF1E0|[VSSTRT](hardware/DFF1E0_VSSTRT.md)|Vertical sync start (VARVSY)|
 |DFF1E2|[HCENTER](hardware/DFF1E2_HCENTER.md)|Horizontal position (CCKs) of VSYNC on long field|
 |DFF1E4|[DIWHIGH](hardware/DFF1E4_DIWHIGH.md)|Display window upper bits for start, stop|
