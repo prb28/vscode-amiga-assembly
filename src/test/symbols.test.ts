@@ -9,6 +9,7 @@ import * as Path from 'path';
 import { ExtensionState } from '../extension';
 import { ASMLine } from '../parser';
 import * as vscode from 'vscode';
+import { DummyTextDocument } from './dummy';
 
 
 describe("Symbols reader Tests", function () {
@@ -48,6 +49,25 @@ describe("Symbols reader Tests", function () {
         expect(macros.length).to.be.equal(2);
         expect(sf.getIncludeDirs()[0].getLabel()).to.be.eql("include");
         expect(sf.getIncludedFiles()[0].getLabel()).to.be.eql("hw.i");
+    });
+
+    it("Should remove all the trailing colons of a label (issue #344)", function () {
+        const document = new DummyTextDocument();
+        document.addLine("single:");
+        document.addLine("    nop");
+        document.addLine("exported::");
+        document.addLine("    nop");
+        document.addLine(".local::");
+        document.addLine("    nop");
+        document.addLine("inline::  rts");
+        document.addLine("nocolon");
+        document.addLine("    rts");
+        const symbolFile = new SymbolFile(Uri.file("test.s"));
+        symbolFile.readDocument(document);
+        const labels = symbolFile.getLabels().map(l => l.getLabel());
+        expect(labels).to.be.eql(["single", "exported", "exported.local", "inline", "nocolon"]);
+        const definedSymbols = symbolFile.getDefinedSymbols().map(l => l.getLabel());
+        expect(definedSymbols).to.be.eql(["single", "exported", ".local", "inline", "nocolon"]);
     });
 
     context("comment docs", () => {
