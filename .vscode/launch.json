@@ -89,12 +89,12 @@
             "preLaunchTask": "npm: test-compile"
         },
         {
-            "name": "Generate summary",
+            "name": "Sync docs from m68k-instructions-documentation",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/scripts/build/genDocSummary.py",
+            "program": "${workspaceFolder}/scripts/build/syncDocs.py",
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/scripts/build/"
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

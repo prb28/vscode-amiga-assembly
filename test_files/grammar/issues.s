@@ -100,3 +100,15 @@ SinTableLength = *-SinTable
 ;           ^^^^^^ keyword.control.other.m68k
             rsreset
 ;           ^^^^^^^ keyword.control.other.m68k
+
+; Issue #354 - constants defined with colons
+TESTMODE::  = 2
+; <-------- variable.other.constant.m68k
+;       ^^ punctuation.separator.label.m68k
+;           ^ keyword.operator.assignment.m68k
+;             ^ constant.numeric.decimal.m68k
+WITHCOLON:  equ     $dff000
+; <--------- variable.other.constant.m68k
+;        ^ punctuation.separator.label.m68k
+;           ^^^ keyword.operator.assignment.m68k
+;                   ^^^^^^^ constant.numeric.hex.m68k

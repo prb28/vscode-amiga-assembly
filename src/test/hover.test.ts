@@ -349,4 +349,58 @@ describe("Hover Tests", function () {
             expect(mdStr.value).to.be.equal(expected);
         }
     });
+    context("Register bits marking (issue #208)", function () {
+        it("Should mark the set bits in a vertical bits table", function () {
+            const hp = new M68kHoverProvider(documentationManager);
+            const doc = "**Title**\n\n| Bit| Function| Description  |\n|---|---|---  |\n|15| SET/CLR| Set  |\n|14| BBUSY| Busy  |\n|05| SPREN| Sprite  |\n|00| AUD0EN| Audio 0|\n\nText";
+            const expected = "**Title**\n\n| Bit| Function| Description  |\n|---|---|---  |\n|**15 ●**| SET/CLR| Set  |\n|14| BBUSY| Busy  |\n|**05 ●**| SPREN| Sprite  |\n|00| AUD0EN| Audio 0|\n\nText";
+            expect(hp.markRegisterBits(doc, 0x8020)).to.be.equal(expected);
+        });
+        it("Should show the value of a bits range", function () {
+            const hp = new M68kHoverProvider(documentationManager);
+            const doc = "|Bit| Function|\n|---|---|\n|14-13| PRECOMP 1-0|\n|07-00| DATA|";
+            const expected = "|Bit| Function|\n|---|---|\n|14-13 = %10| PRECOMP 1-0|\n|07-00 = %10100101| DATA|";
+            expect(hp.markRegisterBits(doc, 0x40a5)).to.be.equal(expected);
+        });
+        it("Should add a value row in a horizontal bits table", function () {
+            const hp = new M68kHoverProvider(documentationManager);
+            const doc = "| Bit| 03| 02| 01| 00  |\n|---|---|---|---|---  |\n|| R| G| B| X|";
+            const expected = "| Bit| 03| 02| 01| 00  |\n|---|---|---|---|---  |\n|Value|1|0|1|0|\n|| R| G| B| X|";
+            expect(hp.markRegisterBits(doc, 0xa)).to.be.equal(expected);
+        });
+        it("Should not modify the other tables", function () {
+            const hp = new M68kHoverProvider(documentationManager);
+            const doc = "|Octant| SUD| SUL| AUL|\n|---|---|---|---|\n|0| 1| 1| 0|\n|7| 1| 0| 0|";
+            expect(hp.markRegisterBits(doc, 0xffff)).to.be.equal(doc);
+        });
+        it("Should mark the bits of BLTCON1 in the hover", async function () {
+            const hp = new M68kHoverProvider(documentationManager);
+            const document = new DummyTextDocument();
+            const tokenEmitter = new CancellationTokenSource();
+            document.addLine("    move.w     #$8001,$dff042");
+            const result = await hp.provideHover(document, new Position(0, 25), tokenEmitter.token);
+            expect(result instanceof Hover).to.be.true;
+            if (result instanceof Hover) {
+                expect(result.contents.length).to.be.equal(2);
+                const elm = result.contents[1];
+                expect(elm instanceof MarkdownString).to.be.true;
+                if (elm instanceof MarkdownString) {
+                    expect(elm.value).to.contain("|**15 ●**| ASH3| BSH3|");
+                    expect(elm.value).to.contain("|**00 ●**| LF0| LINE(=0)|");
+                    expect(elm.value).to.contain("|14| ASH2| BSH2|");
+                }
+            }
+        });
+        it("Should keep the bit number and its mark on the same line", function () {
+            const hp = new M68kHoverProvider(documentationManager);
+            const doc = "| Bit| Function| Description  |\n|---|---|---  |\n|15| SET/CLR| Set  |\n|09| DMAEN| Enable all DMA below (also UHRES DMA)  |";
+            const marked = hp.markRegisterBits(doc, 0x7fff);
+            expect(marked).to.contain("|15| SET/CLR|");
+            expect(marked).to.contain("|**09 ●**| DMAEN|");
+            // The cells of the 'Bit' column must not contain a breaking space
+            for (const row of marked.split("\n").slice(2)) {
+                expect(row.split("|")[1]).to.not.match(/ /);
+            }
+        });
+    });
 });

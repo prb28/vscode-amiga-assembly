@@ -3,6 +3,8 @@ import { ASMLine, ASMLineType } from './parser';
 import { StringUtils } from './stringUtils';
 
 export class SymbolFile {
+    /** Directives setting the value of the symbol of the line: the label is not a position in the code */
+    private static readonly SYMBOL_VALUE_DIRECTIVE_REGEXP = /^(=|(rs|so|fo|equ|fequ|set|equr|equrl|fequr|reg|freg)(\.[a-z])?)$/i;
     private readonly uri: Uri;
     private document: TextDocument | null = null;
     private definedSymbols = new Array<Symbol>();
@@ -76,6 +78,8 @@ export class SymbolFile {
                     label = lastParentLabel?.getLabel() + label;
                 }
                 const s = new Symbol(label, this, asmLine.labelRange);
+                // A structure offset or a constant has no block of code to fold
+                s.setFoldable(!SymbolFile.SYMBOL_VALUE_DIRECTIVE_REGEXP.test(instruct));
                 // Is this actually a macro definition in `<name> macro` syntax?
                 if (instruct.startsWith("macro")) {
                     this.macros.push(s);
@@ -205,6 +209,7 @@ export class Symbol {
     private readonly value?: string;
     private parent = "";
     private commentBlock: string | null = null;
+    private foldable = true;
     private readonly children: Array<Symbol> = new Array<Symbol>();
     constructor(label: string, file: SymbolFile, range: Range, value?: string) {
         this.label = label;
@@ -246,6 +251,15 @@ export class Symbol {
     }
     public setParent(parent: string): void {
         this.parent = parent;
+    }
+    /**
+     * @return false if the symbol must not start a folding range (structure offsets, constants)
+     */
+    public isFoldable(): boolean {
+        return this.foldable;
+    }
+    public setFoldable(foldable: boolean): void {
+        this.foldable = foldable;
     }
     public isLocalLabel(): boolean {
         return Symbol.LOCAL_LABEL_REGEXP.test(this.label);

@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### [1.8.17] - pre-release
+- [Issue #208](https://github.com/prb28/vscode-amiga-assembly/issues/208) Hardware registers documentation
+  - Hover on a register written with a value (`move.w #$8000,BLTCON1(a5)`): the bits set are marked in the bits table of the register documentation (`15 ●`), the value of a bits range is shown (`14-13 = %10`), and a `Value` row is added to the tables with one column per bit (`COLORxx`, `BLTSIZE`, `DIWSTRT`...)
+  - `BLTCON1` and `BLTCON0L` had the title of another register. `BLTCON0` / `BLTCON1` are checked against the Amiga Hardware Reference Manual: area and line modes have their own table, line mode bits are `START3-0` / `TEXTURE3-0`, bits 7 and 5 of `BLTCON1` are `0` in line mode. `BLTCON0L` only documents its 8 minterm bits
+  - `SERDATR`, CIAB `PRB` and `HSSTRT` had the title of another register, `BPLHDAT` had the description of `BPLHMOD`
+  - `DSKDAT` (was `DKSDAT`) and `BPLHSTRT` (was `BLTHSTRT`) were misspelled: their documentation was not found. A duplicate of `INTENA` named `POTINP` at `$dff09a` is removed
+- [Issue #356](https://github.com/prb28/vscode-amiga-assembly/issues/356) No more folding icon on the structure offsets and the constants (`rs`, `so`, `fo`, `equ`, `set`, `equr`, `reg`, `=`): they were folded like a label of code
+- [Issue #353](https://github.com/prb28/vscode-amiga-assembly/issues/353) Compile on save no longer opens the tasks picker, compiles the saved document (not the document of the active editor), and shows its failure in an error message
+- [Issue #354](https://github.com/prb28/vscode-amiga-assembly/issues/354) Constants defined with colons (`NAME:: = 2`, `NAME: equ 2`) are recognized as constants (hover, completion, outline, formatting)
 - [Issue #376](https://github.com/prb28/vscode-amiga-assembly/issues/376) A symbol defined in several files resolves to the definition visible from the current file
 - [Issue #369](https://github.com/prb28/vscode-amiga-assembly/issues/369) Local labels starting with `@` (`@loop`) are scoped to their parent label (outline, definitions, references, hover, completion). vasm does not support them (`label <@loop> redefined`): a quick fix converts them to `.` local labels
 

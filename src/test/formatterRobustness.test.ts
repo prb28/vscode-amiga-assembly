@@ -173,6 +173,10 @@ const EDGE_CASES: Array<EdgeCase> = [
     { issue: "#352", line: "len = *-table", variable: "len", operator: "=", value: "*-table" },
     { issue: "#37", line: "CUSTOM  equ $dff000 ; comment", variable: "CUSTOM", operator: "equ", value: "$dff000", comment: "; comment" },
     { line: "PI fequ.s 3.14", variable: "PI", operator: "fequ.s", value: "3.14" },
+    { issue: "#354", line: "TESTMODE:: = 2", variable: "TESTMODE", operator: "=", value: "2" },
+    { issue: "#354", line: "EXPORTED::=2 ; comment", variable: "EXPORTED", operator: "=", value: "2", comment: "; comment" },
+    { issue: "#354", line: "WITHCOLON: equ $dff000", variable: "WITHCOLON", operator: "equ", value: "$dff000" },
+    { line: "equal equ 1", variable: "equal", operator: "equ", value: "1" },
 ];
 
 // tslint:disable:no-unused-expression

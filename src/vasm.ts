@@ -63,14 +63,24 @@ export class VASMCompiler {
   public async buildCurrentEditorFile(vasmConf?: VasmBuildProperties, logEmitter?: EventEmitter<string>): Promise<void> {
     const editor = window.activeTextEditor;
     if (editor) {
-      const conf: VasmBuildProperties = this.getConfiguration("vasm", vasmConf) as VasmBuildProperties;
-      if (this.mayCompile(conf)) {
-        await this.buildDocument({ ...conf }, editor.document, true, logEmitter);
-      } else {
-        throw new Error("VASM compilation is disabled in the configuration");
-      }
+      await this.buildEditorDocument(editor.document, vasmConf, logEmitter);
     } else {
       throw new Error("There is no active editor");
+    }
+  }
+
+  /**
+   * Build a document in the temporary dir to show its errors
+   * @param document The document to build
+   * @param vasmConf Configuration, if not set the default configuration is used
+   * @param logEmitter Emitter listening to the logs
+   */
+  public async buildEditorDocument(document: TextDocument, vasmConf?: VasmBuildProperties, logEmitter?: EventEmitter<string>): Promise<void> {
+    const conf: VasmBuildProperties = this.getConfiguration("vasm", vasmConf) as VasmBuildProperties;
+    if (this.mayCompile(conf)) {
+      await this.buildDocument({ ...conf }, document, true, logEmitter);
+    } else {
+      throw new Error("VASM compilation is disabled in the configuration");
     }
   }
 

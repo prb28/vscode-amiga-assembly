@@ -16,4 +16,4 @@ test-result*
 resources/examples/vscode-amiga-wks-example/build
 resources/examples/vscode-amiga-wks-example/uae/dh0/gencop
 resources/examples/vscode-amiga-wks-example/emulator
-CLAUDE.md
+CLAUDE.local.md
