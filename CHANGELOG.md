@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - [Issue #328](https://github.com/prb28/vscode-amiga-assembly/issues/328) ADF generation with a custom boot block source (`bootBlockSourceFile`) failed: the `.bb` file was not created. The compile errors of the boot block source are now reported
 - [Issue #376](https://github.com/prb28/vscode-amiga-assembly/issues/376) A symbol defined in several files resolves to the definition visible from the current file
 - [Issue #369](https://github.com/prb28/vscode-amiga-assembly/issues/369) Local labels starting with `@` (`@loop`) are scoped to their parent label (outline, definitions, references, hover, completion). vasm does not support them (`label <@loop> redefined`): a quick fix converts them to `.` local labels
+- [Issue #358](https://github.com/prb28/vscode-amiga-assembly/issues/358) `rseven` directive is documented (completion and hover). The `ds` documentation said that the reserved space was undefined: it is filled with zeros (`dcb.x <exp>,0`)
 
 ### [1.8.16] - pre-release
 - Syntax coloring: the TextMate grammar is rewritten around the line layout (label / mnemonic / operands / comment)
