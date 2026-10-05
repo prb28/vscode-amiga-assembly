@@ -104,7 +104,7 @@
 |[dcb](directives/dcb.md)|Insert `<exp>` zero or `<fill>` bytes/words into the current section|
 |[dl](directives/dl.md)|Equivalent to `dc.l` for ArgAsm, BAsm, HX68, Macro68, ProAsm, etc. compatibility|
 |[dr](directives/dr.md)|Calculates `<expN> - <current pc value>` and stores it into successive bytes/words of memory in the current section|
-|[ds](directives/ds.md)|Defines a space in memory of N elements, the size of each element depends on the specified size, the content of the space is undefined|
+|[ds](directives/ds.md)|Reserves memory (Define Storage): allocates `<exp>` bytes/words/longs in the current section|
 |[dw](directives/dw.md)|Equivalent to `dc.w` for ArgAsm, BAsm, HX68, Macro68, ProAsm, etc. compatibility|
 |[dx](directives/dx.md)|Tries to allocate space in the DataBss portion of a code or data section|
 |[echo](directives/echo.md)|Prints `<string>` to stdout|
@@ -167,6 +167,7 @@
 |[rept](directives/rept.md)|Repeats the assembly of the block between rept and [endr](endr.md) `<expression>` number of times|
 |[rorg](directives/rorg.md)|Sets the program counter `<expression>` bytes behind the start of the current section|
 |[rs](directives/rs.md)|Works like the [so](so.md) directive, with the only difference that the offset symbol is named `__RS`|
+|[rseven](directives/rseven.md)|Aligns the structure offset counter (`__RS`) to an even count|
 |[rsreset](directives/rsreset.md)|Equivalent to [clrso](clrso.md), but the symbol manipulated is `__RS`|
 |[rsset](directives/rsset.md)|Sets the structure offset counter (`__RS`) to `<expression>`|
 |[section](directives/section.md)|Starts a new section named `<name>` or reactivates an old one|

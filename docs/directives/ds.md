@@ -2,8 +2,9 @@
 
 ## Syntax
 ```assembly
-ds.[bdlqswx] <number>
+ds.[bdlqswx] <exp>
 ```
 
 ## Description
-Defines a space in memory of N elements, the size of each element depends on the specified size, the content of the space is undefined
+Reserves memory (Define Storage): allocates `<exp>` bytes/words/longs in the current section.
+Equivalent to `dcb.[bdlqswx] <exp>,0`.
