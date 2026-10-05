@@ -26,6 +26,8 @@ export class ASMLine {
     start: Position;
     end: Position;
     variable = "";
+    /** Colons following the name of the variable in an assignment: `NAME:: = 1` */
+    variableColons = "";
     operator = "";
     value = "";
     spacesBeforeLabelRange: Range;
@@ -294,14 +296,17 @@ export class ASMLine {
      * @return true if it is an assignment
      */
     public parseAssignment(line: string, lineNumber: number): boolean {
-        const regexp = /^([a-z0-9\-_]*)\s*(=|\s[a-z]?equ(\.[a-z])?\s)\s*(.*)/gi;
+        // The name can be followed by one or two colons (two colons: exported symbol)
+        const regexp = /^([a-z0-9\-_]*)(:{0,2})\s*(=|\s[a-z]?equ(\.[a-z])?\s)\s*(.*)/gi;
         const match = regexp.exec(line);
         if (match !== null) {
             this.variable = match[1].trim();
-            this.operator = match[2].trim();
-            this.value = match[4].trim();
+            this.variableColons = match[2];
+            this.operator = match[3].trim();
+            this.value = match[5].trim();
             this.variableRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, this.variable.length));
-            const startPosOperator = line.indexOf(this.operator);
+            // The operator is searched after the name: the name can contain the operator text (`equal equ 1`)
+            const startPosOperator = line.indexOf(this.operator, match[1].length + match[2].length);
             const endPosOperator = startPosOperator + this.operator.length;
             this.operatorRange = new Range(new Position(lineNumber, startPosOperator), new Position(lineNumber, endPosOperator));
             const startPosValue = endPosOperator + line.substring(endPosOperator).indexOf(this.value);
@@ -760,8 +765,9 @@ export class ASMDocument {
                         this.maxDataSize = dataSize;
                     }
                 } else if (asmLine.variable.length > 0) {
-                    if (this.maxVariableSize < asmLine.variable.length) {
-                        this.maxVariableSize = asmLine.variable.length;
+                    const variableSize = asmLine.variable.length + asmLine.variableColons.length;
+                    if (this.maxVariableSize < variableSize) {
+                        this.maxVariableSize = variableSize;
                     }
                     if (this.maxValueSize < asmLine.value.length) {
                         this.maxValueSize = asmLine.value.length;

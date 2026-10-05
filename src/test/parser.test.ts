@@ -298,6 +298,34 @@ describe("Parser Tests", function () {
             expect(asmLine.operatorRange).to.be.eql(new Range(new Position(0, 12), new Position(0, 13)));
             expect(asmLine.value).to.be.equal("W");
             expect(asmLine.valueRange).to.be.eql(new Range(new Position(0, 14), new Position(0, 15)));
+            // Should parse a name followed by colons (issue #354)
+            asmLine = new ASMLine("TESTMODE:: = 2");
+            expect(asmLine.variable).to.be.equal("TESTMODE");
+            expect(asmLine.variableColons).to.be.equal("::");
+            expect(asmLine.variableRange).to.be.eql(new Range(new Position(0, 0), new Position(0, 8)));
+            expect(asmLine.operator).to.be.equal("=");
+            expect(asmLine.operatorRange).to.be.eql(new Range(new Position(0, 11), new Position(0, 12)));
+            expect(asmLine.value).to.be.equal("2");
+            expect(asmLine.valueRange).to.be.eql(new Range(new Position(0, 13), new Position(0, 14)));
+            expect(asmLine.lineType).to.be.equal(ASMLineType.ASSIGNMENT);
+            expect(asmLine.label).to.be.equal("");
+            asmLine = new ASMLine("mylabel: equ 123");
+            expect(asmLine.variable).to.be.equal("mylabel");
+            expect(asmLine.variableColons).to.be.equal(":");
+            expect(asmLine.operator).to.be.equal("equ");
+            expect(asmLine.operatorRange).to.be.eql(new Range(new Position(0, 9), new Position(0, 12)));
+            expect(asmLine.value).to.be.equal("123");
+            expect(asmLine.lineType).to.be.equal(ASMLineType.ASSIGNMENT);
+            // A label followed by an instruction is not an assignment
+            asmLine = new ASMLine("mylabel:: move.l #1,d0");
+            expect(asmLine.variable).to.be.equal("");
+            expect(asmLine.variableColons).to.be.equal("");
+            expect(asmLine.lineType).to.be.equal(ASMLineType.INSTRUCTION);
+            // The name can contain the text of the operator
+            asmLine = new ASMLine("equal equ 1");
+            expect(asmLine.variable).to.be.equal("equal");
+            expect(asmLine.operatorRange).to.be.eql(new Range(new Position(0, 6), new Position(0, 9)));
+            expect(asmLine.valueRange).to.be.eql(new Range(new Position(0, 10), new Position(0, 11)));
             expect(asmLine.lineType).to.be.equal(ASMLineType.ASSIGNMENT);
         });
         it("Should parse a line without label", function () {
