@@ -7,7 +7,8 @@ import * as chai from 'chai';
 import { ADFTools } from '../adf';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as path from 'path';
-import { ExecutorHelper } from '../execHelper';
+import { ExecutorHelper, ICheckResult } from '../execHelper';
+import { VASMCompiler } from '../vasm';
 import { instance, when, anything, mock, capture, reset } from '@johanblumenberg/ts-mockito';
 import * as fs from 'fs';
 import * as temp from 'temp';
@@ -115,6 +116,50 @@ describe("ADFTools test", function () {
             expect(fileContents).to.be.eql(referenceBootBlock);
             fs.unlinkSync(outputFile);
             fs.rmSync(tempDir, { recursive: true });
+        });
+        context("Custom boot block source (issue #328)", function () {
+            const bootBlockSourceFile = path.join(__dirname, "..", "..", "test_files", "sources", "tutorial.s");
+            const adfDiskName = "mydisk.adf";
+            let tempDir: string;
+            let objFile: string;
+            let bbFile: string;
+            beforeEach(function () {
+                tempDir = temp.mkdirSync("bootblock-test");
+                objFile = path.join(tempDir, "boot.o");
+                bbFile = path.join(tempDir, "boot.bb");
+                when(mockedExecutor.runToolRetrieveStdout(anything(), anything(), anything(), anything(), anything())).thenResolve("Done.\n");
+                adfTools.setTestContext(executor);
+            });
+            afterEach(function () {
+                fs.rmSync(tempDir, { recursive: true, force: true });
+            });
+            it("Should create the boot block file from the compiled binary", async function () {
+                // The compiler generates the raw binary in the .o file
+                fs.writeFileSync(objFile, binaryBootBlockData);
+                const compiler = <VASMCompiler><unknown>{
+                    buildFile: async () => [objFile, new Array<ICheckResult>()]
+                };
+                await adfTools.createBootableADFDiskFromDir(adfDiskName, "", "", "", ["opts"], bootBlockSourceFile, undefined, compiler);
+                // The boot block file is created from the binary
+                expect(fs.readFileSync(bbFile)).to.be.eql(referenceBootBlock);
+                // The binary is not modified
+                expect(fs.readFileSync(objFile)).to.be.eql(binaryBootBlockData);
+                // The boot block is installed
+                const [args, , commandFilename, ,] = capture(mockedExecutor.runToolRetrieveStdout).byCallIndex(1);
+                expect(path.basename(commandFilename)).to.be.equal("adfinst");
+                expect(args).to.be.eql([`--install=${bbFile}`, adfDiskName]);
+            });
+            it("Should report the compile errors of the boot block source", async function () {
+                const error = new ICheckResult();
+                error.line = 12;
+                error.msg = "unknown mnemonic <foo>";
+                const compiler = <VASMCompiler><unknown>{
+                    buildFile: async () => [objFile, [error]]
+                };
+                await expect(adfTools.createBootableADFDiskFromDir(adfDiskName, "", "", "", ["opts"], bootBlockSourceFile, undefined, compiler))
+                    .to.be.rejectedWith("line 12: unknown mnemonic <foo>");
+                expect(fs.existsSync(bbFile)).to.be.false;
+            });
         });
     });
 });

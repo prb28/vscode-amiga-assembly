@@ -125,16 +125,24 @@ export class ADFTools {
                 const vasmBuildProperties = { ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION };
                 vasmBuildProperties.args = ["-m68000", "-Fbin"];
                 const results = await compiler.buildFile(vasmBuildProperties, sourceFullPath, true);
-                if (results?.[0]) {
-                    const bootBlockDataFilename = results[0];
-                    bootBlockFilename = bootBlockDataFilename.replace(".o", ".bb");
-                    const bootBlockDataFilenameUri = Uri.file(bootBlockFilename);
-                    const bootBlockFile = new FileProxy(bootBlockDataFilenameUri);
+                const compileErrors = (results?.[1] ?? []).filter(r => r.severity === "error");
+                if (compileErrors.length > 0) {
+                    // Without this check the missing binary file is the only reported error
+                    const messages = compileErrors.map(e => (e.line > 0) ? `line ${e.line}: ${e.msg}` : e.msg);
+                    throw new Error(`Error compiling boot block '${bootBlockSourceFilename}': ${messages.join(", ")}`);
+                }
+                const bootBlockDataFilename = results?.[0];
+                if (bootBlockDataFilename) {
+                    // vasm writes the raw binary to the .o file,
+                    // the boot block (1024 bytes with the checksum) is written to the .bb file
+                    const parsedDataFilename = path.parse(bootBlockDataFilename);
+                    bootBlockFilename = path.join(parsedDataFilename.dir, `${parsedDataFilename.name}.bb`);
+                    const bootBlockDataFile = new FileProxy(Uri.file(bootBlockDataFilename));
                     // create the bootblock
                     try {
-                        const bootBlock = await bootBlockFile.readFile();
+                        const bootBlockData = await bootBlockDataFile.readFile();
                         logEmitter?.fire(`Adding bootblock to ADF\r\n`);
-                        await this.writeBootBlockFile(Buffer.from(bootBlock), Uri.file(bootBlockFilename));
+                        await this.writeBootBlockFile(Buffer.from(bootBlockData), Uri.file(bootBlockFilename));
                     } catch (err) {
                         throw new Error(`Error writing boot block '${bootBlockSourceFilename}': ${err}`, { cause: err });
                     }
