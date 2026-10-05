@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - `BLTCON1` and `BLTCON0L` had the title of another register. `BLTCON0` / `BLTCON1` are checked against the Amiga Hardware Reference Manual: area and line modes have their own table, line mode bits are `START3-0` / `TEXTURE3-0`, bits 7 and 5 of `BLTCON1` are `0` in line mode. `BLTCON0L` only documents its 8 minterm bits
   - `SERDATR`, CIAB `PRB` and `HSSTRT` had the title of another register, `BPLHDAT` had the description of `BPLHMOD`
   - `DSKDAT` (was `DKSDAT`) and `BPLHSTRT` (was `BLTHSTRT`) were misspelled: their documentation was not found. A duplicate of `INTENA` named `POTINP` at `$dff09a` is removed
+- [Issue #356](https://github.com/prb28/vscode-amiga-assembly/issues/356) No more folding icon on the structure offsets and the constants (`rs`, `so`, `fo`, `equ`, `set`, `equr`, `reg`, `=`): they were folded like a label of code
 - [Issue #376](https://github.com/prb28/vscode-amiga-assembly/issues/376) A symbol defined in several files resolves to the definition visible from the current file
 - [Issue #369](https://github.com/prb28/vscode-amiga-assembly/issues/369) Local labels starting with `@` (`@loop`) are scoped to their parent label (outline, definitions, references, hover, completion). vasm does not support them (`label <@loop> redefined`): a quick fix converts them to `.` local labels
 
