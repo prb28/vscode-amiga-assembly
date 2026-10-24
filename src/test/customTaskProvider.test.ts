@@ -70,7 +70,7 @@ describe("Task Provider tests", function () {
             try {
                 const document = new DummyTextDocument();
                 expect(vscode.window.activeTextEditor?.document).to.not.be.equal(document);
-                when(spiedCompiler.buildEditorDocument(anything())).thenResolve();
+                when(spiedCompiler.buildEditorDocument(anything(), anything())).thenResolve();
                 const controller = new CompilerController();
                 await controller.onSaveDocument(document);
                 verify(spiedCompiler.buildEditorDocument(document, undefined)).once();
