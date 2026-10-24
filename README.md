@@ -13,7 +13,7 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 ### Breaking changes
 - see [Breaking changes](https://github.com/prb28/vscode-amiga-assembly/wiki/Breaking-Changes) for more details
-- 1.9: some syntax coloring scopes are renamed, update your `editor.tokenColorCustomizations` (see the [changelog](CHANGELOG.md))
+- 1.9: some syntax coloring scopes are renamed, update your `editor.tokenColorCustomizations` (see [Breaking changes](https://github.com/prb28/vscode-amiga-assembly/wiki/Breaking-Changes#19))
 
 ## New in 1.9
 - *LinuxJedi* Debugging with the [Copperline](https://github.com/CopperlineHQ/Copperline) emulator
