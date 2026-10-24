@@ -14,7 +14,8 @@ import path = require('path');
 import { VASMCompiler } from '../vasm';
 import { VLINKLinker } from '../vlink';
 
-describe.skip('FS-UAE Integration test', () => {
+// Opt in with UAE_INTEGRATION=1: the test starts the emulator bundled with uae-dap.
+describe('FS-UAE Integration test', () => {
     const PROJECT_ROOT = Path.join(__dirname, '..', '..').replace(/\\+/g, '/');
     const DEBUG_ADAPTER = Path.join(PROJECT_ROOT, 'out', 'debugAdapter.js').replace(/\\+/g, '/');
     const launchArgs = <LaunchRequestArguments>{
@@ -33,6 +34,7 @@ describe.skip('FS-UAE Integration test', () => {
     let tempDir: string;
 
     before(async function () {
+        if (process.env.UAE_INTEGRATION !== '1') this.skip();
         // Automatically track and cleanup files at exit
         temp.track();
         // activate the extension
@@ -90,6 +92,9 @@ describe.skip('FS-UAE Integration test', () => {
     });
 
     after(async function () {
+        if (!tempDir) {
+            return;
+        }
         if (dc) {
             await dc.stop();
         }
@@ -111,9 +116,6 @@ describe.skip('FS-UAE Integration test', () => {
 
     describe('complete workspace test', function () {
         it('should build and debug', function () {
-            if (process.env.CI === 'true' && process.platform === "win32") {
-                this.skip();  // Skip the test if running in GitHub Actions
-            }
             return Promise.all([
                 dc.configurationSequence(),
                 dc.launch(launchArgs),

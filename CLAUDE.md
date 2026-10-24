@@ -22,8 +22,8 @@ npm run package         # vsce package -> .vsix
 - No grep/filter option exists in the runner. To run a single test/suite, temporarily use `describe.only`/`it.only` (the ESLint `mocha-no-only` plugin will flag it — remove before committing), then `npm run test-compile && npm test`.
 - From a terminal inside VS Code (including Claude Code's), `ELECTRON_RUN_AS_NODE` is inherited and the test VS Code fails to start with `bad option: --extensionTestsPath...`: run `env -u ELECTRON_RUN_AS_NODE npm test`.
 - The editor-driven suites ("Global Extension Tests": calc, formula commands) are occasionally flaky; re-run before investigating a failure there.
-- On Linux headless, wrap tests with `xvfb-run` (as CI does). Set `DISABLE_COVERAGE=true` to skip coverage; `CI=true` skips some emulator-dependent tests.
-- The emulator integration suites ([src/test/integration.test.ts](src/test/integration.test.ts), [src/test/integrationfsuae.test.ts](src/test/integrationfsuae.test.ts)) are `describe.skip` by default.
+- On Linux headless, wrap tests with `xvfb-run` (as CI does). Set `DISABLE_COVERAGE=true` to skip coverage.
+- The emulator integration suites ([src/test/integration.test.ts](src/test/integration.test.ts) for WinUAE, Windows only, and [src/test/integrationfsuae.test.ts](src/test/integrationfsuae.test.ts) for FS-UAE) run only with `UAE_INTEGRATION=1`; they use the emulators bundled with `uae-dap` (AROS ROM, no Kickstart needed). CI sets it on Linux/macOS, and on Windows only for a manual run with the `uae_windows` input. The Copperline suite ([src/test/copperlineIntegration.test.ts](src/test/copperlineIntegration.test.ts)) runs only with `COPPERLINE_INTEGRATION=1`, with `copperline` / `copperline-ctl` on the PATH or set in `COPPERLINE_BIN` / `COPPERLINE_CTL`.
 - `.vscode/launch.json` has "Launch Extension", "Launch Extension (Example Workspace)" (opens `resources/examples/vscode-amiga-wks-example`), and "Extension Tests" configurations.
 - CI ([.github/workflows/main.yml](.github/workflows/main.yml)) runs `npm ci && npm run test-compile && npm test` on Linux/macOS/Windows with Node 24.
 
