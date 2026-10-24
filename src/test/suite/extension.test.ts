@@ -90,13 +90,23 @@ describe("Global Extension Tests", function () {
             expect(editor).to.not.be.undefined;
             if (editor) {
                 // Editor opened
-                // Call the formatting command
-                await ConfigurationHelper.getDefaultConfiguration(uri).update('format.useTabs', true, true);
-                await vscode.commands.executeCommand("editor.action.formatDocument");
-                await ConfigurationHelper.getDefaultConfiguration(uri).update('format.useTabs', false, true);
-                expect(editor.document.getText()).to.be.equal(expectedFileContents);
+                // The expected file is formatted with tabs of 4 columns, whatever the user settings
+                editor.options = { tabSize: 4, insertSpaces: false };
+                try {
+                    await ConfigurationHelper.getDefaultConfiguration(uri).update('format.useTabs', true, true);
+                    // The settings update may be seen later by the formatter
+                    for (let i = 0; i < 50 && !ConfigurationHelper.getDefaultConfiguration(uri).get<boolean>('format.useTabs'); i++) {
+                        await new Promise((resolve) => setTimeout(resolve, 20));
+                    }
+                    // Call the formatting command
+                    await vscode.commands.executeCommand("editor.action.formatDocument");
+                    expect(editor.document.getText()).to.be.equal(expectedFileContents);
+                } finally {
+                    // Removes the setting instead of writing the default value in the user settings
+                    await ConfigurationHelper.getDefaultConfiguration(uri).update('format.useTabs', undefined, true);
+                }
             }
-            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+            await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
         });
     });
     context("Build commands", function () {

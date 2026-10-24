@@ -11,6 +11,8 @@ import { CompilerController } from "../customTaskProvider";
 import { DummyTextDocument } from "./dummy";
 import { expect } from "chai";
 import { ExtensionState } from "../extension";
+import { VASMCompiler } from "../vasm";
+import { VLINKLinker } from "../vlink";
 
 describe("Task Provider tests", function () {
     before(async () => {
@@ -71,8 +73,44 @@ describe("Task Provider tests", function () {
                 when(spiedCompiler.buildEditorDocument(anything())).thenResolve();
                 const controller = new CompilerController();
                 await controller.onSaveDocument(document);
-                verify(spiedCompiler.buildEditorDocument(document)).once();
+                verify(spiedCompiler.buildEditorDocument(document, undefined)).once();
                 verify(spiedCompiler.buildCurrentEditorFile()).never();
+            } finally {
+                reset(spiedCompiler);
+            }
+        });
+        it("Should build the saved document with the vasm configuration of the workspace tasks (issue #365)", async () => {
+            const compiler = ExtensionState.getCurrent().getCompiler();
+            const spiedCompiler = spy(compiler);
+            try {
+                const document = new DummyTextDocument();
+                const vasm = { ...VASMCompiler.DEFAULT_BUILD_CONFIGURATION };
+                const vasmSpaces = { ...vasm, args: ["-m68000", "-Fhunk", "-linedebug", "-spaces"] };
+                const vasmDisabled = { ...vasm, enabled: false };
+                const vlink = VLINKLinker.DEFAULT_BUILD_CONFIGURATION;
+                when(spiedCompiler.buildEditorDocument(anything(), anything())).thenResolve();
+                const controller = new CompilerController();
+                const spiedController = spy(controller);
+                // The 'compile current file' task is preferred to the build task
+                when(spiedController.getTaskDefinitions(anything())).thenReturn([
+                    { type: "shell" },
+                    { type: "amigaassembly", vasm: vasm, vlink: vlink },
+                    { type: "amigaassembly", vasm: vasmSpaces }
+                ]);
+                await controller.onSaveDocument(document);
+                verify(spiedCompiler.buildEditorDocument(document, vasmSpaces)).once();
+                // Without a compile task the configuration of the build task is used
+                when(spiedController.getTaskDefinitions(anything())).thenReturn([
+                    { type: "amigaassembly", vasm: vasmDisabled },
+                    { type: "amigaassembly", vasm: vasmSpaces, vlink: vlink }
+                ]);
+                expect(controller.getVasmBuildProperties(document)).to.be.equal(vasmSpaces);
+                // A disabled vasm configuration is ignored: the default configuration is used
+                when(spiedController.getTaskDefinitions(anything())).thenReturn([{ type: "amigaassembly", vasm: vasmDisabled }]);
+                expect(controller.getVasmBuildProperties(document)).to.be.equal(undefined);
+                // No tasks
+                reset(spiedController);
+                expect(controller.getVasmBuildProperties(document)).to.be.equal(undefined);
             } finally {
                 reset(spiedCompiler);
             }

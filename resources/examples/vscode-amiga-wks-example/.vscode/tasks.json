@@ -24,12 +24,32 @@
 					"-Bstatic"
 				]
 			},
-			"problemMatcher": [],
+			"problemMatcher": [
+				"$vasm",
+				"$vlink"
+			],
 			"label": "amigaassembly: build",
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			}
+		},
+		{
+			"type": "amigaassembly",
+			"vasm": {
+				"enabled": true,
+				"command": "${config:amiga-assembly.binDir}/vasmm68k_mot",
+				"args": [
+					"-m68000",
+					"-Fhunk",
+					"-linedebug",
+				],
+				"leaveWarnings": true
+			},
+			"problemMatcher": [
+				"$vasm"
+			],
+			"label": "amigaassembly: compile current file"
 		}
 	]
 }

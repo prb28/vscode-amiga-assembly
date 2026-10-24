@@ -6,7 +6,7 @@ import { VasmBuildProperties, VASMCompiler } from './vasm';
 import { VlinkBuildProperties, VLINKLinker } from './vlink';
 import * as winston from 'winston';
 
-interface AmigaBuildTaskDefinition extends TaskDefinition {
+export interface AmigaBuildTaskDefinition extends TaskDefinition {
 	vasm?: VasmBuildProperties;
 	vlink?: VlinkBuildProperties;
 	adfgenerator?: AdfGeneratorProperties;
@@ -173,9 +173,30 @@ export class CompilerController {
 		const documentToCompile = document ?? window.activeTextEditor?.document;
 		if (documentToCompile) {
 			const compiler = ExtensionState.getCurrent().getCompiler();
-			return compiler.buildEditorDocument(documentToCompile);
+			return compiler.buildEditorDocument(documentToCompile, this.getVasmBuildProperties(documentToCompile));
 		}
 		return Promise.resolve();
+	}
+
+	/**
+	 * Retrieves the vasm configuration of the workspace tasks, to check a document with the options used to build it
+	 * @param document Document to compile
+	 * @returns vasm configuration of the 'compile current file' task, or of the first task with an enabled vasm configuration, undefined if there is none
+	 */
+	public getVasmBuildProperties(document: TextDocument): VasmBuildProperties | undefined {
+		const definitions = this.getTaskDefinitions(document).filter(d => d?.type === AmigaBuildTaskProvider.AMIGA_BUILD_SCRIPT_TYPE && d.vasm?.enabled);
+		const definition = definitions.find(d => !d.vlink && !d.adfgenerator) ?? definitions[0];
+		return definition?.vasm;
+	}
+
+	/**
+	 * Retrieves the tasks defined in the workspace (tasks.json)
+	 * @param document Document selecting the workspace folder
+	 * @returns Tasks definitions
+	 */
+	public getTaskDefinitions(document: TextDocument): AmigaBuildTaskDefinition[] {
+		const tasks = workspace.getConfiguration('tasks', document.uri).get<AmigaBuildTaskDefinition[]>('tasks');
+		return Array.isArray(tasks) ? tasks : [];
 	}
 
 	/**

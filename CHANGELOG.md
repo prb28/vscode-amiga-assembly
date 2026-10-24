@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - [Issue #369](https://github.com/prb28/vscode-amiga-assembly/issues/369) Local labels starting with `@` (`@loop`) are scoped to their parent label (outline, definitions, references, hover, completion). vasm does not support them (`label <@loop> redefined`): a quick fix converts them to `.` local labels
 - [Issue #358](https://github.com/prb28/vscode-amiga-assembly/issues/358) `rseven` directive is documented (completion and hover). The `ds` documentation said that the reserved space was undefined: it is filled with zeros (`dcb.x <exp>,0`)
 - [Issue #344](https://github.com/prb28/vscode-amiga-assembly/issues/344) Labels ending with `::` no longer keep a colon in their name (completion, outline, breadcrumbs)
+my- [Issue #365](https://github.com/prb28/vscode-amiga-assembly/issues/365) The check on save uses the vasm configuration of the workspace tasks (`tasks.json`) instead of the default arguments: options like `-spaces` were ignored and `move.w joy1dat + custom,d1` was reported as an error 9
 
 ### [1.8.16] - pre-release
 - Syntax coloring: the TextMate grammar is rewritten around the line layout (label / mnemonic / operands / comment)

@@ -1,6 +1,8 @@
 import { expect } from "chai";
 import * as vscode from "vscode";
 import * as Path from "path";
+import * as fs from "fs";
+import * as temp from "temp";
 import {
   capture,
   spy,
@@ -494,6 +496,38 @@ describe("VASM Tests", function () {
       expect(error.file).to.be.equal("includedfile.s");
       expect(error.parentFile).to.be.equal("/myfolder/src/mysource.s");
       expect(error.line).to.be.equal(1);
+    });
+  });
+  context("Bundled vasm", function () {
+    const vasmPath = Path.resolve(__dirname, "../../resources/bin", process.platform, "vasmm68k_mot" + (process.platform === "win32" ? ".exe" : ""));
+    let tempDir: string;
+    /**
+     * Assembles a source with the bundled vasm and the default build arguments
+     * @param name Name of the source file, without extension
+     * @param operands Operands of the move.w instruction to assemble
+     * @param extraArgs Arguments added to the default build arguments
+     */
+    async function assemble(name: string, operands: string, extraArgs: string[] = []): Promise<ICheckResult[]> {
+      const sourceFile = Path.join(tempDir, name + ".s");
+      fs.writeFileSync(sourceFile, "custom\tequ\t$dff000\njoy1dat\tequ\t$00c\n\tmove.w\t" + operands + "\n");
+      const args = VASMCompiler.DEFAULT_BUILD_CONFIGURATION.args.concat(extraArgs, ["-o", Path.join(tempDir, name + ".o"), sourceFile]);
+      return new ExecutorHelper().runTool(args, tempDir, "warning", true, vasmPath, undefined, true, new VASMParser());
+    }
+    before(function () {
+      // Automatically track and cleanup files at exit
+      temp.track();
+      tempDir = temp.mkdirSync("vasm-test");
+    });
+    it("Should assemble an operand expression without spaces", async function () {
+      const errors = await assemble("nospaces", "joy1dat+custom,d1");
+      expect(errors).to.be.eql([]);
+    });
+    it("Should need the -spaces option to assemble an operand expression containing spaces (issue #365)", async function () {
+      // Without the option the text after the space is a comment
+      let errors = await assemble("spaces", "joy1dat + custom,d1");
+      expect(errors.map((e) => e.msg)).to.be.eql(["error 9: instruction not supported on selected architecture"]);
+      errors = await assemble("spaces", "joy1dat + custom,d1", ["-spaces"]);
+      expect(errors).to.be.eql([]);
     });
   });
 });
