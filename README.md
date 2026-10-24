@@ -5,29 +5,28 @@ Visit the [WIKI](https://github.com/prb28/vscode-amiga-assembly/wiki) pages to d
 
 **For an easy startup try the** [getting started example](https://github.com/prb28/vscode-amiga-assembly/wiki/Getting-started).
 
-### Run and Debug with FS-UAE or WinUAE
+### Run and Debug with FS-UAE, WinUAE or Copperline
 ![Debug](images/debug.gif)
 
-[Debugging with Copperline](https://github.com/prb28/vscode-amiga-assembly/wiki/Copperline) is also available by selecting
+[Debugging with Copperline](https://github.com/prb28/vscode-amiga-assembly/wiki/Copperline) is available by selecting
 `emulatorType: "copperline"` in an Amiga Assembly launch or attach configuration.
 
 ### Breaking changes
-
 - see [Breaking changes](https://github.com/prb28/vscode-amiga-assembly/wiki/Breaking-Changes) for more details
-- Please reset the **amiga-assembly.binDir** setting. 
-- The *launch.json* configuration has changed in 1.8
+- 1.9: some syntax coloring scopes are renamed, update your `editor.tokenColorCustomizations` (see the [changelog](CHANGELOG.md))
 
-## New in 1.8
-- *grahambates* new version of fs-uae / winuae with uae-dap version 1.0.0 - unified launch configuration
-- Binaries are embedded in the extension, no need for additional download
-- *grahambates* BLTCON Helper: provides a webview panel with a tool to help setting BLTCON0/BLTCON1 registers. Based on [BLTCONCheatSheet](http://deadliners.net/BLTCONCheatSheet/index.html) by Soundy/Deadliners.
-
-![BLTCON Helper](https://github.com/prb28/vscode-amiga-assembly/wiki/images/BLTCONHelper.png)
-- Bug fixes
+## New in 1.9
+- *LinuxJedi* Debugging with the [Copperline](https://github.com/CopperlineHQ/Copperline) emulator
+- Syntax coloring rewritten
+- Hover on a register written with a value marks the bits set in the register documentation
+- Formatter option to put a space after the operands commas (`amiga-assembly.format.spaceAfterComma`)
+- Local labels starting with `@`, with a quick fix to convert them for vasm
+- Folding of local labels
+- A lot of fixes (see the [changelog](CHANGELOG.md))
 
 ### Other features
-### Run and Debug with FS-UAE or WinUAE
-- Run a program in [FS-UAE](https://fs-uae.net/) or [WinUAE](https://www.winuae.net/)
+### Run and Debug
+- Run a program in [FS-UAE](https://fs-uae.net/), [WinUAE](https://www.winuae.net/) or [Copperline](https://github.com/CopperlineHQ/Copperline)
 - Disassemble a file with capstone
 - Show disassembled code in editor for stack trace selection without source, breakpoints on disassembled code
 
@@ -88,6 +87,15 @@ The assembly language will be formatted with the standard shortcuts :
 
 
 ## Release Notes
+
+## New in 1.9
+- *LinuxJedi* Debugging with the [Copperline](https://github.com/CopperlineHQ/Copperline) emulator
+- Syntax coloring rewritten
+- Register bits marked in the hover documentation
+- Formatter option `amiga-assembly.format.spaceAfterComma`
+- `@` local labels, local labels folding
+- Bug fixes
+
 ## New in 1.8
 - *grahambates* new FS-UAE / WINUAE versions
 - *grahambates* BLTCON Helper

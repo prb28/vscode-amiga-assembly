@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### [1.8.17] - pre-release
+### [1.9.0] - 2026-10-24
 - [Issue #377](https://github.com/prb28/vscode-amiga-assembly/issues/377) vasm / vlink are run without a shell: the build no longer fails when a path (user directory, workspace, `binDir`) contains spaces or characters like `&`, `%`, `'`, `(`, `$`
 - [Issue #208](https://github.com/prb28/vscode-amiga-assembly/issues/208) Hardware registers documentation
   - Hover on a register written with a value (`move.w #$8000,BLTCON1(a5)`): the bits set are marked in the bits table of the register documentation (`15 ●`), the value of a bits range is shown (`14-13 = %10`), and a `Value` row is added to the tables with one column per bit (`COLORxx`, `BLTSIZE`, `DIWSTRT`...)
