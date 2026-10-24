@@ -35,22 +35,21 @@ export class ExecutorHelper {
      */
     runTool(args: string[], cwd: string | null, severity: string, useStdErr: boolean, cmd: string, env: NodeJS.ProcessEnv | undefined, printUnexpectedOutput: boolean, parser: ExecutorParser | null, token?: vscode.CancellationToken, logEmitter?: vscode.EventEmitter<string>): Promise<ICheckResult[]> {
         return new Promise((resolve, reject) => {
+            // Without a shell, node passes each argument as is: paths with spaces, quotes, '&', '%', '$'... are safe
+            // A Windows batch file can only be run through cmd.exe
+            const useShell = ExecutorHelper.needsShell(cmd);
             const options: cp.ExecFileOptionsWithBufferEncoding = {
                 env: env,
                 encoding: null,
-                shell: true
+                shell: useShell
             };
             if (cwd) {
                 options.cwd = cwd;
             }
+            const execCmd = useShell ? ExecutorHelper.quoteForCmd(cmd) : cmd;
+            const execArgs = useShell ? args.map(ExecutorHelper.quoteForCmd) : args;
 
-            // Quote arguments that contain spaces
-            const quotedArgs = args.map(arg => (arg.includes(' ') ? `"${arg}"` : arg));
-
-            // With shell: true the command is not quoted by node, so a path with spaces must be
-            const quotedCmd = cmd.includes(' ') && !cmd.startsWith('"') ? `"${cmd}"` : cmd;
-
-            const p = cp.execFile(quotedCmd, quotedArgs, options, (err, stdout, stderr) => {
+            const p = cp.execFile(execCmd, execArgs, options, (err, stdout, stderr) => {
                 try {
                     if (err && err.code === 'ENOENT') {
                         const errorMessage = `Cannot find ${cmd} : ${err.message}`;
@@ -112,6 +111,29 @@ export class ExecutorHelper {
             });
             this.addKillToCancellationToken(p, token);
         });
+    }
+
+    /**
+     * A Windows batch file (.bat, .cmd) cannot be run without a shell
+     * @param cmd The path and name of the tool to run
+     * @param platform Platform (for tests)
+     */
+    static needsShell(cmd: string, platform: string = process.platform): boolean {
+        return platform === 'win32' && /\.(bat|cmd)"?$/i.test(cmd.trim());
+    }
+
+    /**
+     * Quotes an argument for cmd.exe if it contains spaces or characters interpreted by cmd.exe
+     * @param arg Argument
+     */
+    static quoteForCmd(arg: string): string {
+        if (arg.length === 0) {
+            return '""';
+        }
+        if (arg.startsWith('"') && arg.endsWith('"') && arg.length > 1) {
+            return arg;
+        }
+        return /[\s&|<>^()%!,;=]/.test(arg) ? `"${arg.replace(/"/g, '""')}"` : arg;
     }
 
     /**

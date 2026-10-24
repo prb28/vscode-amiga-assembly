@@ -7,6 +7,8 @@ import { ExtensionState } from '../extension';
 import { DummyTextDocument } from './dummy';
 import { Uri, workspace, TextDocument } from 'vscode';
 import * as Path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
 import { ASMLine } from '../parser';
 
 describe("Executor Tests", function () {
@@ -95,14 +97,15 @@ describe("Executor Tests", function () {
         expect(ret[0]).to.be.equal(error);
         expect(capture(mockedDummy.parse).last()[0]).to.be.equal(stdoutText);
 
-        // Verify that the arguments are quoted correctly
-        const [capturedCmd, capturedArgs] = capture(spiedCp.execFile).last();
+        // Verify that the arguments are passed as is, without a shell
+        const [capturedCmd, capturedArgs, capturedOptions] = capture(spiedCp.execFile).last();
         expect(capturedCmd).to.be.equal('ls');
-        expect(capturedArgs).to.deep.equal(['"arg with spaces"', 'arg2']);
+        expect(capturedArgs).to.deep.equal(['arg with spaces', 'arg2']);
+        expect((capturedOptions as cp.ExecFileOptions).shell).to.be.false;
 
         reset(spiedCp);
     });
-    it("Should quote a command path that contains spaces (issue #377)", async () => {
+    it("Should run a command path that contains spaces without a shell (issue #377)", async () => {
         const spiedCp = spy(cp);
         const cpMock: cp.ChildProcess = imock();
         const cpMockInstance: cp.ChildProcess = instance(cpMock);
@@ -112,13 +115,77 @@ describe("Executor Tests", function () {
         };
         const cmdWithSpaces = 'C:\\Users\\John Doe\\bin\\vasmm68k_mot.exe';
         when(spiedCp.execFile(cmdWithSpaces, anything(), anything(), anything())).thenCall(f);
-        when(spiedCp.execFile(`"${cmdWithSpaces}"`, anything(), anything(), anything())).thenCall(f);
         const ex = new ExecutorHelper();
         await ex.runTool(['arg1'], 'mydir', 'error', false, cmdWithSpaces, {}, false, null);
 
-        const [capturedCmd] = capture(spiedCp.execFile).last();
-        expect(capturedCmd).to.be.equal(`"${cmdWithSpaces}"`);
+        const [capturedCmd, , capturedOptions] = capture(spiedCp.execFile).last();
+        expect(capturedCmd).to.be.equal(cmdWithSpaces);
+        expect((capturedOptions as cp.ExecFileOptions).shell).to.be.false;
         reset(spiedCp);
+    });
+    it("Should run a Windows batch file through the shell with quoted arguments", async function () {
+        if (process.platform !== 'win32') {
+            this.skip();
+        }
+        const spiedCp = spy(cp);
+        const cpMockInstance: cp.ChildProcess = instance(imock<cp.ChildProcess>());
+        const f = (cmd: string, args: string[], options: unknown, callback: ((error: Error | null, stdout: string, stderr: string | null) => void)): cp.ChildProcess => {
+            callback(null, "", null);
+            return cpMockInstance;
+        };
+        const batch = 'C:\\Users\\John Doe\\bin\\vasm.cmd';
+        when(spiedCp.execFile(anyString(), anything(), anything(), anything())).thenCall(f);
+        const ex = new ExecutorHelper();
+        await ex.runTool(['-o', 'C:\\A&B\\main.o', 'plain'], 'mydir', 'error', false, batch, {}, false, null);
+
+        const [capturedCmd, capturedArgs, capturedOptions] = capture(spiedCp.execFile).last();
+        expect(capturedCmd).to.be.equal(`"${batch}"`);
+        expect(capturedArgs).to.deep.equal(['-o', '"C:\\A&B\\main.o"', 'plain']);
+        expect((capturedOptions as cp.ExecFileOptions).shell).to.be.true;
+        reset(spiedCp);
+    });
+    it("Should only use a shell for Windows batch files", () => {
+        expect(ExecutorHelper.needsShell('C:\\bin\\vasmm68k_mot.exe', 'win32')).to.be.false;
+        expect(ExecutorHelper.needsShell('C:\\bin\\vasmm68k_mot', 'win32')).to.be.false;
+        expect(ExecutorHelper.needsShell('C:\\my tools\\vasm.bat', 'win32')).to.be.true;
+        expect(ExecutorHelper.needsShell('C:\\my tools\\vasm.CMD', 'win32')).to.be.true;
+        expect(ExecutorHelper.needsShell('/usr/bin/vasm.cmd', 'linux')).to.be.false;
+    });
+    it("Should quote the arguments for cmd.exe", () => {
+        expect(ExecutorHelper.quoteForCmd('plain')).to.be.equal('plain');
+        expect(ExecutorHelper.quoteForCmd('')).to.be.equal('""');
+        expect(ExecutorHelper.quoteForCmd('C:\\Users\\A. Nom')).to.be.equal('"C:\\Users\\A. Nom"');
+        expect(ExecutorHelper.quoteForCmd('C:\\A&B')).to.be.equal('"C:\\A&B"');
+        expect(ExecutorHelper.quoteForCmd('"already quoted"')).to.be.equal('"already quoted"');
+        expect(ExecutorHelper.quoteForCmd('say "hi" now')).to.be.equal('"say ""hi"" now"');
+    });
+    it("Should build with vasm and vlink in a path with spaces and special characters", async () => {
+        const ext = process.platform === 'win32' ? '.exe' : '';
+        const binDir = Path.join(PROJECT_ROOT, 'resources', 'bin', process.platform);
+        const root = fs.mkdtempSync(Path.join(os.tmpdir(), 'amiga-'));
+        // A user directory like 'C:\Users\A. Nom' with characters interpreted by cmd.exe and sh
+        const dir = Path.join(root, "A. Nom & O'Brien (x) %TEMP% $HOME");
+        try {
+            fs.mkdirSync(Path.join(dir, 'bin'), { recursive: true });
+            for (const tool of ['vasmm68k_mot', 'vlink']) {
+                fs.copyFileSync(Path.join(binDir, tool + ext), Path.join(dir, 'bin', tool + ext));
+                fs.chmodSync(Path.join(dir, 'bin', tool + ext), 0o755);
+            }
+            const source = Path.join(dir, 'main file.s');
+            fs.writeFileSync(source, ' section code,code\nstart:\n moveq #0,d0\n rts\n');
+            const obj = Path.join(dir, 'main file.o');
+            const exe = Path.join(dir, 'my prog');
+            const ex = new ExecutorHelper();
+            // Command without extension, as in the default configuration ('${config:amiga-assembly.binDir}/vasmm68k_mot')
+            const vasmErrors = await ex.runTool(['-m68000', '-Fhunk', '-linedebug', '-I' + dir, '-o', obj, source], dir, 'warning', true, Path.join(dir, 'bin', 'vasmm68k_mot'), undefined, false, null);
+            expect(vasmErrors).to.be.empty;
+            expect(fs.existsSync(obj)).to.be.true;
+            const vlinkErrors = await ex.runTool(['-bamigahunk', '-Bstatic', '-o', exe, obj], dir, 'warning', true, Path.join(dir, 'bin', 'vlink'), undefined, false, null);
+            expect(vlinkErrors).to.be.empty;
+            expect(fs.existsSync(exe)).to.be.true;
+        } finally {
+            fs.rmSync(root, { recursive: true, force: true });
+        }
     });
     it("Should fail when the tool cannot be run and stderr is not a diagnostic", async () => {
         const spiedCp = spy(cp);
