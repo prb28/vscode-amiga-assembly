@@ -1261,7 +1261,7 @@
 	"dependencies": {
 		"@vscode/debugadapter": "^1.68.0",
 		"@vscode/debugprotocol": "^1.68.0",
-		"glob": "^13.0.6",
+		"glob": "^14.0.2",
 		"uae-dap": "^1.1.5",
 		"winston": "^3.19.0",
 		"winston-transport": "^4.9.0"

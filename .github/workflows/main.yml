@@ -133,8 +133,13 @@ jobs:
     name: "Publish Unit Tests Results"
     needs: build
     runs-on: ubuntu-latest
-    # the build-and-test job might be skipped, we don't need to run this job then
-    if: success() || failure()
+    # the build-and-test job might be skipped, we don't need to run this job then.
+    # Pull requests from forks get a read-only GITHUB_TOKEN, so checks cannot be published for them.
+    if: (success() || failure()) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
 
     steps:
       - name: Download Artifacts
