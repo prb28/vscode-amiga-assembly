@@ -1268,5 +1268,11 @@
 	},
 	"resolutions": {
 		"lru-cache": "10.4.3"
+	},
+	"overrides": {
+		"mocha": {
+			"glob": "^14.0.2",
+			"minimatch": "^11.0.1"
+		}
 	}
 }
