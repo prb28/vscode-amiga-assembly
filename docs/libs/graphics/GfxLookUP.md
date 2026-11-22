@@ -1,8 +1,7 @@
 
 **NAME**
 
-GfxLookUp -- find a graphics extended node associated with a
-given pointer (V36)
+GfxLookUp -- find a graphics extended node associated with a given pointer (V36)
 
 **SYNOPSIS**
 

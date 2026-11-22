@@ -1,8 +1,8 @@
 
 **NAME**
 
-ScrollRaster -- Push bits in rectangle in raster around by
-dx,dy towards 0,0 inside rectangle.
+ScrollRaster -- Push bits in rectangle in raster around by dx,dy towards 0,0 inside rectangle.
+
 **SYNOPSIS**
 
 ```c

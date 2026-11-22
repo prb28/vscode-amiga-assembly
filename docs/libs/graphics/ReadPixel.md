@@ -1,8 +1,7 @@
 
 **NAME**
 
-ReadPixel -- read the pen number value of the pixel at a
-specified x,y location within a certain [RastPort](_00AF.md).
+ReadPixel -- read the pen number value of the pixel at a specified x,y location within a certain [RastPort](_00AF.md).
 
 **SYNOPSIS**
 

@@ -1,9 +1,7 @@
 
 **NAME**
 
-WritePixelArray8 -- write the pen number value of a rectangular array
-of pixels starting at a specified x,y location and continuing
-through to another x,y location within a certain [RastPort](_00AF.md). (V36)
+WritePixelArray8 -- write the pen number value of a rectangular array of pixels starting at a specified x,y location and continuingthrough to another x,y location within a certain [RastPort](_00AF.md). (V36)
 
 **SYNOPSIS**
 

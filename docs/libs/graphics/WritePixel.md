@@ -1,8 +1,7 @@
 
 **NAME**
 
-WritePixel -- Change the pen num of one specific pixel in a
-specified [RastPort](_00AF.md).
+WritePixel -- Change the pen num of one specific pixel in a specified [RastPort](_00AF.md).
 
 **SYNOPSIS**
 

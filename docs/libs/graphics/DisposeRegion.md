@@ -1,8 +1,7 @@
 
 **NAME**
 
-DisposeRegion -- Return all space for this region to free
-memory pool.
+DisposeRegion -- Return all space for this region to free memory pool.
 
 **SYNOPSIS**
 

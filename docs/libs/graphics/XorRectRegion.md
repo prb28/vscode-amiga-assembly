@@ -1,8 +1,7 @@
 
 **NAME**
 
-XorRectRegion -- Perform 2d XOR operation of rectangle
-with region, leaving result in region
+XorRectRegion -- Perform 2d XOR operation of rectangle with region, leaving result in region
 
 **SYNOPSIS**
 

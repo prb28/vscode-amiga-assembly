@@ -1,9 +1,7 @@
 
 **NAME**
 
-ReadPixelLine8 -- read the pen number value of a horizontal line
-of pixels starting at a specified x,y location and continuing
-right for count pixels. (V36)
+ReadPixelLine8 -- read the pen number value of a horizontal line of pixels starting at a specified x,y location and continuing right for count pixels. (V36)
 
 **SYNOPSIS**
 

@@ -1,8 +1,7 @@
 
 **NAME**
 
-SetOPen -- Change the Area OutLine pen and turn on Outline
-mode for areafills.
+SetOPen -- Change the Area OutLine pen and turn on Outline mode for areafills.
 
 **SYNOPSIS**
 

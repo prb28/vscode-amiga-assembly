@@ -1,8 +1,7 @@
 
 **NAME**
 
-ZipWindow -- Change window to &#034;alternate&#034; position and
-dimensions. (V36)
+ZipWindow -- Change window to &#034;alternate&#034; position and dimensions. (V36)
 
 **SYNOPSIS**
 

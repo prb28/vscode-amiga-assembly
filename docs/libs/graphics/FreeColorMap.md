@@ -1,8 +1,7 @@
 
 **NAME**
 
-FreeColorMap -- Free the [ColorMap](_00B8.md) structure and return memory
-to free memory pool.
+FreeColorMap -- Free the [ColorMap](_00B8.md) structure and return memory to free memory pool.
 
 **SYNOPSIS**
 

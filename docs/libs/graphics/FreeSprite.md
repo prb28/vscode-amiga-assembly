@@ -1,8 +1,7 @@
 
 **NAME**
 
-FreeSprite -- Return sprite for use by others and virtual
-sprite machine.
+FreeSprite -- Return sprite for use by others and virtual sprite machine.
 
 **SYNOPSIS**
 

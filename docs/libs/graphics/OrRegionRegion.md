@@ -1,8 +1,7 @@
 
 **NAME**
 
-OrRegionRegion -- Perform 2d OR operation of one region
-with second region, leaving result in second region
+OrRegionRegion -- Perform 2d OR operation of one region with second region, leaving result in second region
 
 **SYNOPSIS**
 

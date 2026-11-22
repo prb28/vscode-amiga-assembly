@@ -1,8 +1,7 @@
 
 **NAME**
 
-AreaEllipse -- add a ellipse to areainfo list for areafill.
-
+AreaEllipse -- add an ellipse to areainfo list for areafill.
 
 **SYNOPSIS**
 

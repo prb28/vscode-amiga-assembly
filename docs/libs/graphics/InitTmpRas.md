@@ -1,8 +1,7 @@
 
 **NAME**
 
-InitTmpRas -- Initialize area of local memory for usage by
-areafill, floodfill, text.
+InitTmpRas -- Initialize area of local memory for usage by areafill, floodfill, text.
 
 **SYNOPSIS**
 

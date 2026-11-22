@@ -1,8 +1,7 @@
 
 **NAME**
 
-ScrollVPort -- Reinterpret RasInfo information in [ViewPort](_00B8.md) to reflect
-the current Offset values.
+ScrollVPort -- Reinterpret RasInfo information in [ViewPort](_00B8.md) to reflect the current Offset values.
 
 **SYNOPSIS**
 

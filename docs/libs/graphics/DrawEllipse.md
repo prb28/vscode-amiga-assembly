@@ -1,8 +1,7 @@
 
 **NAME**
 
-DrawEllipse -- Draw an ellipse centered at cx,cy with vertical
-and horizontal radii of a,b respectively.
+DrawEllipse -- Draw an ellipse centered at cx,cy with vertical and horizontal radii of a,b respectively.
 
 **SYNOPSIS**
 

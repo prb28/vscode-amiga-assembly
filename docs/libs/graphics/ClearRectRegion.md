@@ -1,8 +1,7 @@
 
 **NAME**
 
-ClearRectRegion -- Perform 2d CLEAR operation of rectangle
-with region, leaving result in region.
+ClearRectRegion -- Perform 2d CLEAR operation of rectangle with region, leaving result in region.
 
 **SYNOPSIS**
 

@@ -1,8 +1,7 @@
 
 **NAME**
 
-WaitBlit -- Wait for the blitter to be finished before proceeding
-with anything else.
+WaitBlit -- Wait for the blitter to be finished before proceeding with anything else.
 
 **SYNOPSIS**
 

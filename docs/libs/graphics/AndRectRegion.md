@@ -1,8 +1,7 @@
 
 **NAME**
 
-AndRectRegion -- Perform 2d AND operation of rectangle
-with region, leaving result in region.
+AndRectRegion -- Perform 2d AND operation of rectangle with region, leaving result in region.
 
 **SYNOPSIS**
 

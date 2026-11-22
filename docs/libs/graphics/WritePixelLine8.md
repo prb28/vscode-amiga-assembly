@@ -1,9 +1,7 @@
 
 **NAME**
 
-WritePixelLine8 -- write the pen number value of a horizontal line
-of pixels starting at a specified x,y location and continuing
-right for count pixels. (V36)
+WritePixelLine8 -- write the pen number value of a horizontal line of pixels starting at a specified x,y location and continuing right for count pixels. (V36)
 
 **SYNOPSIS**
 

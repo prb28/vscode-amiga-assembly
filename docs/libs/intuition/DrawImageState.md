@@ -1,8 +1,7 @@
 
 **NAME**
 
-DrawImageState -- Draw an (extended) Intuition [Image](_00D4.md) with
-special visual state. (V36)
+DrawImageState -- Draw an (extended) Intuition [Image](_00D4.md) with special visual state. (V36)
 
 **SYNOPSIS**
 

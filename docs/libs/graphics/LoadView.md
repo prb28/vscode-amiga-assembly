@@ -1,8 +1,7 @@
 
 **NAME**
 
-LoadView -- Use a (possibly freshly created) coprocessor instruction
-list to create the current display.
+LoadView -- Use a (possibly freshly created) coprocessor instruction list to create the current display.
 
 **SYNOPSIS**
 

@@ -1,7 +1,6 @@
 **NAME**
 
-CBump -- increment user copper list pointer (bump to next position
-in list).
+CBump -- increment user copper list pointer (bump to next position in list).
 
 **SYNOPSIS**
 

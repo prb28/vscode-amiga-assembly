@@ -1,8 +1,7 @@
 
 **NAME**
 
-AndRegionRegion -- Perform 2d AND operation of one region
-with second region, leaving result in second region.
+AndRegionRegion -- Perform 2d AND operation of one region with second region, leaving result in second region.
 
 **SYNOPSIS**
 

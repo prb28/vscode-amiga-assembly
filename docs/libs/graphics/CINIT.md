@@ -1,8 +1,7 @@
 
 **NAME**
 
-CINIT -- Initialize user copperlist to accept intermediate
-user copper instructions.
+CINIT -- Initialize user copperlist to accept intermediate user copper instructions.
 
 **SYNOPSIS**
 

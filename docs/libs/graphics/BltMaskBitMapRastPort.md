@@ -1,8 +1,7 @@
 
 **NAME**
 
-BltMaskBitMapRastPort -- blit from source bitmap to destination
-rastport with masking of source image.
+BltMaskBitMapRastPort -- blit from source bitmap to destination rastport with masking of source image.
 
 **SYNOPSIS**
 

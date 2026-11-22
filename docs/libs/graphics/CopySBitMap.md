@@ -1,8 +1,7 @@
 
 **NAME**
 
-CopySBitMap --   Syncronize [Layer](_00A1.md) window with contents of
-Super [BitMap](_00A6.md)
+CopySBitMap -- Synchronize [Layer](_00A1.md) window with contents ofSuper [BitMap](_00A6.md)
 
 **SYNOPSIS**
 

@@ -1,9 +1,7 @@
 
 **NAME**
 
-AreaMove -- Define a new starting point for a new
-shape in the vector list.
-
+AreaMove -- Define a new starting point for a new shape in the vector list.
 
 **SYNOPSIS**
 

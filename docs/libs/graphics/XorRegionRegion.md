@@ -1,8 +1,7 @@
 
 **NAME**
 
-XorRegionRegion -- Perform 2d XOR operation of one region
-with second region, leaving result in second region
+XorRegionRegion -- Perform 2d XOR operation of one region with second region, leaving result in second region
 
 **SYNOPSIS**
 

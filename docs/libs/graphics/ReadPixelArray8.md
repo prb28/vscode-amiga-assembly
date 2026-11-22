@@ -1,9 +1,7 @@
 
 **NAME**
 
-ReadPixelArray8 -- read the pen number value of a rectangular array
-of pixels starting at a specified x,y location and continuing
-through to another x,y location within a certain [RastPort](_00AF.md). (V36)
+ReadPixelArray8 -- read the pen number value of a rectangular array of pixels starting at a specified x,y location and continuing through to another x,y location within a certain [RastPort](_00AF.md). (V36)
 
 **SYNOPSIS**
 

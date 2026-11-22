@@ -1,8 +1,7 @@
 
 **NAME**
 
-Draw -- Draw a line between the current pen position
-and the new x,y position.
+Draw -- Draw a line between the current pen position and the new x,y position.
 
 **SYNOPSIS**
 

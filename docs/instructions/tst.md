@@ -24,6 +24,8 @@ The operand is compared with zero. No result is saved, but the contents of the *
 ## Source operand addressing modes
 |Dn|An|(An)|(An)+|&#x2011;(An)|(d,An)|(d,An,Xi)|ABS.W|ABS.L|(d,PC)|(d,PC,Xn)|imm|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|✓||✓|✓|✓|✓|✓|✓|✓|✓|✓||
+|✓||✓|✓|✓|✓|✓|✓|✓|✓¹|✓¹||
+
+¹ PC relative addressing modes are not available on the 68000.
 
 *From MOTOROLA M68000 FAMILY Programmer's reference manual. Copyright 1992 by Motorola Inc./NXP. Adapted with permission.*

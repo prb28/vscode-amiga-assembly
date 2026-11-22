@@ -1,9 +1,7 @@
 
 **NAME**
 
-
-EraseRect -- Fill a defined rectangular area using the current
-BackFill hook. (V36)
+EraseRect -- Fill a defined rectangular area using the current BackFill hook. (V36)
 
 **SYNOPSIS**
 

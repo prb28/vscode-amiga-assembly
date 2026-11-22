@@ -1,8 +1,7 @@
 
 **NAME**
 
-WaitBOVP -- Wait till vertical beam reached bottom of
-this viewport.
+WaitBOVP -- Wait till vertical beam reached bottom of this viewport.
 
 **SYNOPSIS**
 

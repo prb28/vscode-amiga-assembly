@@ -1,7 +1,7 @@
 
 **NAME**
 
-AllocVec -- allocate memory and keep track of the size  (V36)
+AllocVec -- allocate memory and keep track of the size (V36)
 
 **SYNOPSIS**
 

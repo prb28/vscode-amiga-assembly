@@ -1,8 +1,7 @@
 
 **NAME**
 
-OrRectRegion -- Perform 2d OR operation of rectangle
-with region, leaving result in region.
+OrRectRegion -- Perform 2d OR operation of rectangle with region, leaving result in region.
 
 **SYNOPSIS**
 

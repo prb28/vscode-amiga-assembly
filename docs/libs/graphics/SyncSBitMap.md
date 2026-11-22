@@ -1,8 +1,7 @@
 
 **NAME**
 
-SyncSBitMap --   Syncronize Super [BitMap](_00A6.md) with whatever is
-in the standard [Layer](_00A1.md) bounds.
+SyncSBitMap -- Synchronize Super [BitMap](_00A6.md) with whatever is in the standard [Layer](_00A1.md) bounds.
 
 **SYNOPSIS**
 

@@ -1,8 +1,7 @@
 
 **NAME**
 
-FreeVPortCopLists -- deallocate all intermediate copper lists and
-their headers from a viewport
+FreeVPortCopLists -- deallocate all intermediate copper lists and their headers from a viewport
 
 **SYNOPSIS**
 

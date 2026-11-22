@@ -1,8 +1,7 @@
 *
 **NAME**
 
-AttemptLockLayerRom -- Attempt to Lock [Layer](_00A1.md) structure
-by rom(gfx lib) code
+AttemptLockLayerRom -- Attempt to Lock [Layer](_00A1.md) structure by rom(gfx lib) code
 
 **SYNOPSIS**
 

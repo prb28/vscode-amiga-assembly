@@ -1,8 +1,7 @@
 
 **NAME**
 
-BltPattern --  Using standard drawing rules for areafill,
-blit through a mask.
+BltPattern -- Using standard drawing rules for areafill, blit through a mask.
 
 **SYNOPSIS**
 

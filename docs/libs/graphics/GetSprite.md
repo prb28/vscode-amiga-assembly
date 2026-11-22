@@ -1,8 +1,7 @@
 
 **NAME**
 
-GetSprite -- Attempt to get a sprite for the simple sprite
-manager.
+GetSprite -- Attempt to get a sprite for the simple sprite manager.
 
 **SYNOPSIS**
 
