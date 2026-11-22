@@ -138,6 +138,12 @@ export class ASMLine {
             // Find if it is an assignment
             if (this.parseAssignment(searchAssignmentString, lineNumber)) {
                 this.lineType = ASMLineType.ASSIGNMENT;
+                // A '*' comment after the value goes up to the end of the line
+                const starPos = line.indexOf("*", this.valueRange.end.character);
+                if (starPos >= 0 && (commentPosInInputLine < 0 || starPos < commentPosInInputLine)) {
+                    this.comment = line.substring(starPos).trim();
+                    this.commentRange = new Range(new Position(lineNumber, starPos), new Position(lineNumber, starPos + this.comment.length));
+                }
                 return;
             }
             // find a keyword
@@ -304,6 +310,11 @@ export class ASMLine {
             this.variableColons = match[2];
             this.operator = match[3].trim();
             this.value = match[5].trim();
+            // A blank ends the operand for vasm: a '*' after a blank starts a comment (`CIAB_DSKRDY EQU (5) * disk ready`)
+            const starComment = ASMLine.findStarComment(this.value);
+            if (starComment >= 0) {
+                this.value = this.value.substring(0, starComment).trim();
+            }
             this.variableRange = new Range(new Position(lineNumber, 0), new Position(lineNumber, this.variable.length));
             // The operator is searched after the name: the name can contain the operator text (`equal equ 1`)
             const startPosOperator = line.indexOf(this.operator, match[1].length + match[2].length);
@@ -315,6 +326,28 @@ export class ASMLine {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Finds a comment starting with '*' after a blank, outside of a string
+     * @param text Text to search
+     * @return index of the '*', or -1
+     */
+    private static findStarComment(text: string): number {
+        let quote: string | undefined = undefined;
+        for (let i = 0; i < text.length; i++) {
+            const c = text.charAt(i);
+            if (quote) {
+                if (c === quote) {
+                    quote = undefined;
+                }
+            } else if (c === "\"" || c === "'") {
+                quote = c;
+            } else if (c === "*" && i > 0 && /\s/.test(text.charAt(i - 1))) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**

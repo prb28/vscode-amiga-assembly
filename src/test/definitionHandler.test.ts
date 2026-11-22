@@ -26,6 +26,18 @@ describe("Definition handler Tests", function () {
         const state = ExtensionState.getCurrent();
         ASMLine.init(await state.getLanguage());
     });
+    context("example workspace source", function () {
+        const MAIN_SOURCE = Path.join(__dirname, '..', '..', 'resources', 'examples', 'vscode-amiga-wks-example', 'gencop.s');
+        const dHnd = new M68kDefinitionHandler();
+        before(async function () {
+            await dHnd.scanFile(Uri.file(MAIN_SOURCE));
+        });
+        it("Should evaluate a variable followed by a '*' comment in an included file", async function () {
+            // hardware/cia.i: CIAB_GAMEPORT0	  EQU	(6)   * gameport 0, pin 6 (fire button*)
+            expect(dHnd.getVariableValue("CIAB_GAMEPORT0")).to.be.equal("(6)");
+            await expect(dHnd.evaluateVariable("CIAB_GAMEPORT0", Uri.file(MAIN_SOURCE))).to.be.eventually.equal(6);
+        });
+    });
     context("tutorial source", function () {
         const PROJECT_ROOT = Path.join(__dirname, '..', '..');
         const SOURCES_DIR = Path.join(PROJECT_ROOT, 'test_files', 'sources');

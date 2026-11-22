@@ -328,6 +328,26 @@ describe("Parser Tests", function () {
             expect(asmLine.valueRange).to.be.eql(new Range(new Position(0, 10), new Position(0, 11)));
             expect(asmLine.lineType).to.be.equal(ASMLineType.ASSIGNMENT);
         });
+        it("Should parse an assignment followed by a '*' comment", function () {
+            let asmLine = new ASMLine("CIAB_GAMEPORT0\t  EQU\t(6)   * gameport 0, pin 6 (fire button*)");
+            expect(asmLine.variable).to.be.equal("CIAB_GAMEPORT0");
+            expect(asmLine.value).to.be.equal("(6)");
+            expect(asmLine.valueRange).to.be.eql(new Range(new Position(0, 21), new Position(0, 24)));
+            expect(asmLine.comment).to.be.equal("* gameport 0, pin 6 (fire button*)");
+            expect(asmLine.commentRange).to.be.eql(new Range(new Position(0, 27), new Position(0, 61)));
+            expect(asmLine.lineType).to.be.equal(ASMLineType.ASSIGNMENT);
+            // The '*' comment goes up to the end of the line
+            asmLine = new ASMLine("A = 2 * x ; y");
+            expect(asmLine.value).to.be.equal("2");
+            expect(asmLine.comment).to.be.equal("* x ; y");
+            // A '*' without a blank before is a multiplication, also inside a string
+            asmLine = new ASMLine("A = 2*3 ; four * five");
+            expect(asmLine.value).to.be.equal("2*3");
+            expect(asmLine.comment).to.be.equal("; four * five");
+            asmLine = new ASMLine("A equ \"a *\"");
+            expect(asmLine.value).to.be.equal("\"a *\"");
+            expect(asmLine.comment).to.be.equal("");
+        });
         it("Should parse a line without label", function () {
             const asmLine = new ASMLine("\t\tmove.l #mempos,d1     ; mycomment");
             expect(asmLine.label).to.be.empty;

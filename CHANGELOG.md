@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### [1.9.1] - pre-release
+- [Pull #387](https://github.com/prb28/vscode-amiga-assembly/pull/387) Copperline: memory formats and the DISASSEMBLED MEMORY view - (from LinuxJedi)
+- [Issue] Fix labels résolutions when hovering in edit view
+
 ### [1.9.0] - 2026-10-24
 - [Issue #377](https://github.com/prb28/vscode-amiga-assembly/issues/377) vasm / vlink are run without a shell: the build no longer fails when a path (user directory, workspace, `binDir`) contains spaces or characters like `&`, `%`, `'`, `(`, `$`
 - [Issue #208](https://github.com/prb28/vscode-amiga-assembly/issues/208) Hardware registers documentation

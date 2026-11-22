@@ -8,6 +8,23 @@ import {
 import { substituteVariables } from './configVariables';
 import { ConfigurationHelper } from './configurationHelper';
 import { DataBreakpointSizesStorage } from './breakpointStorage';
+import { ExtensionState } from './extension';
+import { VASMCompiler } from './vasm';
+import * as fs from 'fs';
+import { VasmSourceConstantResolver } from 'uae-dap/out/src/vasm';
+import { SourceConstantResolver } from 'uae-dap/out/src/variableManager';
+
+/**
+ * Reads the constants (EQU / =) of the sources with vasm, as uae-dap does.
+ * The vasm binary for Windows writes CRLF line endings, which make uae-dap read the names with a leading '\n':
+ * the names are trimmed.
+ */
+export class TrimmedSourceConstantResolver extends VasmSourceConstantResolver {
+    async getSourceConstants(sourceFiles: string[]): Promise<Record<string, number>> {
+        const constants = await super.getSourceConstants(sourceFiles);
+        return Object.fromEntries(Object.entries(constants).map(([name, value]) => [name.trim(), value]));
+    }
+}
 
 export interface LaunchRequestArguments extends BaseLaunchRequestArguments {
     // Compatibility with original config
@@ -42,7 +59,28 @@ export function prepareLaunchRequestArgs(
 
     args.memoryFormats = memoryFormatsFromSettings();
 
+    // uae-dap reads the source constants (EQU / =) with vasm, using its wasm build by default. On Windows that
+    // build cannot open absolute paths, so no constant is found and hovering one shows 'undefined'.
+    // Use the vasm binary of the extension instead, unless the launch config sets one.
+    if (!args.vasm?.binaryPath) {
+        const binaryPath = defaultVasmBinaryPath();
+        if (binaryPath) {
+            args.vasm = { ...args.vasm, binaryPath };
+        }
+    }
+
     return args;
+}
+
+/**
+ * Path of the vasm binary used by the build, or undefined when it is not found
+ */
+export function defaultVasmBinaryPath(): string | undefined {
+    const command = substituteVariables(VASMCompiler.DEFAULT_BUILD_CONFIGURATION.command, true, {
+        extensionState: ExtensionState.getCurrent(),
+    });
+    const candidates = process.platform === 'win32' ? [`${command}.exe`, command] : [command];
+    return candidates.find((c) => fs.existsSync(c) && fs.statSync(c).isFile());
 }
 
 /**
@@ -106,6 +144,10 @@ export class DebugSession extends Base {
                 dLines
             );
         }
+    }
+
+    protected getSourceConstantResolver(args: BaseLaunchRequestArguments): SourceConstantResolver {
+        return new TrimmedSourceConstantResolver(args.vasm);
     }
 
     protected launchRequest(
