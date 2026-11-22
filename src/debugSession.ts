@@ -40,39 +40,36 @@ export function prepareLaunchRequestArgs(
         args.noDebug = true;
     }
 
-    // Add memory format settings:
-    // These are stored in config as an expression, but the launch request expects them as MemoryFormat objects so they
-    // need to be parsed.
-    const watchFormat = ConfigurationHelper.retrieveStringPropertyInDefaultConf(
-        'display.memoryFormat.watch'
-    );
-    const hoverFormat = ConfigurationHelper.retrieveStringPropertyInDefaultConf(
-        'display.memoryFormat.hover'
-    );
-    args.memoryFormats = {};
-    try {
-        if (watchFormat) {
-            args.memoryFormats.watch = parseMemoryFormat(watchFormat);
-        }
-    } catch (error) {
-        vscode.window.showErrorMessage(
-            'Error parsing watch memory format: ' + watchFormat
-        );
-    }
-    try {
-        if (hoverFormat) {
-            args.memoryFormats.hover = parseMemoryFormat(hoverFormat);
-        }
-    } catch (error) {
-        vscode.window.showErrorMessage(
-            'Error parsing hover memory format: ' + hoverFormat
-        );
-    }
+    args.memoryFormats = memoryFormatsFromSettings();
 
     return args;
 }
 
-function parseMemoryFormat(expression: string): MemoryFormat {
+/**
+ * Memory format settings for the launch request.
+ * These are stored in config as an expression, but the launch request expects them as MemoryFormat objects so they
+ * need to be parsed. An empty setting is left out, and one that fails to parse is reported and left out.
+ */
+export function memoryFormatsFromSettings(): Record<string, MemoryFormat> {
+    const formats: Record<string, MemoryFormat> = {};
+    for (const kind of ['watch', 'hover']) {
+        const expression = ConfigurationHelper.retrieveStringPropertyInDefaultConf(
+            `display.memoryFormat.${kind}`
+        );
+        try {
+            if (expression) {
+                formats[kind] = parseMemoryFormat(expression);
+            }
+        } catch (error) {
+            vscode.window.showErrorMessage(
+                `Error parsing ${kind} memory format: ${expression}`
+            );
+        }
+    }
+    return formats;
+}
+
+export function parseMemoryFormat(expression: string): MemoryFormat {
     // Parse expression
     const matches =
         /m\s*(?<address>[^,]+)(,\s*(?<length>(?!(d|c|ab?|ba?)$)[^,]+))?(,\s*(?<wordLength>(?!(d|c|ab?|ba?)$)[^,]+))?(,\s*(?<rowLength>(?!(d|c|ab?|ba?)$)[^,]+))?(,\s*(?<mode>(d|c|ab?|ba?)))?/i.exec(

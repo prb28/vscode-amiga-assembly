@@ -19,6 +19,8 @@ describe('Copperline integration', function () {
     let terminationListener: vscode.Disposable;
     const terminated = new Set<string>();
     const events: DebugProtocol.Event[] = [];
+    // Requests sent to the adapter, including the extension's own.
+    const requests: DebugProtocol.Request[] = [];
     const breakpoints: vscode.Breakpoint[] = [];
     const adapter = process.env.COPPERLINE_CTL ?? 'copperline-ctl';
     const binary = process.env.COPPERLINE_BIN ?? 'copperline';
@@ -58,9 +60,14 @@ describe('Copperline integration', function () {
         tracker = vscode.debug.registerDebugAdapterTrackerFactory('amiga-assembly', {
             createDebugAdapterTracker(debugSession) {
                 if (debugSession.configuration.emulatorType !== 'copperline') return undefined;
-                return { onDidSendMessage(message: DebugProtocol.Event) {
-                    if (message.type === 'event') events.push(message);
-                } };
+                return {
+                    onDidSendMessage(message: DebugProtocol.Event) {
+                        if (message.type === 'event') events.push(message);
+                    },
+                    onWillReceiveMessage(message: DebugProtocol.Request) {
+                        if (message.type === 'request') requests.push(message);
+                    }
+                };
             }
         });
         sessionListener = vscode.debug.onDidStartDebugSession(started => {
@@ -85,6 +92,7 @@ describe('Copperline integration', function () {
         }
         vscode.debug.removeBreakpoints(breakpoints.splice(0));
         events.length = 0;
+        requests.length = 0;
     });
 
     after(() => {
@@ -122,9 +130,17 @@ describe('Copperline integration', function () {
         await stopped();
         expect(session).not.to.equal(undefined);
         expect(session!.configuration.sourceMap['/unused/build/path']).to.equal(os.homedir());
+        // The display.memoryFormat defaults.
+        expect(session!.configuration.memoryFormats).to.deep.equal({
+            watch: { length: 104, wordLength: 2, rowLength: 4, mode: 'ab' },
+            hover: { length: 24, wordLength: 2, rowLength: 4, mode: 'ab' }
+        });
         const first: DebugProtocol.StackTraceResponse['body'] = await session!.customRequest('stackTrace', { threadId: 1 });
         expect(first.stackFrames[0].line).to.equal(3);
         samePath(first.stackFrames[0].source!.path!, source);
+        // The DISASSEMBLED MEMORY view is filled from the PC of the stop.
+        const view = await until(() => requests.find(request => request.command === 'disassemble' && request.arguments?.instructionCount === 25), 'the DISASSEMBLED MEMORY request');
+        expect(view.arguments.memoryReference).to.equal(first.stackFrames[0].instructionPointerReference);
 
         let cursor = events.length;
         await session!.customRequest('continue', { threadId: 1 });

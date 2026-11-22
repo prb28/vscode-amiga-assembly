@@ -29,7 +29,7 @@ import { WorkspaceManager } from './workspaceManager';
 import { DataBreakpointSizesStorage } from './breakpointStorage';
 import { NumberFormat, VariableDisplayFormatRequest } from 'uae-dap';
 import { createBltconHelperPanel } from './bltconHelper';
-import { CopperlineConfigurationProvider, checkCopperlineAdapterExists, createCopperlineDebugAdapter } from './copperlineDebug';
+import { CopperlineConfigurationProvider, CopperlineDebugAdapterTrackerFactory, checkCopperlineAdapterExists, createCopperlineDebugAdapter } from './copperlineDebug';
 
 // Setting all the globals values
 export const AMIGA_ASM_MODE: vscode.DocumentFilter = { language: 'm68k' };
@@ -545,6 +545,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
     // Universal:
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('amiga-assembly', new AmigaAssemblyConfigurationProvider()));
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('amiga-assembly', new InlineDebugAdapterFactory()));
+    // Copperline's external adapter does not fill the DISASSEMBLED MEMORY view itself
+    context.subscriptions.push(vscode.debug.registerDebugAdapterTrackerFactory('amiga-assembly', new CopperlineDebugAdapterTrackerFactory()));
     // Deprecated:
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('fs-uae', new FsUAEConfigurationProvider()));
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('fs-uae', new InlineDebugAdapterFactory()));
